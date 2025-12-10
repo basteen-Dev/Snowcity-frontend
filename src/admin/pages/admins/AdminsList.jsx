@@ -3,6 +3,23 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import adminApi from '../../services/adminApi';
 
+const formatRoles = (roles) => {
+  if (!roles) return '';
+  if (Array.isArray(roles)) {
+    return roles
+      .map((role) => {
+        if (!role) return null;
+        if (typeof role === 'string') return role;
+        if (typeof role === 'object') return role.role_name || role.name || null;
+        return String(role);
+      })
+      .filter(Boolean)
+      .join(', ');
+  }
+  if (typeof roles === 'object') return roles.role_name || roles.name || '';
+  return String(roles);
+};
+
 export default function AdminsList() {
   const [rows, setRows] = React.useState([]);
   const [q, setQ] = React.useState('');
@@ -41,7 +58,7 @@ export default function AdminsList() {
                 <td className="px-3 py-2">{r.name}</td>
                 <td className="px-3 py-2">{r.email}</td>
                 <td className="px-3 py-2">{r.phone || ''}</td>
-                <td className="px-3 py-2">{(r.roles || []).join(', ')}</td>
+                <td className="px-3 py-2">{formatRoles(r.roles)}</td>
                 <td className="px-3 py-2 text-right">
                   <Link className="px-2 py-1 rounded-md border text-xs" to={`/admin/admins/${r.user_id}/access`}>Manage Access</Link>
                 </td>

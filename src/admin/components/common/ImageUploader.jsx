@@ -11,7 +11,7 @@ export default function ImageUploader({
   onChange,
   fieldName = 'file',
   extra = {},
-  accept = 'image/*',
+  accept = 'image/*,video/*,.pdf',
   requiredPerm = null
 }) {
   const inputId = React.useId();
@@ -30,6 +30,14 @@ export default function ImageUploader({
     setFileName(file.name || '');
     return () => URL.revokeObjectURL(url);
   }, [file]);
+
+  const getFileType = (file) => {
+    if (!file) return 'unknown';
+    if (file.type.startsWith('image/')) return 'image';
+    if (file.type.startsWith('video/')) return 'video';
+    if (file.type === 'application/pdf') return 'pdf';
+    return 'unknown';
+  };
 
   const onPick = (e) => {
     const f = e.target.files?.[0] || null;
@@ -150,14 +158,36 @@ export default function ImageUploader({
 
       {/* Previews */}
       <div className="mt-2 flex items-center gap-3">
-        {preview ? <img src={preview} alt="snowcity" loading="lazy" className="h-16 w-16 object-cover rounded-md border dark:border-neutral-800" /> : null}
+        {preview ? (
+          <div className="w-16 h-16 rounded-md border dark:border-neutral-800 overflow-hidden bg-gray-100">
+            {getFileType(file) === 'video' ? (
+              <video src={preview} className="w-full h-full object-cover" muted />
+            ) : getFileType(file) === 'pdf' ? (
+              <div className="w-full h-full flex items-center justify-center text-xs text-gray-500">
+                PDF
+              </div>
+            ) : (
+              <img src={preview} alt="snowcity" loading="lazy" className="w-full h-full object-cover" />
+            )}
+          </div>
+        ) : null}
         {resolvedValue ? (
-          <img
-            src={resolvedValue}
-            alt="snowcity"
-            loading="lazy"
-            className="h-16 w-16 object-cover rounded-md border dark:border-neutral-800"
-          />
+          <div className="w-16 h-16 rounded-md border dark:border-neutral-800 overflow-hidden bg-gray-100">
+            {resolvedValue.match(/\.(mp4|webm|ogg)$/i) ? (
+              <video src={resolvedValue} className="w-full h-full object-cover" muted />
+            ) : resolvedValue.match(/\.pdf$/i) ? (
+              <div className="w-full h-full flex items-center justify-center text-xs text-gray-500">
+                PDF
+              </div>
+            ) : (
+              <img
+                src={resolvedValue}
+                alt="snowcity"
+                loading="lazy"
+                className="w-full h-full object-cover"
+              />
+            )}
+          </div>
         ) : null}
       </div>
 

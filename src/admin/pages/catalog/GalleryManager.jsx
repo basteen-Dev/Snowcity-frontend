@@ -52,15 +52,24 @@ export default function GalleryManager() {
     {
       key: 'preview',
       title: 'Preview',
-      render: (row) => (
-        <div className="w-20 h-14 rounded-md overflow-hidden bg-gray-100">
-          {row.media_type === 'video' ? (
-            <video src={row.url} className="w-full h-full object-cover" muted />
-          ) : (
-            <img src={imgSrc(row) || row.url} alt={row.title || 'Gallery media'} className="w-full h-full object-cover" loading="lazy" />
-          )}
-        </div>
-      )
+      render: (row) => {
+        const isVideo = row.media_type === 'video' || (row.url && row.url.match(/\.(mp4|webm|ogg)$/i));
+        const isPdf = row.media_type === 'pdf' || (row.url && row.url.match(/\.pdf$/i));
+        
+        return (
+          <div className="w-20 h-14 rounded-md overflow-hidden bg-gray-100">
+            {isVideo ? (
+              <video src={row.url} className="w-full h-full object-cover" muted />
+            ) : isPdf ? (
+              <div className="w-full h-full flex items-center justify-center text-xs text-gray-500">
+                PDF
+              </div>
+            ) : (
+              <img src={imgSrc(row) || row.url} alt={row.title || 'Gallery media'} className="w-full h-full object-cover" loading="lazy" />
+            )}
+          </div>
+        );
+      }
     },
     { key: 'title', title: 'Title' },
     { key: 'media_type', title: 'Type' },
@@ -102,6 +111,7 @@ export default function GalleryManager() {
           <option value="">Type: All</option>
           <option value="image">Images</option>
           <option value="video">Videos</option>
+          <option value="pdf">PDFs</option>
         </select>
         <button className="rounded-md border px-3 py-2 text-sm" onClick={() => load(filters)} disabled={state.status === 'loading'}>
           Apply

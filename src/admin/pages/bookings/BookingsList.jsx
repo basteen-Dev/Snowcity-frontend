@@ -9,6 +9,7 @@ import adminApi from '../../services/adminApi';
 import A from '../../services/adminEndpoints';
 
 import { ResponsiveContainer, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Line } from 'recharts';
+import { FileText, FileSpreadsheet } from 'lucide-react';
 
 const SectionCard = ({ title, subtitle, children, className = '' }) => (
   <div className={`rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:bg-neutral-900 dark:border-neutral-800 ${className}`}>
@@ -35,13 +36,47 @@ const SummaryCard = ({ icon, label, value, note, accent = 'from-blue-500 to-indi
   </div>
 );
 
+const formatCurrency = (value) => `₹${Number(value || 0).toLocaleString()}`;
+const formatNumber = (value) => Number(value || 0).toLocaleString();
+
+const revenueFilterDefaults = Object.freeze({
+  attraction: { from: '', to: '', attraction_id: '' },
+  combo: { from: '', to: '', attraction_id: '', combo_id: '' },
+});
+
+const cloneRevenueFilters = () => ({
+  attraction: { ...revenueFilterDefaults.attraction },
+  combo: { ...revenueFilterDefaults.combo },
+});
+
+const normalizeOptionList = (res) => {
+  if (!res) return [];
+  if (Array.isArray(res)) return res;
+  if (Array.isArray(res.data)) return res.data;
+  if (Array.isArray(res.items)) return res.items;
+  if (Array.isArray(res.results)) return res.results;
+  if (res.data && Array.isArray(res.data.items)) return res.data.items;
+  if (res.data && Array.isArray(res.data.results)) return res.data.results;
+  if (res.data && Array.isArray(res.data.data)) return res.data.data;
+  if (res.meta && Array.isArray(res.meta.data)) return res.meta.data;
+  if (typeof res.data === 'object' && res.data !== null && !Array.isArray(res.data) && Object.keys(res.data).length > 0) {
+    // Handle case where data is an object with items inside
+    const firstValue = Object.values(res.data)[0];
+    if (Array.isArray(firstValue)) return firstValue;
+  }
+  return [];
+};
+
 const formatYMD = (value) => dayjs(value).format('YYYY-MM-DD');
 const today = formatYMD(new Date());
 const quickRanges = [
   { key: 'today', label: 'Today', from: () => dayjs().startOf('day'), to: () => dayjs().endOf('day') },
   { key: 'yesterday', label: 'Yesterday', from: () => dayjs().subtract(1, 'day').startOf('day'), to: () => dayjs().subtract(1, 'day').endOf('day') },
-  { key: 'week', label: 'Last 7 days', from: () => dayjs().subtract(6, 'day').startOf('day'), to: () => dayjs().endOf('day') },
-  { key: 'month', label: 'Last 30 days', from: () => dayjs().subtract(29, 'day').startOf('day'), to: () => dayjs().endOf('day') },
+  { key: 'tomorrow', label: 'Tomorrow', from: () => dayjs().add(1, 'day').startOf('day'), to: () => dayjs().add(1, 'day').endOf('day') },
+  { key: 'thisWeek', label: 'This Week', from: () => dayjs().startOf('week'), to: () => dayjs().endOf('week') },
+  { key: 'thisMonth', label: 'This Month', from: () => dayjs().startOf('month'), to: () => dayjs().endOf('month') },
+  { key: 'last7', label: 'Last 7 days', from: () => dayjs().subtract(6, 'day').startOf('day'), to: () => dayjs().endOf('day') },
+  { key: 'last30', label: 'Last 30 days', from: () => dayjs().subtract(29, 'day').startOf('day'), to: () => dayjs().endOf('day') },
   { key: 'all', label: 'All time', from: () => null, to: () => null }
 ];
 
@@ -49,6 +84,7 @@ export default function BookingsList() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { list } = useSelector((s) => s.adminBookings);
+  const { user } = useSelector((s) => s.adminAuth);
   const rows = React.useMemo(() => (Array.isArray(list.data) ? list.data : []), [list.data]);
   const rowLookup = React.useMemo(() => {
     const map = new Map();
@@ -84,10 +120,16 @@ export default function BookingsList() {
   const [options, setOptions] = React.useState({ status: 'idle', attractions: [], combos: [], offers: [] });
   const [overview, setOverview] = React.useState({ status: 'idle', trend: [], summary: null });
   const [activeRange, setActiveRange] = React.useState('all');
+  const [revenueData, setRevenueData] = React.useState({
+    attraction: { status: 'idle', data: null },
+    combo: { status: 'idle', data: null }
+  });
+  const [revenueFilters, setRevenueFilters] = React.useState(cloneRevenueFilters());
 
   React.useEffect(() => {
     dispatch(listAdminBookings({ page: 1, limit: 20 }));
     loadOverview();
+    loadRevenueData('both');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -98,24 +140,76 @@ export default function BookingsList() {
       setOptions((s) => ({ ...s, status: 'loading' }));
       try {
         const [attractionsRes, combosRes, offersRes] = await Promise.all([
-          adminApi.get(A.attractions(), { params: { limit: 1000 } }).catch(() => ({ data: [] })),
-          adminApi.get(A.combos(), { params: { limit: 1000 } }).catch(() => ({ data: [] })),
-          adminApi.get(A.offers(), { params: { limit: 1000 } }).catch(() => ({ data: [] })),
+          adminApi.get(A.attractions(), { params: { limit: 1000 } }),
+          adminApi.get(A.combos(), { params: { limit: 1000 } }),
+          adminApi.get(A.offers(), { params: { limit: 1000 } }),
         ]);
         if (cancelled) return;
-        setOptions({
-          status: 'succeeded',
-          attractions: Array.isArray(attractionsRes?.data) ? attractionsRes.data : (Array.isArray(attractionsRes) ? attractionsRes : []),
-          combos: Array.isArray(combosRes?.data) ? combosRes.data : (Array.isArray(combosRes) ? combosRes : []),
-          offers: Array.isArray(offersRes?.data) ? offersRes.data : (Array.isArray(offersRes) ? offersRes : []),
+        
+        // Debug logging
+        console.log('API Responses:', {
+          attractionsRes,
+          combosRes,
+          offersRes
         });
+        
+        // Get user roles and scopes
+        const userRoles = Array.isArray(user?.roles) ? user.roles.map(r => String(r).toLowerCase()) : [];
+        const userScopes = user?.scopes || {};
+        const isSubadmin = userRoles.includes('subadmin') && !userRoles.includes('admin') && !userRoles.includes('root');
+        
+        // Parse all lists
+        let allAttractions = normalizeOptionList(attractionsRes);
+        let allCombos = normalizeOptionList(combosRes);
+        const allOffers = normalizeOptionList(offersRes);
+        
+        // Filter based on scopes if subadmin
+        let filteredAttractions = allAttractions;
+        let filteredCombos = allCombos;
+        
+        if (isSubadmin) {
+          const allowedAttractionIds = userScopes.attraction || [];
+          const allowedComboIds = userScopes.combo || [];
+          
+          console.log('Subadmin scopes:', { allowedAttractionIds, allowedComboIds });
+          
+          // Filter attractions by allowed IDs
+          if (allowedAttractionIds.length > 0) {
+            filteredAttractions = allAttractions.filter(a => 
+              allowedAttractionIds.includes(a.attraction_id) || allowedAttractionIds.includes(a.id)
+            );
+          } else {
+            filteredAttractions = [];
+          }
+          
+          // Filter combos by allowed IDs
+          if (allowedComboIds.length > 0) {
+            filteredCombos = allCombos.filter(c => 
+              allowedComboIds.includes(c.combo_id) || allowedComboIds.includes(c.id)
+            );
+          } else {
+            filteredCombos = [];
+          }
+        }
+        
+        const normalizedData = {
+          status: 'succeeded',
+          attractions: filteredAttractions,
+          combos: filteredCombos,
+          offers: allOffers,
+        };
+        
+        console.log('Normalized data:', normalizedData);
+        
+        setOptions(normalizedData);
       } catch (err) {
         if (cancelled) return;
+        console.error('Error loading options:', err);
         setOptions((s) => ({ ...s, status: 'failed', error: err }));
       }
     })();
     return () => { cancelled = true; };
-  }, [options.status]);
+  }, [user]);
 
   const buildQuery = React.useCallback((extra = {}) => {
     const merged = { ...filters, ...extra };
@@ -145,9 +239,85 @@ export default function BookingsList() {
     }
   }, [filters]);
 
+  const loadRevenueData = React.useCallback(async (target = 'both') => {
+    const targets = target === 'both' ? ['attraction', 'combo'] : [target];
+
+    if (targets.includes('attraction')) {
+      const attractionFilter = revenueFilters.attraction;
+      setRevenueData((prev) => ({ ...prev, attraction: { status: 'loading', data: null } }));
+      try {
+        const attractionRes = await adminApi.get(A.analyticsAttractionRevenue(), {
+          params: {
+            from: attractionFilter.from || filters.date_from || undefined,
+            to: attractionFilter.to || filters.date_to || undefined,
+            attraction_id: attractionFilter.attraction_id || filters.attraction_id || undefined
+          }
+        });
+        setRevenueData((prev) => ({ ...prev, attraction: { status: 'succeeded', data: attractionRes } }));
+      } catch (err) {
+        setRevenueData((prev) => ({ ...prev, attraction: { status: 'failed', error: err } }));
+      }
+    }
+
+    if (targets.includes('combo')) {
+      const comboFilter = revenueFilters.combo;
+      setRevenueData((prev) => ({ ...prev, combo: { status: 'loading', data: null } }));
+      try {
+        const comboRes = await adminApi.get(A.analyticsComboRevenue(), {
+          params: {
+            from: comboFilter.from || filters.date_from || undefined,
+            to: comboFilter.to || filters.date_to || undefined,
+            attraction_id: comboFilter.attraction_id || filters.attraction_id || undefined,
+            combo_id: comboFilter.combo_id || filters.combo_id || undefined
+          }
+        });
+        setRevenueData((prev) => ({ ...prev, combo: { status: 'succeeded', data: comboRes } }));
+      } catch (err) {
+        setRevenueData((prev) => ({ ...prev, combo: { status: 'failed', error: err } }));
+      }
+    }
+  }, [filters, revenueFilters]);
+
+  const downloadReport = React.useCallback((type, format) => {
+    try {
+      const params = {
+        type,
+        from: revenueFilters[type === 'attraction-revenue' ? 'attraction' : 'combo']?.from || filters.date_from || undefined,
+        to: revenueFilters[type === 'attraction-revenue' ? 'attraction' : 'combo']?.to || filters.date_to || undefined,
+        attraction_id: revenueFilters[type === 'attraction-revenue' ? 'attraction' : 'combo']?.attraction_id || filters.attraction_id || undefined,
+        combo_id: revenueFilters[type === 'combo-revenue' ? 'combo' : 'attraction']?.combo_id || filters.combo_id || undefined
+      };
+      const url = `${A.analyticsReport(format)}?${new URLSearchParams(params).toString()}`;
+      window.open(url, '_blank');
+    } catch (err) {
+      console.error('Download failed:', err);
+      alert('Failed to download report');
+    }
+  }, [filters, revenueFilters]);
+
   const onSearch = () => {
     dispatch(listAdminBookings({ ...buildQuery(), page: 1, limit: 20 }));
     loadOverview();
+    loadRevenueData('both');
+  };
+
+  const handleRevenueFilterChange = (card, field, value) => {
+    setRevenueFilters((prev) => ({
+      ...prev,
+      [card]: { ...prev[card], [field]: value },
+    }));
+  };
+
+  const applyRevenueFilter = (card) => {
+    loadRevenueData(card);
+  };
+
+  const resetRevenueFilter = (card) => {
+    setRevenueFilters((prev) => ({
+      ...prev,
+      [card]: { ...revenueFilterDefaults[card] },
+    }));
+    loadRevenueData(card);
   };
 
   const stepSingleDate = (days) => {
@@ -260,12 +430,204 @@ export default function BookingsList() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <SummaryCard label="Paid Bookings" value={Number(overview.summary.total_bookings || 0).toLocaleString()} note="Confirmed" />
           <SummaryCard label="Pending" value={Number(overview.summary.pending_bookings || 0).toLocaleString()} note="Awaiting payment" accent="from-amber-400 to-orange-500" />
-          <SummaryCard label="Combo Revenue" value={`₹${Number(overview.summary.combo_revenue || 0).toLocaleString()}`} note={`${overview.summary.combo_bookings || 0} combos`} accent="from-indigo-500 to-purple-600" />
-          <SummaryCard label="Offer Revenue" value={`₹${Number(overview.summary.offer_revenue || 0).toLocaleString()}`} note={`${overview.summary.offer_bookings || 0} offers`} accent="from-emerald-500 to-green-600" />
+          <SummaryCard label="Combo Revenue" value={formatCurrency(overview.summary.combo_revenue)} note={`${overview.summary.combo_bookings || 0} combos`} accent="from-indigo-500 to-purple-600" />
+          <SummaryCard label="Offer Revenue" value={formatCurrency(overview.summary.offer_revenue)} note={`${overview.summary.offer_bookings || 0} offers`} accent="from-emerald-500 to-green-600" />
         </div>
       ) : null}
 
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <SectionCard
+          title="Attraction Revenue"
+          subtitle="Completed attraction bookings & revenue"
+        >
+          <div className="flex flex-wrap gap-3 mb-4">
+            <input
+              type="date"
+              className="rounded-lg border px-3 py-2 flex-1"
+              value={revenueFilters.attraction.from}
+              onChange={(e) => handleRevenueFilterChange('attraction', 'from', e.target.value)}
+            />
+            <input
+              type="date"
+              className="rounded-lg border px-3 py-2 flex-1"
+              value={revenueFilters.attraction.to}
+              onChange={(e) => handleRevenueFilterChange('attraction', 'to', e.target.value)}
+            />
+            <select
+              className="rounded-lg border px-3 py-2 flex-1 disabled:opacity-50"
+              value={revenueFilters.attraction.attraction_id}
+              onChange={(e) => handleRevenueFilterChange('attraction', 'attraction_id', e.target.value)}
+              disabled={options.status === 'loading'}
+            >
+              <option value="">
+                {options.status === 'loading' ? 'Loading...' : 'All attractions'}
+              </option>
+              {options.status === 'succeeded' && (options.attractions || []).length > 0 ? (
+                (options.attractions || []).map((a) => (
+                  <option key={a.attraction_id || a.id} value={a.attraction_id || a.id}>
+                    {a.title || a.name || `#${a.attraction_id || a.id}`}
+                  </option>
+                ))
+              ) : null}
+            </select>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 mb-4">
+            <button className="rounded-lg bg-gray-900 text-white px-3 py-2 text-sm" onClick={() => applyRevenueFilter('attraction')}>
+              Apply
+            </button>
+            <button className="rounded-lg border px-3 py-2 text-sm" onClick={() => resetRevenueFilter('attraction')}>
+              Reset
+            </button>
+            <div className="flex-1" />
+            <button
+              className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm"
+              onClick={() => downloadReport('attraction-revenue', 'csv')}
+            >
+              <FileSpreadsheet className="h-4 w-4" />
+              CSV
+            </button>
+            <button
+              className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm"
+              onClick={() => downloadReport('attraction-revenue', 'pdf')}
+            >
+              <FileText className="h-4 w-4" />
+              PDF
+            </button>
+          </div>
+          <div className="rounded-xl border border-gray-100 p-4 bg-gray-50">
+            {revenueData.attraction.status === 'loading' ? (
+              <div className="text-sm text-gray-500">Loading…</div>
+            ) : revenueData.attraction.status === 'failed' ? (
+              <div className="text-sm text-red-600">Failed to load data</div>
+            ) : (
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div>
+                  <div className="text-gray-500 uppercase text-xs">Bookings</div>
+                  <div className="text-2xl font-semibold text-gray-900">
+                    {formatNumber(revenueData.attraction.data?.attraction_bookings)}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-gray-500 uppercase text-xs">Revenue</div>
+                  <div className="text-2xl font-semibold text-gray-900">
+                    {formatCurrency(revenueData.attraction.data?.attraction_revenue)}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </SectionCard>
+
+        <SectionCard
+          title="Combo Revenue"
+          subtitle="Combo bookings & linked revenue"
+        >
+          <div className="flex flex-wrap gap-3 mb-4">
+            <input
+              type="date"
+              className="rounded-lg border px-3 py-2 flex-1"
+              value={revenueFilters.combo.from}
+              onChange={(e) => handleRevenueFilterChange('combo', 'from', e.target.value)}
+            />
+            <input
+              type="date"
+              className="rounded-lg border px-3 py-2 flex-1"
+              value={revenueFilters.combo.to}
+              onChange={(e) => handleRevenueFilterChange('combo', 'to', e.target.value)}
+            />
+            <select
+              className="rounded-lg border px-3 py-2 flex-1 disabled:opacity-50"
+              value={revenueFilters.combo.attraction_id}
+              onChange={(e) => handleRevenueFilterChange('combo', 'attraction_id', e.target.value)}
+              disabled={options.status === 'loading'}
+            >
+              <option value="">
+                {options.status === 'loading' ? 'Loading...' : 'All attractions'}
+              </option>
+              {options.status === 'succeeded' && (options.attractions || []).length > 0 ? (
+                (options.attractions || []).map((a) => (
+                  <option key={a.attraction_id || a.id} value={a.attraction_id || a.id}>
+                    {a.title || a.name || `#${a.attraction_id || a.id}`}
+                  </option>
+                ))
+              ) : null}
+            </select>
+            <select
+              className="rounded-lg border px-3 py-2 flex-1 disabled:opacity-50"
+              value={revenueFilters.combo.combo_id}
+              onChange={(e) => handleRevenueFilterChange('combo', 'combo_id', e.target.value)}
+              disabled={options.status === 'loading'}
+            >
+              <option value="">
+                {options.status === 'loading' ? 'Loading...' : 'All combos'}
+              </option>
+              {options.status === 'succeeded' && (options.combos || []).length > 0 ? (
+                (options.combos || []).map((c) => (
+                  <option key={c.combo_id || c.id} value={c.combo_id || c.id}>
+                    {c.title || c.name || `Combo #${c.combo_id || c.id}`}
+                  </option>
+                ))
+              ) : null}
+            </select>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 mb-4">
+            <button className="rounded-lg bg-gray-900 text-white px-3 py-2 text-sm" onClick={() => applyRevenueFilter('combo')}>
+              Apply
+            </button>
+            <button className="rounded-lg border px-3 py-2 text-sm" onClick={() => resetRevenueFilter('combo')}>
+              Reset
+            </button>
+            <div className="flex-1" />
+            <button
+              className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm"
+              onClick={() => downloadReport('combo-revenue', 'csv')}
+            >
+              <FileSpreadsheet className="h-4 w-4" />
+              CSV
+            </button>
+            <button
+              className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm"
+              onClick={() => downloadReport('combo-revenue', 'pdf')}
+            >
+              <FileText className="h-4 w-4" />
+              PDF
+            </button>
+          </div>
+          <div className="rounded-xl border border-gray-100 p-4 bg-gray-50">
+            {revenueData.combo.status === 'loading' ? (
+              <div className="text-sm text-gray-500">Loading…</div>
+            ) : revenueData.combo.status === 'failed' ? (
+              <div className="text-sm text-red-600">Failed to load data</div>
+            ) : (
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div>
+                  <div className="text-gray-500 uppercase text-xs">Combo bookings</div>
+                  <div className="text-2xl font-semibold text-gray-900">
+                    {formatNumber(revenueData.combo.data?.combo_bookings)}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-gray-500 uppercase text-xs">Combo revenue</div>
+                  <div className="text-2xl font-semibold text-gray-900">
+                    {formatCurrency(revenueData.combo.data?.combo_revenue)}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </SectionCard>
+      </div>
+
       <SectionCard title="Filters" subtitle="Slice bookings by channel, product, and time" className="p-4">
+        {(() => {
+          const userRoles = Array.isArray(user?.roles) ? user.roles.map(r => String(r).toLowerCase()) : [];
+          const isSubadmin = userRoles.includes('subadmin') && !userRoles.includes('admin') && !userRoles.includes('root');
+          return isSubadmin ? (
+            <div className="bg-blue-50 text-blue-900 border border-blue-200 rounded-lg px-3 py-2 text-xs mb-3">
+              <strong>Subadmin Access:</strong> Viewing attractions and combos from your assigned bookings only.
+            </div>
+          ) : null;
+        })()}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3">
           <input className="rounded-lg border px-3 py-2" placeholder="Search ref / user" value={filters.search} onChange={(e) => setFilters({ ...filters, search: e.target.value })} />
           <select className="rounded-lg border px-3 py-2" value={filters.payment_status} onChange={(e) => setFilters({ ...filters, payment_status: e.target.value })}>
@@ -283,23 +645,62 @@ export default function BookingsList() {
           </select>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3">
-          <select className="rounded-lg border px-3 py-2" value={filters.attraction_id} onChange={(e) => setFilters({ ...filters, attraction_id: e.target.value })}>
-            <option value="">Attraction</option>
-            {(options.attractions || []).map((a) => (
-              <option key={a.attraction_id || a.id} value={a.attraction_id || a.id}>{a.title || a.name || `#${a.attraction_id || a.id}`}</option>
-            ))}
+          <select 
+            className="rounded-lg border px-3 py-2 disabled:opacity-50" 
+            value={filters.attraction_id} 
+            onChange={(e) => setFilters({ ...filters, attraction_id: e.target.value })}
+            disabled={options.status === 'loading'}
+          >
+            <option value="">
+              {options.status === 'loading' ? 'Loading attractions...' : 'Attraction'}
+            </option>
+            {options.status === 'succeeded' && (options.attractions || []).length > 0 ? (
+              (options.attractions || []).map((a) => (
+                <option key={a.attraction_id || a.id} value={a.attraction_id || a.id}>
+                  {a.title || a.name || `#${a.attraction_id || a.id}`}
+                </option>
+              ))
+            ) : options.status === 'failed' ? (
+              <option disabled>Failed to load attractions</option>
+            ) : null}
           </select>
-          <select className="rounded-lg border px-3 py-2" value={filters.combo_id} onChange={(e) => setFilters({ ...filters, combo_id: e.target.value })}>
-            <option value="">Combo</option>
-            {(options.combos || []).map((c) => (
-              <option key={c.combo_id || c.id} value={c.combo_id || c.id}>{c.title || c.name || `Combo #${c.combo_id || c.id}`}</option>
-            ))}
+          <select 
+            className="rounded-lg border px-3 py-2 disabled:opacity-50" 
+            value={filters.combo_id} 
+            onChange={(e) => setFilters({ ...filters, combo_id: e.target.value })}
+            disabled={options.status === 'loading'}
+          >
+            <option value="">
+              {options.status === 'loading' ? 'Loading combos...' : 'Combo'}
+            </option>
+            {options.status === 'succeeded' && (options.combos || []).length > 0 ? (
+              (options.combos || []).map((c) => (
+                <option key={c.combo_id || c.id} value={c.combo_id || c.id}>
+                  {c.title || c.name || `Combo #${c.combo_id || c.id}`}
+                </option>
+              ))
+            ) : options.status === 'failed' ? (
+              <option disabled>Failed to load combos</option>
+            ) : null}
           </select>
-          <select className="rounded-lg border px-3 py-2" value={filters.offer_id} onChange={(e) => setFilters({ ...filters, offer_id: e.target.value })}>
-            <option value="">Offer</option>
-            {(options.offers || []).map((o) => (
-              <option key={o.offer_id || o.id} value={o.offer_id || o.id}>{o.title || o.name || o.code || `Offer #${o.offer_id || o.id}`}</option>
-            ))}
+          <select 
+            className="rounded-lg border px-3 py-2 disabled:opacity-50" 
+            value={filters.offer_id} 
+            onChange={(e) => setFilters({ ...filters, offer_id: e.target.value })}
+            disabled={options.status === 'loading'}
+          >
+            <option value="">
+              {options.status === 'loading' ? 'Loading offers...' : 'Offer'}
+            </option>
+            {options.status === 'succeeded' && (options.offers || []).length > 0 ? (
+              (options.offers || []).map((o) => (
+                <option key={o.offer_id || o.id} value={o.offer_id || o.id}>
+                  {o.title || o.name || o.code || `Offer #${o.offer_id || o.id}`}
+                </option>
+              ))
+            ) : options.status === 'failed' ? (
+              <option disabled>Failed to load offers</option>
+            ) : null}
           </select>
           <input className="rounded-lg border px-3 py-2" placeholder="User email" value={filters.user_email} onChange={(e) => setFilters({ ...filters, user_email: e.target.value })} />
         </div>

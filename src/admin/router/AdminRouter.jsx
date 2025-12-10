@@ -75,6 +75,10 @@ const AnalyticsViews = lazy(() => import('../pages/analytics/Views.jsx'));
 const AnalyticsSplit = lazy(() => import('../pages/analytics/Split.jsx'));
 const AnalyticsTop = lazy(() => import('../pages/analytics/TopAttractions')); // optional/legacy
 
+// Revenue pages
+const AttractionsRevenue = lazy(() => import('../pages/revenue/AttractionRevenue'));
+const ComboRevenue = lazy(() => import('../pages/revenue/ComboRevenue'));
+
 function RequireAdmin({ children }) {
   const token = useSelector((s) => s.adminAuth?.token);
   if (!token) return <Navigate to="login" replace />;
@@ -188,8 +192,13 @@ export default function AdminRouter() {
           <Route path="roles/new" element={<RoleForm />} />
           <Route path="roles/:id" element={<RoleForm />} />
           <Route path="admins" element={<AdminsList />} />
-<Route path="admins/new" element={<AdminNew />} />
-<Route path="admins/:id/access" element={<AdminAccess />} />
+          <Route path="admins/new" element={<AdminNew />} />
+          <Route path="admins/access" element={<AdminAccess />} />
+          <Route path="admins/:id/access" element={<AdminAccess />} />
+
+          {/* Revenue */}
+          <Route path="revenue/attractions" element={<AttractionsRevenue />} />
+          <Route path="revenue/combos" element={<ComboRevenue />} />
 
           {/* Fallback within /admin */}
           <Route path="*" element={<Navigate to="." replace />} />

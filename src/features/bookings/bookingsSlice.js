@@ -326,12 +326,13 @@ export const createBooking = createAsyncThunk(
 
 export const initiatePayPhi = createAsyncThunk(
   'bookings/initiatePayPhi',
-  async ({ bookingId, email, mobile }, { rejectWithValue }) => {
+  async ({ bookingId, email, mobile, amount }, { rejectWithValue }) => {
     try {
       // NOTE: 'bookingId' parameter here essentially represents the Order ID now
       const res = await api.post(endpoints.bookings.payphi.initiate(bookingId), {
         email,
-        mobile: normalizePhone(mobile)
+        mobile: normalizePhone(mobile),
+        amount // Pass the calculated final amount to the backend for verification
       });
       return normalizePayphiInitiateResponse(res, bookingId);
     } catch (err) { return rejectWithValue(err); }

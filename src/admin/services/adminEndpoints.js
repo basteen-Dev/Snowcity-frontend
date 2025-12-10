@@ -73,7 +73,20 @@ const A = {
   analyticsOverview: () => '/api/admin/analytics/overview',
   analyticsTrend: () => '/api/admin/analytics/trend',
   analyticsTopAttractions: () => '/api/admin/analytics/top-attractions',
+  analyticsAttractionRevenue: () => '/api/admin/analytics/attraction-revenue',
+  analyticsComboRevenue: () => '/api/admin/analytics/combo-revenue',
+  analyticsReport: (format = 'csv') => `/api/admin/analytics/report.${format}`,
   analytics: () => '/api/admin/analytics'
+};
+
+export const ANALYTICS_ENDPOINTS = {
+  OVERVIEW: '/admin/analytics/overview',
+  TREND: '/admin/analytics/trend',
+  TOP_ATTRACTIONS: '/admin/analytics/top-attractions',
+  ATTRACTIONS_BREAKDOWN: '/admin/analytics/attractions-breakdown',
+  ATTRACTION_REVENUE: '/admin/analytics/attraction-revenue',
+  COMBO_REVENUE: '/admin/analytics/combo-revenue',
+  GENERAL: '/admin/analytics',
 };
 
 export default A;

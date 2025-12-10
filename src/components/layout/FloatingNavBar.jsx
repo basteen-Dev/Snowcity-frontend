@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { logout, setCredentials } from "../../features/auth/authSlice";
 import api from "../../services/apiClient";
@@ -81,7 +81,9 @@ function useLockBodyScroll(lock) {
 
 export default function FloatingNavBar() {
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useDispatch();
+  const isBookingPage = location.pathname.startsWith("/booking");
 
   const attractions = useSelector((s) => s.attractions.items || []);
   const offers = useSelector((s) => s.offers.items || []);
@@ -125,7 +127,8 @@ export default function FloatingNavBar() {
   const guidePages = pages.slice(0, 10);
 
   // Transparent only while hero sentinel is visible
-  const transparent = useHeroTransparent({ sentinelId: "hero-sentinel", fallbackOffset: 240 });
+  const heroTransparent = useHeroTransparent({ sentinelId: "hero-sentinel", fallbackOffset: 240 });
+  const transparent = !isBookingPage && heroTransparent;
 
   // Prevent background scroll when mobile menu is open
   useLockBodyScroll(mobileOpen || authModalOpen);
@@ -349,15 +352,24 @@ export default function FloatingNavBar() {
     <>
       <nav
         ref={navRef}
-        className="fixed top-4 left-1/2 -translate-x-1/2 w-[94%] max-w-[1400px] z-[120] transition-all duration-300"
+        data-floating-nav
+        className={`fixed z-30 transition-all duration-300 ${
+          isBookingPage
+            ? "top-0 left-0 right-0 w-full translate-x-0"
+            : "top-4 left-1/2 -translate-x-1/2 w-[94%] max-w-[1400px]"
+        }`}
       >
       {/* ------------------- DESKTOP NAV -------------------- */}
       <div
-        className={`hidden md:flex items-center justify-between gap-6 px-8 py-4 border rounded-[30px] shadow-2xl transition-all duration-300 ${
-          transparent
+        className={`hidden md:flex items-center justify-between gap-6 px-8 py-4 border shadow-2xl transition-all duration-300 ${
+          isBookingPage
+            ? "rounded-none"
+            : "rounded-[30px]"
+        } ${
+          transparent && !isBookingPage
             ? "bg-transparent border-transparent text-white shadow-none"
             : "bg-white text-gray-900 border-gray-200 backdrop-blur-xl"
-        }`}
+        } ${isBookingPage ? "border-b border-gray-200" : ""}`}
       >
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2">

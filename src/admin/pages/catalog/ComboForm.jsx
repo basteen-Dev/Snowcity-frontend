@@ -19,6 +19,7 @@ export default function ComboForm() {
       attraction_prices: {},
       total_price: 0,
       image_url: '',
+      desktop_image_url: '',
       discount_percent: 0,
       active: true
     }
@@ -50,6 +51,7 @@ export default function ComboForm() {
           attraction_prices: {},
           total_price: 0,
           image_url: c.image_url || '',
+          desktop_image_url: c.desktop_image_url || '',
           discount_percent: c.discount_percent || 0,
           active: !!c.active
         };
@@ -348,6 +350,13 @@ export default function ComboForm() {
           label="Combo Image"
           value={f.image_url}
           onChange={(url) => setState((s) => ({ ...s, form: { ...s.form, image_url: url } }))}
+        />
+      </div>
+      <div className="mb-4">
+        <ImageUploader
+          label="Desktop Image (optional)"
+          value={f.desktop_image_url}
+          onChange={(url) => setState((s) => ({ ...s, form: { ...s.form, desktop_image_url: url } }))}
         />
       </div>
 

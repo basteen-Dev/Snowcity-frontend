@@ -1,5 +1,5 @@
 import React from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import dayjs from 'dayjs';
 import api from '../services/apiClient';
@@ -9,20 +9,32 @@ import ErrorState from '../components/common/ErrorState';
 import { addCartItem, setStep } from '../features/bookings/bookingsSlice';
 import { getAttrId } from '../utils/ids';
 import { imgSrc } from '../utils/media';
-import { getPrice, getBasePrice, getDiscountPercent, getSlotUnitPrice, getSlotBasePrice } from '../utils/pricing';
+import {
+  getPrice,
+  getBasePrice,
+  getDiscountPercent,
+  getSlotUnitPrice,
+  getSlotBasePrice,
+} from '../utils/pricing';
 import { formatCurrency } from '../utils/formatters';
+
+/* ================= Helpers ================= */
 
 const toYMD = (d) => dayjs(d).format('YYYY-MM-DD');
 const todayYMD = () => dayjs().format('YYYY-MM-DD');
 
 const getSlotKey = (s, idx) =>
-  String(s?.id ?? s?._id ?? s?.slot_id ?? `${s?.start_time || ''}-${s?.end_time || ''}-${idx}`);
+  String(
+    s?.id ??
+      s?._id ??
+      s?.slot_id ??
+      `${s?.start_time || ''}-${s?.end_time || ''}-${idx}`,
+  );
 
-// Helper function to convert 24-hour time to 12-hour format
 const formatTime12Hour = (time24) => {
   if (!time24) return '';
   const [hours, minutes] = time24.split(':');
-  const hour = parseInt(hours);
+  const hour = parseInt(hours, 10);
   const ampm = hour >= 12 ? 'PM' : 'AM';
   const hour12 = hour % 12 || 12;
   return `${hour12}:${minutes} ${ampm}`;
@@ -30,13 +42,13 @@ const formatTime12Hour = (time24) => {
 
 const getSlotLabel = (s) => {
   if (s?.label) return s.label;
-  
+
   const start = formatTime12Hour(s?.start_time);
   const end = formatTime12Hour(s?.end_time);
-  
+
   if (start && end) return `${start} - ${end}`;
   if (start) return start;
-  
+
   return `Slot #${s?.id ?? s?._id ?? s?.slot_id ?? '?'}`;
 };
 
@@ -59,17 +71,19 @@ const matchesDayType = (rule = {}, dateYMD) => {
     return rule.specific_days.map(Number).includes(dayIndex);
   }
   if (dayType === 'holiday') {
-    // Without a holiday calendar on the client, treat as true so server-side validation still applies later
+    // Without a holiday calendar on the client, treat as true so server-side validation can still apply later
     return true;
   }
   return true;
 };
 
 const normalizeTargetType = (value) => String(value || '').toLowerCase();
+
 const idsMatch = (a, b) => {
   if (a == null || b == null) return false;
   return String(a) === String(b);
 };
+
 const toBoolean = (value) => {
   if (typeof value === 'boolean') return value;
   if (value == null) return false;
@@ -83,7 +97,11 @@ const toBoolean = (value) => {
 
 const ruleMatchesSlotConstraints = (rule = {}, slot = null) => {
   if (!slot) {
-    if (rule.slot_id != null || (Array.isArray(rule.slot_ids) && rule.slot_ids.length)) return false;
+    if (
+      rule.slot_id != null ||
+      (Array.isArray(rule.slot_ids) && rule.slot_ids.length)
+    )
+      return false;
     if (rule.specific_time || (rule.time_from && rule.time_to)) return false;
     return true;
   }
@@ -94,14 +112,22 @@ const ruleMatchesSlotConstraints = (rule = {}, slot = null) => {
   if (rule.target_slot_id != null) ruleSlotIds.push(rule.target_slot_id);
 
   if (ruleSlotIds.length) {
-    const slotCandidates = [slot.slot_id, slot.id, slot._id, slot.combo_slot_id].filter((v) => v != null);
-    const hasMatch = ruleSlotIds.some((rid) => slotCandidates.some((cid) => idsMatch(rid, cid)));
+    const slotCandidates = [
+      slot.slot_id,
+      slot.id,
+      slot._id,
+      slot.combo_slot_id,
+    ].filter((v) => v != null);
+    const hasMatch = ruleSlotIds.some((rid) =>
+      slotCandidates.some((cid) => idsMatch(rid, cid)),
+    );
     if (!hasMatch) return false;
   }
 
   const slotTime = slot.start_time || slot.time || slot.startTime || null;
   if (rule.specific_time && slotTime) {
-    if (slotTime.slice(0, 5) !== String(rule.specific_time).slice(0, 5)) return false;
+    if (slotTime.slice(0, 5) !== String(rule.specific_time).slice(0, 5))
+      return false;
   }
 
   if (rule.time_from && rule.time_to && slotTime) {
@@ -141,7 +167,12 @@ const ruleMatchesContext = (rule, { targetType, targetId, date, slot }) => {
 
   if (rule.specific_date && bookingDate !== rule.specific_date) return false;
   if (Array.isArray(rule.specific_dates) && rule.specific_dates.length) {
-    if (!rule.specific_dates.some((d) => dayjs(d).format('YYYY-MM-DD') === bookingDate)) return false;
+    if (
+      !rule.specific_dates.some(
+        (d) => dayjs(d).format('YYYY-MM-DD') === bookingDate,
+      )
+    )
+      return false;
   }
   if (rule.date_from && bookingDate < rule.date_from) return false;
   if (rule.date_to && bookingDate > rule.date_to) return false;
@@ -154,13 +185,21 @@ const ruleMatchesContext = (rule, { targetType, targetId, date, slot }) => {
 const computeDiscountFromRule = (offer = {}, rule = null, basePrice = 0) => {
   const unit = Number(basePrice);
   if (!unit || unit <= 0) return 0;
-  let discountType = rule?.rule_discount_type || offer.discount_type || (offer.discount_percent ? 'percent' : null);
-  let discountValue = rule?.rule_discount_value ?? offer.discount_value ?? offer.discount_percent ?? 0;
+  let discountType =
+    rule?.rule_discount_type ||
+    offer.discount_type ||
+    (offer.discount_percent ? 'percent' : null);
+  let discountValue =
+    rule?.rule_discount_value ??
+    offer.discount_value ??
+    offer.discount_percent ??
+    0;
   if (!discountType || !discountValue) return 0;
   discountType = String(discountType).toLowerCase();
-  let discount = discountType === 'amount'
-    ? Number(discountValue)
-    : (Number(discountValue) / 100) * unit;
+  let discount =
+    discountType === 'amount'
+      ? Number(discountValue)
+      : (Number(discountValue) / 100) * unit;
   if (Number.isFinite(Number(offer.max_discount))) {
     discount = Math.min(discount, Number(offer.max_discount));
   }
@@ -168,14 +207,23 @@ const computeDiscountFromRule = (offer = {}, rule = null, basePrice = 0) => {
   return Math.max(0, discount);
 };
 
-const findBestOfferForSelection = (offers = [], { targetType, targetId, date, slot, basePrice }) => {
-  if (!Array.isArray(offers) || !offers.length || !basePrice || !targetId) return null;
+const findBestOfferForSelection = (
+  offers = [],
+  { targetType, targetId, date, slot, basePrice },
+) => {
+  if (!Array.isArray(offers) || !offers.length || !basePrice || !targetId)
+    return null;
   let best = null;
 
   offers.forEach((offer) => {
-    const rules = Array.isArray(offer.rules) && offer.rules.length ? offer.rules : [null];
+    const rules =
+      Array.isArray(offer.rules) && offer.rules.length ? offer.rules : [null];
     rules.forEach((rule) => {
-      if (rule && !ruleMatchesContext(rule, { targetType, targetId, date, slot })) return;
+      if (
+        rule &&
+        !ruleMatchesContext(rule, { targetType, targetId, date, slot })
+      )
+        return;
       const discount = computeDiscountFromRule(offer, rule, basePrice);
       if (!discount) return;
       const finalPrice = Math.max(0, basePrice - discount);
@@ -193,6 +241,32 @@ const findBestOfferForSelection = (offers = [], { targetType, targetId, date, sl
   return best;
 };
 
+// Slot availability (1 hour buffer for today)
+const isSlotAvailable = (slot, selectedDate) => {
+  if (!slot || !selectedDate) return true;
+
+  const today = dayjs().format('YYYY-MM-DD');
+  const slotDate = dayjs(selectedDate).format('YYYY-MM-DD');
+
+  if (slotDate > today) return true;
+
+  if (slotDate === today) {
+    const now = dayjs();
+    const slotTime = slot.start_time || slot.time || null;
+    if (!slotTime) return true;
+
+    const [hours, minutes] = slotTime.split(':').map(Number);
+    const slotMinutes = (hours || 0) * 60 + (minutes || 0);
+    const currentMinutes = now.hour() * 60 + now.minute();
+    const minimumMinutes = currentMinutes + 60;
+    return slotMinutes >= minimumMinutes;
+  }
+
+  return false;
+};
+
+/* ================= Component ================= */
+
 export default function AttractionDetails() {
   const { id: idParam } = useParams();
   const navigate = useNavigate();
@@ -203,17 +277,37 @@ export default function AttractionDetails() {
     return idParam;
   }, [idParam]);
 
-  const [details, setDetails] = React.useState({ status: 'idle', data: null, error: null });
+  const [details, setDetails] = React.useState({
+    status: 'idle',
+    data: null,
+    error: null,
+  });
   const [date, setDate] = React.useState(todayYMD());
-  const [slots, setSlots] = React.useState({ status: 'idle', items: [], error: null });
+  const [slots, setSlots] = React.useState({
+    status: 'idle',
+    items: [],
+    error: null,
+  });
   const [slotKey, setSlotKey] = React.useState('');
   const [qty, setQty] = React.useState(1);
-  const [linkedGallery, setLinkedGallery] = React.useState({ status: 'idle', items: [], error: null });
-  const [offers, setOffers] = React.useState({ status: 'idle', items: [], error: null });
+  const [linkedGallery, setLinkedGallery] = React.useState({
+    status: 'idle',
+    items: [],
+    error: null,
+  });
+  const [offers, setOffers] = React.useState({
+    status: 'idle',
+    items: [],
+    error: null,
+  });
 
   React.useEffect(() => {
     if (!attrId) {
-      setDetails({ status: 'failed', data: null, error: 'Invalid attraction id' });
+      setDetails({
+        status: 'failed',
+        data: null,
+        error: 'Invalid attraction id',
+      });
     }
   }, [attrId]);
 
@@ -232,21 +326,34 @@ export default function AttractionDetails() {
     (async () => {
       try {
         const res = await api.get(endpoints.gallery.list(), {
-          params: { active: true, target_type: 'attraction', target_ref_id: targetId, limit: 12 }
+          params: {
+            active: true,
+            target_type: 'attraction',
+            target_ref_id: targetId,
+            limit: 12,
+          },
         });
         if (canceled) return;
-        const items = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
+        const items = Array.isArray(res?.data)
+          ? res.data
+          : Array.isArray(res)
+          ? res
+          : [];
         setLinkedGallery({ status: 'succeeded', items, error: null });
       } catch (err) {
         if (canceled) return;
-        setLinkedGallery({ status: 'failed', items: [], error: err?.message || 'Failed to load gallery' });
+        setLinkedGallery({
+          status: 'failed',
+          items: [],
+          error: err?.message || 'Failed to load gallery',
+        });
       }
     })();
     const cancel = () => {
       canceled = true;
     };
     return cancel;
-  }, [attrId]);
+  }, []);
 
   React.useEffect(() => {
     if (!numericAttrId) {
@@ -263,12 +370,18 @@ export default function AttractionDetails() {
     const ac = new AbortController();
     (async () => {
       try {
-        const res = await api.get(endpoints.attractions.byId(attrId), { signal: ac.signal });
+        const res = await api.get(endpoints.attractions.byId(attrId), {
+          signal: ac.signal,
+        });
         const data = res?.attraction || res || null;
         setDetails({ status: 'succeeded', data, error: null });
       } catch (err) {
         if (err?.canceled) return;
-        setDetails({ status: 'failed', data: null, error: err?.message || 'Failed to load attraction' });
+        setDetails({
+          status: 'failed',
+          data: null,
+          error: err?.message || 'Failed to load attraction',
+        });
       }
     })();
     return () => ac.abort();
@@ -281,36 +394,29 @@ export default function AttractionDetails() {
     try {
       const res = await api.get(endpoints.slots.list(), {
         params: { attraction_id: attrId, date: toYMD(date) },
-        signal: ac.signal
+        signal: ac.signal,
       });
-      const list = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
+      const list = Array.isArray(res?.data)
+        ? res.data
+        : Array.isArray(res)
+        ? res
+        : [];
       setSlots({ status: 'succeeded', items: list, error: null });
+
+      // auto select first available slot
+      const firstAvailable =
+        list.find((s) => isSlotAvailable(s, date)) || list[0] || null;
+      setSlotKey(firstAvailable ? getSlotKey(firstAvailable, 0) : '');
     } catch (err) {
       if (err?.canceled) return;
-      setSlots({ status: 'failed', items: [], error: err?.message || 'Failed to load slots' });
+      setSlots({
+        status: 'failed',
+        items: [],
+        error: err?.message || 'Failed to load slots',
+      });
     }
     return () => ac.abort();
   }, [attrId, date]);
-
-  React.useEffect(() => {
-    if (!attrId || offers.status === 'loading') return;
-    let cancelled = false;
-    setOffers((s) => ({ ...s, status: 'loading', error: null }));
-    (async () => {
-      try {
-        const res = await api.get(endpoints.offers.list(), { params: { active: true, target_type: 'attraction', target_id: attrId } });
-        if (cancelled) return;
-        const list = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
-        setOffers({ status: 'succeeded', items: list, error: null });
-      } catch (err) {
-        if (cancelled) return;
-        setOffers({ status: 'failed', items: [], error: err?.message || 'Failed to load offers' });
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [attrId, offers.status]);
 
   React.useEffect(() => {
     if (attrId && date) {
@@ -321,13 +427,76 @@ export default function AttractionDetails() {
     }
   }, [attrId, date, fetchSlots]);
 
+  React.useEffect(() => {
+    if (!attrId || offers.status === 'loading') return;
+    let cancelled = false;
+    setOffers((s) => ({ ...s, status: 'loading', error: null }));
+    (async () => {
+      try {
+        const res = await api.get(endpoints.offers.list(), {
+          params: {
+            active: true,
+            target_type: 'attraction',
+            target_id: attrId,
+          },
+        });
+        if (cancelled) return;
+        const list = Array.isArray(res?.data)
+          ? res.data
+          : Array.isArray(res)
+          ? res
+          : [];
+        setOffers({ status: 'succeeded', items: list, error: null });
+      } catch (err) {
+        if (cancelled) return;
+        setOffers({
+          status: 'failed',
+          items: [],
+          error: err?.message || 'Failed to load offers',
+        });
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [attrId, offers.status]);
+
   const a = details.data;
   const title = a?.name || a?.title || 'Attraction';
+
+  // hero image: prefer desktop-style fields from DB
+  const placeholderDesktop = `https://picsum.photos/seed/attr${attrId}/1920/800`;
+  const placeholderMobile = `https://picsum.photos/seed/attr${attrId}/800/600`;
+
+  const [isDesktop, setIsDesktop] = React.useState(
+    typeof window !== 'undefined' ? window.innerWidth >= 1024 : false,
+  );
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const handleResize = () => setIsDesktop(window.innerWidth >= 1024);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const coverDesktop = imgSrc(
+    a?.desktop_image_url ||
+      a?.hero_image ||
+      a?.banner_image ||
+      a?.image_web ||
+      a?.image_url ||
+      a,
+    placeholderDesktop,
+  );
+  const coverMobile = imgSrc(
+    a?.mobile_image || a?.image_mobile || a?.image_url || a,
+    placeholderMobile,
+  );
+  const cover = isDesktop ? coverDesktop : coverMobile;
+
   const hasLinkedGallery = linkedGallery.items.length > 0;
-  const cover = imgSrc(a, `https://picsum.photos/seed/attr${attrId}/1200/600`);
 
   const selectedSlot = React.useMemo(() => {
-    for (let i = 0; i < slots.items.length; i++) {
+    for (let i = 0; i < slots.items.length; i += 1) {
       const s = slots.items[i];
       if (getSlotKey(s, i) === slotKey) return s;
     }
@@ -346,17 +515,29 @@ export default function AttractionDetails() {
     ? getSlotUnitPrice(selectedSlot, fallbackUnitPrice)
     : fallbackUnitPrice;
 
-  const baseUnitPrice = Number(slotPricing.base_price ?? computedBaseUnit ?? 0);
-  const unitBeforeOffer = Number(slotPricing.final_price ?? computedUnit ?? 0);
+  const baseUnitPrice = Number(
+    slotPricing.base_price ?? computedBaseUnit ?? 0,
+  );
+  const unitBeforeOffer = Number(
+    slotPricing.final_price ?? computedUnit ?? 0,
+  );
 
-  const hasBackendOffer = Boolean(slotOffer) || (baseUnitPrice > 0 && unitBeforeOffer > 0 && unitBeforeOffer < baseUnitPrice && slotPricing.final_price != null);
-  const backendDiscountPercent = hasBackendOffer && baseUnitPrice > 0
-    ? Math.round(((baseUnitPrice - unitBeforeOffer) / baseUnitPrice) * 100)
-    : 0;
+  const hasBackendOffer =
+    Boolean(slotOffer) ||
+    (baseUnitPrice > 0 &&
+      unitBeforeOffer > 0 &&
+      unitBeforeOffer < baseUnitPrice &&
+      slotPricing.final_price != null);
+  const backendDiscountPercent =
+    hasBackendOffer && baseUnitPrice > 0
+      ? Math.round(((baseUnitPrice - unitBeforeOffer) / baseUnitPrice) * 100)
+      : 0;
 
   const qtyNumber = Math.max(1, Number(qty) || 1);
+
   const bestOffer = React.useMemo(() => {
-    if (!selectedSlot || !a || !offers.items.length || hasBackendOffer) return null;
+    if (!selectedSlot || !a || !offers.items.length || hasBackendOffer)
+      return null;
     const basePrice = unitBeforeOffer || baseUnitPrice || 0;
     if (!basePrice) return null;
     const attractionId = getAttrId(a);
@@ -367,7 +548,15 @@ export default function AttractionDetails() {
       slot: selectedSlot,
       basePrice,
     });
-  }, [a, selectedSlot, offers.items, unitBeforeOffer, baseUnitPrice, date, hasBackendOffer]);
+  }, [
+    a,
+    selectedSlot,
+    offers.items,
+    unitBeforeOffer,
+    baseUnitPrice,
+    date,
+    hasBackendOffer,
+  ]);
 
   const effectiveUnitPrice = hasBackendOffer
     ? unitBeforeOffer || baseUnitPrice
@@ -377,34 +566,63 @@ export default function AttractionDetails() {
 
   const appliedOffer = hasBackendOffer ? slotOffer : bestOffer?.offer || null;
   const offerDescription = appliedOffer?.description || '';
+
   const discountPercent = hasBackendOffer
     ? backendDiscountPercent
     : bestOffer && baseUnitPrice > 0
-    ? Math.round(((baseUnitPrice - effectiveUnitPrice) / baseUnitPrice) * 100)
-    : 0;
-  const hasDiscount = baseUnitPrice > 0 && effectiveUnitPrice > 0 && effectiveUnitPrice < baseUnitPrice;
+    ? Math.round(
+        ((baseUnitPrice - effectiveUnitPrice) / baseUnitPrice) * 100,
+      )
+    : getDiscountPercent(a) || 0;
+
+  const hasDiscount =
+    baseUnitPrice > 0 &&
+    effectiveUnitPrice > 0 &&
+    effectiveUnitPrice < baseUnitPrice;
 
   const totalPrice = Number(effectiveUnitPrice || 0) * qtyNumber;
 
   const onBookNow = () => {
     if (!a || !date || !selectedSlot || !qty) return;
-    const slotId = selectedSlot?.id ?? selectedSlot?._id ?? selectedSlot?.slot_id;
+    const slotId =
+      selectedSlot?.id ?? selectedSlot?._id ?? selectedSlot?.slot_id;
     if (!slotId) return;
 
     const aId = getAttrId(a);
     const sanitizedQty = qtyNumber;
     dispatch(
       addCartItem({
+        itemType: 'attraction',
         attractionId: aId,
         attraction: a,
         date: toYMD(date),
+        booking_date: toYMD(date),
+        booking_time:
+          selectedSlot?.start_time ||
+          selectedSlot?.startTime ||
+          selectedSlot?.slot_start_time ||
+          null,
         slotId,
         slot: selectedSlot,
         qty: sanitizedQty,
-        unitPrice: Number(effectiveUnitPrice ?? selectedSlot?.price ?? baseUnitPrice),
+        unitPrice: Number(
+          effectiveUnitPrice ??
+            selectedSlot?.price ??
+            baseUnitPrice,
+        ),
+        title: a?.title || a?.name || `Attraction #${aId}`,
+        slotLabel: getSlotLabel(selectedSlot),
+        dateLabel: dayjs(date).format('DD MMM YYYY'),
+        meta: {
+          title: a?.title || a?.name || `Attraction #${aId}`,
+          start_time: selectedSlot?.start_time,
+          end_time: selectedSlot?.end_time,
+          capacity: selectedSlot?.capacity,
+          available: selectedSlot?.available,
+        },
         offer_id: appliedOffer?.offer_id,
         offer_rule_id: appliedOffer?.rule_id || bestOffer?.rule?.rule_id,
-      })
+      }),
     );
     dispatch(setStep(1));
     const params = new URLSearchParams({
@@ -412,13 +630,54 @@ export default function AttractionDetails() {
       attraction_id: String(aId),
       date: toYMD(date),
       slot: slotKey,
-      qty: String(sanitizedQty)
+      qty: String(sanitizedQty),
     });
     navigate(`/booking?${params.toString()}`);
   };
 
+  const isInitialLoading = details.status === 'loading' && !a;
+
+  /* ============ Render ============ */
+
+  if (isInitialLoading) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center bg-white">
+        <Loader />
+      </div>
+    );
+  }
+
+  if (details.status === 'failed') {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center bg-white px-4">
+        <div className="max-w-lg w-full">
+          <ErrorState message={details.error || 'Attraction not found'} />
+        </div>
+      </div>
+    );
+  }
+
+  if (!a) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center bg-white px-4">
+        <div className="max-w-lg w-full">
+          <ErrorState message="Attraction not found" />
+        </div>
+      </div>
+    );
+  }
+
+  const shortDescription = a?.short_description || a?.subtitle || '';
+
+  const selectedSlotForBar = selectedSlot;
+  const barPrice =
+    selectedSlotForBar && effectiveUnitPrice
+      ? effectiveUnitPrice * qtyNumber
+      : null;
+
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gray-50 font-sans">
+      {/* HERO – desktop image from DB */}
       <section className="relative h-[42vh] md:h-[56vh] bg-gray-200">
         {details.status === 'loading' ? (
           <div className="absolute inset-0 flex items-center justify-center">
@@ -426,193 +685,365 @@ export default function AttractionDetails() {
           </div>
         ) : cover ? (
           <>
-            <img src={cover} alt="snowcity" loading="lazy" className="w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+            <img
+              src={cover}
+              alt={title}
+              loading="lazy"
+              className="w-full h-full object-cover"
+              draggable="false"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
             <div className="absolute bottom-6 left-0 right-0 px-4">
               <div className="max-w-6xl mx-auto">
-                <h1 className="text-2xl md:text-4xl font-bold text-white drop-shadow">{title}</h1>
+                <h1 className="text-3xl md:text-5xl font-bold text-white drop-shadow">
+                  {title}
+                </h1>
+                {shortDescription ? (
+                  <p className="text-gray-200 text-sm md:text-base max-w-2xl mt-2">
+                    {shortDescription}
+                  </p>
+                ) : null}
               </div>
             </div>
           </>
         ) : null}
       </section>
 
-      <section className="max-w-6xl mx-auto px-4 py-8 grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div className="md:col-span-2">
-          {details.status === 'failed' ? (
-            <ErrorState message={details.error} />
-          ) : (
-            <>
-              {a?.short_description ? (
-                <p className="text-gray-700 text-lg">{a.short_description}</p>
-              ) : null}
-
-              {a?.description ? (
-                <div className="mt-8">
-                  <h2 className="text-xl font-semibold mb-3">About</h2>
-                  <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: a.description }} />
-                </div>
-              ) : null}
-
-              {linkedGallery.status === 'loading' && !linkedGallery.items.length ? (
-                <div className="mt-8"><Loader /></div>
-              ) : null}
-              {linkedGallery.status === 'failed' ? (
-                <div className="mt-8">
-                  <ErrorState message={linkedGallery.error} onRetry={() => numericAttrId && loadLinkedGallery(numericAttrId)} />
-                </div>
-              ) : null}
-              {linkedGallery.items.length ? (
-                <div className="mt-8">
-                  <div className="flex items-center justify-between mb-3">
-                    <h2 className="text-xl font-semibold">Gallery</h2>
-                    <span className="text-sm text-gray-500">#{linkedGallery.items[0]?.target_name || title}</span>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                    {linkedGallery.items.map((item) => {
-                      const isVideo = String(item.media_type || '').toLowerCase() === 'video';
-                      const mediaUrl = isVideo ? item.url : imgSrc(item);
-                      if (!mediaUrl) return null;
-                      return (
-                        <figure key={`linked-media-${item.gallery_item_id}`} className="relative rounded-xl overflow-hidden border shadow-sm bg-white">
-                          {isVideo ? (
-                            <video className="w-full h-48 object-cover" src={mediaUrl} controls preload="metadata" poster={imgSrc(item.thumbnail)} />
-                          ) : (
-                            <img src={mediaUrl} alt={item.title || title} className="w-full h-48 object-cover" loading="lazy" />
-                          )}
-                          {(item.title || item.description) ? (
-                            <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3 text-xs text-white">
-                              {item.title ? <div className="font-medium text-sm">{item.title}</div> : null}
-                              {item.description ? <div className="opacity-80 mt-1">{item.description}</div> : null}
-                            </figcaption>
-                          ) : null}
-                        </figure>
-                      );
-                    })}
-                  </div>
-                </div>
-              ) : null}
-            </>
-          )}
-        </div>
-
-        <aside className="md:col-span-1">
-          <div className="rounded-2xl border shadow-sm bg-white p-4 sticky top-24">
-            <div className="flex items-baseline justify-between">
-              <div className="flex flex-col gap-1 flex-1">
-                <div>
-                  <div className="text-[11px] uppercase tracking-wide text-gray-500 font-semibold">Base price</div>
-                  <div className="text-lg font-semibold text-gray-900">{formatCurrency(baseUnitPrice || effectiveUnitPrice)}</div>
-                </div>
-                {hasDiscount ? (
-                  <div>
-                    <div className="text-[11px] uppercase tracking-wide text-gray-500">Offer price</div>
-                    <div className="text-2xl font-bold text-green-600">{formatCurrency(effectiveUnitPrice)}</div>
-                    {offerDescription ? (
-                      <p className="text-xs text-gray-500 mt-1 line-clamp-2">{offerDescription}</p>
-                    ) : null}
-                  </div>
-                ) : (
-                  <p className="text-xs text-gray-500">Per person • taxes included</p>
-                )}
-                {appliedOffer ? (
-                  <span className="mt-1 text-xs font-semibold text-green-600 flex items-center gap-1">
-                    <span>{appliedOffer.rule_type === 'happy_hour' ? 'Happy Hour' : 'Offer'} applied:</span>
-                    <span>{appliedOffer.title || 'Special offer'}</span>
-                  </span>
-                ) : null}
-              </div>
-              <div className="text-right">
-                <div className="text-xs text-gray-500">per ticket</div>
-                {hasDiscount ? (
-                  <div className="text-xs font-semibold text-green-600">Save {discountPercent}%</div>
-                ) : null}
-              </div>
+      {/* INLINE BOOKING BAR (A1) */}
+      <section className="bg-white/90 backdrop-blur border-b border-gray-100 shadow-sm">
+        <div className="max-w-6xl mx-auto px-4 py-4 md:py-5">
+          <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-4">
+            <div className="flex-1">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500 mb-1">
+                Book this experience
+              </p>
+              <p className="text-sm text-gray-600">
+                Choose your date, time slot & tickets to continue to checkout.
+              </p>
             </div>
 
-            <div className="mt-3 rounded-2xl border bg-gray-50 px-3 py-2 text-sm">
-              <div className="flex items-center justify-between text-gray-600">
-                <span>Subtotal</span>
-                <span>
-                  {qtyNumber} × {formatCurrency(effectiveUnitPrice)}
-                </span>
-              </div>
-              <div className="mt-1 flex items-center justify-between text-gray-900 font-semibold">
-                <span>Total</span>
-                <span>{formatCurrency(totalPrice)}</span>
-              </div>
-            </div>
-
-            <div className="mt-4 space-y-4">
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">Date</label>
+            <div className="flex flex-col sm:flex-row gap-3 md:gap-4 md:flex-none">
+              {/* Date */}
+              <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 sm:px-4 sm:py-2.5">
+                <span className="text-xs text-gray-500">Date</span>
                 <input
                   type="date"
-                  className="w-full rounded-md border px-3 py-2"
+                  className="bg-transparent border-none outline-none text-sm font-medium text-gray-900"
                   min={todayYMD()}
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
                 />
               </div>
 
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">Slot</label>
+              {/* Slot */}
+              <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 sm:px-4 sm:py-2.5 min-w-[190px]">
+                <span className="text-xs text-gray-500">Slot</span>
                 {slots.status === 'loading' ? (
-                  <Loader className="py-4" />
-                ) : slots.status === 'failed' ? (
-                  <ErrorState message={slots.error} />
-                ) : slots.items.length ? (
-                  <div className="flex flex-wrap gap-2">
-                    {slots.items.map((s, i) => {
-                      const sid = getSlotKey(s, i);
-                      const selected = slotKey === sid;
-                      const disabled = s?.available === 0 || s?.capacity === 0;
-                      return (
-                        <button
-                          key={`slot-${sid}`}
-                          type="button"
-                          disabled={disabled}
-                          onClick={() => setSlotKey(sid)}
-                          className={`px-3 py-2 rounded-full border text-sm ${
-                            disabled
-                              ? 'opacity-50 cursor-not-allowed'
-                              : selected
-                              ? 'bg-blue-600 text-white border-blue-600'
-                              : 'hover:bg-gray-50'
-                          }`}
-                          title={getSlotLabel(s)}
-                        >
-                          {getSlotLabel(s)}
-                        </button>
-                      );
-                    })}
-                  </div>
+                  <span className="text-xs text-gray-500">Loading…</span>
                 ) : (
-                  <div className="text-sm text-gray-500">No slots available for this date.</div>
+                  <select
+                    className="flex-1 bg-transparent border-none outline-none text-sm font-medium text-gray-900 truncate"
+                    value={slotKey}
+                    onChange={(e) => setSlotKey(e.target.value)}
+                    disabled={
+                      slots.status === 'loading' || !slots.items.length
+                    }
+                  >
+                    {!slots.items.length ? (
+                      <option>No slots</option>
+                    ) : (
+                      <>
+                        {!slotKey && <option value="">Select slot</option>}
+                        {slots.items
+                          .filter((s) => isSlotAvailable(s, date))
+                          .map((s, i) => {
+                            const sid = getSlotKey(s, i);
+                            const disabled =
+                              s?.available === 0 || s?.capacity === 0;
+                            const pricingBase =
+                              getSlotUnitPrice(s, fallbackUnitPrice) ||
+                              fallbackUnitPrice ||
+                              0;
+                            return (
+                              <option
+                                key={sid}
+                                value={sid}
+                                disabled={disabled}
+                              >
+                                {getSlotLabel(s)}
+                                {pricingBase
+                                  ? ` • ${formatCurrency(pricingBase)}`
+                                  : ''}
+                                {disabled ? ' — Unavailable' : ''}
+                              </option>
+                            );
+                          })}
+                      </>
+                    )}
+                  </select>
                 )}
               </div>
 
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">Quantity</label>
-                <div className="inline-flex items-center rounded-full border overflow-hidden">
-                  <button type="button" className="px-3 py-2 hover:bg-gray-50" onClick={() => setQty((q) => Math.max(1, Number(q) - 1))}>-</button>
-                  <input type="number" min={1} className="w-16 text-center py-2" value={qty} onChange={(e) => setQty(Math.max(1, Number(e.target.value) || 1))} />
-                  <button type="button" className="px-3 py-2 hover:bg-gray-50" onClick={() => setQty((q) => Math.max(1, Number(q) + 1))}>+</button>
+              {/* Qty */}
+              <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 sm:px-4 sm:py-2.5">
+                <span className="text-xs text-gray-500">Qty</span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    className="w-7 h-7 text-sm rounded-full border border-gray-300 flex items-center justify-center"
+                    onClick={() =>
+                      setQty((prev) =>
+                        Math.max(1, Number(prev || 1) - 1),
+                      )
+                    }
+                  >
+                    -
+                  </button>
+                  <input
+                    type="number"
+                    min={1}
+                    value={qty}
+                    onChange={(e) =>
+                      setQty(Math.max(1, Number(e.target.value) || 1))
+                    }
+                    className="w-12 bg-transparent border-none text-center text-sm font-semibold outline-none"
+                  />
+                  <button
+                    type="button"
+                    className="w-7 h-7 text-sm rounded-full border border-gray-300 flex items-center justify-center"
+                    onClick={() =>
+                      setQty((prev) =>
+                        Math.max(1, Number(prev || 1) + 1),
+                      )
+                    }
+                  >
+                    +
+                  </button>
                 </div>
               </div>
 
+              {/* Book button */}
               <button
-                className="w-full rounded-full bg-blue-600 text-white px-5 py-2 text-sm hover:bg-blue-700 disabled:opacity-50"
+                type="button"
+                className="w-full sm:w-auto inline-flex items-center justify-center rounded-xl bg-blue-600 text-white px-6 py-2.5 text-sm font-semibold shadow-md hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed"
+                disabled={!selectedSlotForBar || !effectiveUnitPrice}
                 onClick={onBookNow}
-                disabled={!a || !date || !slotKey || !qty}
               >
-                Book Now
+                {barPrice ? (
+                  <>
+                    Book Now •{' '}
+                    <span className="ml-1 rupee">
+                      {formatCurrency(barPrice)}
+                    </span>
+                  </>
+                ) : (
+                  'Book Now'
+                )}
               </button>
+            </div>
+          </div>
+        </div>
+      </section>
 
-              <div className="text-xs text-gray-500 text-center">
-                We’ll add this to your cart so you can add more attractions before checkout.
+      {/* MAIN CONTENT */}
+      <section className="max-w-6xl mx-auto px-4 py-8 md:py-12 grid grid-cols-1 lg:grid-cols-3 gap-10 md:gap-12">
+        {/* LEFT CONTENT */}
+        <div className="lg:col-span-2 space-y-8">
+          {details.status === 'failed' ? (
+            <ErrorState message={details.error} />
+          ) : (
+            <>
+              {/* Short description */}
+              {shortDescription ? (
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 md:p-6">
+                  <p className="text-gray-700 text-base md:text-lg">
+                    {shortDescription}
+                  </p>
+                </div>
+              ) : null}
+
+              {/* Full description */}
+              {a?.description ? (
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 md:p-6">
+                  <h2 className="text-xl font-semibold text-gray-900 mb-3">
+                    About this attraction
+                  </h2>
+                  <div
+                    className="prose prose-sm md:prose max-w-none text-gray-700 leading-relaxed"
+                    style={{ textAlign: 'left' }}
+                    dangerouslySetInnerHTML={{ __html: a.description }}
+                  />
+                </div>
+              ) : null}
+
+              {/* Gallery */}
+              {linkedGallery.status === 'loading' &&
+              !linkedGallery.items.length ? (
+                <div className="mt-4">
+                  <Loader />
+                </div>
+              ) : null}
+              {linkedGallery.status === 'failed' ? (
+                <div className="mt-4">
+                  <ErrorState
+                    message={linkedGallery.error}
+                    onRetry={() =>
+                      numericAttrId && loadLinkedGallery(numericAttrId)
+                    }
+                  />
+                </div>
+              ) : null}
+              {hasLinkedGallery && (
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 md:p-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <h2 className="text-lg font-semibold text-gray-900">
+                      Gallery
+                    </h2>
+                    <span className="text-xs text-gray-500">
+                      #{linkedGallery.items[0]?.target_name || title}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                    {linkedGallery.items.map((item) => {
+                      const isVideo =
+                        String(item.media_type || '').toLowerCase() ===
+                        'video';
+                      const mediaUrl = isVideo ? item.url : imgSrc(item);
+                      if (!mediaUrl) return null;
+                      return (
+                        <figure
+                          key={`linked-media-${item.gallery_item_id}`}
+                          className="relative rounded-xl overflow-hidden border shadow-sm bg-white"
+                        >
+                          {isVideo ? (
+                            <video
+                              className="w-full h-48 object-cover"
+                              src={mediaUrl}
+                              controls
+                              preload="metadata"
+                              poster={imgSrc(item.thumbnail)}
+                            />
+                          ) : (
+                            <img
+                              src={mediaUrl}
+                              alt={item.title || title}
+                              className="w-full h-48 object-cover"
+                              loading="lazy"
+                            />
+                          )}
+                          {(item.title || item.description) && (
+                            <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3 text-xs text-white">
+                              {item.title ? (
+                                <div className="font-medium text-sm">
+                                  {item.title}
+                                </div>
+                              ) : null}
+                              {item.description ? (
+                                <div className="opacity-80 mt-1">
+                                  {item.description}
+                                </div>
+                              ) : null}
+                            </figcaption>
+                          )}
+                        </figure>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
+        {/* RIGHT SIDEBAR */}
+        <aside className="lg:col-span-1">
+          <div className="rounded-3xl border shadow-lg bg-white p-6 sticky top-24 space-y-6">
+            {/* Price summary */}
+            <div className="flex items-baseline justify-between">
+              <div className="flex flex-col gap-1 flex-1">
+                <div>
+                  <div className="text-[11px] uppercase tracking-wide text-gray-500 font-semibold">
+                    Base price
+                  </div>
+                  <div className="text-lg font-semibold text-gray-900 rupee">
+                    {formatCurrency(baseUnitPrice || effectiveUnitPrice || 0)}
+                  </div>
+                </div>
+                {hasDiscount ? (
+                  <div>
+                    <div className="text-[11px] uppercase tracking-wide text-gray-500">
+                      Offer price
+                    </div>
+                    <div className="text-2xl font-bold text-emerald-600 rupee">
+                      {formatCurrency(effectiveUnitPrice || 0)}
+                    </div>
+                    {offerDescription ? (
+                      <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                        {offerDescription}
+                      </p>
+                    ) : null}
+                  </div>
+                ) : (
+                  <p className="text-xs text-gray-500">
+                    Per person • taxes included
+                  </p>
+                )}
+                {appliedOffer ? (
+                  <span className="mt-1 text-xs font-semibold text-emerald-600 flex items-center gap-1">
+                    <span>
+                      {appliedOffer.rule_type === 'happy_hour'
+                        ? 'Happy Hour'
+                        : 'Offer'}{' '}
+                      applied:
+                    </span>
+                    <span>{appliedOffer.title || 'Special offer'}</span>
+                  </span>
+                ) : null}
+              </div>
+              <div className="text-right">
+                <div className="text-xs text-gray-500">per ticket</div>
+                {hasDiscount && (
+                  <div className="text-xs font-semibold text-emerald-600">
+                    Save {discountPercent}%
+                  </div>
+                )}
               </div>
             </div>
+
+            {/* Subtotal / total */}
+            <div className="mt-3 rounded-2xl border bg-gray-50 px-3 py-2 text-sm">
+              <div className="flex items-center justify-between text-gray-600">
+                <span>Subtotal</span>
+                <span className="rupee">
+                  {qtyNumber} × {formatCurrency(effectiveUnitPrice || 0)}
+                </span>
+              </div>
+              <div className="mt-1 flex items-center justify-between text-gray-900 font-semibold">
+                <span>Total</span>
+                <span className="rupee">
+                  {formatCurrency(totalPrice || 0)}
+                </span>
+              </div>
+            </div>
+
+            {/* Helper links */}
+            <div className="space-y-3 text-sm">
+              <p className="text-gray-600">
+                Slots and pricing may vary by date and time. Use the booking
+                bar above to choose your preferred session.
+              </p>
+              <Link
+                to="/attractions"
+                className="inline-flex items-center justify-center rounded-full border border-blue-100 text-blue-600 px-5 py-2.5 text-sm font-medium hover:bg-blue-50"
+              >
+                Explore other attractions
+              </Link>
+            </div>
+
+            <p className="text-[11px] text-gray-400 text-center">
+              We’ll add this to your cart so you can add more attractions before
+              checkout.
+            </p>
           </div>
         </aside>
       </section>

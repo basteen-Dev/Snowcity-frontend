@@ -12,7 +12,7 @@ export default function AttractionForm() {
   const [state, setState] = React.useState({
     status: isEdit ? 'loading' : 'idle',
     error: null,
-    form: { title: '', image_url: '', base_price: 0, active: true, description: '' }
+    form: { title: '', image_url: '', desktop_image_url: '', base_price: 0, active: true, description: '' }
   });
 
   React.useEffect(() => {
@@ -27,6 +27,7 @@ export default function AttractionForm() {
           form: {
             title: a.title || '',
             image_url: a.image_url || '',
+            desktop_image_url: a.desktop_image_url || '',
             base_price: a.base_price || 0,
             active: !!a.active,
             description: a.description || ''
@@ -63,6 +64,9 @@ export default function AttractionForm() {
         </div>
         <div className="md:col-span-2">
           <ImageUploader label="Image" value={f.image_url} onChange={(url) => setState((s) => ({ ...s, form: { ...s.form, image_url: url } }))} requiredPerm="uploads:write" />
+        </div>
+        <div className="md:col-span-2">
+          <ImageUploader label="Desktop Image (optional)" value={f.desktop_image_url} onChange={(url) => setState((s) => ({ ...s, form: { ...s.form, desktop_image_url: url } }))} requiredPerm="uploads:write" />
         </div>
         <div className="md:col-span-2">
           <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Description (HTML)</label>

@@ -25,6 +25,8 @@ import {
   ChevronDown,
   DollarSign,
   Calendar,
+  Building2,
+  Eye,
 } from 'lucide-react';
 import PermissionGate from '../common/PermissionGate.jsx';
 
@@ -118,15 +120,53 @@ export default function AdminSidebar({ collapsed, onClose }) {
       },
       {
         key: 'Analytics',
-        label: 'Insights',
+        label: 'Analytics',
         items: [
-          { to: '/admin/analytics/overview', label: 'Overview', icon: BarChart3 },
-          { to: '/admin/analytics/attractions', label: 'Attractions', icon: PieChart },
-          { to: '/admin/analytics/daily', label: 'Daily Bookings', icon: CalendarClock },
-          { to: '/admin/analytics/custom', label: 'Custom Period', icon: TrendingUp },
-          { to: '/admin/analytics/people', label: 'People / Booking', icon: BarChart3 },
-          { to: '/admin/analytics/views', label: 'Scoped Views', icon: SplitSquareHorizontal },
-          { to: '/admin/analytics/split', label: 'Revenue Split', icon: PieChart },
+          {
+            to: '/admin/analytics/overview',
+            label: 'Overview',
+            icon: BarChart3,
+          },
+          {
+            to: '/admin/analytics/attractions',
+            label: 'Attractions',
+            icon: Building2,
+          },
+          {
+            to: '/admin/analytics/daily',
+            label: 'Daily Trend',
+            icon: TrendingUp,
+          },
+          {
+            to: '/admin/analytics/split',
+            label: 'Split Analysis',
+            icon: SplitSquareHorizontal,
+          },
+          {
+            to: '/admin/analytics/custom',
+            label: 'Custom Report',
+            icon: FileText,
+          },
+          {
+            to: '/admin/analytics/people',
+            label: 'People',
+            icon: Users,
+          },
+          {
+            to: '/admin/analytics/views',
+            label: 'Views',
+            icon: Eye,
+          },
+          {
+            to: '/admin/revenue/attractions',
+            label: 'Attraction Revenue',
+            icon: DollarSign,
+          },
+          {
+            to: '/admin/revenue/combos',
+            label: 'Combo Revenue',
+            icon: DollarSign,
+          },
         ],
       },
       {
@@ -134,34 +174,38 @@ export default function AdminSidebar({ collapsed, onClose }) {
         label: 'Bookings',
         items: [
           { to: '/admin/bookings', label: 'All Bookings', icon: CalendarClock },
-          { to: '/admin/catalog/attraction-slots', label: 'Attraction Slots', icon: Clock3 },
-          { to: '/admin/catalog/combo-slots', label: 'Combo Slots', icon: SquareStack },
+          { to: '/admin/bookings/calendar', label: 'Booking Calendar', icon: Calendar },
+          { to: '/admin/bookings/slots', label: 'Time Slots', icon: Clock3 },
         ],
       },
       {
         key: 'Catalog',
         label: 'Catalog',
         items: [
-          { to: '/admin/catalog/attractions', label: 'Attractions', icon: Ticket },
-          { to: '/admin/catalog/combos', label: 'Combos', icon: SquareStack },
-          { to: '/admin/catalog/addons', label: 'Add-ons', icon: Gift },
+          { to: '/admin/catalog/attractions', label: 'Attractions', icon: Gift },
+          { to: '/admin/catalog/combos', label: 'Combos', icon: Boxes },
           { to: '/admin/catalog/offers', label: 'Offers', icon: BadgePercent },
-          { to: '/admin/catalog/gallery', label: 'Gallery', icon: ImageIcon, permsAny: ['gallery:read'] },
           { to: '/admin/catalog/coupons', label: 'Coupons', icon: Ticket },
           { to: '/admin/catalog/banners', label: 'Banners', icon: ImageIcon },
           { to: '/admin/catalog/pages', label: 'Pages', icon: FileText },
           { to: '/admin/catalog/blogs', label: 'Blogs', icon: Newspaper },
         ],
       },
-      {
+      // Only show People section for admins/root/superadmins, hide for subadmins only
+      ...(roles.includes('subadmin') && !roles.includes('admin') && !roles.includes('root') && !roles.includes('superadmin') ? [] : [{
         key: 'AdminManagement',
         label: 'People',
         items: [
           { to: '/admin/users', label: 'Customers', icon: Users },
           { to: '/admin/roles', label: 'Admin Roles', icon: ShieldCheck },
-          ...(canSeeAdminMgmt ? [{ to: '/admin/admins', label: 'Admin Team', icon: UserCog, permsAny: ['admin-management:read'] }] : []),
+          ...(canSeeAdminMgmt
+            ? [
+                { to: '/admin/admins', label: 'Admin Team', icon: UserCog, permsAny: ['admin-management:read'] },
+                { to: '/admin/admins/access', label: 'Grant Access', icon: KeyRound, permsAny: ['admin-management:write', 'admin-management:manage'] },
+              ]
+            : []),
         ],
-      },
+      }]),
     ];
 
     if (navFilter.trim() === '') return baseSections;
