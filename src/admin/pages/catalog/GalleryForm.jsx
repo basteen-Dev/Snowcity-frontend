@@ -80,6 +80,61 @@ export default function GalleryForm() {
     }
   };
 
+  // Bulk upload support
+  const UPLOAD_ENDPOINT = import.meta.env?.VITE_ADMIN_UPLOAD_ENDPOINT || '/api/admin/uploads';
+  const [bulkFiles, setBulkFiles] = React.useState([]);
+  const [bulkPreviews, setBulkPreviews] = React.useState([]);
+  const [bulkStatus, setBulkStatus] = React.useState({ uploading: false, progress: 0, error: null });
+
+  React.useEffect(() => {
+    // create object URLs for previews
+    const urls = (bulkFiles || []).map((f) => ({ name: f.name, url: URL.createObjectURL(f), size: f.size, type: f.type }));
+    setBulkPreviews(urls);
+    return () => urls.forEach((u) => URL.revokeObjectURL(u.url));
+  }, [bulkFiles]);
+
+  const onBulkPick = (e) => {
+    const files = Array.from(e.target.files || []).filter((f) => f && f.type && f.type.startsWith('image/'));
+    setBulkFiles(files);
+    setBulkStatus({ uploading: false, progress: 0, error: null });
+  };
+
+  const removeBulkFile = (idx) => setBulkFiles((cur) => cur.filter((_, i) => i !== idx));
+
+  const uploadAllBulk = async () => {
+    if (!bulkFiles.length) return;
+    setBulkStatus({ uploading: true, progress: 0, error: null });
+    const total = bulkFiles.length;
+    let done = 0;
+    try {
+      for (const f of bulkFiles) {
+        // upload file to configured upload endpoint
+        const res = await adminApi.upload(UPLOAD_ENDPOINT, f);
+        const url = res?.url || res?.secure_url || res?.location || res?.data?.url || '';
+        if (!url) throw new Error('Upload response missing URL for ' + (f.name || 'file'));
+
+        // Create gallery entry for each uploaded URL
+        const payload = {
+          media_type: 'image',
+          url,
+          title: f.name,
+          description: '',
+          active: true,
+          target_type: state.form.target_type || 'none',
+          target_ref_id: state.form.target_type === 'none' ? null : (state.form.target_ref_id || null),
+        };
+        await adminApi.post(A.gallery(), payload);
+        done += 1;
+        setBulkStatus((s) => ({ ...s, progress: Math.round((done / total) * 100) }));
+      }
+      // success: navigate to gallery list
+      setBulkStatus((s) => ({ ...s, uploading: false, progress: 100 }));
+      navigate('/admin/catalog/gallery');
+    } catch (err) {
+      setBulkStatus({ uploading: false, progress: Math.round((done / total) * 100), error: err });
+    }
+  };
+
   if (state.status === 'loading') return <div>Loading…</div>;
   if (state.status === 'failed') return <div className="text-red-600">{state.error?.message || 'Failed to load'}</div>;
 
@@ -107,12 +162,41 @@ export default function GalleryForm() {
 
         <div className="md:col-span-2">
           {f.media_type === 'image' ? (
-            <ImageUploader
-              label="Image"
-              value={f.url}
-              onChange={(url) => onChange({ url })}
-              requiredPerm="uploads:write"
-            />
+            <div>
+              <ImageUploader
+                label="Image"
+                value={f.url}
+                onChange={(url) => onChange({ url })}
+                requiredPerm="uploads:write"
+              />
+
+              {/* Bulk uploader */}
+              <div className="mt-4 border-t pt-4">
+                <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Bulk Upload Images</label>
+                <input type="file" accept="image/*" multiple onChange={onBulkPick} className="text-sm" />
+
+                {bulkPreviews.length ? (
+                  <div className="mt-3 grid grid-cols-3 md:grid-cols-6 gap-2">
+                    {bulkPreviews.map((p, i) => (
+                      <div key={p.url} className="relative group">
+                        <img src={p.url} alt={p.name} className="w-full h-24 object-cover rounded-md border" />
+                        <button type="button" onClick={() => removeBulkFile(i)} className="absolute top-1 right-1 bg-white/80 text-xs rounded-full px-2 py-0.5">Remove</button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="mt-2 text-sm text-gray-500">No files selected for bulk upload.</div>
+                )}
+
+                <div className="mt-3 flex items-center gap-2">
+                  <button type="button" onClick={uploadAllBulk} className="rounded-md bg-blue-600 text-white px-3 py-1.5 text-sm" disabled={bulkStatus.uploading || !bulkFiles.length}>
+                    {bulkStatus.uploading ? `Uploading (${bulkStatus.progress}%)` : 'Upload All'}
+                  </button>
+                  <button type="button" onClick={() => { setBulkFiles([]); setBulkStatus({ uploading: false, progress: 0, error: null }); }} className="rounded-md border px-3 py-1.5 text-sm">Clear</button>
+                  {bulkStatus.error ? <div className="text-sm text-red-600">{bulkStatus.error?.message || 'Upload failed'}</div> : null}
+                </div>
+              </div>
+            </div>
           ) : (
             <>
               <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Video URL</label>

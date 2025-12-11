@@ -183,6 +183,7 @@ export default function AdminSidebar({ collapsed, onClose }) {
         label: 'Catalog',
         items: [
           { to: '/admin/catalog/attractions', label: 'Attractions', icon: Gift },
+          { to: '/admin/catalog/addons', label: 'Add-ons', icon: Gift },
           { to: '/admin/catalog/combos', label: 'Combos', icon: Boxes },
           { to: '/admin/catalog/offers', label: 'Offers', icon: BadgePercent },
           { to: '/admin/catalog/coupons', label: 'Coupons', icon: Ticket },
