@@ -87,5 +87,6 @@ export default function VisitorBlogs() {
         <div className="py-16 text-center text-gray-500">Fresh stories are coming soon. Check back later!</div>
       ) : null}
     </div>
+  </div>
   );
 }

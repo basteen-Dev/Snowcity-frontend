@@ -48,5 +48,6 @@ export default function Contact() {
         <p className="text-gray-600">Bengaluru, Karnataka • +91-99999 99999 • info@snowcity.com</p>
       </div>
     </div>
+  </div>
   );
 }

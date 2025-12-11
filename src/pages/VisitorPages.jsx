@@ -71,5 +71,6 @@ export default function VisitorPages() {
         <div className="py-16 text-center text-gray-500">We&apos;ll be adding visitor information shortly.</div>
       ) : null}
     </div>
+  </div>
   );
 }
