@@ -187,6 +187,7 @@ export default function AdminSidebar({ collapsed, onClose }) {
           { to: '/admin/catalog/offers', label: 'Offers', icon: BadgePercent },
           { to: '/admin/catalog/coupons', label: 'Coupons', icon: Ticket },
           { to: '/admin/catalog/banners', label: 'Banners', icon: ImageIcon },
+          { to: '/admin/catalog/gallery', label: 'Gallery', icon: ImageIcon },
           { to: '/admin/catalog/pages', label: 'Pages', icon: FileText },
           { to: '/admin/catalog/blogs', label: 'Blogs', icon: Newspaper },
         ],
