@@ -26,7 +26,8 @@ export default function VisitorBlogs() {
   const items = blogs.items || [];
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-10">
+    <div className="min-h-screen bg-gradient-to-b from-[#e0f2fe] via-[#bae6fd] to-white px-4 py-10">
+      <div className="max-w-6xl mx-auto">
       <header className="mb-8">
         <p className="uppercase text-xs tracking-[0.3em] text-blue-500">Visitor stories</p>
         <h1 className="text-2xl md:text-3xl font-semibold mt-2">SnowCity blog articles</h1>

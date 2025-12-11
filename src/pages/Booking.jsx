@@ -997,7 +997,8 @@ export default function Booking() {
     }
     const added = addSelectionToCart();
     if (added) {
-      dispatch(setStep(hasToken ? 4 : 3));
+      // Take user to extras step so they can choose add-ons before checkout
+      dispatch(setStep(2));
     }
   }, [selectionReady, addSelectionToCart, dispatch, hasToken]);
 
@@ -1050,6 +1051,7 @@ export default function Booking() {
   };
 
   const onPlaceOrderAndPay = async () => {
+    if (creating?.status === 'loading') return; // prevent duplicate submits while processing
     if (!hasToken) {
       setShowTokenExpiredModal(true);
       return;
@@ -2015,10 +2017,13 @@ export default function Booking() {
                     <button
                       onClick={sendOTP}
                       disabled={otp.status === 'loading'}
-                      className="w-full bg-sky-700 text-white py-4 rounded-xl font-bold text-base shadow-lg hover:bg-sky-800 transition-all disabled:opacity-70 flex items-center justify-center gap-2 mt-4"
+                      className="w-full bg-sky-700 text-white py-3 rounded-xl font-bold text-base shadow-lg hover:bg-sky-800 transition-all disabled:opacity-70 flex items-center justify-center gap-2 mt-4"
                     >
                       {otp.status === 'loading' ? (
-                        <Loader className="w-5 h-5 animate-spin" />
+                        <>
+                          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          <span>Sending...</span>
+                        </>
                       ) : (
                         'Send OTP Verification'
                       )}
@@ -2028,7 +2033,7 @@ export default function Booking() {
                       <p className="text-sm text-sky-800 mb-3 font-medium">
                         Enter OTP sent to {countryCode} {phoneLocal}
                       </p>
-                      <div className="flex gap-3">
+                      <div className="flex gap-3 flex-col sm:flex-row">
                         <input
                           placeholder="XXXXXX"
                           className="flex-1 p-3.5 text-center tracking-[0.5em] font-bold text-xl border-2 border-sky-200 rounded-xl focus:border-sky-600 focus:ring-4 focus:ring-sky-100 outline-none bg-white transition-all"
@@ -2038,9 +2043,24 @@ export default function Booking() {
                         />
                         <button
                           onClick={verifyOTP}
-                          className="bg-sky-600 text-white px-8 rounded-xl font-bold shadow-lg hover:bg-sky-700 transition-colors"
+                          disabled={otp.status === 'loading'}
+                          className="bg-sky-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:bg-sky-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 w-full sm:w-auto text-sm sm:text-base"
                         >
-                          Verify
+                          {otp.status === 'loading' ? (
+                            <>
+                              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                              <span>Verifying...</span>
+                            </>
+                          ) : otp.verified ? (
+                            <>
+                              <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                              Verified
+                            </>
+                          ) : (
+                            'Verify'
+                          )}
                         </button>
                       </div>
                       <button
@@ -2208,27 +2228,38 @@ export default function Booking() {
                 )}
                 <button
                   onClick={step === 4 ? onPlaceOrderAndPay : handleNext}
-                  disabled={step === 3 && !hasToken && !otp.verified}
+                  disabled={
+                    (step === 3 && !hasToken && !otp.verified) || (creating?.status === 'loading')
+                  }
                   className={`flex-1 bg-gradient-to-r from-sky-600 to-sky-700 text-white py-3 rounded-xl font-bold shadow-lg hover:shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed text-base md:text-lg ${
                     isDesktop ? '' : 'md:w-full'
                   }`}
                 >
                   {step === 4 ? (
                     creating.status === 'loading' ? (
-                      <>
-                        <Loader className="animate-spin" size={20} /> Processing...
-                      </>
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="relative">
+                          <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                          <div className="absolute inset-0 w-5 h-5 border-2 border-transparent border-b-white/50 rounded-full animate-spin animation-delay-150"></div>
+                        </div>
+                        <span className="animate-pulse">Processing...</span>
+                      </div>
                     ) : (
-                      <>
-                        <Ticket size={20} />
-                        <span>Pay ₹{finalTotal}</span>
-                      </>
+                      <div className="flex items-center justify-center gap-2 group">
+                        <div className="p-1.5 bg-white/20 rounded-lg transition-all duration-300 group-hover:bg-white/30">
+                          <Ticket size={18} className="text-white" />
+                        </div>
+                        <span className="font-semibold">Pay ₹{finalTotal}</span>
+                        <div className="w-0 group-hover:w-5 overflow-hidden transition-all duration-300">
+                          <ArrowRight size={16} className="text-white" />
+                        </div>
+                      </div>
                     )
                   ) : (
-                    <>
-                      <span>Continue</span>
-                      <ArrowRight size={20} />
-                    </>
+                    <div className="flex items-center justify-center gap-2 group">
+                      <span className="font-semibold">Continue</span>
+                      <ArrowRight size={20} className="transition-transform duration-300 group-hover:translate-x-1" />
+                    </div>
                   )}
                 </button>
               </div>

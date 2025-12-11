@@ -147,3 +147,92 @@ body {
     animation: none !important;
   }
 }
+
+/* Animation delay utilities */
+.animation-delay-150 {
+  animation-delay: 150ms;
+}
+
+/* Skeleton Loader Styles */
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+  border-radius: 0.5rem;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.skeleton-text {
+  height: 1rem;
+  margin: 0.25rem 0;
+}
+
+.skeleton-text.large {
+  height: 1.5rem;
+}
+
+.skeleton-text.small {
+  height: 0.75rem;
+}
+
+.skeleton-card {
+  height: 200px;
+  border-radius: 1rem;
+}
+
+.skeleton-hero {
+  height: 400px;
+  border-radius: 1.5rem;
+}
+
+.skeleton-circle {
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+}
+
+.skeleton-button {
+  height: 2.5rem;
+  width: 120px;
+  border-radius: 0.5rem;
+}
+
+
+/* GST Portal Style Spinner */
+.gst-spinner {
+  width: 55px;
+  height: 55px;
+  border: 6px solid #e5e7eb;        /* light grey background ring */
+  border-top: 6px solid #0073aa;    /* GST blue color */
+  border-radius: 50%;
+  animation: gst-spin 0.9s linear infinite;
+  margin: 0 auto;                   /* Ensure centering */
+}
+
+@keyframes gst-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Remove visible borders inside page sections for a cleaner, modular look */
+section [class*="border"], section[class*="border"] {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Also reduce heavy outlines on cards within sections */
+section .shadow-2xl, section .shadow-xl, section .shadow-lg {
+  box-shadow: none !important;
+}

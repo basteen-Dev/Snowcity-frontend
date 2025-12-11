@@ -28,7 +28,7 @@ export default function Attractions() {
   }, [attractions, q]);
 
   return (
-    <div className="py-8">
+    <div className="min-h-screen bg-gradient-to-b from-[#e0f2fe] via-[#bae6fd] to-white py-8">
       <div className="max-w-6xl mx-auto px-4">
         <h1 className="text-2xl font-semibold mb-2">Attractions</h1>
         <p className="text-gray-600 mb-6">Browse all experiences and book your slots.</p>

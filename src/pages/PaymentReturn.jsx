@@ -28,7 +28,7 @@ export default function PaymentReturn() {
   }, [status]);
 
   return (
-    <div className="min-h-[60vh] flex flex-col items-center justify-center p-4 bg-gray-50/50">
+    <div className="min-h-[60vh] flex flex-col items-center justify-center p-4 bg-gradient-to-b from-[#e0f2fe] via-[#bae6fd] to-white">
       <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 max-w-md w-full text-center">
         
         {/* --- SUCCESS STATE --- */}

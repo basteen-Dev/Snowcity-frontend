@@ -1,3 +1,119 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ===== GLASS MORPHISM BASE STYLES ===== */
+@layer components {
+  .glass {
+    @apply bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl shadow-glass;
+  }
+
+  .glass-sm {
+    @apply bg-white/5 backdrop-blur-lg border border-white/15 rounded-xl shadow-lg;
+  }
+
+  .glass-lg {
+    @apply bg-white/15 backdrop-blur-2xl border border-white/25 rounded-3xl shadow-glass-lg;
+  }
+
+  .glass-light {
+    @apply bg-white/20 backdrop-blur-xl border border-white/30;
+  }
+
+  /* Fade gradient components */
+  .fade-white-bottom {
+    @apply relative;
+    background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.8), white);
+  }
+
+  .fade-white-top {
+    @apply relative;
+    background: linear-gradient(to top, transparent, rgba(255, 255, 255, 0.6), white);
+  }
+
+  /* Smooth section transitions */
+  .section-smooth-transition {
+    @apply relative;
+    background: linear-gradient(to bottom, 
+      rgba(224, 242, 254, 0.5), 
+      rgba(186, 230, 253, 0.7), 
+      white);
+  }
+
+  /* Gradient background utilities */
+  .gradient-arctic {
+    @apply bg-gradient-to-b from-[#0b1a33] via-[#1e3a5f] to-[#e0f2fe];
+  }
+
+  .gradient-sky {
+    @apply bg-gradient-to-b from-[#e0f2fe] via-[#bae6fd] to-white;
+  }
+
+  /* Animation utilities */
+  .animate-slow-spin {
+    animation: spin 3s linear infinite;
+  }
+}
+
+/* ===== CUSTOM ANIMATIONS ===== */
+@layer utilities {
+  @keyframes shimmer-effect {
+    0% { background-position: -1000px 0; }
+    100% { background-position: 1000px 0; }
+  }
+
+  @keyframes drift {
+    0%, 100% { transform: translateX(0) translateY(0); }
+    50% { transform: translateX(10px) translateY(-10px); }
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+  }
+
+  .animate-shimmer {
+    background-size: 1000px 100%;
+    animation: shimmer-effect 2s infinite;
+  }
+
+  .animate-drift {
+    animation: drift 4s ease-in-out infinite;
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 3s ease-in-out infinite;
+  }
+}
+
+/* ===== SMOOTH SCROLLBAR ===== */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(226, 232, 240, 0.4);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(100, 200, 255, 0.6);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 200, 255, 0.8);
+}
+
+/* ===== ACCESSIBILITY & TRANSITIONS ===== */
+html {
+  scroll-behavior: smooth;
+}
+
+* {
+  @apply transition-colors duration-300;
+}
+
+button, a {
+  @apply transition-all duration-300 ease-out;
+}

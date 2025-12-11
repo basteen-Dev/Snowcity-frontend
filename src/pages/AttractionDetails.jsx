@@ -676,7 +676,7 @@ export default function AttractionDetails() {
       : null;
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans">
+    <div className="min-h-screen bg-gradient-to-b from-[#e0f2fe] via-[#bae6fd] to-white font-sans">
       {/* HERO – desktop image from DB */}
       <section className="relative h-[42vh] md:h-[56vh] bg-gray-200">
         {details.status === 'loading' ? (

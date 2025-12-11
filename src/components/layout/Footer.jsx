@@ -68,7 +68,7 @@ export default function Footer() {
   }, []);
 
   return (
-    <footer className="relative bg-gradient-to-b from-[#04111d] via-[#06131b] to-[#00060a] text-gray-300 mt-10 overflow-hidden">
+    <footer className="relative bg-gradient-to-b from-[#e0f2fe] via-[#bae6fd] to-white text-gray-800 mt-10 overflow-hidden">
 
       {/* Wave Top Border */}
       <div className="absolute -top-[2px] left-0 right-0 z-10 pointer-events-none">
@@ -108,44 +108,44 @@ export default function Footer() {
             <div className="flex items-center gap-3 mb-3">
               <img src={Logo} alt="SnowCity" className="h-12 w-auto object-contain" />
             </div>
-            <p className="text-gray-300/80 text-sm leading-relaxed max-w-sm">
+            <p className="text-gray-700/90 text-sm leading-relaxed max-w-sm">
               Experience the magic of snow and fun in the city’s coolest attraction.
             </p>
           </div>
 
           {/* Explore */}
           <div>
-            <h4 className="text-white font-semibold mb-3">Explore</h4>
-            <ul className="space-y-2 text-sm text-gray-300/85">
-              <li><Link to="/" className="hover:text-white">Home</Link></li>
-              <li><Link to="/attractions" className="hover:text-white">Attractions</Link></li>
-              <li><Link to="/offers" className="hover:text-white">Offers</Link></li>
-              <li><Link to="/booking" className="hover:text-white">Book Tickets</Link></li>
+            <h4 className="text-gray-900 font-semibold mb-3">Explore</h4>
+            <ul className="space-y-2 text-sm text-gray-700/85">
+              <li><Link to="/" className="hover:text-sky-700">Home</Link></li>
+              <li><Link to="/attractions" className="hover:text-sky-700">Attractions</Link></li>
+              <li><Link to="/offers" className="hover:text-sky-700">Offers</Link></li>
+              <li><Link to="/booking" className="hover:text-sky-700">Book Tickets</Link></li>
             </ul>
           </div>
 
           {/* Visitor Guide */}
           <div>
-            <h4 className="text-white font-semibold mb-3">Visitor Guide</h4>
-            <ul className="space-y-2 text-sm text-gray-300/85">
-              <li><Link to="/page/faq" className="hover:text-white">FAQs</Link></li>
-              <li><Link to="/page/safety" className="hover:text-white">Safety Rules</Link></li>
-              <li><Link to="/page/dresscode" className="hover:text-white">Dress Code</Link></li>
+            <h4 className="text-gray-900 font-semibold mb-3">Visitor Guide</h4>
+            <ul className="space-y-2 text-sm text-gray-700/85">
+              <li><Link to="/page/faq" className="hover:text-sky-700">FAQs</Link></li>
+              <li><Link to="/page/safety" className="hover:text-sky-700">Safety Rules</Link></li>
+              <li><Link to="/page/dresscode" className="hover:text-sky-700">Dress Code</Link></li>
             </ul>
           </div>
 
           {/* Information — ADMIN DASHBOARD ADDED */}
           <div>
-            <h4 className="text-white font-semibold mb-3">Information</h4>
-            <ul className="space-y-2 text-sm text-gray-300/85">
-              <li><Link to="/page/about-us" className="hover:text-white">About Us</Link></li>
-              <li><Link to="/contact" className="hover:text-white">Contact</Link></li>
-              <li><Link to="/page/privacy-policy" className="hover:text-white">Privacy Policy</Link></li>
-              <li><Link to="/page/terms-and-conditions" className="hover:text-white">Terms & Conditions</Link></li>
+            <h4 className="text-gray-900 font-semibold mb-3">Information</h4>
+            <ul className="space-y-2 text-sm text-gray-700/85">
+              <li><Link to="/page/about-us" className="hover:text-sky-700">About Us</Link></li>
+              <li><Link to="/contact" className="hover:text-sky-700">Contact</Link></li>
+              <li><Link to="/page/privacy-policy" className="hover:text-sky-700">Privacy Policy</Link></li>
+              <li><Link to="/page/terms-and-conditions" className="hover:text-sky-700">Terms & Conditions</Link></li>
 
               {/* ⭐ NEW ADMIN DASHBOARD LINK */}
               <li>
-                <Link to="/admin" className="hover:text-white font-semibold text-blue-300">
+                <Link to="/admin" className="hover:text-sky-700 font-semibold text-sky-600">
                   Admin Dashboard
                 </Link>
               </li>
@@ -154,11 +154,11 @@ export default function Footer() {
 
         </div>
 
-        <div className="mt-12 border-t border-white/10 pt-6 flex flex-col md:flex-row items-center justify-between text-sm text-gray-400">
+        <div className="mt-12 border-t border-gray-400/30 pt-6 flex flex-col md:flex-row items-center justify-between text-sm text-gray-600">
           <div>© {new Date().getFullYear()} SnowCity. All rights reserved.</div>
           <div className="flex gap-4 mt-3 md:mt-0">
-            <Link to="/page/privacy-policy" className="hover:text-white">Privacy</Link>
-            <Link to="/page/terms-and-conditions" className="hover:text-white">Terms</Link>
+            <Link to="/page/privacy-policy" className="hover:text-sky-700">Privacy</Link>
+            <Link to="/page/terms-and-conditions" className="hover:text-sky-700">Terms</Link>
           </div>
         </div>
       </div>

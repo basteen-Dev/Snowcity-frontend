@@ -47,7 +47,7 @@ export default function OffersCarousel({ offers = [], combos = [] }) {
   const desktopCards = items.slice(0, 6);
 
   return (
-    <section className="relative w-full overflow-hidden py-16 px-4 bg-slate-900">
+    <section className="relative w-full overflow-hidden py-16 px-4 bg-gradient-to-b from-[#e0f2fe] via-[#bae6fd] to-white">
 
       {/* floating background icons */}
       <div className="pointer-events-none absolute inset-0">
@@ -66,20 +66,16 @@ export default function OffersCarousel({ offers = [], combos = [] }) {
       </div>
 
       {/* 🔹 ANIMATED LIQUID WAVE SEPARATOR */}
-      <div className="absolute top-0 left-0 right-0 w-full overflow-hidden leading-[0]">
+      <div className="absolute top-0 left-0 right-0 w-full overflow-hidden leading-[0] z-0">
         <svg
           className="relative block w-[200%] h-[90px] animate-liquidWave"
           viewBox="0 0 1200 120"
           preserveAspectRatio="none"
         >
           <path
-            d="M321.39 56.44c58.39 4.09 113.77 22.36 171.23 29.21 95.25 11.73 191.92-7.88
-              284.83-25.5 93.44-17.72 188.32-36.37 285.78-27.95 
-              66 5.64 128.47 24.69 193.77 39.54V0H0v27.35
-              c47.72 22.52 103.4 27.88 157.05 29.66 
-              54.13 1.79 108.29-3.64 164.34-.57z"
-            fill="#0b1424"
-            fillOpacity="0.9"
+            d="M321.39 56.44 c58.39 4.09 113.77 22.36 171.23 29.21 c95.25 11.73 191.92-7.88 284.83-25.5 c93.44-17.72 188.32-36.37 285.78-27.95 c66 5.64 128.47 24.69 193.77 39.54V0H0v27.35 c47.72 22.52 103.4 27.88 157.05 29.66 c54.13 1.79 108.29-3.64 164.34-.57z"
+            fill="#e0f2fe"
+            fillOpacity="1"
           />
         </svg>
       </div>
@@ -93,19 +89,19 @@ export default function OffersCarousel({ offers = [], combos = [] }) {
 
       {/* TITLE */}
       <div className="relative z-10 max-w-6xl mx-auto px-4 text-center">
-        <p className="text-xs font-semibold tracking-[0.4em] text-yellow-200/70">
+        <p className="text-xs font-semibold tracking-[0.4em] text-sky-600">
           COMBO DEALS & OFFERS
         </p>
-        <h2 className="text-3xl md:text-4xl font-bold text-yellow-400 mt-3">
+        <h2 className="text-3xl md:text-4xl font-bold text-sky-800 mt-3">
           Save more when you bundle experiences
         </h2>
-        <p className="mt-4 text-white/70 text-sm">
+        <p className="mt-4 text-gray-700 text-sm">
           Save more when you book multiple attractions together!
         </p>
 
         <div className="mt-5 flex items-center justify-center gap-5">
-          <Link className="text-sm font-semibold text-blue-200 hover:text-white" to="/combos">Combos</Link>
-          <Link className="text-sm font-semibold text-blue-200 hover:text-white" to="/offers">Offers</Link>
+          <Link className="text-sm font-semibold text-sky-700 hover:text-sky-900" to="/combos">Combos</Link>
+          <Link className="text-sm font-semibold text-sky-700 hover:text-sky-900" to="/offers">Offers</Link>
         </div>
       </div>
 

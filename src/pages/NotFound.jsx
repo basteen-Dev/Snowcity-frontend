@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 export default function NotFound() {
   return (
-    <div className="min-h-[60vh] flex items-center justify-center text-center px-4">
+    <div className="min-h-[60vh] flex items-center justify-center text-center px-4 bg-gradient-to-b from-[#e0f2fe] via-[#bae6fd] to-white">
       <div>
         <div className="text-6xl font-bold text-gray-900">404</div>
         <p className="mt-2 text-gray-600">We couldn’t find the page you’re looking for.</p>

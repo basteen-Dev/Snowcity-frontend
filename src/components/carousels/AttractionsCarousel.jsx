@@ -61,7 +61,7 @@ export default function AttractionsCarousel({ items = [] }) {
       className="
         relative w-full overflow-hidden py-16
         bg-gradient-to-b
-        from-white via-[#f0f6ff] to-[#dcefff]
+        from-[#e0f2fe] via-[#bae6fd] to-white
       "
     >
       {/* floating emojis */}
@@ -87,17 +87,9 @@ export default function AttractionsCarousel({ items = [] }) {
           preserveAspectRatio="none"
         >
           <path
-            d="
-              M321.39 56.44
-              c58.39 4.09 113.77 22.36 171.23 29.21
-              c95.25 11.73 191.92-7.88 284.83-25.5
-              c93.44-17.72 188.32-36.37 285.78-27.95
-              c66 5.64 128.47 24.69 193.77 39.54V0H0v27.35
-              c47.72 22.52 103.4 27.88 157.05 29.66
-              c54.13 1.79 108.29-3.64 164.34-.57z
-            "
-            fill="#e0ecff"
-            fillOpacity="0.9"
+            d="M321.39 56.44 c58.39 4.09 113.77 22.36 171.23 29.21 c95.25 11.73 191.92-7.88 284.83-25.5 c93.44-17.72 188.32-36.37 285.78-27.95 c66 5.64 128.47 24.69 193.77 39.54V0H0v27.35 c47.72 22.52 103.4 27.88 157.05 29.66 c54.13 1.79 108.29-3.64 164.34-.57z"
+            fill="#e0f2fe"
+            fillOpacity="1"
           />
         </svg>
       </div>

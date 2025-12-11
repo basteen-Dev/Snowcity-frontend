@@ -25,6 +25,13 @@ import BlogCard from '../components/cards/BlogCard';
 import Loader from '../components/common/Loader';
 import ErrorState from '../components/common/ErrorState';
 import LazyVisible from '../components/common/LazyVisible';
+import SkeletonLoader, {
+  SkeletonHeroSection,
+  SkeletonCarousel,
+  SkeletonSectionHeader,
+  SkeletonTestimonial,
+  SkeletonMarquee
+} from '../components/common/SkeletonLoader';
 import { imgSrc } from '../utils/media';
 
 // small helpers for localStorage caching
@@ -136,6 +143,8 @@ export default function Home() {
     ? imgSrc(featuredGalleryItem.image_url || featuredGalleryItem.url)
     : 'https://picsum.photos/seed/snow-gallery/1280/720';
   const previewGalleryItems = React.useMemo(() => galleryPhotoItems.slice(0, 6), [galleryPhotoItems]);
+  // show a compact gallery preview on home: 4 items + a "+N more" card
+  const homePreviewGalleryItems = React.useMemo(() => galleryPhotoItems.slice(0, 4), [galleryPhotoItems]);
 
   const marqueeItems = React.useMemo(() => {
     const entries = [];
@@ -172,212 +181,235 @@ export default function Home() {
     return entries;
   }, [offerItems, couponItems]);
 
-  // brand gradient colors
+  // brand colors (still used for HeroCarousel waveColor)
   const arcticTop = "#0b1a33";      // deep arctic blue
   const arcticMid = "#123a63";      // mid icy blue
   const arcticBottom = "#eaf6ff";   // near-white icy
 
   return (
-    <div className={`relative min-h-screen bg-gradient-to-b from-[${arcticTop}] via-[${arcticMid}] to-[${arcticBottom}]`}>
-      {/* Hero (use cached if slice is still loading) */}
-      {banners.status === 'failed' ? (
-        <ErrorState message={banners.error?.message || 'Failed to load banners'} />
-      ) : bannerItems.length ? (
-        <HeroCarousel banners={bannerItems} waveColor={arcticTop} />
-      ) : (
-        <div className="min-h-[40vh] flex items-center justify-center"><Loader /></div>
-      )}
+    <div className="relative min-h-screen bg-gradient-to-b from-[#0b1a33] via-[#123a63] to-[#eaf6ff]">
+      {/* HERO SECTION */}
+      <section className="relative overflow-hidden pt-0">
+        {/* Subtle background gradients */}
+        <div className="pointer-events-none absolute inset-0 -z-10">
+          <div className="absolute -top-32 -left-24 h-64 w-64 rounded-full bg-cyan-400/20 blur-3xl" />
+          <div className="absolute -top-10 right-[-5rem] h-80 w-80 rounded-full bg-blue-500/20 blur-3xl" />
+          <div className="absolute bottom-[-6rem] left-1/2 h-80 w-[36rem] -translate-x-1/2 bg-gradient-to-r from-sky-500/25 via-indigo-500/15 to-purple-500/25 blur-3xl" />
+        </div>
 
-      {/* Offers Marquee */}
-      <LazyVisible minHeight={80} placeholder={<div className="py-3" /> }>
-        {marqueeItems.length ? <OffersMarquee items={marqueeItems} /> : null}
-      </LazyVisible>
+        <div className="relative z-10">
+          {/* Hero */}
+          {banners.status === 'failed' ? (
+            <ErrorState message={banners.error?.message || 'Failed to load banners'} />
+          ) : bannerItems.length ? (
+            <HeroCarousel banners={bannerItems} waveColor={arcticTop} />
+          ) : (
+            <SkeletonHeroSection />
+          )}
+        </div>
 
-      {/* Attractions (lazy mount, cached fallback) */}
-      <LazyVisible minHeight={420} placeholder={<div className="py-8"><Loader /></div>}>
-        {attractions.status === 'failed' ? (
-          <ErrorState message={attractions.error?.message || 'Failed to load attractions'} />
-        ) : attractionItems.length ? (
-          <AttractionsCarousel items={attractionItems} />
-        ) : (
-          <div className="py-8"><Loader /></div>
-        )}
-      </LazyVisible>
+        <div id="hero-sentinel" className="absolute bottom-0 left-0 right-0 h-1" />
+      </section>
 
-      {/* Offers + Combos (lazy mount) */}
-      <LazyVisible minHeight={420} placeholder={<div className="py-8"><Loader /></div>}>
-        <OffersCarousel offers={offerItems} combos={comboItems} />
-      </LazyVisible>
+      <main className="bg-gradient-to-b from-[#e0f2fe] via-[#bae6fd] to-white">
+        {/* Offers Marquee */}
+        <LazyVisible minHeight={80} placeholder={<div /> }>
+          {marqueeItems.length ? <OffersMarquee items={marqueeItems} /> : null}
+        </LazyVisible>
 
-      {/* Add-ons */}
-      <LazyVisible minHeight={420} placeholder={<div className="py-8"><Loader /></div>}>
-        {addons.status === 'failed' ? (
-          <ErrorState
-            message={addons.error?.message || 'Failed to load add-ons'}
-            onRetry={() => dispatch(fetchAddons({ active: true, limit: 100 }))}
-          />
-        ) : addonItems.length ? (
-          <AddonsSection items={addonItems} />
-        ) : (
-          <Loader />
-        )}
-      </LazyVisible>
+        {/* Attractions */}
+        <LazyVisible minHeight={420} placeholder={<div className="py-8"><SkeletonCarousel items={3} /></div>}>
+          {attractions.status === 'failed' ? (
+            <ErrorState message={attractions.error?.message || 'Failed to load attractions'} />
+          ) : attractionItems.length ? (
+            <AttractionsCarousel items={attractionItems} />
+          ) : (
+            <SkeletonCarousel items={3} />
+          )}
+        </LazyVisible>
 
-      {/* Testimonials (lazy) – keep compact placeholder to avoid big gaps */}
-      <LazyVisible minHeight={320} placeholder={<div className="py-6" /> }>
-        <Testimonials />
-      </LazyVisible>
+        {/* Offers + Combos */}
+        <LazyVisible minHeight={420} placeholder={<div className="py-8"><SkeletonCarousel items={4} /></div>}>
+          <OffersCarousel offers={offerItems} combos={comboItems} />
+        </LazyVisible>
 
-      {/* GALLERY */}
-      <LazyVisible minHeight={420} placeholder={<div className="py-8"><Loader /></div>}>
-        {gallery.status === 'failed' ? (
-          <section id="gallery" className="py-16 px-4 bg-slate-900">
-            <div className="max-w-6xl mx-auto">
-              <ErrorState
-                message={gallery.error?.message || 'Failed to load gallery'}
-                onRetry={() => dispatch(fetchGallery({ active: true, limit: 50 }))}
-              />
-            </div>
-          </section>
-        ) : galleryPhotoItems.length ? (
-          <section id="gallery" className="relative overflow-hidden bg-slate-900 py-16 px-4 text-white">
-            <div className="absolute inset-0 opacity-10" aria-hidden="true">
-              <div className="absolute top-10 left-10 text-7xl animate-pulse">❄️</div>
-              <div className="absolute bottom-12 right-12 text-7xl animate-pulse delay-300">🎢</div>
-            </div>
-            <div className="relative z-10 mx-auto max-w-6xl">
-              <div className="mb-12 text-center">
-                <p className="text-xs font-semibold tracking-[0.4em] text-blue-200/80">GALLERY</p>
-                <h2 className="mt-3 text-3xl font-bold">Experience the magic</h2>
-                <p className="mt-3 text-sm text-white/70 max-w-2xl mx-auto">
-                  A glimpse of visitors having the time of their lives inside SnowCity.
-                </p>
+        {/* Add-ons */}
+        <LazyVisible minHeight={420} placeholder={<div className="py-8"><SkeletonCarousel items={3} /></div>}>
+          {addons.status === 'failed' ? (
+            <ErrorState
+              message={addons.error?.message || 'Failed to load add-ons'}
+              onRetry={() => dispatch(fetchAddons({ active: true, limit: 100 }))}
+            />
+          ) : addonItems.length ? (
+            <AddonsSection items={addonItems} />
+          ) : (
+            <SkeletonCarousel items={3} />
+          )}
+        </LazyVisible>
+
+        {/* Testimonials */}
+        <LazyVisible minHeight={320} placeholder={<div className="py-6"><SkeletonTestimonial /></div>}>
+          <Testimonials />
+        </LazyVisible>
+
+        {/* GALLERY */}
+        <LazyVisible minHeight={420} placeholder={<div className="py-8"><SkeletonLoader type="hero" /></div>}>
+          {gallery.status === 'failed' ? (
+            <div className="py-16 px-4 bg-gradient-to-b from-[#e0f2fe] via-[#bae6fd] to-white">
+              <div className="max-w-6xl mx-auto text-center">
+                <SkeletonSectionHeader />
+                <SkeletonLoader type="card" className="mt-8" height="400px" />
               </div>
+            </div>
+          ) : galleryPhotoItems.length ? (
+            <section id="gallery" className="relative overflow-hidden py-16 px-4 text-gray-900">
+              <div className="absolute inset-0 opacity-10" aria-hidden="true">
+                <div className="absolute top-10 left-10 text-7xl animate-pulse">❄️</div>
+                <div className="absolute bottom-12 right-12 text-7xl animate-pulse delay-300">🎢</div>
+              </div>
+              <div className="relative z-10 mx-auto max-w-6xl">
+                <div className="mb-12 text-center">
+                  <p className="text-xs font-semibold tracking-[0.4em] text-sky-700">GALLERY</p>
+                  <h2 className="mt-3 text-3xl md:text-4xl font-bold text-gray-900">Experience the magic</h2>
+                  <p className="mt-3 text-sm text-gray-700 max-w-2xl mx-auto">
+                    A glimpse of visitors having the time of their lives inside SnowCity.
+                  </p>
+                </div>
 
-              <div className="relative mx-auto max-w-5xl">
-                <div
-                  className="relative aspect-video overflow-hidden rounded-2xl shadow-2xl"
-                  style={{ backgroundImage: `url(${featuredGalleryImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
-                >
-                  <div className="absolute inset-0 bg-gradient-to-br from-black/60 to-transparent" />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-white/90 text-5xl text-slate-900 shadow-xl">
-                        📸
+                <div className="relative mx-auto max-w-5xl">
+                  <div
+                    className="relative aspect-video overflow-hidden rounded-2xl shadow-2xl"
+                    style={{ backgroundImage: `url(${featuredGalleryImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-br from-black/40 to-transparent" />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="text-center">
+                        <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-white/90 text-4xl text-slate-900 shadow-xl">
+                          📸
+                        </div>
+                        <div className="text-2xl font-semibold text-white">Gallery Highlights</div>
+                        <div className="text-sm text-white/80 mt-1">Tap to explore memories</div>
+                        <Link
+                          to="/gallery"
+                          className="mt-4 inline-flex items-center gap-2 rounded-full bg-sky-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg hover:bg-sky-700 transition-all duration-300"
+                        >
+                          View Full Gallery →
+                        </Link>
                       </div>
-                      <div className="text-2xl font-semibold">Gallery Highlights</div>
-                      <div className="text-sm text-white/70 mt-1">Tap to explore memories</div>
-                      <Link
-                        to="/gallery"
-                        className="mt-4 inline-flex items-center gap-2 rounded-full bg-yellow-400 px-6 py-2 text-sm font-semibold text-slate-900 shadow-lg hover:bg-yellow-300"
-                      >
-                        View Full Gallery →
-                      </Link>
                     </div>
                   </div>
                 </div>
+
+                <div className="mt-8 grid grid-cols-2 gap-3 md:grid-cols-4">
+                  {homePreviewGalleryItems.map((item, idx) => (
+                    <div
+                      key={`${item.id ?? item.media_id ?? idx}-${idx}`}
+                      className="relative h-28 overflow-hidden rounded-xl border border-sky-100 bg-white/60 hover:shadow-lg transition-all duration-300 hover:scale-105"
+                    >
+                      <img
+                        src={imgSrc(item.image_url || item.url)}
+                        alt="snowcity"
+                        className="h-full w-full object-cover transition-transform duration-300 hover:scale-110"
+                        loading={idx < 2 ? 'eager' : 'lazy'}
+                      />
+                      <div className="absolute inset-0 bg-black/8" />
+                    </div>
+                  ))}
+                  {galleryPhotoItems.length > homePreviewGalleryItems.length && (
+                    <Link
+                      to="/gallery"
+                      className="relative h-28 rounded-xl border border-dashed border-sky-200 bg-sky-50 flex items-center justify-center text-center text-sky-700 font-semibold hover:bg-sky-100 transition-all duration-300"
+                    >
+                      +{galleryPhotoItems.length - homePreviewGalleryItems.length} more
+                    </Link>
+                  )}
+                </div>
+
+                <div className="mt-12 grid grid-cols-2 gap-4 md:gap-6 text-center text-gray-900">
+                  {[
+                    { label: 'Photos Captured', value: `${galleryPhotoItems.length}+`, icon: '📷' },
+                    { label: 'Events Covered', value: '120+', icon: '🎉' },
+                    { label: 'Happy Families', value: '50K+', icon: '👨‍👩‍👧‍👦' },
+                    { label: 'Unique Zones', value: '6+', icon: '❄️' },
+                  ].map((stat) => (
+                    <div key={stat.label} className="rounded-2xl border border-sky-200 bg-sky-50 p-5 hover:shadow-lg transition-all duration-300">
+                      <div className="text-4xl mb-2">{stat.icon}</div>
+                      <div className="text-3xl font-bold text-sky-700">{stat.value}</div>
+                      <div className="mt-1 text-sm text-gray-700">{stat.label}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+          ) : (
+            <div className="py-16 px-4 bg-gradient-to-b from-[#e0f2fe] via-[#bae6fd] to-white">
+              <div className="max-w-6xl mx-auto text-center">
+                <SkeletonSectionHeader />
+                <SkeletonLoader type="card" className="mt-8" height="400px" />
+              </div>
+            </div>
+          )}
+        </LazyVisible>
+
+        {/* BLOGS */}
+        <LazyVisible minHeight={420} placeholder={<div className="py-6"><SkeletonSectionHeader /></div>}>
+          <section id="blogs" className="bg-white py-16 px-4">
+            <div className="max-w-6xl mx-auto">
+              <div className="text-center mb-12">
+                <p className="text-xs font-semibold tracking-[0.3em] text-blue-500/70">LATEST FROM OUR BLOG</p>
+                <h2 className="mt-3 text-3xl md:text-4xl font-bold text-slate-900">Tips, guides & stories</h2>
+                <p className="mt-2 text-gray-600 max-w-2xl mx-auto">
+                  Make the most of your SnowCity visit with insider recommendations, planning guides, and event highlights.
+                </p>
               </div>
 
-              <div className="mt-8 grid grid-cols-2 gap-3 md:grid-cols-4">
-                {previewGalleryItems.map((item, idx) => (
-                  <div
-                    key={`${item.id ?? item.media_id ?? idx}-${idx}`}
-                    className="relative h-28 overflow-hidden rounded-xl border border-white/10 bg-white/5"
-                  >
-                    <img
-                      src={imgSrc(item.image_url || item.url)}
-                      alt="snowcity"
-                      className="h-full w-full object-cover"
-                      loading={idx < 2 ? 'eager' : 'lazy'}
-                    />
-                    <div className="absolute inset-0 bg-black/10" />
-                  </div>
-                ))}
-              </div>
+              {blogs.status === 'failed' ? (
+                <ErrorState message={blogs.error?.message || 'Failed to load blogs'} />
+              ) : blogItems.length ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {blogItems.slice(0, 3).map((blog) => (
+                    <div key={blog.blog_id ?? blog.id ?? blog.slug} className="group">
+                      <BlogCard item={blog} />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <SkeletonCarousel items={3} />
+              )}
 
-              <div className="mt-12 grid grid-cols-2 gap-6 text-center text-white md:grid-cols-4">
-                {[
-                  { label: 'Photos Captured', value: `${galleryPhotoItems.length}+`, icon: '📷' },
-                  { label: 'Events Covered', value: '120+', icon: '🎉' },
-                  { label: 'Happy Families', value: '50K+', icon: '👨‍👩‍👧‍👦' },
-                  { label: 'Unique Zones', value: '6+', icon: '❄️' },
-                ].map((stat, index) => (
-                  <div key={stat.label} className="rounded-2xl border border-white/10 bg-white/5 p-5">
-                    <div className="text-4xl mb-2">{stat.icon}</div>
-                    <div className="text-3xl font-bold text-yellow-300">{stat.value}</div>
-                    <div className="mt-1 text-sm text-white/70">{stat.label}</div>
-                  </div>
-                ))}
+              <div className="mt-12 text-center">
+                <Link
+                  to="/blogs"
+                  className="inline-flex items-center gap-2 rounded-full border-2 border-blue-600 px-8 py-3 text-sm font-semibold text-blue-600 transition-all duration-300 hover:bg-blue-600 hover:text-white"
+                >
+                  View All Articles
+                  <span aria-hidden="true">→</span>
+                </Link>
               </div>
             </div>
           </section>
-        ) : (
-          <section id="gallery" className="py-16 px-4 bg-slate-900">
-            <div className="max-w-6xl mx-auto text-center">
-              <Loader />
-            </div>
-          </section>
-        )}
-      </LazyVisible>
+        </LazyVisible>
 
-      {/* BLOGS */}
-      <LazyVisible minHeight={420} placeholder={<div className="py-6"><Loader /></div>}>
-        <section id="blogs" className="bg-white py-16 px-4">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-12">
-              <p className="text-xs font-semibold tracking-[0.3em] text-blue-500/70">LATEST FROM OUR BLOG</p>
-              <h2 className="mt-3 text-3xl font-bold text-slate-900">Tips, guides & stories</h2>
-              <p className="mt-2 text-gray-600 max-w-2xl mx-auto">
-                Make the most of your SnowCity visit with insider recommendations, planning guides, and event highlights.
-              </p>
-            </div>
+        {/* Plan Your Visit */}
+        <LazyVisible minHeight={320} placeholder={<div className="py-6" />}>
+          <PlanVisitSection />
+        </LazyVisible>
 
-            {blogs.status === 'failed' ? (
-              <ErrorState message={blogs.error?.message || 'Failed to load blogs'} />
-            ) : blogItems.length ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {blogItems.slice(0, 3).map((blog) => (
-                  <div key={blog.blog_id ?? blog.id ?? blog.slug} className="group">
-                    <BlogCard item={blog} />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="flex justify-center"><Loader /></div>
-            )}
+        {/* Instagram */}
+        <LazyVisible minHeight={240} placeholder={<div className="py-6" />}>
+          <InstagramFeed />
+        </LazyVisible>
 
-            <div className="mt-12 text-center">
-              <Link
-                to="/blogs"
-                className="inline-flex items-center gap-2 rounded-full border-2 border-blue-600 px-6 py-3 text-sm font-semibold text-blue-600 transition hover:bg-blue-600 hover:text-white"
-              >
-                View All Articles
-                <span aria-hidden="true">→</span>
-              </Link>
-            </div>
-          </div>
-        </section>
-      </LazyVisible>
-
-      {/* Plan Your Visit */}
-      <LazyVisible minHeight={320} placeholder={<div className="py-6" /> }>
-        <PlanVisitSection />
-      </LazyVisible>
-
-      {/* Instagram (lazy) */}
-      <LazyVisible minHeight={240} placeholder={<div className="py-6" /> }>
-        <InstagramFeed />
-      </LazyVisible>
-
-      {/* Tiny shared CSS for remaining marquee animation */}
-      <style>{`
-        @keyframes scrollHalf {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-        .marquee { animation: scrollHalf 18s linear infinite; }
-        .marquee:hover { animation-play-state: paused; }
-      `}</style>
+        {/* Marquee animation */}
+        <style>{`
+          @keyframes scrollHalf {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+          }
+          .marquee { animation: scrollHalf 18s linear infinite; }
+          .marquee:hover { animation-play-state: paused; }
+        `}</style>
+      </main>
     </div>
   );
 }

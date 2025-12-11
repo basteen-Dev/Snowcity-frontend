@@ -133,21 +133,6 @@ export default function HeroCarousel({ banners = [], waveColor = "#0b1a33" }) {
                   </div>
                 </div>
 
-                <div className="absolute right-4 sm:right-10 bottom-8 sm:bottom-12 z-10" data-swiper-parallax="-350">
-                  <a
-                    key={`${uniqueKey}-ticket-primary`}
-                    href={ticketButton.href}
-                    className="book-ticket-btn"
-                  >
-                    <img
-                      src="https://cdn-icons-png.flaticon.com/512/9068/9068678.png"
-                      alt="ticket"
-                      className="w-8 h-8"
-                    />
-                    <span>{ticketButton.label}</span>
-                  </a>
-                </div>
-
                 {href ? (
                   <a href={href} className="absolute inset-0 z-0" aria-label={title || "Banner"} />
                 ) : null}
@@ -157,6 +142,7 @@ export default function HeroCarousel({ banners = [], waveColor = "#0b1a33" }) {
         })}
       </Swiper>
 
+      {/* END OF SWIPER */}
 
       <style>{`
         @keyframes kenburns {
@@ -166,44 +152,9 @@ export default function HeroCarousel({ banners = [], waveColor = "#0b1a33" }) {
         .animate-kenburns {
           animation: kenburns 18s ease-out forwards;
         }
-        .animate-fade-title {
-          animation: fadeIn 1s ease-out forwards;
-        }
-        .animate-fade-sub {
-          animation: fadeIn 1.3s ease-out forwards;
-        }
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(16px); }
           to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes floatTicket {
-          0% { transform: translateY(0); }
-          50% { transform: translateY(-6px); }
-          100% { transform: translateY(0); }
-        }
-        .book-ticket-btn {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.4rem;
-          background: linear-gradient(135deg, #ff48dc, #b23bff);
-          color: #fff;
-          padding: 0.65rem 1.1rem;
-          border-radius: 999px;
-          font-size: 0.9rem;
-          font-weight: 700;
-          box-shadow: 0 6px 16px rgba(178, 59, 255, 0.6);
-          transition: all 0.25s ease;
-          animation: floatTicket 3s ease-in-out infinite;
-        }
-        .book-ticket-btn img {
-          filter: drop-shadow(0 3px 4px rgba(0,0,0,0.2));
-        }
-        .book-ticket-btn:hover {
-          transform: scale(1.08) translateY(-3px);
-          box-shadow: 0 10px 22px rgba(178, 59, 255, 0.7);
-        }
-        .book-ticket-btn:active {
-          transform: scale(0.96);
         }
       `}</style>
     </section>

@@ -36,7 +36,8 @@ export default function Blog() {
   const mode = (b.editor_mode || '').toLowerCase();
   const isRaw = mode === 'raw';
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8">
+    <div className="min-h-screen bg-gradient-to-b from-[#e0f2fe] via-[#bae6fd] to-white px-4 py-8">
+      <div className="max-w-3xl mx-auto">
       <h1 className="text-2xl font-semibold">{b.title || 'Blog'}</h1>
       {b.author ? <div className="text-sm text-gray-500 mt-1">By {b.author}</div> : null}
       {cover ? (

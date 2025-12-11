@@ -18,7 +18,8 @@ export default function Gallery() {
   const items = gallery.items || [];
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-10">
+    <div className="min-h-screen bg-gradient-to-b from-[#e0f2fe] via-[#bae6fd] to-white">
+      <div className="max-w-6xl mx-auto px-4 py-10">
       <header className="mb-6">
         <h1 className="text-2xl md:text-3xl font-semibold">Gallery</h1>
         <p className="text-gray-600 mt-2">Peek into the SnowCity experience with photos and short clips from our visitors.</p>
@@ -80,6 +81,7 @@ export default function Gallery() {
       {!items.length && gallery.status === 'succeeded' ? (
         <div className="py-16 text-center text-gray-500">We&apos;ll be adding gallery highlights soon!</div>
       ) : null}
+      </div>
     </div>
   );
 }
