@@ -102,18 +102,18 @@ export default function FloatingNavBar() {
   // Prevent background scroll when mobile menu or auth modal is open
   useLockBodyScroll(mobileOpen || authModalOpen);
 
-  // Always white-ish text on liquid glass navbar
+  // Premium snowblue liquid glass navbar styling
   const navLinkBase =
-    "px-4 py-2 rounded-full text-sm font-semibold tracking-wide transition-all duration-300 relative group";
+    "px-4 py-2.5 rounded-xl text-sm font-semibold tracking-wide transition-all duration-300 relative group";
   const navLinkTone =
-    "text-white/85 hover:text-white hover:bg-white/15";
+    "text-sky-50 hover:text-white hover:bg-sky-500/20 backdrop-blur-sm";
   const navLinkClass = `${navLinkBase} ${navLinkTone}`;
 
   const signInButtonClass =
-    "inline-flex items-center rounded-full border-2 border-white/40 px-5 py-2.5 text-white font-semibold bg-white/5 hover:bg-white/15 hover:border-white/60 transition-all duration-300 backdrop-blur-sm";
+    "inline-flex items-center rounded-full border-2 border-sky-400/50 px-6 py-2.5 text-sky-100 font-bold bg-sky-600/20 hover:bg-sky-500/35 hover:border-sky-300 transition-all duration-300 backdrop-blur-xl shadow-lg shadow-sky-500/10";
 
   const bookTicketButtonClass =
-    "inline-flex items-center rounded-full px-6 py-2.5 text-sm font-bold bg-gradient-to-r from-sky-500 to-cyan-500 text-white hover:from-sky-600 hover:to-cyan-600 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105";
+    "inline-flex items-center rounded-full px-6 py-2.5 text-sm font-bold bg-gradient-to-r from-sky-500 via-blue-500 to-cyan-500 text-white hover:from-sky-600 hover:via-blue-600 hover:to-cyan-600 shadow-xl hover:shadow-2xl shadow-sky-500/30 transition-all duration-300 hover:scale-105 backdrop-blur-sm";
 
   const resetAuthState = React.useCallback(() => {
     setAuthForm({ name: "", email: "", phone: "" });
@@ -414,12 +414,12 @@ export default function FloatingNavBar() {
         {/* ------------------- DESKTOP NAV -------------------- */}
         <div
           className={`hidden md:flex items-center justify-between gap-6 px-8 py-4 transition-all duration-300 ${
-            isBookingPage ? "rounded-none" : "rounded-[30px]"
-          } bg-gradient-to-r from-slate-900/60 via-slate-800/50 to-slate-900/60 text-white border border-white/20 backdrop-blur-3xl shadow-2xl`}
+            isBookingPage ? "rounded-none" : "rounded-[32px]"
+          } bg-gradient-to-br from-sky-900/30 via-blue-900/25 to-cyan-900/30 text-white border border-sky-400/30 backdrop-blur-2xl shadow-2xl`}
           style={{
             boxShadow: isBookingPage 
               ? 'none'
-              : '0 8px 32px rgba(15, 23, 42, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+              : '0 12px 48px rgba(14, 165, 233, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.2), inset 0 0 20px rgba(14, 165, 233, 0.1)'
           }}
         >
           {/* Logo */}
@@ -443,7 +443,7 @@ export default function FloatingNavBar() {
                 Attractions ▾
               </button>
               {menuOpen === "attr" && (
-                <div className="absolute right-0 top-full mt-3 w-64 rounded-2xl border border-white/20 bg-white/10 backdrop-blur-2xl shadow-2xl p-3 z-[110]" style={{ boxShadow: '0 25px 50px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)' }}>
+                <div className="absolute right-0 top-full mt-3 w-64 rounded-2xl border border-sky-400/30 bg-gradient-to-br from-sky-900/40 via-blue-900/35 to-cyan-900/40 backdrop-blur-2xl shadow-2xl p-3 z-[110]" style={{ boxShadow: '0 25px 50px rgba(14, 165, 233, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)' }}>
                   <div className="max-h-72 overflow-y-auto">
                     {topAttractions.map((a, idx) => {
                       const attrId = getAttrId(a);
@@ -452,7 +452,7 @@ export default function FloatingNavBar() {
                         <Link
                           key={idx}
                           to={`/attractions/${attrId}`}
-                          className="block px-4 py-2.5 text-sm text-gray-900 hover:bg-white/80 rounded-lg transition-all duration-200 font-medium"
+                          className="block px-4 py-2.5 text-sm text-sky-100 hover:bg-sky-500/20 rounded-lg transition-all duration-200 font-medium"
                           onClick={() => setMenuOpen(null)}
                         >
                           {label}
@@ -461,7 +461,7 @@ export default function FloatingNavBar() {
                     })}
                     <Link
                       to="/attractions"
-                      className="block px-4 py-2.5 text-blue-600 text-sm hover:bg-blue-100 rounded-lg transition-all duration-200 font-semibold border-t border-white/20 mt-2 pt-3"
+                      className="block px-4 py-2.5 text-cyan-300 text-sm hover:bg-cyan-500/15 rounded-lg transition-all duration-200 font-semibold border-t border-sky-400/20 mt-2 pt-3"
                       onClick={() => setMenuOpen(null)}
                     >
                       View All →
@@ -477,17 +477,17 @@ export default function FloatingNavBar() {
                 Offers ▾
               </button>
               {menuOpen === "offers" && (
-                <div className="absolute right-0 top-full mt-3 w-56 rounded-2xl border border-white/20 bg-white/10 backdrop-blur-2xl shadow-2xl p-3 z-[110]" style={{ boxShadow: '0 25px 50px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)' }}>
+                <div className="absolute right-0 top-full mt-3 w-56 rounded-2xl border border-sky-400/30 bg-gradient-to-br from-sky-900/40 via-blue-900/35 to-cyan-900/40 backdrop-blur-2xl shadow-2xl p-3 z-[110]" style={{ boxShadow: '0 25px 50px rgba(14, 165, 233, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)' }}>
                   <Link
                     to="/offers"
-                    className="block px-4 py-2.5 text-sm text-gray-900 hover:bg-white/80 rounded-lg transition-all duration-200 font-medium"
+                    className="block px-4 py-2.5 text-sm text-sky-100 hover:bg-sky-500/20 rounded-lg transition-all duration-200 font-medium"
                     onClick={() => setMenuOpen(null)}
                   >
                     All Offers
                   </Link>
                   <Link
                     to="/combos"
-                    className="block px-4 py-2.5 text-sm text-gray-900 hover:bg-white/80 rounded-lg transition-all duration-200 font-medium"
+                    className="block px-4 py-2.5 text-sm text-sky-100 hover:bg-sky-500/20 rounded-lg transition-all duration-200 font-medium"
                     onClick={() => setMenuOpen(null)}
                   >
                     Combo Deals
@@ -502,12 +502,12 @@ export default function FloatingNavBar() {
                 Visitor Guide ▾
               </button>
               {menuOpen === "guide" && (
-                <div className="absolute right-0 top-full mt-3 w-64 rounded-2xl border border-white/20 bg-white/10 backdrop-blur-2xl shadow-2xl p-3 z-[110]" style={{ boxShadow: '0 25px 50px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)' }}>
+                <div className="absolute right-0 top-full mt-3 w-64 rounded-2xl border border-sky-400/30 bg-gradient-to-br from-sky-900/40 via-blue-900/35 to-cyan-900/40 backdrop-blur-2xl shadow-2xl p-3 z-[110]" style={{ boxShadow: '0 25px 50px rgba(14, 165, 233, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)' }}>
                   {guidePages.map((p, idx) => (
                     <Link
                       key={idx}
                       to={`/page/${p.slug || p.id}`}
-                      className="block px-4 py-2.5 text-sm text-gray-900 hover:bg-white/80 rounded-lg transition-all duration-200 font-medium"
+                      className="block px-4 py-2.5 text-sm text-sky-100 hover:bg-sky-500/20 rounded-lg transition-all duration-200 font-medium"
                       onClick={() => setMenuOpen(null)}
                     >
                       {p.title || p.name}
@@ -547,24 +547,24 @@ export default function FloatingNavBar() {
                 </button>
 
                 {profileOpen && (
-                  <div className="absolute right-0 top-full mt-3 w-56 rounded-2xl border border-white/20 bg-white/10 backdrop-blur-2xl shadow-2xl p-3 z-[110]" style={{ boxShadow: '0 25px 50px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)' }}>
+                  <div className="absolute right-0 top-full mt-3 w-56 rounded-2xl border border-sky-400/30 bg-gradient-to-br from-sky-900/40 via-blue-900/35 to-cyan-900/40 backdrop-blur-2xl shadow-2xl p-4 z-[110]" style={{ boxShadow: '0 25px 50px rgba(14, 165, 233, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.2)' }}>
                     <Link
                       to="/my-bookings"
-                      className="block px-4 py-2.5 text-gray-900 hover:bg-white/80 rounded-lg text-sm font-medium transition-all duration-200"
+                      className="block px-4 py-2.5 text-sky-100 hover:bg-sky-500/20 rounded-lg text-sm font-medium transition-all duration-200"
                       onClick={() => setProfileOpen(false)}
                     >
                       📋 My Bookings
                     </Link>
-                    <div className="px-4 py-3 mt-2 rounded-lg bg-white/20 border border-white/20 text-xs text-gray-900">
-                      <p className="font-bold text-gray-900 text-sm mb-2">Account Details</p>
-                      <p className="leading-relaxed mb-1">
-                        <span className="font-semibold">Name:</span> {userName || "Guest"}
+                    <div className="px-4 py-3 mt-2 rounded-lg bg-sky-500/15 border border-sky-400/30 text-xs text-sky-50">
+                      <p className="font-bold text-sky-100 text-sm mb-2">Account Details</p>
+                      <p className="leading-relaxed mb-1 text-sky-100">
+                        <span className="font-semibold text-sky-200">Name:</span> {userName || "Guest"}
                       </p>
-                      <p className="leading-relaxed mb-1">
-                        <span className="font-semibold">Phone:</span> {userPhone}
+                      <p className="leading-relaxed mb-1 text-sky-100">
+                        <span className="font-semibold text-sky-200">Phone:</span> {userPhone}
                       </p>
-                      <p className="leading-relaxed">
-                        <span className="font-semibold">Email:</span> {userEmail}
+                      <p className="leading-relaxed text-sky-100">
+                        <span className="font-semibold text-sky-200">Email:</span> {userEmail}
                       </p>
                     </div>
 
@@ -586,17 +586,17 @@ export default function FloatingNavBar() {
 
         {/* ------------------- MOBILE NAV BAR -------------------- */}
         <div
-          className={`md:hidden px-4 py-3 flex items-center justify-between transition-all duration-300 ${
-            isBookingPage ? "rounded-none" : "rounded-[26px]"
-          } bg-gradient-to-r from-slate-900/65 via-slate-800/55 to-slate-900/65 text-white border border-white/20 backdrop-blur-3xl shadow-2xl`}
+          className={`md:hidden px-4 py-3.5 flex items-center justify-between transition-all duration-300 ${
+            isBookingPage ? "rounded-none" : "rounded-[28px]"
+          } bg-gradient-to-br from-sky-900/35 via-blue-900/30 to-cyan-900/35 text-white border border-sky-400/35 backdrop-blur-2xl shadow-2xl`}
           style={{
             boxShadow: isBookingPage 
               ? 'none'
-              : '0 8px 32px rgba(15, 23, 42, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+              : '0 12px 48px rgba(14, 165, 233, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2), inset 0 0 20px rgba(14, 165, 233, 0.1)'
           }}
         >
           <button
-            className="p-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all duration-300 hover:scale-110"
+            className="p-2.5 rounded-full bg-sky-500/20 hover:bg-sky-400/30 text-sky-100 transition-all duration-300 hover:scale-110 shadow-lg shadow-sky-500/20"
             onClick={() => setMobileOpen((v) => !v)}
             aria-expanded={mobileOpen}
             aria-label="Open menu"
@@ -616,7 +616,7 @@ export default function FloatingNavBar() {
             {token ? (
               <>
                 <button
-                  className="h-10 w-10 rounded-full bg-gradient-to-br from-sky-400 to-cyan-500 text-white font-bold hover:from-sky-500 hover:to-cyan-600 transition-all duration-300 shadow-lg hover:scale-110"
+                  className="h-10 w-10 rounded-full flex items-center justify-center text-sm font-bold bg-gradient-to-br from-sky-400 via-blue-500 to-cyan-500 text-white hover:from-sky-300 hover:via-blue-400 hover:to-cyan-400 transition-all duration-300 shadow-lg shadow-sky-500/40 hover:shadow-xl hover:scale-110 border border-sky-300/40"
                   onClick={() => setProfileOpen((v) => !v)}
                   aria-expanded={profileOpen}
                   aria-label="Account menu"
@@ -629,7 +629,7 @@ export default function FloatingNavBar() {
                   <div className="absolute right-0 top-full mt-3 w-56 rounded-2xl border border-white/20 bg-white/10 backdrop-blur-2xl shadow-2xl p-3 z-[110]" style={{ boxShadow: '0 25px 50px rgba(0, 0, 0, 0.3)' }}>
                     <Link
                       to="/my-bookings"
-                      className="block px-4 py-2.5 text-gray-900 text-sm hover:bg-white/80 rounded-lg font-medium transition-all duration-200"
+                      className="block px-4 py-2.5 text-sky-100 text-sm hover:bg-sky-500/20 rounded-lg font-semibold transition-all duration-200 hover:text-white"
                       onClick={() => {
                         setProfileOpen(false);
                         setMobileOpen(false);
@@ -637,21 +637,21 @@ export default function FloatingNavBar() {
                     >
                       📋 My Bookings
                     </Link>
-                    <div className="px-4 py-3 mt-2 rounded-lg bg-white/20 border border-white/20 text-xs text-gray-900">
-                      <p className="font-bold text-gray-900 text-sm mb-2">Account</p>
-                      <p className="leading-relaxed mb-1">
-                        <span className="font-semibold">Name:</span> {userName || "Guest"}
+                    <div className="px-4 py-3 mt-2 rounded-lg bg-sky-500/15 border border-sky-400/30 text-xs text-sky-50">
+                      <p className="font-bold text-sky-100 text-sm mb-2">Account Details</p>
+                      <p className="leading-relaxed mb-1 text-sky-100">
+                        <span className="font-semibold text-sky-200">Name:</span> {userName || "Guest"}
                       </p>
-                      <p className="leading-relaxed mb-1">
-                        <span className="font-semibold">Phone:</span> {userPhone}
+                      <p className="leading-relaxed mb-1 text-sky-100">
+                        <span className="font-semibold text-sky-200">Phone:</span> {userPhone}
                       </p>
-                      <p className="leading-relaxed">
-                        <span className="font-semibold">Email:</span> {userEmail}
+                      <p className="leading-relaxed text-sky-100">
+                        <span className="font-semibold text-sky-200">Email:</span> {userEmail}
                       </p>
                     </div>
 
                     <button
-                      className="w-full px-4 py-2.5 mt-3 text-red-500 hover:bg-red-100 rounded-lg text-sm font-semibold transition-all duration-200"
+                      className="w-full px-4 py-2.5 mt-3 text-red-300 hover:bg-red-500/20 rounded-lg text-sm font-semibold transition-all duration-200 hover:text-red-200"
                       onClick={() => {
                         dispatch(logout());
                         setProfileOpen(false);
@@ -672,30 +672,31 @@ export default function FloatingNavBar() {
         {/* ------------------- MOBILE MENU PANEL -------------------- */}
         {mobileOpen && (
           <div
-            className="md:hidden fixed left-2 right-2 top-[4.25rem] z-[120] rounded-2xl px-4 py-4 space-y-2 max-h-[calc(100vh-6rem)] overflow-y-auto border border-white/20 backdrop-blur-2xl shadow-2xl"
+            className="md:hidden fixed left-2 right-2 top-[4.25rem] z-[120] rounded-2xl px-4 py-4 space-y-2 max-h-[calc(100vh-6rem)] overflow-y-auto border border-sky-400/30 backdrop-blur-2xl shadow-2xl"
             style={{
-              backgroundColor: 'rgba(30, 41, 59, 0.7)',
-              boxShadow: '0 25px 50px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+              backgroundColor: 'rgba(15, 23, 42, 0.8)',
+              background: 'linear-gradient(135deg, rgba(30, 58, 138, 0.4) 0%, rgba(12, 74, 110, 0.35) 100%)',
+              boxShadow: '0 25px 50px rgba(14, 165, 233, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
             }}
           >
             <Link
               to="/"
-              className="block py-3 px-4 text-white hover:text-sky-300 font-semibold transition-all duration-200 rounded-lg hover:bg-white/10"
+              className="block py-3 px-4 text-sky-100 hover:text-white font-semibold transition-all duration-200 rounded-lg hover:bg-sky-500/20"
               onClick={() => setMobileOpen(false)}
             >
               🏠 Home
             </Link>
 
             <details className="group">
-              <summary className="cursor-pointer py-3 px-4 text-white hover:text-sky-300 font-semibold transition-all duration-200 rounded-lg hover:bg-white/10 list-none">
+              <summary className="cursor-pointer py-3 px-4 text-sky-100 hover:text-white font-semibold transition-all duration-200 rounded-lg hover:bg-sky-500/20 list-none">
                 🎢 Attractions
               </summary>
-              <div className="pl-4 space-y-1 mt-2 pb-3 border-t border-white/20 pt-3">
+              <div className="pl-4 space-y-1 mt-2 pb-3 border-t border-sky-400/20 pt-3">
                 {topAttractions.slice(0, 8).map((a, idx) => (
                   <Link
                     key={idx}
                     to={`/attractions/${getAttrId(a)}`}
-                    className="block py-2 pl-4 text-white/80 hover:text-white font-medium hover:bg-white/10 rounded-lg transition-all duration-200"
+                    className="block py-2 pl-4 text-sky-200 hover:text-white font-medium hover:bg-sky-500/15 rounded-lg transition-all duration-200"
                     onClick={() => setMobileOpen(false)}
                   >
                     • {a.name || a.title}
@@ -703,7 +704,7 @@ export default function FloatingNavBar() {
                 ))}
                 <Link
                   to="/attractions"
-                  className="block py-2 pl-4 text-sky-300 font-bold hover:bg-white/10 rounded-lg transition-all duration-200"
+                  className="block py-2 pl-4 text-cyan-300 font-bold hover:bg-sky-500/15 rounded-lg transition-all duration-200"
                   onClick={() => setMobileOpen(false)}
                 >
                   → View All
@@ -712,20 +713,20 @@ export default function FloatingNavBar() {
             </details>
 
             <details className="group">
-              <summary className="cursor-pointer py-3 px-4 text-white hover:text-sky-300 font-semibold transition-all duration-200 rounded-lg hover:bg-white/10 list-none">
+              <summary className="cursor-pointer py-3 px-4 text-sky-100 hover:text-white font-semibold transition-all duration-200 rounded-lg hover:bg-sky-500/20 list-none">
                 🎁 Offers
               </summary>
-              <div className="pl-4 space-y-1 mt-2 pb-3 border-t border-white/20 pt-3">
+              <div className="pl-4 space-y-1 mt-2 pb-3 border-t border-sky-400/20 pt-3">
                 <Link
                   to="/offers"
-                  className="block py-2 pl-4 text-white/80 hover:text-white font-medium hover:bg-white/10 rounded-lg transition-all duration-200"
+                  className="block py-2 pl-4 text-sky-200 hover:text-white font-medium hover:bg-sky-500/15 rounded-lg transition-all duration-200"
                   onClick={() => setMobileOpen(false)}
                 >
                   • All Offers
                 </Link>
                 <Link
                   to="/combos"
-                  className="block py-2 pl-4 text-white/80 hover:text-white font-medium hover:bg-white/10 rounded-lg transition-all duration-200"
+                  className="block py-2 pl-4 text-sky-200 hover:text-white font-medium hover:bg-sky-500/15 rounded-lg transition-all duration-200"
                   onClick={() => setMobileOpen(false)}
                 >
                   • Combo Deals
@@ -734,15 +735,15 @@ export default function FloatingNavBar() {
             </details>
 
             <details className="group">
-              <summary className="cursor-pointer py-3 px-4 text-white hover:text-sky-300 font-semibold transition-all duration-200 rounded-lg hover:bg-white/10 list-none">
+              <summary className="cursor-pointer py-3 px-4 text-sky-100 hover:text-white font-semibold transition-all duration-200 rounded-lg hover:bg-sky-500/20 list-none">
                 📖 Visitor Guide
               </summary>
-              <div className="pl-4 space-y-1 mt-2 pb-3 border-t border-white/20 pt-3">
+              <div className="pl-4 space-y-1 mt-2 pb-3 border-t border-sky-400/20 pt-3">
                 {guidePages.map((p, idx) => (
                   <Link
                     key={idx}
                     to={`/page/${p.slug || p.id}`}
-                    className="block py-2 pl-4 text-white/80 hover:text-white font-medium hover:bg-white/10 rounded-lg transition-all duration-200"
+                    className="block py-2 pl-4 text-sky-200 hover:text-white font-medium hover:bg-sky-500/15 rounded-lg transition-all duration-200"
                     onClick={() => setMobileOpen(false)}
                   >
                     • {p.title || p.name}
@@ -753,23 +754,23 @@ export default function FloatingNavBar() {
 
             <Link
               to="/contact"
-              className="block py-3 px-4 text-white hover:text-sky-300 font-semibold transition-all duration-200 rounded-lg hover:bg-white/10 border-t border-white/20 mt-3 pt-4"
+              className="block py-3 px-4 text-sky-100 hover:text-white font-semibold transition-all duration-200 rounded-lg hover:bg-sky-500/20 border-t border-sky-400/20 mt-3 pt-4"
               onClick={() => setMobileOpen(false)}
             >
               📞 Contact Us
             </Link>
             <Link
               to="/blogs"
-              className="block py-3 px-4 text-white hover:text-sky-300 font-semibold transition-all duration-200 rounded-lg hover:bg-white/10"
+              className="block py-3 px-4 text-sky-100 hover:text-white font-semibold transition-all duration-200 rounded-lg hover:bg-sky-500/20"
               onClick={() => setMobileOpen(false)}
             >
               📰 Blogs
             </Link>
 
-            <div className="space-y-2 border-t border-white/20 mt-4 pt-4">
+            <div className="space-y-2 border-t border-sky-400/20 mt-4 pt-4">
               {!token && (
                 <button
-                  className="w-full py-3 border-2 border-sky-400 text-sky-300 font-bold rounded-full hover:bg-sky-500/20 transition-all duration-300"
+                  className="w-full py-3 border-2 border-sky-400 text-sky-200 font-bold rounded-full hover:bg-sky-500/20 transition-all duration-300 hover:text-white"
                   onClick={() => {
                     setMobileOpen(false);
                     openAuthModal();
@@ -779,7 +780,7 @@ export default function FloatingNavBar() {
                 </button>
               )}
               <button
-                className="w-full py-3 bg-gradient-to-r from-sky-500 to-cyan-500 text-white font-bold rounded-full hover:from-sky-600 hover:to-cyan-600 shadow-lg transition-all duration-300 hover:scale-105"
+                className="w-full py-3 bg-gradient-to-r from-sky-500 via-blue-500 to-cyan-500 text-white font-bold rounded-full hover:from-sky-600 hover:via-blue-600 hover:to-cyan-600 shadow-lg shadow-sky-500/30 transition-all duration-300 hover:scale-105"
                 onClick={() => {
                   setMobileOpen(false);
                   navigate("/booking");
