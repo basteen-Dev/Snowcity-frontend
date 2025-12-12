@@ -5,7 +5,7 @@ import A from '../../services/adminEndpoints';
 import ImageUploader from '../../components/common/ImageUploader';
 import useCatalogTargets from '../../hooks/useCatalogTargets';
 
-const RULES = ['holiday', 'happy_hour', 'weekday_special', 'dynamic_pricing', 'date_slot_pricing'];
+const RULES = ['holiday', 'happy_hour', 'weekday_special', 'dynamic_pricing', 'date_slot_pricing', 'buy_x_get_y'];
 const DISCOUNT_TYPES = [
   { value: 'percent', label: 'Percentage (%)' },
   { value: 'amount', label: 'Flat Amount' }
@@ -20,6 +20,13 @@ const BASE_RULE = {
   target_type: 'attraction',
   target_id: '',
   applies_to_all: false,
+  // buy_x_get_y fields
+  buy_qty: 1,
+  get_qty: 1,
+  get_target_type: 'attraction',
+  get_target_id: '',
+  get_discount_type: '',
+  get_discount_value: '',
   date_from: '',
   date_to: '',
   time_from: '',
@@ -484,6 +491,50 @@ export default function OfferForm() {
                   <label htmlFor={`applies-${idx}`} className="text-xs text-gray-600">Applies to all of this type</label>
                 </div>
               </div>
+              {/* Buy X Get Y specific UI */}
+              {f.rule_type === 'buy_x_get_y' ? (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">Buy Quantity (X)</label>
+                    <input type="number" min={1} className="w-full rounded-md border px-3 py-2" value={rule.buy_qty ?? 1} onChange={(e) => updateRule(idx, { buy_qty: Number(e.target.value || 1) })} />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">Get Quantity (Y)</label>
+                    <input type="number" min={1} className="w-full rounded-md border px-3 py-2" value={rule.get_qty ?? 1} onChange={(e) => updateRule(idx, { get_qty: Number(e.target.value || 1) })} />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">Get Target Type</label>
+                    <select className="w-full rounded-md border px-3 py-2" value={rule.get_target_type || 'attraction'} onChange={(e) => updateRule(idx, { get_target_type: e.target.value, get_target_id: '' })}>
+                      {TARGET_TYPES.map((opt) => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">Get Target</label>
+                    <select className="w-full rounded-md border px-3 py-2" value={rule.get_target_id ?? ''} disabled={rule.applies_to_all || targetsStatus === 'loading'} onChange={(e) => updateRule(idx, { get_target_id: e.target.value })}>
+                      <option value="">Select {rule.get_target_type === 'combo' ? 'Combo' : 'Attraction'}</option>
+                      {(rule.get_target_type === 'attraction' ? attractions : combos).map((item) => (
+                        <option key={`get-${item.id}`} value={item.id}>{item.title || item.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">Get Discount Type</label>
+                    <select className="w-full rounded-md border px-3 py-2" value={rule.get_discount_type || ''} onChange={(e) => updateRule(idx, { get_discount_type: e.target.value })}>
+                      <option value="">None / Free</option>
+                      <option value="percent">Percentage (%)</option>
+                      <option value="amount">Flat Amount</option>
+                    </select>
+                  </div>
+                  {rule.get_discount_type ? (
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Get Discount Value</label>
+                      <input type="number" min={0} className="w-full rounded-md border px-3 py-2" value={rule.get_discount_value ?? ''} onChange={(e) => updateRule(idx, { get_discount_value: e.target.value })} />
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                 <div>
                   <label className="block text-xs text-gray-500 mb-1">Date From</label>

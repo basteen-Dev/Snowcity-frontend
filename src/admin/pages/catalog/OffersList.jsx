@@ -111,6 +111,20 @@ export default function OffersList() {
             key: 'discount_summary',
             title: 'Discount',
             render: (row) => {
+              if ((row.rule_type || '').toLowerCase() === 'buy_x_get_y') {
+                const r = Array.isArray(row.rules) && row.rules[0] ? row.rules[0] : null;
+                if (!r) return 'Buy X get Y';
+                const buyQty = r.buy_qty || 1;
+                const getQty = r.get_qty || 1;
+                const getType = (r.get_target_type || 'attraction');
+                const getId = r.get_target_id || '';
+                const discountType = r.get_discount_type || '';
+                const discountVal = r.get_discount_value || '';
+                const targetLabel = getType + (getId ? ` #${getId}` : '');
+                if (!discountType) return `Buy ${buyQty} get ${getQty} ${targetLabel} (Free)`;
+                if (discountType === 'amount') return `Buy ${buyQty} get ${getQty} ${targetLabel} (₹${discountVal})`;
+                return `Buy ${buyQty} get ${getQty} ${targetLabel} (${discountVal}%)`;
+              }
               const type = (row.discount_type || 'percent').toLowerCase();
               const value = Number(row.discount_value ?? row.discount_percent ?? 0);
               if (!value) return '—';
