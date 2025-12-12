@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import dayjs from 'dayjs';
@@ -454,6 +454,8 @@ export default function Booking() {
   }, [cartItems, activeKey]);
 
   const activeItemKey = checkoutItem?.key || null;
+
+  const dateInputRef = useRef(null);
 
   const [sel, setSel] = useState(() => createDefaultSelection());
   const [editingKey, setEditingKey] = useState(null);
@@ -1358,7 +1360,7 @@ export default function Booking() {
                 }`}
               >
                 <div className="flex items-center gap-4 min-w-0 flex-1">
-                  <div className="w-20 h-20 rounded-2xl overflow-hidden border border-gray-100 bg-sky-50 shrink-0">
+                  <div className="w-28 h-28 rounded-2xl overflow-hidden border border-gray-100 bg-sky-50 shrink-0">
                     {image ? (
                       <img src={image} alt={title} className="w-full h-full object-cover" />
                     ) : (
@@ -1516,19 +1518,18 @@ export default function Booking() {
     setDrawerOpen(true);
   };
 
+  const onCalendarButtonClick = () => {
+    if (dateInputRef.current) {
+      dateInputRef.current.showPicker ? dateInputRef.current.showPicker() : dateInputRef.current.focus();
+    }
+  };
+
   return (
     <>
       {/* Page wrapper: make sure everything sits under navbar; ensure Inter font */}
       <div className="min-h-screen bg-gradient-to-b from-sky-50 to-white font-inter">
-        {/* hero */}
-        <div className="max-w-6xl mx-auto pt-20 md:pt-24 px-3 lg:px-0">
-          <div className="rounded-3xl overflow-hidden shadow-xl bg-sky-100">
-            <img src={heroImage} alt={selectedMeta.title || 'Experience'} className="w-full h-56 sm:h-72 lg:h-80 object-cover" />
-          </div>
-        </div>
-
         {/* steps / body */}
-        <div className="max-w-6xl mx-auto px-3 lg:px-0 pb-24 lg:pb-20">
+        <div className="max-w-6xl mx-auto px-3 lg:px-0 pb-24 lg:pb-20 pt-20 md:pt-24">
           {/* header + steps */}
           <div className="mt-4 md:mt-6 bg-white/80 backdrop-blur rounded-2xl shadow-sm border border-sky-100">
             <div className="px-4 md:px-6 pt-3 md:pt-4 pb-2 md:pb-3 border-b border-gray-100 flex items-center justify-between">
@@ -1586,7 +1587,7 @@ export default function Booking() {
                     </button>
                     <button
                       type="button"
-                      onClick={onOpenDrawerForSelected}
+                      onClick={onCalendarButtonClick}
                       className="flex items-center gap-2 px-4 py-2 rounded-full text-xs sm:text-sm font-medium bg-white text-gray-800 border border-gray-200 hover:border-sky-300"
                     >
                       <Calendar size={14} className="text-gray-500" />
@@ -2114,35 +2115,51 @@ export default function Booking() {
                   )}
 
                   <div className="mb-4 space-y-2 max-h-40 overflow-y-auto custom-scrollbar pr-2">
-                    {cartItems.map((item) => (
-                      <div
-                        key={item.key}
-                        className="flex justify-between text-sm py-2 border-b border-dashed border-gray-100 last:border-0"
-                      >
-                        <div className="text-gray-700">
-                          <span className="font-bold text-gray-900">{item.quantity}x</span>{' '}
-                          {item.title ||
-                            item.meta?.title ||
-                            (item.item_type === 'combo'
-                              ? item.combo?.title ||
-                                item.combo?.name ||
-                                item.combo?.combo_name ||
-                                `Combo #${item.combo_id}`
-                              : item.attraction?.title ||
-                                item.attraction?.name ||
-                                `Attraction #${item.attraction_id}`)}
-                          <div className="text-xs text-gray-400">
-                            {(item.dateLabel ||
-                              dayjs(item.booking_date).format('DD MMM YYYY') ||
-                              item.booking_date)}
-                            {item.slotLabel ? ` • ${item.slotLabel}` : ''}
+                    {cartItems.map((item) => {
+                      const itemAddonsMap = cartAddons.get(item.key) || new Map();
+                      const itemAddons = Array.from(itemAddonsMap.values()).filter((a) => Number(a.quantity) > 0);
+                      return (
+                        <div
+                          key={item.key}
+                          className="text-sm py-2 border-b border-dashed border-gray-100 last:border-0"
+                        >
+                          <div className="flex justify-between mb-1">
+                            <div className="text-gray-700">
+                              <span className="font-bold text-gray-900">{item.quantity}x</span>{' '}
+                              {item.title ||
+                                item.meta?.title ||
+                                (item.item_type === 'combo'
+                                  ? item.combo?.title ||
+                                    item.combo?.name ||
+                                    item.combo?.combo_name ||
+                                    `Combo #${item.combo_id}`
+                                  : item.attraction?.title ||
+                                    item.attraction?.name ||
+                                    `Attraction #${item.attraction_id}`)}
+                              <div className="text-xs text-gray-400 mt-0.5">
+                                {(item.dateLabel ||
+                                  dayjs(item.booking_date).format('DD MMM YYYY') ||
+                                  item.booking_date)}
+                                {item.slotLabel ? ` • ${item.slotLabel}` : ''}
+                              </div>
+                            </div>
+                            <div className="font-medium text-gray-900 tabular-nums">
+                              ₹{item.unitPrice * item.quantity}
+                            </div>
                           </div>
+                          {itemAddons.length > 0 && (
+                            <div className="ml-1 mt-1.5 pl-2 border-l-2 border-sky-200 space-y-1">
+                              {itemAddons.map((addon) => (
+                                <div key={addon.addon_id} className="flex justify-between text-xs text-gray-600">
+                                  <span className="text-gray-600">• {addon.name} <span className="text-gray-400">x{addon.quantity}</span></span>
+                                  <span className="font-medium text-gray-700 tabular-nums">₹{(Number(addon.price || 0) * Number(addon.quantity || 0)).toFixed(0)}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
-                        <div className="font-medium text-gray-900 tabular-nums">
-                          ₹{item.unitPrice * item.quantity}
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                     {totalAddonsCost > 0 && (
                       <div className="flex justify-between text-sm py-2 border-t border-gray-100 pt-3">
                         <div className="text-gray-600 font-medium">Extras / Add-ons</div>
@@ -2173,7 +2190,26 @@ export default function Booking() {
 
                 {/* Swiggy-like coupon apply row */}
                 <div className="space-y-3 border-t border-gray-200 pt-4">
-                  {!couponApplied && (
+                  {couponApplied ? (
+                    <div className="space-y-2">
+                      <p className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Current Promo Code</p>
+                      <div className="flex gap-2 items-center">
+                        <div className="flex-1 px-4 py-3 border border-green-200 rounded-xl bg-green-50 text-sm font-bold text-green-700 uppercase tracking-wider">
+                          ✓ {String(coupon.code || coupon.data?.code).toUpperCase()} Applied
+                        </div>
+                        <button
+                          onClick={() => {
+                            setPromoInput('');
+                            dispatch(setCouponCode(''));
+                          }}
+                          className="px-4 py-3 rounded-xl border border-red-200 bg-red-50 text-red-600 text-sm font-semibold hover:bg-red-100 transition-colors"
+                          title="Remove promo code"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
                     <>
                       <p className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Apply Promo Code</p>
                       <div className="flex gap-2">
@@ -2211,7 +2247,7 @@ export default function Booking() {
           </div>
 
           {/* floating bottom action bar (not a footer; mobile-friendly cart CTA) */}
-          {(step !== 1 || !isDesktop) && (
+          {(step !== 1 || !isDesktop) && !(step === 2 && isDesktop) && (
             <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 md:px-0 py-3 md:py-4 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] z-30">
               <div className="max-w-6xl mx-auto flex gap-3 items-center">
                 {!isDesktop && step > 1 && (
@@ -2244,7 +2280,7 @@ export default function Booking() {
                   disabled={
                     (step === 3 && !hasToken && !otp.verified) || (creating?.status === 'loading')
                   }
-                  className={`flex-1 bg-gradient-to-r from-sky-600 to-sky-700 text-white py-3 rounded-xl font-bold shadow-lg hover:shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed text-base md:text-lg ${
+                  className={`flex-1 bg-gradient-to-r from-sky-600 to-sky-700 text-white py-2 rounded-xl font-bold shadow-lg hover:shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed text-sm md:text-base ${
                     isDesktop ? '' : 'md:w-full'
                   }`}
                 >
@@ -2281,12 +2317,12 @@ export default function Booking() {
         </div>
       </div>
 
-      {/* Details drawer: right on desktop, bottom-sheet on mobile */}
+      {/* Details drawer: mobile bottom-sheet & desktop right-side drawer */}
       {drawerOpen && selectedMeta.title && (
-        <div className="fixed inset-0 z-50 flex justify-center sm:justify-end items-end sm:items-start bg-black/40 backdrop-blur-[2px]">
-          <div className="flex-1 sm:hidden" onClick={() => setDrawerOpen(false)} />
-          <div className="w-full sm:w-1/2 lg:w-[480px] max-w-full bg-white rounded-t-3xl sm:rounded-none sm:rounded-l-3xl shadow-2xl flex flex-col transform translate-y-0 sm:translate-x-0 transition-all h-full sm:h-screen sm:mt-0">
-            <div className="sticky top-0 z-10 flex items-center justify-between px-4 sm:px-6 pt-4 pb-2 border-b border-gray-100 bg-white rounded-t-3xl sm:rounded-none sm:rounded-tl-3xl">
+        <div className="fixed inset-0 z-50 flex justify-end items-end md:items-stretch bg-black/40 backdrop-blur-[2px] md:bg-black/20">
+          <div className="flex-1 hidden md:block" onClick={() => setDrawerOpen(false)} />
+          <div className="w-full md:w-1/2 bg-white rounded-t-3xl md:rounded-l-3xl shadow-2xl flex flex-col transform translate-y-0 transition-all h-[90vh] md:h-screen max-h-[90vh] md:max-h-screen md:mt-0 mt-16">
+            <div className="sticky top-0 z-10 flex items-center justify-between px-4 sm:px-6 pt-4 pb-2 border-b border-gray-100 bg-white rounded-t-3xl md:rounded-tl-3xl sm:rounded-tl-3xl">
               <h2 className="text-base sm:text-lg font-semibold text-gray-900 pr-3 truncate">
                 {selectedMeta.title}
               </h2>
@@ -2299,42 +2335,10 @@ export default function Booking() {
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto custom-scrollbar px-4 sm:px-6 py-4 space-y-4">
+            <div className="flex-1 overflow-y-auto custom-scrollbar px-4 py-4 space-y-4">
               {drawerMode === 'details' ? (
                 <div className="space-y-4">
-                  {(detailsMainImage || selectedMeta.image) && (
-                    <div className="rounded-2xl overflow-hidden border border-gray-100">
-                      <img
-                        src={detailsMainImage || selectedMeta.image}
-                        alt={selectedMeta.title}
-                        className="w-full h-52 object-cover"
-                      />
-                    </div>
-                  )}
-
-                  {/* gallery thumbnails (combo previewImages or attraction media) */}
-                  {(() => {
-                    const gallery = sel.itemType === 'combo'
-                      ? (selectedMeta.previewImages || [])
-                      : (selectedAttraction?.media || []).map(resolveImageSource).filter(Boolean);
-                    if (!gallery || !gallery.length) return null;
-                    return (
-                      <div className="flex gap-2 overflow-x-auto pb-2">
-                        {gallery.map((g, i) => (
-                          <button
-                            key={i}
-                            type="button"
-                            onClick={() => setDetailsMainImage(g)}
-                            className="w-24 h-16 rounded-xl overflow-hidden border border-gray-100 flex-shrink-0"
-                          >
-                            <img src={g} alt={`thumb-${i}`} className="w-full h-full object-cover" />
-                          </button>
-                        ))}
-                      </div>
-                    );
-                  })()}
-
-                  {/* description */}
+                  {/* description only - no images */}
                   <div className="text-sm text-gray-700">
                     {(() => {
                       const desc = sel.itemType === 'combo'
@@ -2358,18 +2362,7 @@ export default function Booking() {
                 </div>
               ) : (
                 <>
-                  {/* image */}
-                  {selectedMeta.image && (
-                    <div className="rounded-2xl overflow-hidden border border-gray-100">
-                      <img
-                        src={selectedMeta.image}
-                        alt={selectedMeta.title}
-                        className="w-full h-40 sm:h-52 object-cover"
-                      />
-                    </div>
-                  )}
-
-                  {/* date chips & custom date */}
+                  {/* date chips & custom date - calendar only, no typing */}
                   <div className="space-y-2">
                     <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">
                       Date
@@ -2378,7 +2371,7 @@ export default function Booking() {
                       <button
                         type="button"
                         onClick={handleToday}
-                        className={`px-4 py-2 rounded-full text-xs sm:text-sm font-medium border transition-colors ${
+                        className={`px-4 py-2 rounded-full text-xs font-medium border transition-colors ${
                           sel.date === todayYMD()
                             ? 'bg-sky-600 text-white border-sky-600'
                             : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
@@ -2389,7 +2382,7 @@ export default function Booking() {
                       <button
                         type="button"
                         onClick={handleTomorrow}
-                        className={`px-4 py-2 rounded-full text-xs sm:text-sm font-medium border transition-colors ${
+                        className={`px-4 py-2 rounded-full text-xs font-medium border transition-colors ${
                           sel.date === dayjs().add(1, 'day').format('YYYY-MM-DD')
                             ? 'bg-sky-600 text-white border-sky-600'
                             : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
@@ -2397,20 +2390,24 @@ export default function Booking() {
                       >
                         Tomorrow
                       </button>
-                      <div className="relative">
-                        <div className="absolute left-3 top-2.5 pointer-events-none">
-                          <Calendar size={14} className="text-gray-500" />
-                        </div>
+                      <label className={`px-4 py-2 rounded-full text-xs font-medium border transition-colors cursor-pointer inline-block ${
+                          sel.date && sel.date !== '' && sel.date !== todayYMD() && sel.date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
+                            ? 'bg-sky-600 text-white border-sky-600'
+                            : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
+                        }`}>
+                        All Days
                         <input
+                          ref={dateInputRef}
                           type="date"
                           min={todayYMD()}
                           value={sel.date}
                           onChange={(e) =>
                             setSel((s) => ({ ...s, date: e.target.value, slotKey: '' }))
                           }
-                          className="pl-8 pr-3 py-2 rounded-full text-xs sm:text-sm font-medium border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-sky-300"
+                          onKeyDown={(e) => e.preventDefault()}
+                          className="hidden"
                         />
-                      </div>
+                      </label>
                     </div>
                   </div>
 
@@ -2511,10 +2508,10 @@ export default function Booking() {
                     type="button"
                     onClick={handleDirectBuy}
                     disabled={!selectionReady}
-                    className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-sky-600 text-white text-sm font-semibold shadow-md hover:bg-sky-700 active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-sky-600 text-white text-sm font-semibold shadow-md hover:bg-sky-700 active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     <ShoppingBag size={18} />
-                    <span>Buy now</span>
+                    <span>Buy</span>
                   </button>
                 </div>
               </div>

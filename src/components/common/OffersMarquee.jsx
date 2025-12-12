@@ -56,17 +56,13 @@ export default function OffersMarquee({ items }) {
 
   return (
     <section className="relative bg-gradient-to-r from-white via-sky-50 to-cyan-50 py-3 overflow-hidden">
-      <div className="flex items-center gap-2 mb-2 px-4 text-sky-900 font-bold tracking-wide">
-        <Sparkles className="w-5 h-5 text-sky-600" />
-        <span className="text-sky-800">SPECIAL OFFERS</span>
-      </div>
-
+    
       <div className="relative flex overflow-hidden">
         <div className="flex whitespace-nowrap animate-offers-marquee">
           {promos.map((promo, idx) => (
             <div
               key={`${promo.id}-${idx}`}
-              className="inline-flex items-center mx-6 px-4 py-2 bg-white/80 backdrop-blur-sm border border-sky-200 rounded-2xl shadow-lg text-sky-900"
+              className="inline-flex items-center mx-6 px-4 py-2  backdrop-blur-sm border border-sky-200 rounded-2xl shadow-lg text-sky-900"
             >
               <span className="text-xl mr-3">{promo.icon}</span>
               <div className="flex flex-col text-left">
