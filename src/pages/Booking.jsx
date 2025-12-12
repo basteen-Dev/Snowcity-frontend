@@ -995,12 +995,25 @@ export default function Booking() {
       alert('Please select a date, a time slot, and quantity first.');
       return;
     }
-    const added = addSelectionToCart();
-    if (added) {
-      // Take user to extras step so they can choose add-ons before checkout
-      dispatch(setStep(2));
+    
+    // Check if already in cart (avoid duplicates)
+    const item_type = sel.itemType === 'combo' ? 'Combo' : 'Attraction';
+    const fingerprint = [
+      item_type,
+      sel.itemType === 'combo' ? sel.comboId : sel.attractionId || 'na',
+      sel.itemType === 'attraction' ? sel.slotKey || 'na' : sel.slotKey || 'na',
+      sel.date || 'na'
+    ].join(':');
+    
+    const alreadyInCart = cartItems.some((item) => item.fingerprint === fingerprint);
+    
+    if (!alreadyInCart) {
+      addSelectionToCart();
     }
-  }, [selectionReady, addSelectionToCart, dispatch, hasToken]);
+    
+    // Navigate directly to add-ons/checkout without repeating
+    dispatch(setStep(2));
+  }, [selectionReady, sel, cartItems, addSelectionToCart, dispatch, hasToken]);
 
   const handleNext = () => {
     if (step === 1) {
