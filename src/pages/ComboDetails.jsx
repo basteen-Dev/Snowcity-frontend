@@ -489,6 +489,45 @@ export default function ComboDetails() {
   const [date, setDate] = React.useState(dayjs().format('YYYY-MM-DD'));
   const [qty, setQty] = React.useState(1);
   const [slots, setSlots] = React.useState([]);
+  const [showCalendar, setShowCalendar] = React.useState(false);
+  const [calendarAnchor, setCalendarAnchor] = React.useState(null);
+  const calendarAnchorRect = React.useMemo(() => {
+    // Always center the calendar
+    return null;
+  }, [calendarAnchor, showCalendar]);
+  const updateDate = React.useCallback((nextDate) => {
+    setDate(nextDate);
+    setSlotState((s) => ({ ...s, selectedKey: '' }));
+  }, []);
+  const handleToday = React.useCallback(() => {
+    updateDate(dayjs().format('YYYY-MM-DD'));
+  }, [updateDate]);
+  const handleTomorrow = React.useCallback(() => {
+    updateDate(dayjs().add(1, 'day').format('YYYY-MM-DD'));
+  }, [updateDate]);
+  const onCalendarButtonClick = React.useCallback((event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setCalendarAnchor(event.currentTarget);
+    setShowCalendar(true);
+  }, []);
+  const handleDateSelect = React.useCallback(
+    (selectedDate) => {
+      updateDate(selectedDate);
+      setShowCalendar(false);
+    },
+    [updateDate],
+  );
+  const formatDateDisplay = React.useMemo(() => {
+    const today = dayjs().format('YYYY-MM-DD');
+    const tomorrow = dayjs().add(1, 'day').format('YYYY-MM-DD');
+    return (value) => {
+      if (!value) return 'All Days';
+      if (value === today) return 'All Days';
+      if (value === tomorrow) return 'All Days';
+      return dayjs(value).format('D MMM');
+    };
+  }, []);
 
   const [slotState, setSlotState] = React.useState({
     status: 'idle',
@@ -907,18 +946,49 @@ export default function ComboDetails() {
 
             <div className="flex flex-col sm:flex-row gap-3 md:gap-4 md:flex-none">
               {/* Date */}
-              <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 sm:px-4 sm:py-2.5">
-                <span className="text-xs text-gray-500">Date</span>
-                <input
-                  type="date"
-                  className="bg-transparent border-none outline-none text-sm font-medium text-gray-900"
-                  value={date}
-                  min={dayjs().format('YYYY-MM-DD')}
-                  onChange={(e) => {
-                    setDate(e.target.value);
-                    setSlotState((s) => ({ ...s, selectedKey: '' }));
-                  }}
-                />
+              <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 sm:px-4 sm:py-2.5 flex-wrap">
+                <span className="text-xs text-gray-500 whitespace-nowrap">Date</span>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={handleToday}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                      date === dayjs().format('YYYY-MM-DD')
+                        ? 'bg-sky-600 text-white border-sky-600'
+                        : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
+                    }`}
+                  >
+                    Today
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleTomorrow}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                      date === dayjs().add(1, 'day').format('YYYY-MM-DD')
+                        ? 'bg-sky-600 text-white border-sky-600'
+                        : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
+                    }`}
+                  >
+                    Tomorrow
+                  </button>
+                  <button
+                    type="button"
+                    onClick={onCalendarButtonClick}
+                    ref={setCalendarAnchor}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                      date &&
+                      date !== '' &&
+                      date !== dayjs().format('YYYY-MM-DD') &&
+                      date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
+                        ? 'bg-sky-600 text-white border-sky-600'
+                        : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
+                    }`}
+                  >
+                    {date && date !== dayjs().format('YYYY-MM-DD') && date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
+                      ? formatDateDisplay(date)
+                      : 'All Days'}
+                  </button>
+                </div>
               </div>
 
               {/* Slot */}
@@ -1066,73 +1136,7 @@ export default function ComboDetails() {
             </div>
           ) : null}
 
-          {/* Gallery */}
-          {linkedGallery.status === 'loading' && !linkedGallery.items.length ? (
-            <Loader />
-          ) : null}
-          {linkedGallery.status === 'failed' ? (
-            <ErrorState
-              message={linkedGallery.error}
-              onRetry={() =>
-                setLinkedGallery((s) => ({ ...s, status: 'idle' }))
-              }
-            />
-          ) : null}
-          {linkedGallery.items.length ? (
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 md:p-6">
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="text-lg font-semibold text-gray-900">Gallery</h2>
-                <span className="text-xs text-gray-500">
-                  #{linkedGallery.items[0]?.target_name || title}
-                </span>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                {linkedGallery.items.map((item) => {
-                  const isVideo =
-                    String(item.media_type || '').toLowerCase() === 'video';
-                  const mediaUrl = isVideo ? item.url : imgSrc(item);
-                  if (!mediaUrl) return null;
-                  return (
-                    <figure
-                      key={`combo-gallery-${item.gallery_item_id}`}
-                      className="relative rounded-xl overflow-hidden border shadow-sm bg-white"
-                    >
-                      {isVideo ? (
-                        <video
-                          className="w-full h-48 object-cover"
-                          src={mediaUrl}
-                          controls
-                          preload="metadata"
-                          poster={imgSrc(item.thumbnail)}
-                        />
-                      ) : (
-                        <img
-                          src={mediaUrl}
-                          alt={item.title || title}
-                          className="w-full h-48 object-cover"
-                          loading="lazy"
-                        />
-                      )}
-                      {(item.title || item.description) && (
-                        <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3 text-xs text-white">
-                          {item.title ? (
-                            <div className="font-medium text-sm">
-                              {item.title}
-                            </div>
-                          ) : null}
-                          {item.description ? (
-                            <div className="opacity-80 mt-1">
-                              {item.description}
-                            </div>
-                          ) : null}
-                        </figcaption>
-                      )}
-                    </figure>
-                  );
-                })}
-              </div>
-            </div>
-          ) : null}
+
 
           {/* Detailed availability list (all slots) */}
           <div

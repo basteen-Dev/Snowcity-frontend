@@ -30,6 +30,8 @@ export default function GalleryManager() {
     error: null,
   });
   const [filters, setFilters] = React.useState({ q: '', type: '' });
+  const [selectedItems, setSelectedItems] = React.useState([]);
+  const [deleteStatus, setDeleteStatus] = React.useState({ loading: false, error: null });
 
   const load = React.useCallback(async (nextFilters = filters) => {
     setState((s) => ({ ...s, status: 'loading', error: null }));
@@ -41,12 +43,42 @@ export default function GalleryManager() {
       const res = await adminApi.get(A.gallery(), { params });
       const { items } = parseGalleryResponse(res);
       setState({ status: 'succeeded', items, error: null });
+      setSelectedItems([]);
     } catch (err) {
       setState((s) => ({ ...s, status: 'failed', error: err }));
     }
   }, [filters]);
 
   React.useEffect(() => { load(filters); }, [load, filters]);
+
+  const handleDelete = async (item) => {
+    const confirmDelete = window.confirm(`Are you sure you want to delete "${item.title || 'this item'}"?`);
+    if (!confirmDelete) return;
+
+    setDeleteStatus({ loading: true, error: null });
+    try {
+      const itemId = item?.gallery_item_id ?? item?.gallery_id ?? item?.id;
+      await adminApi.delete(A.galleryDelete(itemId));
+      await load(filters);
+    } catch (err) {
+      setDeleteStatus({ loading: false, error: err });
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedItems.length === 0) return;
+    
+    const confirmDelete = window.confirm(`Are you sure you want to delete ${selectedItems.length} selected items?`);
+    if (!confirmDelete) return;
+
+    setDeleteStatus({ loading: true, error: null });
+    try {
+      await adminApi.post(A.galleryBulkDelete(), { ids: selectedItems });
+      await load(filters);
+    } catch (err) {
+      setDeleteStatus({ loading: false, error: err });
+    }
+  };
 
   const columns = [
     {
@@ -93,6 +125,15 @@ export default function GalleryManager() {
           <button className="rounded-md bg-gray-900 text-white px-3 py-2 text-sm" onClick={() => navigate('/admin/catalog/gallery/new')}>
             Add Media
           </button>
+          {selectedItems.length > 0 && (
+            <button 
+              className="rounded-md bg-red-600 text-white px-3 py-2 text-sm disabled:opacity-50" 
+              onClick={handleBulkDelete}
+              disabled={deleteStatus.loading}
+            >
+              {deleteStatus.loading ? 'Deleting...' : `Delete Selected (${selectedItems.length})`}
+            </button>
+          )}
         </div>
       </div>
 
@@ -133,10 +174,27 @@ export default function GalleryManager() {
         </div>
       )}
 
+      {deleteStatus.error && (
+        <div className="mb-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
+          Delete failed. {deleteStatus.error?.message || ''}
+        </div>
+      )}
+
       <AdminTable
         keyField="gallery_item_id"
         columns={columns}
         rows={state.items}
+        showSelection={true}
+        selectedItems={selectedItems}
+        onSelectionChange={setSelectedItems}
+        actions={[
+          {
+            label: 'Delete',
+            onClick: handleDelete,
+            className: 'bg-red-100 hover:bg-red-200 text-red-700',
+            title: 'Delete this item'
+          }
+        ]}
         onRowClick={(row) => {
           const galleryId = row?.gallery_item_id ?? row?.gallery_id ?? row?.id;
           if (galleryId == null) return;

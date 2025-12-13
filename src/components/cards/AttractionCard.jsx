@@ -34,7 +34,7 @@ export default function AttractionCard({ item }) {
           goDetail();
         }
       }}
-      className="group relative flex flex-col rounded-2xl border border-white/30 bg-white/90 text-slate-900 shadow-[0_18px_45px_rgba(15,23,42,0.18)] backdrop-blur-xl transition-transform duration-300 hover:-translate-y-1 focus:outline-none"
+      className="group relative flex flex-col rounded-2xl bg-white/95 text-slate-900 shadow-[0_18px_45px_rgba(14,165,233,0.12)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_25px_60px_rgba(14,165,233,0.18)] focus:outline-none"
     >
       <div className="relative overflow-hidden rounded-2xl rounded-b-none">
         <img
@@ -45,11 +45,11 @@ export default function AttractionCard({ item }) {
           decoding="async"
         />
         {displayPrice > 0 ? (
-          <div className="absolute top-4 left-4 flex items-center gap-2 rounded-full bg-black/55 px-4 py-1.5 text-xs font-semibold text-white backdrop-blur">
+          <div className="absolute top-4 left-4 flex items-center gap-2 rounded-full bg-sky-600/90 px-4 py-1.5 text-xs font-semibold text-white backdrop-blur">
             ₹{Math.round(displayPrice)}
             <span className="text-white/70 hidden sm:inline">/ person</span>
             {hasDiscount ? (
-              <span className="text-[11px] font-semibold text-emerald-300">-{discountPercent}%</span>
+              <span className="text-[11px] font-semibold text-sky-200">-{discountPercent}%</span>
             ) : null}
           </div>
         ) : null}
@@ -87,9 +87,9 @@ export default function AttractionCard({ item }) {
 
         <div className="flex flex-wrap items-center gap-2 sm:gap-3 pt-2.5 sm:pt-4 border-t border-slate-100">
           <Link
-            to={attrId ? `/booking?attraction_id=${attrId}` : '/booking'}
+            to={attrId ? `/booking?attraction_id=${attrId}&openDrawer=true` : '/booking'}
             onClick={stop}
-            className="inline-flex items-center gap-2 rounded-full border border-slate-900/10 bg-blue-600 text-white px-5 py-2 text-sm font-semibold shadow-lg shadow-slate-900/15 hover:bg-blue-700"
+            className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-600 text-white px-5 py-2 text-sm font-semibold shadow-lg shadow-sky-900/15 hover:bg-sky-700 transition-all duration-200"
           >
             🎟 Book Now
           </Link>

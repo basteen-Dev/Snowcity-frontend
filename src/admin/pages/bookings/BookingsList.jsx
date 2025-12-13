@@ -872,7 +872,21 @@ export default function BookingsList() {
                 Resend ticket
               </button>
             </div>
-          ) }
+          ) },
+          { key: 'addons', title: 'Add-ons', render: (r) => {
+            if (!r.addons || !r.addons.length) {
+              return <span className="text-xs text-gray-400">—</span>;
+            }
+            return (
+              <div className="flex flex-col gap-1 text-xs">
+                {r.addons.map((addon, idx) => (
+                  <div key={idx} className="text-gray-600">
+                    • {addon.title} x{addon.quantity} ({formatCurrency(addon.price * addon.quantity)})
+                  </div>
+                ))}
+              </div>
+            );
+          } }
         ]}
         rows={rows}
         onRowClick={(r) => navigate(`/admin/bookings/${r.booking_id ?? r.id}`)}

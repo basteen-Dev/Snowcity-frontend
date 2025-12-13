@@ -284,7 +284,7 @@ export default function MyBookings() {
 
                         return (
                           <div key={idx} className="bg-white p-4 rounded-lg border border-gray-200 flex flex-col md:flex-row md:items-center justify-between gap-2">
-                            <div>
+                            <div className="flex-1">
                               <div className="font-medium text-gray-800 text-base">
                                 {getDisplayTitle(item)}
                               </div>
@@ -295,6 +295,53 @@ export default function MyBookings() {
                                 <span className="w-1 h-1 rounded-full bg-gray-300"></span>
                                 <span>Qty: {item.quantity}</span>
                               </div>
+                              
+                              {/* Display add-ons if present */}
+                              {item.addons && item.addons.length > 0 && (
+                                <div className="mt-2 p-2 bg-gray-50 rounded text-xs">
+                                  <div className="font-semibold text-gray-700 mb-1">Add-ons:</div>
+                                  {item.addons.map((addon, addonIdx) => (
+                                    <div key={addonIdx} className="text-gray-600">
+                                      • {addon.title} x{addon.quantity} ({formatCurrency(addon.price * addon.quantity)})
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                              
+                              {/* Display offer details if present */}
+                              {item.offer && (
+                                <div className="mt-2 p-2 bg-green-50 rounded text-xs">
+                                  <div className="font-semibold text-green-700 mb-1">Offer Applied:</div>
+                                  <div className="text-green-600">
+                                    {item.offer.title}
+                                    {item.offer.description && (
+                                      <div className="text-green-500 mt-1">{item.offer.description}</div>
+                                    )}
+                                    {item.offer.rule_type === 'buy_x_get_y' && item.offer.buy_qty && item.offer.get_qty && (
+                                      <div className="text-green-500 mt-1">
+                                        Buy {item.offer.buy_qty} Get {item.offer.get_qty} 
+                                        {item.offer.get_discount_type === 'percent' && item.offer.get_discount_value && (
+                                          <span> ({item.offer.get_discount_value}% off)</span>
+                                        )}
+                                        {item.offer.get_discount_type === 'amount' && item.offer.get_discount_value && (
+                                          <span> ({formatCurrency(item.offer.get_discount_value)} off)</span>
+                                        )}
+                                        {!item.offer.get_discount_value && <span> Free</span>}
+                                      </div>
+                                    )}
+                                    {item.offer.rule_type !== 'buy_x_get_y' && item.offer.discount_type === 'percent' && (
+                                      <div className="text-green-500">
+                                        {item.offer.discount_percent}% discount
+                                      </div>
+                                    )}
+                                    {item.offer.rule_type !== 'buy_x_get_y' && item.offer.discount_type === 'amount' && (
+                                      <div className="text-green-500">
+                                        {formatCurrency(item.offer.discount_value)} off
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
                             </div>
                             <div className="font-bold text-gray-900">
                               {formatCurrency(itemTotal)}

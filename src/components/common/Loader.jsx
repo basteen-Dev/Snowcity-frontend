@@ -1,33 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 
 export default function Loader({ className = "", overlay = false }) {
-  const [dots, setDots] = useState(".");
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setDots((prev) => {
-        if (prev === "...") return ".";
-        return prev + ".";
-      });
-    }, 500);
-
-    return () => clearInterval(interval);
-  }, []);
-
   if (overlay) {
     return (
       <OverlayWrapper className={className}>
-        <StyledLoader />
-        <LoadingText>Loading{dots}</LoadingText>
+        <StyledLoader>
+          <Dot />
+          <Dot />
+          <Dot />
+        </StyledLoader>
       </OverlayWrapper>
     );
   }
 
   return (
     <InlineWrapper className={className}>
-      <StyledLoader />
-      <LoadingText>Loading{dots}</LoadingText>
+      <StyledLoader>
+        <Dot />
+        <Dot />
+        <Dot />
+      </StyledLoader>
     </InlineWrapper>
   );
 }
@@ -56,73 +49,39 @@ const InlineWrapper = styled.div`
 `;
 
 const StyledLoader = styled.div`
-  width: 148px;
-  height: 148px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+`;
+
+const Dot = styled.div`
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
-  background-color: #ccc;
-  background-image: radial-gradient(#4285f4 4px, #0000 0),
-    radial-gradient(#ea4335 4px, #0000 0), 
-    radial-gradient(#fbbc05 4px, #0000 0),
-    radial-gradient(#34a853 4px, #0000 0);
-  background-position:
-    24px center,
-    8px center,
-    -8px center,
-    -24px center;
-  position: relative;
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.15) inset;
-  animation: flash 1s linear infinite;
+  background-color: #0ea5e9; /* snowblue color */
+  animation: bounce 1.4s ease-in-out infinite both;
 
-  &::before,
-  &::after {
-    content: "";
-    position: absolute;
-    border: 1px solid #ccc;
-    border-top-color: #0000;
-    left: 50%;
-    top: 100%;
-    transform: translateX(-50%);
-    width: 16px;
-    height: 18px;
-    background: #fff;
+  &:nth-child(1) {
+    animation-delay: -0.32s;
   }
 
-  &::before {
-    width: 0px;
-    height: 64px;
-    transform: translate(-50%, 18px);
+  &:nth-child(2) {
+    animation-delay: -0.16s;
   }
 
-  @keyframes flash {
-    0% {
-      background-image: radial-gradient(#4285f4 4px, #0000 0),
-        radial-gradient(#ea4335 4px, #0000 0),
-        radial-gradient(#fbbc05 4px, #0000 0),
-        radial-gradient(#34a853 4px, #0000 0);
+  &:nth-child(3) {
+    animation-delay: 0s;
+  }
+
+  @keyframes bounce {
+    0%, 80%, 100% {
+      transform: scale(0);
+      opacity: 0.5;
     }
-    25% {
-      background-image: radial-gradient(#ea4335 4px, #0000 0),
-        radial-gradient(#fbbc05 4px, #0000 0),
-        radial-gradient(#34a853 4px, #0000 0),
-        radial-gradient(#4285f4 4px, #0000 0);
-    }
-    50% {
-      background-image: radial-gradient(#fbbc05 4px, #0000 0),
-        radial-gradient(#34a853 4px, #0000 0),
-        radial-gradient(#4285f4 4px, #0000 0),
-        radial-gradient(#ea4335 4px, #0000 0);
-    }
-    75% {
-      background-image: radial-gradient(#34a853 4px, #0000 0),
-        radial-gradient(#4285f4 4px, #0000 0),
-        radial-gradient(#ea4335 4px, #0000 0),
-        radial-gradient(#fbbc05 4px, #0000 0);
-    }
-    100% {
-      background-image: radial-gradient(#4285f4 4px, #0000 0),
-        radial-gradient(#ea4335 4px, #0000 0),
-        radial-gradient(#fbbc05 4px, #0000 0),
-        radial-gradient(#34a853 4px, #0000 0);
+    40% {
+      transform: scale(1);
+      opacity: 1;
     }
   }
 `;

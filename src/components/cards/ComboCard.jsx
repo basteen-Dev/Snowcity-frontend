@@ -189,17 +189,12 @@ export default function ComboCard({ item }) {
       : Number(item?.discount_percent || 0);
 
   const numericComboId = item?.combo_id || item?.id || null;
-  const bookHref = numericComboId ? `/booking?combo_id=${numericComboId}` : '/booking';
+  const bookHref = numericComboId ? `/booking?combo_id=${numericComboId}&openDrawer=true` : '/booking?openDrawer=true';
 
   return (
     <div
       className="
-        bg-white/95 backdrop-blur-md
-        rounded-2xl border border-white/40
-        shadow-[0_6px_20px_rgba(0,0,0,0.15)]
-        hover:shadow-[0_12px_30px_rgba(0,0,0,0.25)]
-        transition-all duration-500
-        overflow-hidden relative
+        group relative flex flex-col rounded-2xl bg-white/90 text-slate-900 shadow-[0_18px_45px_rgba(15,23,42,0.18)] backdrop-blur-xl transition-transform duration-300 hover:-translate-y-1 focus:outline-none
       "
     >
       <div className="relative aspect-[4/3] bg-gray-100 rounded-t-2xl overflow-hidden">
@@ -344,13 +339,9 @@ export default function ComboCard({ item }) {
 
           <Link
             to={bookHref}
-            className="
-              inline-flex items-center rounded-full
-              bg-blue-600 px-4 py-2 text-white text-sm
-              hover:bg-blue-700 active:scale-95 transition-all shadow-sm
-            "
+            className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-600 text-white px-5 py-2 text-sm font-semibold shadow-lg shadow-sky-900/15 hover:bg-sky-700 transition-all duration-200"
           >
-            Book Now
+            🎟 Book Now
           </Link>
         </div>
 

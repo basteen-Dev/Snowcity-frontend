@@ -2,6 +2,7 @@ import React from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import dayjs from 'dayjs';
+import { X } from 'lucide-react';
 import api from '../services/apiClient';
 import endpoints from '../services/endpoints';
 import Loader from '../components/common/Loader';
@@ -290,6 +291,44 @@ export default function AttractionDetails() {
   });
   const [slotKey, setSlotKey] = React.useState('');
   const [qty, setQty] = React.useState(1);
+  const [showCalendar, setShowCalendar] = React.useState(false);
+  const [calendarAnchor, setCalendarAnchor] = React.useState(null);
+  const calendarAnchorRect = React.useMemo(() => {
+    // Always center the calendar
+    return null;
+  }, [calendarAnchor, showCalendar]);
+  const updateDate = React.useCallback((nextDate) => {
+    setDate(nextDate);
+    setSlotKey('');
+  }, []);
+  const handleToday = React.useCallback(() => {
+    updateDate(todayYMD());
+  }, [updateDate]);
+  const handleTomorrow = React.useCallback(() => {
+    updateDate(dayjs().add(1, 'day').format('YYYY-MM-DD'));
+  }, [updateDate]);
+  const onCalendarButtonClick = React.useCallback((event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setCalendarAnchor(event.currentTarget);
+    setShowCalendar(true);
+  }, []);
+  const handleDateSelect = React.useCallback(
+    (selectedDate) => {
+      updateDate(selectedDate);
+      setShowCalendar(false);
+    },
+    [updateDate],
+  );
+  const formatDateDisplay = React.useCallback(
+    (value) => {
+      if (!value) return 'All Days';
+      if (value === todayYMD()) return 'All Days';
+      if (value === dayjs().add(1, 'day').format('YYYY-MM-DD')) return 'All Days';
+      return dayjs(value).format('D MMM');
+    },
+    [],
+  );
   const [linkedGallery, setLinkedGallery] = React.useState({
     status: 'idle',
     items: [],
@@ -676,7 +715,8 @@ export default function AttractionDetails() {
       : null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#e0f2fe] via-[#bae6fd] to-white font-sans">
+    <>
+      <div className="min-h-screen bg-gradient-to-b from-[#e0f2fe] via-[#bae6fd] to-white font-sans">
       {/* HERO – desktop image from DB */}
       <section className="relative h-[42vh] md:h-[56vh] bg-gray-200">
         {details.status === 'loading' ? (
@@ -724,15 +764,48 @@ export default function AttractionDetails() {
 
             <div className="flex flex-col sm:flex-row gap-3 md:gap-4 md:flex-none">
               {/* Date */}
-              <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 sm:px-4 sm:py-2.5">
-                <span className="text-xs text-gray-500">Date</span>
-                <input
-                  type="date"
-                  className="bg-transparent border-none outline-none text-sm font-medium text-gray-900"
-                  min={todayYMD()}
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                />
+              <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 sm:px-4 sm:py-2.5 flex-wrap">
+                <span className="text-xs text-gray-500 whitespace-nowrap">Date</span>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={handleToday}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                      date === todayYMD()
+                        ? 'bg-sky-600 text-white border-sky-600'
+                        : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
+                    }`}
+                  >
+                    Today
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleTomorrow}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                      date === dayjs().add(1, 'day').format('YYYY-MM-DD')
+                        ? 'bg-sky-600 text-white border-sky-600'
+                        : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
+                    }`}
+                  >
+                    Tomorrow
+                  </button>
+                  <button
+                    type="button"
+                    onClick={onCalendarButtonClick}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                      date &&
+                      date !== '' &&
+                      date !== todayYMD() &&
+                      date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
+                        ? 'bg-sky-600 text-white border-sky-600'
+                        : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
+                    }`}
+                  >
+                    {date && date !== todayYMD() && date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
+                      ? formatDateDisplay(date)
+                      : 'All Days'}
+                  </button>
+                </div>
               </div>
 
               {/* Slot */}
@@ -876,81 +949,7 @@ export default function AttractionDetails() {
                 </div>
               ) : null}
 
-              {/* Gallery */}
-              {linkedGallery.status === 'loading' &&
-              !linkedGallery.items.length ? (
-                <div className="mt-4">
-                  <Loader />
-                </div>
-              ) : null}
-              {linkedGallery.status === 'failed' ? (
-                <div className="mt-4">
-                  <ErrorState
-                    message={linkedGallery.error}
-                    onRetry={() =>
-                      numericAttrId && loadLinkedGallery(numericAttrId)
-                    }
-                  />
-                </div>
-              ) : null}
-              {hasLinkedGallery && (
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 md:p-6">
-                  <div className="flex items-center justify-between mb-3">
-                    <h2 className="text-lg font-semibold text-gray-900">
-                      Gallery
-                    </h2>
-                    <span className="text-xs text-gray-500">
-                      #{linkedGallery.items[0]?.target_name || title}
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                    {linkedGallery.items.map((item) => {
-                      const isVideo =
-                        String(item.media_type || '').toLowerCase() ===
-                        'video';
-                      const mediaUrl = isVideo ? item.url : imgSrc(item);
-                      if (!mediaUrl) return null;
-                      return (
-                        <figure
-                          key={`linked-media-${item.gallery_item_id}`}
-                          className="relative rounded-xl overflow-hidden border shadow-sm bg-white"
-                        >
-                          {isVideo ? (
-                            <video
-                              className="w-full h-48 object-cover"
-                              src={mediaUrl}
-                              controls
-                              preload="metadata"
-                              poster={imgSrc(item.thumbnail)}
-                            />
-                          ) : (
-                            <img
-                              src={mediaUrl}
-                              alt={item.title || title}
-                              className="w-full h-48 object-cover"
-                              loading="lazy"
-                            />
-                          )}
-                          {(item.title || item.description) && (
-                            <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3 text-xs text-white">
-                              {item.title ? (
-                                <div className="font-medium text-sm">
-                                  {item.title}
-                                </div>
-                              ) : null}
-                              {item.description ? (
-                                <div className="opacity-80 mt-1">
-                                  {item.description}
-                                </div>
-                              ) : null}
-                            </figcaption>
-                          )}
-                        </figure>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
+
             </>
           )}
         </div>
@@ -1047,6 +1046,94 @@ export default function AttractionDetails() {
           </div>
         </aside>
       </section>
-    </div>
+      </div>
+
+      {showCalendar && (
+        <div
+          className="fixed inset-0 z-[80] flex"
+          onClick={() => setShowCalendar(false)}
+        >
+          <div className="flex-1" />
+          <div
+            className="absolute bg-white rounded-2xl shadow-2xl border border-gray-200 p-4 w-80 max-h-[70vh] overflow-y-auto"
+            style={{
+              top: calendarAnchorRect ? `${calendarAnchorRect.top}px` : '50%',
+              left: calendarAnchorRect ? `${calendarAnchorRect.left - 160}px` : '50%',
+              transform: calendarAnchorRect ? 'none' : 'translate(-50%, -50%)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-base font-semibold text-gray-900">Select Date</h3>
+              <button
+                onClick={() => setShowCalendar(false)}
+                className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <div className="space-y-3">
+              {[0, 1, 2].map((monthOffset) => {
+                const currentDate = dayjs().add(monthOffset, 'month');
+                const monthStart = currentDate.startOf('month');
+                const monthEnd = currentDate.endOf('month');
+                const startDay = monthStart.day();
+                const daysInMonth = monthEnd.date();
+                const today = dayjs();
+                return (
+                  <div key={monthOffset} className="border border-gray-100 rounded-xl p-3 bg-white">
+                    <h4 className="text-sm font-semibold text-gray-700 mb-3">
+                      {currentDate.format('MMMM YYYY')}
+                    </h4>
+                    <div className="grid grid-cols-7 gap-1 text-xs">
+                      {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day) => (
+                        <div key={day} className="text-center text-gray-400 font-medium py-2">
+                          {day}
+                        </div>
+                      ))}
+                      {Array.from({ length: startDay }).map((_, idx) => (
+                        <div key={`empty-${idx}`} className="p-2" />
+                      ))}
+                      {Array.from({ length: daysInMonth }).map((_, idx) => {
+                        const current = monthStart.date(idx + 1);
+                        const dateStr = current.format('YYYY-MM-DD');
+                        const isPast = current.isBefore(today, 'day');
+                        const isSelected = date === dateStr;
+                        const isToday = current.isSame(today, 'day');
+                        return (
+                          <button
+                            key={dateStr}
+                            type="button"
+                            onClick={() => handleDateSelect(dateStr)}
+                            disabled={isPast}
+                            className={`
+                              p-2 rounded-lg text-sm font-medium transition-all duration-200
+                              ${isPast ? 'text-gray-300 cursor-not-allowed bg-gray-50' : ''}
+                              ${isSelected ? 'bg-sky-600 text-white shadow-sm scale-105' : ''}
+                              ${
+                                !isPast && !isSelected
+                                  ? 'hover:bg-sky-50 text-gray-700 hover:text-sky-700'
+                                  : ''
+                              }
+                              ${
+                                isToday && !isSelected
+                                  ? 'bg-sky-100 text-sky-700 font-semibold border border-sky-200'
+                                  : ''
+                              }
+                            `}
+                          >
+                            {idx + 1}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

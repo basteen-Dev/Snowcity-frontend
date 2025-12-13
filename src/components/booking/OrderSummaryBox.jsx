@@ -5,7 +5,7 @@
  */
 
 import React, { useMemo } from 'react';
-import { ShoppingBag, Gift, Percent, ArrowRight } from 'lucide-react';
+import { ShoppingBag, Gift, Percent, ArrowRight, Plus, Package, Tag, Sparkles, CheckCircle, Info, Star } from 'lucide-react';
 import { formatCurrency } from '../utils/formatters';
 import dayjs from 'dayjs';
 
@@ -95,14 +95,26 @@ export default function OrderSummaryBox({
           </div>
 
           {/* Applied Offer Banner */}
-          {appliedOffer && appliedOffer.details && (
+          {appliedOffer && (
             <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
               <div className="flex gap-2 items-start">
                 <Gift size={16} className="text-green-600 flex-shrink-0 mt-0.5" />
                 <div className="min-w-0">
-                  <div className="text-sm font-semibold text-green-900">{appliedOffer.details.description}</div>
-                  <div className="text-xs text-green-700">
-                    Save ₹{appliedOffer.details.discount_amount?.toFixed(2)}
+                  <div className="text-sm font-semibold text-green-900">
+                    {appliedOffer.title || 'Offer Applied'}
+                  </div>
+                  {appliedOffer.description && (
+                    <div className="text-xs text-green-700 mt-1">
+                      {appliedOffer.description}
+                    </div>
+                  )}
+                  <div className="text-xs text-green-700 mt-1">
+                    {appliedOffer.discount_type === 'percent' 
+                      ? `${appliedOffer.discount_percent}% discount`
+                      : appliedOffer.discount_type === 'amount'
+                      ? `Save ${formatCurrency(appliedOffer.discount_value)}`
+                      : 'Special offer'
+                    }
                   </div>
                 </div>
               </div>

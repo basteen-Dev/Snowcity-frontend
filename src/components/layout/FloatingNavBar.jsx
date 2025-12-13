@@ -413,11 +413,11 @@ export default function FloatingNavBar() {
       >
         {/* ------------------- DESKTOP NAV -------------------- */}
         <div
-          className={`hidden md:flex items-center justify-between gap-4 px-6 py-3 transition-all duration-300 ${
+          className={`hidden md:flex items-center justify-between gap-4 px-6 py-3  duration-300 ${
             isBookingPage
               ? "rounded-none"
               : "rounded-2xl"
-          } bg-white/80 backdrop-blur-xl text-gray-900 border border-white/40 shadow-lg`}
+          } bg-white/50 backdrop-blur-xl text-gray-900  `}
           style={{
             boxShadow: isBookingPage 
               ? 'none'
@@ -429,7 +429,7 @@ export default function FloatingNavBar() {
             <img
               src={Logo}
               alt="SnowCity Logo"
-              className="h-8 w-auto object-contain brightness-125"
+              className="h-8 w-auto object-contain brightness-800"
             />
           </Link>
 
@@ -588,9 +588,9 @@ export default function FloatingNavBar() {
 
         {/* ------------------- MOBILE NAV BAR -------------------- */}
         <div
-          className={`md:hidden px-3 py-2.5 flex items-center justify-between transition-all duration-300 ${
+          className={`md:hidden px-3 py-2.5 flex items-center justify-between  ${
             isBookingPage ? "rounded-none" : "rounded-2xl"
-          } bg-white/80 backdrop-blur-xl text-gray-900 border border-white/40 shadow-lg`}
+          } bg-white/40 backdrop-blur-xl text-gray-900 `}
           style={{
             boxShadow: isBookingPage 
               ? 'none'
@@ -598,19 +598,27 @@ export default function FloatingNavBar() {
           }}
         >
           <button
-            className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 transition-all duration-300 hover:scale-105"
+            className="p-0 rounded-lg text-black font-bold  hover:scale-105"
             onClick={() => setMobileOpen((v) => !v)}
             aria-expanded={mobileOpen}
             aria-label="Open menu"
           >
-            {mobileOpen ? "✕" : "☰"}
+            {mobileOpen ? (
+              "✕"
+            ) : (
+              <div className="flex flex-col space-y-1">
+                <span className="block w-4 h-0.5 bg-black"></span>
+                <span className="block w-4 h-0.5 bg-black"></span>
+                <span className="block w-4 h-0.5 bg-black"></span>
+              </div>
+            )}
           </button>
 
           <Link to="/" aria-label="Home">
             <img
               src={Logo}
               alt="SnowCity Logo"
-              className="h-8 transition brightness-125"
+              className="h-8 w-auto object-contain brightness-800"
             />
           </Link>
 
@@ -674,23 +682,23 @@ export default function FloatingNavBar() {
         {/* ------------------- MOBILE MENU PANEL -------------------- */}
         {mobileOpen && (
           <div
-            className="md:hidden fixed left-2 right-2 top-[4.25rem] z-[120] rounded-2xl px-4 py-4 space-y-2 max-h-[calc(100vh-6rem)] overflow-y-auto border border-sky-400/30 backdrop-blur-2xl shadow-2xl"
+            className="md:hidden fixed left-2 right-2  top-[4.25rem] z-[120] rounded-2xl px-4 py-4 space-y-2 max-h-[calc(100vh-6rem)] overflow-y-auto border border-sky-400/30 backdrop-blur-2xl shadow-2xl"
             style={{
-              backgroundColor: 'rgba(15, 23, 42, 0.8)',
-              background: 'linear-gradient(135deg, rgba(30, 58, 138, 0.4) 0%, rgba(12, 74, 110, 0.35) 100%)',
+              backgroundColor: 'rgba(255, 255, 255, 0.8)',
+              background: 'linear-gradient(135deg, rgba(252, 252, 252, 0.4) 0%, rgba(255, 255, 255, 0.35) 100%)',
               boxShadow: '0 25px 50px rgba(14, 165, 233, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
             }}
           >
             <Link
               to="/"
-              className="block py-3 px-4 text-sky-100 hover:text-white font-semibold transition-all duration-200 rounded-lg hover:bg-sky-500/20"
+              className="block py-3 px-4 text-black hover:text-gray-800 font-semibold transition-all duration-200 rounded-lg hover:bg-gray-100"
               onClick={() => setMobileOpen(false)}
             >
               🏠 Home
             </Link>
 
             <details className="group">
-              <summary className="cursor-pointer py-3 px-4 text-sky-100 hover:text-white font-semibold transition-all duration-200 rounded-lg hover:bg-sky-500/20 list-none">
+              <summary className="cursor-pointer py-3 px-4 text-black hover:text-gray-800 font-semibold transition-all duration-200 rounded-lg hover:bg-gray-100 list-none">
                 🎢 Attractions
               </summary>
               <div className="pl-4 space-y-1 mt-2 pb-3 border-t border-sky-400/20 pt-3">
@@ -698,7 +706,7 @@ export default function FloatingNavBar() {
                   <Link
                     key={idx}
                     to={`/attractions/${getAttrId(a)}`}
-                    className="block py-2 pl-4 text-sky-200 hover:text-white font-medium hover:bg-sky-500/15 rounded-lg transition-all duration-200"
+                    className="block py-2 pl-4 text-gray-700 hover:text-black font-medium hover:bg-gray-50 rounded-lg transition-all duration-200"
                     onClick={() => setMobileOpen(false)}
                   >
                     • {a.name || a.title}
@@ -706,7 +714,7 @@ export default function FloatingNavBar() {
                 ))}
                 <Link
                   to="/attractions"
-                  className="block py-2 pl-4 text-cyan-300 font-bold hover:bg-sky-500/15 rounded-lg transition-all duration-200"
+                  className="block py-2 pl-4 text-blue-600 font-bold hover:bg-gray-50 rounded-lg transition-all duration-200"
                   onClick={() => setMobileOpen(false)}
                 >
                   → View All
@@ -715,20 +723,20 @@ export default function FloatingNavBar() {
             </details>
 
             <details className="group">
-              <summary className="cursor-pointer py-3 px-4 text-sky-100 hover:text-white font-semibold transition-all duration-200 rounded-lg hover:bg-sky-500/20 list-none">
+              <summary className="cursor-pointer py-3 px-4 text-black hover:text-gray-800 font-semibold transition-all duration-200 rounded-lg hover:bg-gray-100 list-none">
                 🎁 Offers
               </summary>
               <div className="pl-4 space-y-1 mt-2 pb-3 border-t border-sky-400/20 pt-3">
                 <Link
                   to="/offers"
-                  className="block py-2 pl-4 text-sky-200 hover:text-white font-medium hover:bg-sky-500/15 rounded-lg transition-all duration-200"
+                  className="block py-2 pl-4 text-gray-700 hover:text-black font-medium hover:bg-gray-50 rounded-lg transition-all duration-200"
                   onClick={() => setMobileOpen(false)}
                 >
                   • All Offers
                 </Link>
                 <Link
                   to="/combos"
-                  className="block py-2 pl-4 text-sky-200 hover:text-white font-medium hover:bg-sky-500/15 rounded-lg transition-all duration-200"
+                  className="block py-2 pl-4 text-gray-700 hover:text-black font-medium hover:bg-gray-50 rounded-lg transition-all duration-200"
                   onClick={() => setMobileOpen(false)}
                 >
                   • Combo Deals
@@ -737,7 +745,7 @@ export default function FloatingNavBar() {
             </details>
 
             <details className="group">
-              <summary className="cursor-pointer py-3 px-4 text-sky-100 hover:text-white font-semibold transition-all duration-200 rounded-lg hover:bg-sky-500/20 list-none">
+              <summary className="cursor-pointer py-3 px-4 text-black hover:text-gray-800 font-semibold transition-all duration-200 rounded-lg hover:bg-gray-100 list-none">
                 📖 Visitor Guide
               </summary>
               <div className="pl-4 space-y-1 mt-2 pb-3 border-t border-sky-400/20 pt-3">
@@ -745,7 +753,7 @@ export default function FloatingNavBar() {
                   <Link
                     key={idx}
                     to={`/page/${p.slug || p.id}`}
-                    className="block py-2 pl-4 text-sky-200 hover:text-white font-medium hover:bg-sky-500/15 rounded-lg transition-all duration-200"
+                    className="block py-2 pl-4 text-gray-700 hover:text-black font-medium hover:bg-gray-50 rounded-lg transition-all duration-200"
                     onClick={() => setMobileOpen(false)}
                   >
                     • {p.title || p.name}
@@ -756,14 +764,14 @@ export default function FloatingNavBar() {
 
             <Link
               to="/contact"
-              className="block py-3 px-4 text-sky-100 hover:text-white font-semibold transition-all duration-200 rounded-lg hover:bg-sky-500/20 border-t border-sky-400/20 mt-3 pt-4"
+              className="block py-3 px-4 text-black hover:text-gray-800 font-semibold transition-all duration-200 rounded-lg hover:bg-gray-100 border-t border-sky-400/20 mt-3 pt-4"
               onClick={() => setMobileOpen(false)}
             >
               📞 Contact Us
             </Link>
             <Link
               to="/blogs"
-              className="block py-3 px-4 text-sky-100 hover:text-white font-semibold transition-all duration-200 rounded-lg hover:bg-sky-500/20"
+              className="block py-3 px-4 text-black hover:text-gray-800 font-semibold transition-all duration-200 rounded-lg hover:bg-gray-100"
               onClick={() => setMobileOpen(false)}
             >
               📰 Blogs
@@ -772,7 +780,7 @@ export default function FloatingNavBar() {
             <div className="space-y-2 border-t border-sky-400/20 mt-4 pt-4">
               {!token && (
                 <button
-                  className="w-full py-3 border-2 border-sky-400 text-sky-200 font-bold rounded-full hover:bg-sky-500/20 transition-all duration-300 hover:text-white"
+                  className="w-full py-3 border-2 border-sky-400 text-black font-bold rounded-full hover:bg-gray-100 transition-all duration-300 hover:text-gray-800"
                   onClick={() => {
                     setMobileOpen(false);
                     openAuthModal();
