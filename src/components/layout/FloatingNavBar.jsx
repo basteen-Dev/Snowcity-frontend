@@ -77,6 +77,7 @@ export default function FloatingNavBar() {
     status: "idle",
     error: null,
   });
+  const [authWhatsappConsent, setAuthWhatsappConsent] = React.useState(false);
 
   const initial = (user?.name || user?.email || "U").trim().charAt(0).toUpperCase();
 
@@ -128,6 +129,7 @@ export default function FloatingNavBar() {
       status: "idle",
       error: null,
     });
+    setAuthWhatsappConsent(false);
   }, []);
 
   const openAuthModal = React.useCallback(() => {
@@ -189,6 +191,7 @@ export default function FloatingNavBar() {
           email,
           phone,
           ...(name && { name }), // only send name if provided
+          whatsapp_consent: authWhatsappConsent,
         };
 
         const res = await api.post(endpoints.auth.otpSend(), payload);
@@ -223,6 +226,11 @@ export default function FloatingNavBar() {
         return;
       }
 
+      if (!authWhatsappConsent) {
+        setAuthOtp((prev) => ({ ...prev, error: "Please agree to WhatsApp notifications to continue" }));
+        return;
+      }
+
       try {
         setAuthOtp((prev) => ({ ...prev, status: "verifying", error: null }));
         const payload = { otp: code };
@@ -235,6 +243,12 @@ export default function FloatingNavBar() {
         if (!authOtp.userId) {
           if (email) payload.email = email;
           if (phone) payload.phone = phone;
+          // Include for new user creation
+          payload.name = authForm.name.trim() || 'Guest';
+          payload.whatsapp_consent = authWhatsappConsent;
+        } else {
+          // Update consent for existing user
+          payload.whatsapp_consent = authWhatsappConsent;
         }
 
         const res = await api.post(endpoints.auth.otpVerify(), payload);
@@ -246,6 +260,10 @@ export default function FloatingNavBar() {
               expires_at: res?.expires_at || null,
             })
           );
+          // If user consented to WhatsApp, contact needs to be added manually in Interakt
+          if (authWhatsappConsent && res.user?.phone) {
+            console.log('User consented to WhatsApp, please add contact manually in Interakt dashboard');
+          }
           closeAuthModal();
         } else {
           setAuthOtp((prev) => ({
@@ -349,6 +367,24 @@ export default function FloatingNavBar() {
             <p className="text-xs text-red-500">{authErrors.phone}</p>
           )}
 
+          <div className="space-y-1.5">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                required
+                checked={authWhatsappConsent}
+                onChange={(e) => setAuthWhatsappConsent(e.target.checked)}
+                className="w-4 h-4 text-sky-600 bg-gray-100 border-gray-300 rounded focus:ring-sky-500 focus:ring-2"
+              />
+              <span className="text-sm text-gray-700 font-medium">
+                I agree to receive WhatsApp notifications *
+              </span>
+            </label>
+            <p className="text-xs text-gray-500 ml-6">
+              We'll send booking confirmations and updates via WhatsApp
+            </p>
+          </div>
+
           <button
             className="w-full py-3 rounded-xl bg-gray-900 text-white font-semibold hover:bg-black disabled:opacity-60"
             onClick={sendNavOtp}
@@ -401,28 +437,15 @@ export default function FloatingNavBar() {
 
   return (
     <>
-      {/* FIXED so it overlays hero/banner and behaves like sticky header */}
+      {/* FIXED TOP NAVBAR */}
       <nav
         ref={navRef}
         data-floating-nav
-        className={`fixed z-30 transition-all duration-300 ${
-          isBookingPage
-            ? "top-0 left-0 right-0 w-full translate-x-0"
-            : "top-4 left-1/2 -translate-x-1/2 w-[94%] max-w-[1400px]"
-        }`}
+        className={`fixed top-0 left-0 right-0 z-30 transition-all duration-300 w-full bg-white border-b border-gray-200`}
       >
         {/* ------------------- DESKTOP NAV -------------------- */}
         <div
-          className={`hidden md:flex items-center justify-between gap-4 px-6 py-3  duration-300 ${
-            isBookingPage
-              ? "rounded-none"
-              : "rounded-2xl"
-          } bg-white/50 backdrop-blur-xl text-gray-900  `}
-          style={{
-            boxShadow: isBookingPage 
-              ? 'none'
-              : '0 8px 32px rgba(31, 38, 135, 0.15)'
-          }}
+          className="hidden md:flex items-center justify-between gap-4 px-6 py-3 bg-white text-gray-900"
         >
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
@@ -588,14 +611,7 @@ export default function FloatingNavBar() {
 
         {/* ------------------- MOBILE NAV BAR -------------------- */}
         <div
-          className={`md:hidden px-3 py-2.5 flex items-center justify-between  ${
-            isBookingPage ? "rounded-none" : "rounded-2xl"
-          } bg-white/40 backdrop-blur-xl text-gray-900 `}
-          style={{
-            boxShadow: isBookingPage 
-              ? 'none'
-              : '0 8px 32px rgba(31, 38, 135, 0.15)'
-          }}
+          className="md:hidden px-3 py-2.5 flex items-center justify-between bg-white text-gray-900 border-b border-gray-200"
         >
           <button
             className="p-0 rounded-lg text-black font-bold  hover:scale-105"
@@ -682,12 +698,7 @@ export default function FloatingNavBar() {
         {/* ------------------- MOBILE MENU PANEL -------------------- */}
         {mobileOpen && (
           <div
-            className="md:hidden fixed left-2 right-2  top-[4.25rem] z-[120] rounded-2xl px-4 py-4 space-y-2 max-h-[calc(100vh-6rem)] overflow-y-auto border border-sky-400/30 backdrop-blur-2xl shadow-2xl"
-            style={{
-              backgroundColor: 'rgba(255, 255, 255, 0.8)',
-              background: 'linear-gradient(135deg, rgba(252, 252, 252, 0.4) 0%, rgba(255, 255, 255, 0.35) 100%)',
-              boxShadow: '0 25px 50px rgba(14, 165, 233, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
-            }}
+            className="md:hidden fixed left-0 right-0 top-[3.5rem] z-[120] bg-white border-b border-gray-200 shadow-lg px-4 py-4 space-y-2 max-h-[calc(100vh-6rem)] overflow-y-auto"
           >
             <Link
               to="/"

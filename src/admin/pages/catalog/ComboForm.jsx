@@ -350,6 +350,7 @@ export default function ComboForm() {
           label="Combo Image"
           value={f.image_url}
           onChange={(url) => setState((s) => ({ ...s, form: { ...s.form, image_url: url } }))}
+          folder="combos"
         />
       </div>
       <div className="mb-4">
@@ -357,6 +358,7 @@ export default function ComboForm() {
           label="Desktop Image (optional)"
           value={f.desktop_image_url}
           onChange={(url) => setState((s) => ({ ...s, form: { ...s.form, desktop_image_url: url } }))}
+          folder="combos"
         />
       </div>
 

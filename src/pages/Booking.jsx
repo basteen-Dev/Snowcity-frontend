@@ -1211,7 +1211,7 @@ const fetchSlots = useCallback(async ({ itemType, attractionId, comboId, date })
   };
 
   const ProgressBar = () => (
-    <div className="flex items-center justify-between mb-4 md:mb-6 px-4">
+    <div className="flex items-center justify-between mb-1 md:mb-2 px-4">
       {[
         { n: 1, l: 'Select', icon: ShoppingBag },
         { n: 2, l: 'Extras', icon: Ticket },
@@ -1430,13 +1430,7 @@ const fetchSlots = useCallback(async ({ itemType, attractionId, comboId, date })
   };
 
   const OfferSelector = () => {
-    if (state.loadingOffers) {
-      return (
-        <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm text-sm text-gray-500">
-          Loading offers...
-        </div>
-      );
-    }
+    if (state.loadingOffers) return null;
     if (!state.offers.length) return null;
 
     return (
@@ -1573,13 +1567,13 @@ const fetchSlots = useCallback(async ({ itemType, attractionId, comboId, date })
                 <X size={22} />
               </button>
             </div>
-            <div className="relative pb-3">
+            <div className="relative pb-2">
               <ProgressBar />
             </div>
           </div>
 
           {/* main content */}
-          <div className="mt-4 md:mt-6">
+          <div className="mt-2 md:mt-4">
             {/* STEP 1: product list + order summary */}
             {step === 1 && (
               <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2.1fr)_minmax(320px,1fr)] gap-6 items-start">
@@ -2062,6 +2056,24 @@ const fetchSlots = useCallback(async ({ itemType, attractionId, comboId, date })
                     )}
                   </div>
 
+                  <div className="space-y-1.5">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        required
+                        checked={contact.whatsapp_consent || false}
+                        onChange={(e) => dispatch(setContact({ whatsapp_consent: e.target.checked }))}
+                        className="w-4 h-4 text-sky-600 bg-gray-100 border-gray-300 rounded focus:ring-sky-500 focus:ring-2"
+                      />
+                      <span className="text-sm text-gray-700 font-medium">
+                        I agree to receive WhatsApp notifications *
+                      </span>
+                    </label>
+                    <p className="text-xs text-gray-500 ml-6">
+                      We'll send booking confirmations and updates via WhatsApp
+                    </p>
+                  </div>
+
                   {!otp.sent ? (
                     <button
                       onClick={sendOTP}
@@ -2131,7 +2143,7 @@ const fetchSlots = useCallback(async ({ itemType, attractionId, comboId, date })
                 <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
                   <h3 className="font-bold text-gray-900 mb-4 text-lg flex items-center gap-2">
                     <ShoppingBag className="text-sky-600" size={20} />
-                    Order Summary
+                    Booking Summary
                   </h3>
                   {couponApplied && (
                     <div className="mb-4 rounded-xl bg-emerald-50 border border-emerald-100 p-3 text-sm text-emerald-700">

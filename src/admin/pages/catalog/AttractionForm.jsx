@@ -63,10 +63,10 @@ export default function AttractionForm() {
           <input type="number" className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" value={f.base_price} onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, base_price: Number(e.target.value || 0) } }))} />
         </div>
         <div className="md:col-span-2">
-          <ImageUploader label="Image" value={f.image_url} onChange={(url) => setState((s) => ({ ...s, form: { ...s.form, image_url: url } }))} requiredPerm="uploads:write" />
+          <ImageUploader label="Image" value={f.image_url} onChange={(url) => setState((s) => ({ ...s, form: { ...s.form, image_url: url } }))} folder="attractions" requiredPerm="uploads:write" />
         </div>
         <div className="md:col-span-2">
-          <ImageUploader label="Desktop Image (optional)" value={f.desktop_image_url} onChange={(url) => setState((s) => ({ ...s, form: { ...s.form, desktop_image_url: url } }))} requiredPerm="uploads:write" />
+          <ImageUploader label="Desktop Image (optional)" value={f.desktop_image_url} onChange={(url) => setState((s) => ({ ...s, form: { ...s.form, desktop_image_url: url } }))} folder="attractions" requiredPerm="uploads:write" />
         </div>
         <div className="md:col-span-2">
           <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Description (HTML)</label>

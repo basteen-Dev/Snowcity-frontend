@@ -13,7 +13,7 @@ export default function Contact() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#e0f2fe] via-[#bae6fd] to-white px-4 py-8">
+    <div className="min-h-screen bg-gradient-to-b from-[#e0f2fe] via-[#bae6fd] to-white px-4 pt-20 pb-8">
       <div className="max-w-3xl mx-auto">
       <h1 className="text-2xl font-semibold mb-2">Contact Us</h1>
       <p className="text-gray-600 mb-6">Have a question? Send us a message and we’ll get back to you.</p>

@@ -55,7 +55,7 @@ export default function PaymentSuccess() {
   const copy = statusCopy[stateKey];
 
   return (
-    <div className="min-h-[70vh] flex items-center justify-center bg-gradient-to-b from-[#e0f2fe] via-[#bae6fd] to-white px-4 py-12">
+    <div className="min-h-[70vh] flex items-center justify-center bg-gradient-to-b from-[#e0f2fe] via-[#bae6fd] to-white px-4 pt-20 pb-12">
       <div className="w-full max-w-2xl bg-white rounded-3xl shadow-xl border border-slate-100 px-6 sm:px-10 py-10 text-center">
         <div className="mx-auto w-20 h-20 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600 shadow-inner">
           {ticketUrl ? <CheckCircle size={42} strokeWidth={2.2} /> : <Loader2 size={40} className="animate-spin" />}

@@ -14,7 +14,7 @@ export default function Offers() {
   }, [status, dispatch]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#e0f2fe] via-[#bae6fd] to-white py-8">
+    <div className="min-h-screen bg-gradient-to-b from-[#e0f2fe] via-[#bae6fd] to-white px-4 pt-20 pb-8">
       <div className="max-w-6xl mx-auto px-4">
         <h1 className="text-2xl font-semibold mb-2">Offers</h1>
         <p className="text-gray-600 mb-6">Grab the latest offers and save on your visit.</p>

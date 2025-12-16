@@ -12,7 +12,8 @@ export default function ImageUploader({
   fieldName = 'file',
   extra = {},
   accept = 'image/*,video/*,.pdf',
-  requiredPerm = null
+  requiredPerm = null,
+  folder = ''
 }) {
   const inputId = React.useId();
   const [file, setFile] = React.useState(null);
@@ -79,6 +80,7 @@ export default function ImageUploader({
       const isCloudinary = /cloudinary\.com/i.test(ENDPOINT);
       const data = { ...(extra || {}) };
       if (isCloudinary && CLOUD_PRESET && !data.upload_preset) data.upload_preset = CLOUD_PRESET;
+      if (folder && !isCloudinary) data.folder = folder;
 
       const res = await adminApi.upload(ENDPOINT, file, { fieldName, data });
       const url = res?.url || res?.url_path || res?.secure_url || res?.location || res?.data?.url || '';

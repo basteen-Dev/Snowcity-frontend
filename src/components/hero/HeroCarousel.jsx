@@ -55,7 +55,7 @@ export default function HeroCarousel({ banners = [], waveColor = "#0b1a33" }) {
   if (!banners.length) return null;
 
   return (
-    <section id="hero" className="relative w-full overflow-hidden h-[80vh] min-h-[600px]">
+    <section id="hero" className="relative w-full overflow-hidden h-[80vh] min-h-[600px] pt-14 md:pt-0">
       <span id="hero-sentinel" className="pointer-events-none absolute bottom-0 left-0 h-px w-px" />
 
       <Swiper
@@ -69,8 +69,8 @@ export default function HeroCarousel({ banners = [], waveColor = "#0b1a33" }) {
         pagination={{
           clickable: true,
           bulletClass:
-            "swiper-pagination-bullet !bg-white/50 !opacity-100 !w-2 !h-2 rounded-full",
-          bulletActiveClass: "!bg-yellow-400 !w-8 transition-all",
+            "swiper-pagination-bullet !bg-sky-400/70 !opacity-100 !w-2 !h-2 rounded-full",
+          bulletActiveClass: "!bg-sky-600 !w-8 transition-all",
         }}
         className="h-full"
       >
@@ -101,6 +101,10 @@ export default function HeroCarousel({ banners = [], waveColor = "#0b1a33" }) {
                       src={desktopImg}
                       alt={title || "Banner"}
                       className="w-full h-full object-cover object-center will-change-transform animate-kenburns brightness-[1.12] contrast-[1.18] saturate-125"
+                      style={{
+                        objectPosition: 'center',
+                        objectFit: 'cover'
+                      }}
                       loading={idx === 0 ? "eager" : "lazy"}
                       fetchPriority={idx === 0 ? "high" : "auto"}
                       decoding="async"
@@ -113,10 +117,10 @@ export default function HeroCarousel({ banners = [], waveColor = "#0b1a33" }) {
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0f172a]/80 via-transparent to-transparent" />
 
                 <div
-                  className="absolute inset-0 flex flex-col justify-center px-4 sm:px-10 z-10 text-left"
+                  className="absolute inset-0 flex flex-col justify-between px-4 sm:px-10 z-10 text-left pb-8"
                   data-swiper-parallax="-200"
                 >
-                  <div className="max-w-4xl space-y-4">
+                  <div className="max-w-4xl space-y-4 pt-14 md:pt-0">
                     <span className="text-xs sm:text-sm font-semibold tracking-[0.35em] uppercase text-white/75">
                       {highlight}
                     </span>
@@ -131,6 +135,19 @@ export default function HeroCarousel({ banners = [], waveColor = "#0b1a33" }) {
                       </p>
                     ) : null}
                   </div>
+                  {href && (
+                    <div className="flex justify-center">
+                      <a
+                        href={href}
+                        className="inline-flex items-center px-8 py-3 text-white font-medium border border-white rounded-full bg-transparent hover:bg-white/5 hover:border-white transition-all duration-300 hover:scale-105"
+                      >
+                        Explore Now
+                        <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </a>
+                    </div>
+                  )}
                 </div>
 
                 {href ? (

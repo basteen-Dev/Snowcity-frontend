@@ -430,10 +430,7 @@ export default function ComboDetails() {
   React.useEffect(() => {
     if (!rawParam) {
       setState({ status: 'failed', data: null, error: 'Combo not found' });
-      return;
-    }
-
-    if (fetchId == null) {
+    } else if (fetchId == null) {
       if (
         numericParam == null &&
         (combosStatus === 'loading' || combosStatus === 'idle')
@@ -446,43 +443,62 @@ export default function ComboDetails() {
       } else if (numericParam == null && combosStatus === 'failed') {
         setState({ status: 'failed', data: null, error: 'Combo not found' });
       }
-      return;
     }
+  }, [rawParam, fetchId, numericParam, combosStatus]);
 
+  React.useEffect(() => {
     let mounted = true;
     const controller = new AbortController();
-    setState({ status: 'loading', data: null, error: null });
 
-    (async () => {
-      try {
-        const res = await api.get(endpoints.combos.byId(fetchId), {
-          signal: controller.signal,
-        });
-        if (!mounted) return;
-        setState({ status: 'succeeded', data: res, error: null });
-      } catch (err) {
-        if (err?.canceled || !mounted) return;
-        if (matchedCombo) {
-          setState({
-            status: 'succeeded',
-            data: matchedCombo,
-            error: null,
-          });
-        } else {
-          setState({
-            status: 'failed',
-            data: null,
-            error: err?.message || 'Failed to load combo',
-          });
-        }
+    if (!rawParam) {
+      setState({ status: 'failed', data: null, error: 'Combo not found' });
+    } else if (fetchId == null) {
+      if (
+        numericParam == null &&
+        (combosStatus === 'loading' || combosStatus === 'idle')
+      ) {
+        setState((prev) =>
+          prev.status === 'loading'
+            ? prev
+            : { status: 'loading', data: null, error: null },
+        );
+      } else if (numericParam == null && combosStatus === 'failed') {
+        setState({ status: 'failed', data: null, error: 'Combo not found' });
       }
-    })();
+    } else {
+      setState({ status: 'loading', data: null, error: null });
+
+      (async () => {
+        try {
+          const res = await api.get(endpoints.combos.byId(fetchId), {
+            signal: controller.signal,
+          });
+          if (!mounted) return;
+          setState({ status: 'succeeded', data: res, error: null });
+        } catch (err) {
+          if (err?.canceled || !mounted) return;
+          if (matchedCombo) {
+            setState({
+              status: 'succeeded',
+              data: matchedCombo,
+              error: null,
+            });
+          } else {
+            setState({
+              status: 'failed',
+              data: null,
+              error: err?.message || 'Failed to load combo',
+            });
+          }
+        }
+      })();
+    }
 
     return () => {
       mounted = false;
       controller.abort();
     };
-  }, [rawParam, fetchId, combosStatus, numericParam, matchedCombo]);
+  }, [rawParam, fetchId, numericParam, combosStatus, matchedCombo]);
 
   /* ===== Availability / slots state ===== */
 
@@ -504,6 +520,9 @@ export default function ComboDetails() {
   }, [updateDate]);
   const handleTomorrow = React.useCallback(() => {
     updateDate(dayjs().add(1, 'day').format('YYYY-MM-DD'));
+  }, [updateDate]);
+  const handleAllDays = React.useCallback(() => {
+    updateDate('');
   }, [updateDate]);
   const onCalendarButtonClick = React.useCallback((event) => {
     event.preventDefault();
@@ -536,12 +555,12 @@ export default function ComboDetails() {
   const [slotErr, setSlotErr] = React.useState('');
 
   const loadSlots = React.useCallback(async () => {
-    if (!fetchId || !date) return;
+    if (!fetchId) return;
     try {
       setSlotState((s) => ({ ...s, status: 'loading' }));
       setSlotErr('');
       const out = await api.get(endpoints.combos.slots(fetchId), {
-        params: { date },
+        params: date ? { date } : {},
       });
       const list = Array.isArray(out)
         ? out
@@ -638,7 +657,9 @@ export default function ComboDetails() {
   const combo = state.data || matchedCombo;
 
   const fallbackAttractions = React.useMemo(() => {
-    if (!combo) return [];
+    if (!combo) {
+      return [];
+    }
     const legacy = [
       combo.attraction_1 || {
         title: combo?.attraction_1_title,
@@ -660,7 +681,9 @@ export default function ComboDetails() {
   }, [combo]);
 
   const normalizedAttractions = React.useMemo(() => {
-    if (!combo) return [];
+    if (!combo) {
+      return [];
+    }
     if (Array.isArray(combo?.attractions) && combo.attractions.length) {
       return combo.attractions.map((attr, idx) =>
         normalizeAttraction(attr, `Experience ${idx + 1}`, `combo-${idx}`),
@@ -678,7 +701,6 @@ export default function ComboDetails() {
           );
           return normalizeAttraction(
             match || { title: `Experience ${idx + 1}` },
-            `Experience ${idx + 1}`,
             `combo-${idx}`,
           );
         })
@@ -951,6 +973,17 @@ export default function ComboDetails() {
                 <div className="flex flex-wrap gap-2">
                   <button
                     type="button"
+                    onClick={handleAllDays}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                      !date || date === ''
+                        ? 'bg-sky-600 text-white border-sky-600'
+                        : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
+                    }`}
+                  >
+                    All Days
+                  </button>
+                  <button
+                    type="button"
                     onClick={handleToday}
                     className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
                       date === dayjs().format('YYYY-MM-DD')
@@ -976,15 +1009,12 @@ export default function ComboDetails() {
                     onClick={onCalendarButtonClick}
                     ref={setCalendarAnchor}
                     className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                      date &&
-                      date !== '' &&
-                      date !== dayjs().format('YYYY-MM-DD') &&
-                      date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
+                      date && date !== '' && date !== dayjs().format('YYYY-MM-DD') && date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
                         ? 'bg-sky-600 text-white border-sky-600'
                         : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
                     }`}
                   >
-                    {date && date !== dayjs().format('YYYY-MM-DD') && date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
+                    {date && date !== '' && date !== dayjs().format('YYYY-MM-DD') && date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
                       ? formatDateDisplay(date)
                       : 'All Days'}
                   </button>

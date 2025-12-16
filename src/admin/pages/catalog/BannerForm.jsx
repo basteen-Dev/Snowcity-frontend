@@ -95,10 +95,10 @@ export default function BannerForm() {
         </div>
 
         <div className="md:col-span-2">
-          <ImageUploader label="Web Image" value={f.web_image} onChange={(url) => setState((s) => ({ ...s, form: { ...s.form, web_image: url } }))} requiredPerm="uploads:write" />
+          <ImageUploader label="Web Image" value={f.web_image} onChange={(url) => setState((s) => ({ ...s, form: { ...s.form, web_image: url } }))} folder="banners" requiredPerm="uploads:write" />
         </div>
         <div className="md:col-span-2">
-          <ImageUploader label="Mobile Image" value={f.mobile_image} onChange={(url) => setState((s) => ({ ...s, form: { ...s.form, mobile_image: url } }))} requiredPerm="uploads:write" />
+          <ImageUploader label="Mobile Image" value={f.mobile_image} onChange={(url) => setState((s) => ({ ...s, form: { ...s.form, mobile_image: url } }))} folder="banners" requiredPerm="uploads:write" />
         </div>
 
         <div>

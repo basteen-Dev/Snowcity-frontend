@@ -373,7 +373,7 @@ export default function OfferForm() {
           <textarea rows={4} className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" value={f.description} onChange={(e) => updateForm({ description: e.target.value })} />
         </div>
         <div className="md:col-span-2">
-          <ImageUploader label="Image" value={f.image_url} onChange={(url) => updateForm({ image_url: url })} requiredPerm="uploads:write" />
+          <ImageUploader label="Image" value={f.image_url} onChange={(url) => updateForm({ image_url: url })} folder="offers" requiredPerm="uploads:write" />
         </div>
         <div>
           <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Rule Type</label>

@@ -113,7 +113,7 @@ ${form.raw_html || ''}
         </div>
         <div>
           <label className="block text-sm">Featured image</label>
-          <ImageUploader value={form.image_url} onChange={(url) => onChange({ image_url: url })} />
+          <ImageUploader value={form.image_url} onChange={(url) => onChange({ image_url: url })} folder="blogs" />
         </div>
       </div>
 

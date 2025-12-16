@@ -202,7 +202,7 @@ export default function MyBookings() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#e0f2fe] via-[#bae6fd] to-white px-4 py-8">
+    <div className="min-h-screen bg-gradient-to-b from-[#e0f2fe] via-[#bae6fd] to-white px-4 pt-20 pb-8">
       <div className="max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>

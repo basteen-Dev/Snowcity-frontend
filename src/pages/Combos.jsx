@@ -102,7 +102,7 @@ export default function Combos() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#e0f2fe] via-[#bae6fd] to-white py-8">
+    <div className="min-h-screen bg-gradient-to-b from-[#e0f2fe] via-[#bae6fd] to-white px-4 pt-20 pb-8">
       <div className="max-w-6xl mx-auto px-4">
         <div className="flex items-center justify-between mb-4 gap-3">
           <div>

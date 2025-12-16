@@ -167,6 +167,7 @@ export default function GalleryForm() {
                 label="Image"
                 value={f.url}
                 onChange={(url) => onChange({ url })}
+                folder="gallery"
                 requiredPerm="uploads:write"
               />
 

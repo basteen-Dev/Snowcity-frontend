@@ -162,7 +162,7 @@ const createInitialState = () => ({
     activeKey: null,
   },
 
-  contact: { name: '', email: '', phone: '' },
+  contact: { name: '', email: '', phone: '', whatsapp_consent: false },
 
   otp: {
     status: 'idle',
@@ -224,6 +224,7 @@ export const sendAuthOtp = createAsyncThunk(
         channel: finalPhone ? channel : 'email',
         createIfNotExists: true,
         name: finalName,
+        whatsapp_consent: state.bookings?.contact?.whatsapp_consent || false,
       };
       if (finalPhone) body.phone = finalPhone;
       if (finalEmail) body.email = finalEmail;
@@ -256,11 +257,15 @@ export const verifyAuthOtp = createAsyncThunk(
 
       let payload;
       if (user_id) {
-        payload = { user_id, otp };
+        payload = { user_id, otp, whatsapp_consent: state.bookings?.contact?.whatsapp_consent || false };
       } else if (email || phone) {
         payload = { otp };
         if (email) payload.email = email;
         if (phone) payload.phone = phone;
+        // Include contact details for user creation
+        const contact = state.bookings?.contact || {};
+        payload.name = contact.name || 'Guest';
+        payload.whatsapp_consent = contact.whatsapp_consent || false;
       } else {
         throw new Error('Missing identifier to verify OTP');
       }
@@ -449,6 +454,9 @@ const bookingsSlice = createSlice({
       const qty = Math.max(1, Number(quantity || 1));
       item.quantity = qty;
       recomputeCartMeta(state.cart);
+    },
+    setContact(state, action) {
+      state.contact = { ...state.contact, ...action.payload };
     },
   },
   extraReducers: (b) => {
