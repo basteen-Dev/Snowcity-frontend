@@ -1124,8 +1124,13 @@ const fetchSlots = useCallback(async ({ itemType, attractionId, comboId, date })
       // Enhanced error handling for authentication issues
       if (err?.status === 401 || err?.response?.status === 401) {
         const errorMessage = err?.message || err?.response?.data?.message || '';
-        if (errorMessage.toLowerCase().includes('token revoked') || 
-            errorMessage.toLowerCase().includes('token expired')) {
+        const requestUrl = err?.config?.url || '';
+        
+        // Check if this is a payment-related endpoint - if so, don't auto-logout
+        const isPaymentEndpoint = /\/(booking-flow|payment|cart|bookings)\//.test(requestUrl);
+        
+        if (!isPaymentEndpoint && (errorMessage.toLowerCase().includes('token revoked') || 
+            errorMessage.toLowerCase().includes('token expired'))) {
           // Clear any stored auth data and trigger navbar sign-in modal
           localStorage.removeItem('authToken');
           localStorage.removeItem('user');
@@ -1136,9 +1141,15 @@ const fetchSlots = useCallback(async ({ itemType, attractionId, comboId, date })
           
           alert('Your session has expired. Please sign in using the navbar to continue booking.');
         } else {
-          // For other 401 errors, still show the token expired modal
-          setShowTokenExpiredModal(true);
-          alert('Authentication failed. Please sign in again.');
+          // For payment-related 401 errors or other auth issues, show a gentler message
+          if (isPaymentEndpoint) {
+            console.warn('Payment endpoint returned 401 - not auto-logging out to preserve session');
+            alert('Payment verification is processing. Please check your email for ticket confirmation.');
+          } else {
+            // For other 401 errors, show the token expired modal
+            setShowTokenExpiredModal(true);
+            alert('Authentication failed. Please sign in again.');
+          }
         }
       } else {
         // Show more specific error messages for other failures

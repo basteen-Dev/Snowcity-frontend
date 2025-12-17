@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux';
 import { CheckCircle, Loader2, FileDown, PhoneCall } from 'lucide-react';
 import api from '../services/apiClient';
 import endpoints from '../services/endpoints';
+import { absoluteUrl } from '../utils/media';
 
 const statusCopy = {
   processing: {
@@ -45,10 +46,10 @@ export default function PaymentSuccess() {
   }, [token, bookingId]);
 
   const ticketUrl =
-    ticketQueryUrl ||
-    booking?.ticket_pdf_url ||
-    booking?.ticket_url ||
-    booking?.pdf_url ||
+    absoluteUrl(ticketQueryUrl) ||
+    absoluteUrl(booking?.ticket_pdf_url) ||
+    absoluteUrl(booking?.ticket_url) ||
+    absoluteUrl(booking?.pdf_url) ||
     null;
 
   const stateKey = ticketUrl ? 'success' : 'processing';

@@ -171,11 +171,12 @@ http.interceptors.response.use(
     }
 
     // B) 401 Unauthorized Handling (Centralized)
-    // Skips auth-related endpoints to prevent infinite loops
+    // Skips auth-related and payment-related endpoints to prevent infinite loops and unwanted logouts during payment
     if (status === 401) {
       const url = cfg.url || '';
       const isAuthEndpoint = /\/api\/auth\//.test(url);
-      if (!isAuthEndpoint && typeof authHandlers.onUnauthorized === 'function') {
+      const isPaymentEndpoint = /\/api\/(user\/)?(booking-flow|payment|cart|bookings)\//.test(url);
+      if (!isAuthEndpoint && !isPaymentEndpoint && typeof authHandlers.onUnauthorized === 'function') {
         try { await authHandlers.onUnauthorized(); } catch { /* ignore */ }
       }
     }
