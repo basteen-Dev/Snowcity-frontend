@@ -1,7 +1,7 @@
 import React from 'react';
 import dayjs from 'dayjs';
 import { useDispatch, useSelector } from 'react-redux';
-import { listAdminBookings, resendTicketAdmin } from '../../features/bookings/adminBookingsSlice';
+import { listAdminBookings, resendTicketAdmin, resendWhatsAppAdmin, resendEmailAdmin } from '../../features/bookings/adminBookingsSlice';
 import AdminTable from '../../components/common/AdminTable';
 import AdminPagination from '../../components/common/AdminPagination';
 import { useNavigate } from 'react-router-dom';
@@ -398,14 +398,25 @@ export default function BookingsList() {
     if (url) window.open(url, '_blank', 'noopener');
   };
 
-  const handleResendTicket = async (row) => {
+  const handleResendWhatsApp = async (row) => {
     if (!row.booking_id) return;
-    if (!window.confirm('Resend ticket email to this user?')) return;
+    if (!window.confirm('Resend ticket via WhatsApp to this user?')) return;
     try {
-      await dispatch(resendTicketAdmin({ id: row.booking_id })).unwrap();
-      window.alert('Ticket resend initiated.');
+      await dispatch(resendWhatsAppAdmin({ id: row.booking_id })).unwrap();
+      window.alert('WhatsApp ticket resend initiated.');
     } catch (err) {
-      window.alert(err?.message || 'Failed to resend ticket');
+      window.alert(err?.message || 'Failed to resend WhatsApp ticket');
+    }
+  };
+
+  const handleResendEmail = async (row) => {
+    if (!row.booking_id) return;
+    if (!window.confirm('Resend ticket via email to this user?')) return;
+    try {
+      await dispatch(resendEmailAdmin({ id: row.booking_id })).unwrap();
+      window.alert('Email ticket resend initiated.');
+    } catch (err) {
+      window.alert(err?.message || 'Failed to resend email ticket');
     }
   };
 
@@ -866,10 +877,16 @@ export default function BookingsList() {
                 Download ticket
               </button>
               <button
-                className="text-orange-600 hover:underline"
-                onClick={(e) => { e.stopPropagation(); handleResendTicket(r); }}
+                className="text-green-600 hover:underline"
+                onClick={(e) => { e.stopPropagation(); handleResendWhatsApp(r); }}
               >
-                Resend ticket
+                WhatsApp
+              </button>
+              <button
+                className="text-blue-600 hover:underline"
+                onClick={(e) => { e.stopPropagation(); handleResendEmail(r); }}
+              >
+                Email
               </button>
             </div>
           ) },

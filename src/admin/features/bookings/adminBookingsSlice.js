@@ -77,6 +77,24 @@ export const resendTicketAdmin = createAsyncThunk('adminBookings/resendTicket',
   }
 );
 
+export const resendWhatsAppAdmin = createAsyncThunk('adminBookings/resendWhatsApp',
+  async ({ id }, { rejectWithValue }) => {
+    try {
+      const res = await adminApi.post(A.bookingResendWhatsApp(id));
+      return { id, ...res };
+    } catch (err) { return rejectWithValue(err); }
+  }
+);
+
+export const resendEmailAdmin = createAsyncThunk('adminBookings/resendEmail',
+  async ({ id }, { rejectWithValue }) => {
+    try {
+      const res = await adminApi.post(A.bookingResendEmail(id));
+      return { id, ...res };
+    } catch (err) { return rejectWithValue(err); }
+  }
+);
+
 const slice = createSlice({
   name: 'adminBookings',
   initialState: {
@@ -96,7 +114,7 @@ const slice = createSlice({
     b.addCase(getAdminBooking.fulfilled, (s, a) => { s.current.status = 'succeeded'; s.current.data = a.payload; });
     b.addCase(getAdminBooking.rejected, (s, a) => { s.current.status = 'failed'; s.current.error = toErr(a.payload || a.error, 'Failed to load booking'); });
 
-    for (const th of [updateAdminBooking, cancelAdminBooking, payphiStatusAdmin, payphiInitiateAdmin, payphiRefundAdmin, resendTicketAdmin]) {
+    for (const th of [updateAdminBooking, cancelAdminBooking, payphiStatusAdmin, payphiInitiateAdmin, payphiRefundAdmin, resendTicketAdmin, resendWhatsAppAdmin, resendEmailAdmin]) {
       b.addCase(th.pending, (s) => { s.action.status = 'loading'; s.action.error = null; });
       b.addCase(th.fulfilled, (s) => { s.action.status = 'succeeded'; });
       b.addCase(th.rejected, (s, a) => { s.action.status = 'failed'; s.action.error = toErr(a.payload || a.error, 'Action failed'); });
