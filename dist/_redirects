@@ -1,0 +1,5 @@
+/*    /index.html   200
+
+# Single Page App fallback for Netlify
+# All requests will serve index.html so client-side routing works.
+# Query strings are preserved, so URLs like /payment/success?booking=160 will be handled by the app.

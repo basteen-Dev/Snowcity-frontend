@@ -23,6 +23,7 @@ import {
 import { fetchAttractions } from '../features/attractions/attractionsSlice';
 import { fetchCombos } from '../features/combos/combosSlice';
 import { fetchAddons } from '../features/addons/addonsSlice';
+import { logout } from '../features/auth/authSlice';
 import Loader from '../components/common/Loader';
 import ErrorState from '../components/common/ErrorState';
 import TokenExpiredModal from '../components/modals/TokenExpiredModal';
@@ -1118,10 +1119,31 @@ const fetchSlots = useCallback(async ({ itemType, attractionId, comboId, date })
         alert('Payment initiation failed.');
       }
     } catch (err) {
+      console.error('Booking creation error:', err);
+      
+      // Enhanced error handling for authentication issues
       if (err?.status === 401 || err?.response?.status === 401) {
-        setShowTokenExpiredModal(true);
+        const errorMessage = err?.message || err?.response?.data?.message || '';
+        if (errorMessage.toLowerCase().includes('token revoked') || 
+            errorMessage.toLowerCase().includes('token expired')) {
+          // Clear any stored auth data and trigger navbar sign-in modal
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('user');
+          dispatch(logout());
+          
+          // Dispatch custom event to open navbar auth modal
+          window.dispatchEvent(new CustomEvent('openAuthModal'));
+          
+          alert('Your session has expired. Please sign in using the navbar to continue booking.');
+        } else {
+          // For other 401 errors, still show the token expired modal
+          setShowTokenExpiredModal(true);
+          alert('Authentication failed. Please sign in again.');
+        }
       } else {
-        alert(`Payment failed: ${err.message}`);
+        // Show more specific error messages for other failures
+        const errorMsg = err?.message || err?.response?.data?.message || 'Payment failed';
+        alert(`Booking failed: ${errorMsg}`);
       }
     }
   };
@@ -2138,7 +2160,7 @@ const fetchSlots = useCallback(async ({ itemType, attractionId, comboId, date })
 
             {/* STEP 4: Summary */}
             {step === 4 && (
-              <div className="space-y-6 max-w-lg mx-auto animate-in fade-in slide-in-from-right-8 duration-300 mt-4 pb-20">
+              <div className="space-y-6 max-w-lg mx-auto animate-in fade-in slide-in-from-right-8 duration-300 pb-20">
                 <OfferSelector />
                 <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
                   <h3 className="font-bold text-gray-900 mb-4 text-lg flex items-center gap-2">

@@ -113,7 +113,11 @@ setAuthHandlers({
   getToken: () => store.getState().auth?.token || null,
   onUnauthorized: async () => {
     const token = store.getState().auth?.token;
-    if (token) store.dispatch(logout());
+    if (token) {
+      store.dispatch(logout());
+      // Dispatch custom event to open auth modal
+      window.dispatchEvent(new CustomEvent('openAuthModal'));
+    }
   }
 });
 

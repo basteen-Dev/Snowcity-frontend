@@ -137,6 +137,15 @@ export default function FloatingNavBar() {
     setAuthModalOpen(true);
   }, [resetAuthState]);
 
+  // Listen for global auth modal open events
+  React.useEffect(() => {
+    const handleOpenAuthModal = () => {
+      openAuthModal();
+    };
+    window.addEventListener('openAuthModal', handleOpenAuthModal);
+    return () => window.removeEventListener('openAuthModal', handleOpenAuthModal);
+  }, [openAuthModal]);
+
   const closeAuthModal = React.useCallback(() => {
     setAuthModalOpen(false);
     resetAuthState();
