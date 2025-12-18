@@ -389,6 +389,41 @@ export default function AttractionsCarousel({ items = [] }) {
           Explore All Attractions
         </Link>
       </div>
+      <style>{`
+        @keyframes liquidWave {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        .animate-liquidWave {
+          animation: liquidWave 12s linear infinite;
+        }
+
+        @keyframes floatSlow {
+          0% { transform: translateY(0) rotate(0deg); }
+          50% { transform: translateY(-14px) rotate(6deg); }
+          100% { transform: translateY(0) rotate(0deg); }
+        }
+        .animate-floatSlow {
+          animation: floatSlow 7s ease-in-out infinite;
+        }
+
+        @keyframes floatFast {
+          0% { transform: translateY(0) rotate(0deg); }
+          50% { transform: translateY(16px) rotate(-6deg); }
+          100% { transform: translateY(0) rotate(0deg); }
+        }
+        .animate-floatFast {
+          animation: floatFast 5s ease-in-out infinite;
+        }
+
+        @keyframes cardIn {
+          0% { opacity: 0; transform: translate(var(--x, 0), var(--y, 12px)) scale(0.98); }
+          100% { opacity: 1; transform: translate(0, 0) scale(1); }
+        }
+        .animate-card {
+          animation: cardIn .55s ease-out both;
+        }
+      `}</style>
     </section>
   );
 }

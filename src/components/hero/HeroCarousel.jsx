@@ -100,7 +100,7 @@ export default function HeroCarousel({ banners = [], waveColor = "#0b1a33" }) {
                     <img
                       src={desktopImg}
                       alt={title || "Banner"}
-                      className="w-full h-full object-cover object-center will-change-transform animate-kenburns brightness-[1.12] contrast-[1.18] saturate-125"
+                      className="w-full h-full object-cover object-[center_35%] md:object-center will-change-transform animate-kenburns brightness-[1.12] contrast-[1.18] saturate-125"
                       style={{
                         objectPosition: 'center',
                         objectFit: 'cover'
@@ -108,7 +108,7 @@ export default function HeroCarousel({ banners = [], waveColor = "#0b1a33" }) {
                       loading={idx === 0 ? "eager" : "lazy"}
                       fetchPriority={idx === 0 ? "high" : "auto"}
                       decoding="async"
-                      sizes="100vw"
+                      sizes="(max-width: 767px) 100vw, 100vw"
                     />
                   </picture>
                 </div>
@@ -139,10 +139,12 @@ export default function HeroCarousel({ banners = [], waveColor = "#0b1a33" }) {
                     <div className="flex justify-center">
                       <a
                         href={href}
-                        className="inline-flex items-center px-8 py-3 text-white font-medium border border-white rounded-full bg-transparent hover:bg-white/5 hover:border-white transition-all duration-300 hover:scale-105"
+                        className="group relative inline-flex items-center justify-center rounded-full px-7 py-3 sm:px-10 sm:py-3.5 text-[12px] sm:text-sm font-semibold tracking-[0.28em] uppercase text-white bg-transparent border border-white/60 shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_0_0_1px_rgba(255,255,255,0.10),0_0_26px_rgba(255,255,255,0.14),0_18px_55px_rgba(0,0,0,0.45)] transition-all duration-300 hover:border-white/85 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_0_0_1px_rgba(255,255,255,0.16),0_0_40px_rgba(255,255,255,0.20),0_26px_70px_rgba(0,0,0,0.55)] hover:-translate-y-[1px] active:translate-y-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40"
                       >
-                        Explore Now
-                        <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <span className="relative">
+                          EXPLORE NOW
+                        </span>
+                        <svg className="ml-2 w-4 h-4 opacity-90 transition-transform duration-300 group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>
                       </a>
