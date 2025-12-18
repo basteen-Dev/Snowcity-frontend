@@ -267,7 +267,37 @@ function getKey(item, index) {
 
 export default function AttractionsCarousel({ items = [] }) {
   const [active, setActive] = React.useState(0);
-  const total = items.length;
+  
+  // Sort items: Snow City first, then second, then third, then remaining
+  const sortedItems = React.useMemo(() => {
+    // Find Snow City attraction (case-insensitive search)
+    const snowCityItem = items.find(item => 
+      (item.title || item.name || '').toLowerCase().includes('snow city')
+    );
+    
+    // Get remaining items excluding Snow City
+    const remainingItems = items.filter(item => 
+      !(item.title || item.name || '').toLowerCase().includes('snow city')
+    );
+    
+    // Sort remaining items by ID
+    const sortedRemaining = [...remainingItems].sort((a, b) => {
+      const idA = a?.attraction_id ?? a?.id ?? 0;
+      const idB = b?.attraction_id ?? b?.id ?? 0;
+      return idA - idB;
+    });
+    
+    // Combine: Snow City first, then first item from remaining, then second item from remaining, then rest
+    const result = [];
+    if (snowCityItem) result.push(snowCityItem);
+    if (sortedRemaining[0]) result.push(sortedRemaining[0]);
+    if (sortedRemaining[1]) result.push(sortedRemaining[1]);
+    result.push(...sortedRemaining.slice(2));
+    
+    return result;
+  }, [items]);
+  
+  const total = sortedItems.length;
 
   // Mobile auto slide
   React.useEffect(() => {
@@ -308,7 +338,7 @@ export default function AttractionsCarousel({ items = [] }) {
             snap-x snap-mandatory
           "
         >
-          {items.map((item, i) => (
+          {sortedItems.map((item, i) => (
             <div
               key={getKey(item, i)}
               className="snap-start min-w-[340px] max-w-[340px]"
@@ -322,16 +352,16 @@ export default function AttractionsCarousel({ items = [] }) {
       {/* ================= MOBILE ================= */}
       <div className="md:hidden relative z-10 px-4">
         <div className="flex justify-center">
-          {items[active] && (
+          {sortedItems[active] && (
             <div className="w-[85%] transition-all duration-500">
-              <AttractionCard item={items[active]} />
+              <AttractionCard item={sortedItems[active]} />
             </div>
           )}
         </div>
 
         {/* DOTS */}
         <div className="flex justify-center gap-2 mt-4">
-          {items.map((_, i) => (
+          {sortedItems.map((_, i) => (
             <span
               key={i}
               className={`

@@ -287,6 +287,31 @@ const getOfferTitle = (offer) =>
 const getOfferSummary = (offer) =>
   offer?.short_description || offer?.subtitle || offer?.description || '';
 
+const computeOfferDiscount = (offer, totalAmount) => {
+  if (!offer || !totalAmount) return 0;
+  const discountType = String(offer.discount_type || offer.rule_discount_type || '').toLowerCase();
+  const percentFromOffer =
+    Number(
+      offer.discount_percent ??
+        offer.discountPercent ??
+        (discountType === 'percent' ? offer.discount_value ?? offer.discountValue : 0),
+    ) || 0;
+  const flatValue =
+    Number(offer.discount_value ?? offer.discountValue ?? offer.flat_discount ?? 0) || 0;
+
+  let discount = 0;
+  if ((discountType === 'percent' && percentFromOffer > 0) || percentFromOffer > 0) {
+    discount = (totalAmount * percentFromOffer) / 100;
+  } else {
+    discount = flatValue;
+  }
+
+  const maxDiscount = Number(offer.max_discount ?? offer.maxDiscount ?? 0);
+  if (maxDiscount > 0) discount = Math.min(discount, maxDiscount);
+
+  return Math.max(0, Math.min(discount, totalAmount));
+};
+
 const getOfferDisplayDetails = (offer) => {
   if (!offer) return null;
 
@@ -1082,7 +1107,7 @@ const fetchSlots = useCallback(async ({ itemType, attractionId, comboId, date })
 
       const bookingPayloads = cartItems.map((item) => {
         const isCombo = item.item_type === 'Combo';
-        const itemAddonsMap = cartAddons.get(item.key);
+        const itemAddonsMap = cartAddons.get(item.key) || new Map();
         const addonsPayload = itemAddonsMap
           ? Array.from(itemAddonsMap.values())
               .filter((a) => Number(a.quantity) > 0)
@@ -1244,7 +1269,7 @@ const fetchSlots = useCallback(async ({ itemType, attractionId, comboId, date })
   };
 
   const ProgressBar = () => (
-    <div className="flex items-center justify-between mb-1 md:mb-2 px-4">
+    <div className="flex items-center justify-between mb-0.5 px-4">
       {[
         { n: 1, l: 'Select', icon: ShoppingBag },
         { n: 2, l: 'Extras', icon: Ticket },
@@ -1260,7 +1285,7 @@ const fetchSlots = useCallback(async ({ itemType, attractionId, comboId, date })
         return (
           <div key={s.n} className="flex flex-col items-center relative z-10 group">
             <div
-              className={`w-11 h-11 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 border-2 shadow-sm ${
+              className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 border-2 shadow-sm ${
                 isCurrent
                   ? 'bg-gradient-to-br from-sky-600 to-sky-700 border-sky-600 text-white scale-110 ring-4 ring-sky-100'
                   : showCheck
@@ -1269,9 +1294,9 @@ const fetchSlots = useCallback(async ({ itemType, attractionId, comboId, date })
               }`}
             >
               {showCheck && !isCurrent ? (
-                <Check size={18} strokeWidth={3} />
+                <Check size={16} strokeWidth={3} />
               ) : (
-                <IconComponent size={18} />
+                <IconComponent size={16} />
               )}
             </div>
             <span
@@ -1288,7 +1313,7 @@ const fetchSlots = useCallback(async ({ itemType, attractionId, comboId, date })
           </div>
         );
       })}
-      <div className="absolute left-8 right-8 top-[22px] h-[3px] bg-gradient-to-r from-sky-100 to-sky-200 -z-0 overflow-hidden rounded-full">
+      <div className="absolute left-8 right-8 top-[18px] h-0.5 bg-gradient-to-r from-sky-100 to-sky-200 -z-0 overflow-hidden rounded-full">
         <div
           className="h-full bg-gradient-to-r from-sky-600 to-sky-500 transition-all duration-500 ease-out shadow-sm"
           style={{ width: `${((step - 1) / (hasToken ? 2 : 3)) * 100}%` }}
@@ -1300,7 +1325,25 @@ const fetchSlots = useCallback(async ({ itemType, attractionId, comboId, date })
   /* Product list with images */
   const ProductList = () => {
     const activeTab = sel.itemType;
-    const data = activeTab === 'attraction' ? attractions : combos;
+    const data = useMemo(() => {
+      if (activeTab !== 'attraction') return combos;
+      const list = Array.isArray(attractions) ? [...attractions] : [];
+      const score = (item) => {
+        const name = String(item?.name ?? item?.title ?? '').toLowerCase();
+        const normalized = name.replace(/\s+/g, '');
+        if (name.includes('snow city') || normalized.includes('snowcity')) return 0;
+        if (name.includes('mad lab') || normalized.includes('madlab')) return 1;
+        return 2;
+      };
+      list.sort((a, b) => {
+        const sa = score(a);
+        const sb = score(b);
+
+        if (sa !== sb) return sa - sb;
+        return 0;
+      });
+      return list;
+    }, [activeTab, attractions, combos]);
 
     return (
       <div className="space-y-4">
@@ -1445,7 +1488,7 @@ const fetchSlots = useCallback(async ({ itemType, attractionId, comboId, date })
                   <button
                     type="button"
                     onClick={onSelect}
-                    className={`px-6 py-2.5 sm:py-3 rounded-full text-white text-sm font-semibold shadow-md active:scale-[0.98] transition-all ${
+                    className={`px-6 py-2 rounded-full text-white text-sm font-semibold shadow-md active:scale-[0.98] transition-all ${
                       isSelected
                         ? 'bg-sky-700'
                         : 'bg-sky-600 hover:bg-sky-700'
@@ -1581,8 +1624,8 @@ const fetchSlots = useCallback(async ({ itemType, attractionId, comboId, date })
       <div className="min-h-screen bg-gradient-to-b from-sky-50 to-white font-inter">
         {/* steps / body */}
         <div className="max-w-6xl mx-auto px-3 lg:px-0 pb-24 lg:pb-20 pt-20 md:pt-24">
-          {/* header + steps */}
-          <div className="mt-4 md:mt-6 bg-white/80 backdrop-blur rounded-2xl shadow-sm border border-sky-100">
+          {/* header + steps - STICKY */}
+          <div className="sticky top-[calc(64px+1px)] z-40 mt-px bg-white/80 backdrop-blur rounded-2xl shadow-sm border border-sky-100">
             <div className="px-4 md:px-6 pt-3 md:pt-4 pb-2 md:pb-3 border-b border-gray-100 flex items-center justify-between">
               <h2 className="text-lg md:text-xl font-bold text-gray-900">
                 {step === 1
@@ -1600,7 +1643,7 @@ const fetchSlots = useCallback(async ({ itemType, attractionId, comboId, date })
                 <X size={22} />
               </button>
             </div>
-            <div className="relative pb-2">
+            <div className="relative pb-1">
               <ProgressBar />
             </div>
           </div>
@@ -1742,7 +1785,7 @@ const fetchSlots = useCallback(async ({ itemType, attractionId, comboId, date })
                         type="button"
                         disabled={!hasCartItems}
                         onClick={handleNext}
-                        className={`w-full flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition-all ${
+                        className={`w-full flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all active:scale-[0.98] ${
                           !hasCartItems
                             ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                             : 'bg-sky-600 text-white shadow-md hover:bg-sky-700 active:scale-[0.98]'
@@ -1958,7 +2001,7 @@ const fetchSlots = useCallback(async ({ itemType, attractionId, comboId, date })
                         type="button"
                         disabled={!hasCartItems}
                         onClick={handleNext}
-                        className={`w-full flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition-all ${
+                        className={`w-full flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all active:scale-[0.98] ${
                           !hasCartItems
                             ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                             : 'bg-sky-600 text-white shadow-md hover:bg-sky-700 active:scale-[0.98]'
@@ -2323,7 +2366,7 @@ const fetchSlots = useCallback(async ({ itemType, attractionId, comboId, date })
                         <div className="relative flex-1">
                           <Ticket size={18} className="absolute left-3 top-3 text-gray-400 pointer-events-none" />
                           <select
-                            className="w-full pl-10 pr-20 p-3 border border-gray-200 rounded-xl text-sm uppercase focus:ring-2 focus:ring-sky-500 outline-none font-bold tracking-wider appearance-none bg-white cursor-pointer disabled:bg-gray-50 disabled:text-gray-400"
+                            className="w-full pl-10 pr-20 p-3 border border-gray-200 rounded-xl text-sm uppercase focus:ring-2 focus:ring-sky-500 outline-none font-bold tracking-wider appearance-none bg-white cursor-pointer disabled:bg-gray-50 disabled:text-gray-400 transition-all hover:border-gray-300"
                             value={promoInput}
                             onChange={(e) => setPromoInput(e.target.value)}
                             disabled={promosLoading}
@@ -2353,84 +2396,70 @@ const fetchSlots = useCallback(async ({ itemType, attractionId, comboId, date })
             )}
           </div>
 
-
-
           {/* floating bottom action bar (not a footer; mobile-friendly cart CTA) */}
-          {(step !== 1 || !isDesktop) && !(step === 2 && isDesktop) && (
-            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 md:px-0 py-3 md:py-4 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] z-30">
+          {(true) && (
+            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 md:px-0 py-3 md:py-3 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] z-30">
               <div className="max-w-6xl mx-auto flex gap-3 items-center">
-                {!isDesktop && step > 1 && (
-                  <button
-                    onClick={handleBack}
-                    className="md:hidden p-3 rounded-xl border border-gray-200 text-gray-700 hover:border-gray-300 active:scale-[0.95] transition-all flex items-center justify-center"
-                    title="Go back"
-                  >
-                    <ArrowLeft size={20} />
-                  </button>
-                )}
-                <div className={`flex-1 ${isDesktop ? 'hidden' : ''}`}>
-                  <div className="text-xs text-gray-500 font-medium uppercase tracking-wider">
-                    Total
-                  </div>
-                  <div className="text-xl font-bold text-gray-900 tabular-nums">₹{finalTotal}</div>
-                </div>
                 {step > 1 && (
                   <button
+                    type="button"
                     onClick={handleBack}
-                    className={`px-6 py-3 rounded-xl border border-gray-200 text-gray-700 font-semibold hover:border-gray-300 active:scale-[0.98] transition-all ${
-                      isDesktop ? '' : 'hidden md:block'
-                    }`}
+                    className="p-2.5 rounded-xl border border-gray-200 text-gray-700 hover:border-gray-300 active:scale-[0.98] transition-all flex items-center justify-center"
+                    title="Go back"
                   >
-                    Back
+                    <ArrowLeft size={18} />
                   </button>
                 )}
+
+                <div className={`flex-1 ${isDesktop ? 'hidden' : ''}`}>
+                  <div className="text-base font-semibold text-gray-900 tabular-nums">₹{finalTotal}</div>
+                </div>
+
                 <button
+                  type="button"
                   onClick={step === 4 ? onPlaceOrderAndPay : handleNext}
                   disabled={
-                    (step === 3 && !hasToken && !otp.verified) || (creating?.status === 'loading')
+                    step === 4
+                      ? creating?.status === 'loading' || !hasCartItems
+                      : step === 3
+                      ? !otp.verified
+                      : step === 2
+                      ? !hasCartItems
+                      : !hasCartItems && !selectionReady
                   }
-                  className={`bg-gradient-to-r from-sky-600 to-sky-700 text-white py-3 px-8 rounded-xl font-bold shadow-lg hover:shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed text-sm md:text-base ${
-                    isDesktop ? '' : 'md:w-auto'
+                  className={`ml-auto inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all active:scale-[0.98] ${
+                    (step === 4
+                      ? creating?.status === 'loading' || !hasCartItems
+                      : step === 3
+                      ? !otp.verified
+                      : step === 2
+                      ? !hasCartItems
+                      : !hasCartItems && !selectionReady)
+                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      : 'bg-sky-600 text-white shadow-md hover:bg-sky-700'
                   }`}
                 >
-                  {step === 4 ? (
-                    creating.status === 'loading' ? (
-                      <div className="flex items-center justify-center gap-2">
-                        <div className="relative">
-                          <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                          <div className="absolute inset-0 w-5 h-5 border-2 border-transparent border-b-white/50 rounded-full animate-spin animation-delay-150"></div>
-                        </div>
-                        <span className="animate-pulse">Processing...</span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center justify-center gap-2 group">
-                        <div className="p-1.5 bg-white/20 rounded-lg transition-all duration-300 group-hover:bg-white/30">
-                          <Ticket size={18} className="text-white" />
-                        </div>
-                        <span className="font-semibold">Pay ₹{finalTotal}</span>
-                        <div className="w-0 group-hover:w-5 overflow-hidden transition-all duration-300">
-                          <ArrowRight size={16} className="text-white" />
-                        </div>
-                      </div>
-                    )
-                  ) : (
-                    <div className="flex items-center justify-center gap-2 group">
-                      <span className="font-semibold">Continue</span>
-                      <ArrowRight size={20} className="transition-transform duration-300 group-hover:translate-x-1" />
-                    </div>
-                  )}
+                  <span>
+                    {step === 4
+                      ? `Pay ₹${finalTotal}`
+                      : step === 3
+                      ? 'Continue'
+                      : 'Next'}
+                  </span>
+                  <ArrowRight size={16} />
                 </button>
               </div>
             </div>
           )}
-        </div>
-      </div>
 
           {/* Details drawer: mobile bottom-sheet & desktop right-side drawer */}
           {drawerOpen && selectedMeta.title && (
             <div className="fixed inset-0 z-50 flex justify-end items-end md:items-stretch bg-black/40 backdrop-blur-[2px] md:bg-black/20">
               <div className="flex-1 hidden md:block" onClick={() => setDrawerOpen(false)} />
-              <div className="w-full md:w-1/2 bg-white rounded-t-3xl md:rounded-l-3xl shadow-2xl flex flex-col transform translate-y-0 transition-all h-[90vh] md:h-screen max-h-[90vh] md:max-h-screen md:mt-0 mt-16">
+              <div className="w-full md:w-1/3 bg-white rounded-t-3xl md:rounded-l-3xl shadow-2xl flex flex-col transform translate-y-0 transition-all h-[66vh] md:h-screen max-h-[66vh] md:max-h-screen md:mt-0">
+                <div className="md:hidden flex justify-center pt-2 pb-1">
+                  <div className="h-1.5 w-12 rounded-full bg-gray-300" />
+                </div>
                 <div className="sticky top-0 z-10 flex items-center justify-between px-4 sm:px-6 pt-4 pb-2 border-b border-gray-100 bg-white rounded-t-3xl md:rounded-tl-3xl sm:rounded-tl-3xl">
                   <h2 className="text-base sm:text-lg font-semibold text-gray-900 pr-3 truncate">
                     {selectedMeta.title}
@@ -2471,11 +2500,21 @@ const fetchSlots = useCallback(async ({ itemType, attractionId, comboId, date })
 
                       <div className="text-sm text-gray-700">
                         {(() => {
-                          const desc = sel.itemType === 'combo'
-                            ? (selectedCombo?.description || selectedCombo?.short_description || selectedCombo?.summary || '')
-                            : (selectedAttraction?.description || selectedAttraction?.short_description || selectedAttraction?.summary || selectedAttraction?.about || '');
+                          const desc =
+                            sel.itemType === 'combo'
+                              ? selectedCombo?.description ||
+                                selectedCombo?.short_description ||
+                                selectedCombo?.summary ||
+                                ''
+                              : selectedAttraction?.description ||
+                                selectedAttraction?.short_description ||
+                                selectedAttraction?.summary ||
+                                selectedAttraction?.about ||
+                                '';
                           return (desc || '').split('\n').map((line, i) => (
-                            <p key={i} className="mb-2">{line}</p>
+                            <p key={i} className="mb-2">
+                              {line}
+                            </p>
                           ));
                         })()}
                       </div>
@@ -2492,7 +2531,6 @@ const fetchSlots = useCallback(async ({ itemType, attractionId, comboId, date })
                     </div>
                   ) : (
                     <>
-                      {/* date chips & custom date - calendar only, no typing */}
                       <div className="space-y-2">
                         <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">
                           Date
@@ -2520,20 +2558,23 @@ const fetchSlots = useCallback(async ({ itemType, attractionId, comboId, date })
                           >
                             Tomorrow
                           </button>
-                          <button 
+                          <button
                             type="button"
                             onClick={onCalendarButtonClick}
                             className={`px-4 py-2 rounded-full text-xs font-medium border transition-colors ${
-                              sel.date && sel.date !== '' && sel.date !== todayYMD() && sel.date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
+                              sel.date &&
+                              sel.date !== '' &&
+                              sel.date !== todayYMD() &&
+                              sel.date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
                                 ? 'bg-sky-600 text-white border-sky-600'
                                 : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
-                            }`}>
+                            }`}
+                          >
                             {formatDateDisplay(sel.date)}
                           </button>
                         </div>
                       </div>
 
-                      {/* slot select */}
                       <div className="space-y-2">
                         <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">
                           Time slot
@@ -2548,9 +2589,7 @@ const fetchSlots = useCallback(async ({ itemType, attractionId, comboId, date })
                             </div>
                           ) : slots.status === 'failed' ? (
                             <div className="w-full p-3.5 bg-red-50 border border-red-200 rounded-xl flex items-center justify-center">
-                              <div className="text-red-600 text-sm">
-                                Failed to load slots
-                              </div>
+                              <div className="text-red-600 text-sm">Failed to load slots</div>
                             </div>
                           ) : (
                             <>
@@ -2575,9 +2614,15 @@ const fetchSlots = useCallback(async ({ itemType, attractionId, comboId, date })
                                   const hasCapacity = slotHasCapacity(s);
                                   const isAvailable = isSlotAvailable(s, sel.date);
                                   const isDisabled = !hasCapacity || !isAvailable;
+
                                   return (
                                     <option key={sid} value={sid} disabled={isDisabled}>
-                                      {getSlotLabel(s)} {!hasCapacity ? '(Full)' : !isAvailable ? '(Not Available)' : ''}
+                                      {getSlotLabel(s)}{' '}
+                                      {!hasCapacity
+                                        ? '(Full)'
+                                        : !isAvailable
+                                        ? '(Not Available)'
+                                        : ''}
                                     </option>
                                   );
                                 })}
@@ -2591,16 +2636,13 @@ const fetchSlots = useCallback(async ({ itemType, attractionId, comboId, date })
                         </div>
                       </div>
 
-                      {/* quantity */}
                       <div className="space-y-2">
                         <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">
                           Quantity
                         </p>
                         <div className="flex items-center gap-4 bg-gray-50 rounded-xl p-1.5 border border-gray-200 w-fit">
                           <button
-                            onClick={() =>
-                              setSel((s) => ({ ...s, qty: Math.max(1, s.qty - 1) }))
-                            }
+                            onClick={() => setSel((s) => ({ ...s, qty: Math.max(1, s.qty - 1) }))}
                             className="w-9 h-9 flex items-center justify-center rounded-lg bg-white text-gray-600 shadow-sm hover:text-sky-700 active:scale-95 transition"
                           >
                             <Minus size={16} />
@@ -2609,9 +2651,7 @@ const fetchSlots = useCallback(async ({ itemType, attractionId, comboId, date })
                             {sel.qty}
                           </span>
                           <button
-                            onClick={() =>
-                              setSel((s) => ({ ...s, qty: Math.max(1, s.qty + 1) }))
-                            }
+                            onClick={() => setSel((s) => ({ ...s, qty: Math.max(1, s.qty + 1) }))}
                             className="w-9 h-9 flex items-center justify-center rounded-lg bg-sky-600 text-white shadow-md hover:bg-sky-700 active:scale-95 transition"
                           >
                             <Plus size={16} />
@@ -2622,17 +2662,12 @@ const fetchSlots = useCallback(async ({ itemType, attractionId, comboId, date })
                   )}
                 </div>
 
-                {/* bottom: subtotal + buttons */}
                 <div className="relative">
                   <div className="absolute inset-x-0 top-0 h-4 bg-gradient-to-t from-white via-white/70 to-transparent pointer-events-none" />
                   <div className="px-4 sm:px-6 py-3 border-t border-gray-100 bg-white flex items-center justify-between gap-3">
                     <div>
-                      <div className="text-[11px] uppercase tracking-wide text-gray-500 font-semibold">
-                        Subtotal
-                      </div>
-                      <div className="text-lg font-bold text-sky-700 tabular-nums">
-                        ₹{ticketsSubtotal.toFixed(0)}
-                      </div>
+                      <div className="text-[11px] uppercase tracking-wide text-gray-500 font-semibold">Subtotal</div>
+                      <div className="text-lg font-bold text-sky-700 tabular-nums">₹{ticketsSubtotal.toFixed(0)}</div>
                     </div>
                     <div className="flex items-center gap-2">
                       <button
@@ -2759,6 +2794,8 @@ const fetchSlots = useCallback(async ({ itemType, attractionId, comboId, date })
               </div>
             </div>
           )}
-    </>
-  );
+    </div>
+  </div>
+</>
+);
 }
