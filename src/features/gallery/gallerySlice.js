@@ -12,8 +12,9 @@ export const fetchGallery = createAsyncThunk(
   async (params = { active: true, limit: 50, page: 1 }, { signal, rejectWithValue }) => {
     try {
       const res = await api.get(endpoints.gallery.list(), { params, signal });
-      const items = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
-      return items;
+      // Handle both { data, meta } format and direct array format
+      const items = res?.data?.data || (Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : []);
+      return { items, params };
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -22,7 +23,13 @@ export const fetchGallery = createAsyncThunk(
 
 const gallerySlice = createSlice({
   name: 'gallery',
-  initialState: { items: [], status: 'idle', error: null, lastFetched: null },
+  initialState: { 
+    items: [], 
+    status: 'idle', 
+    error: null, 
+    lastFetched: null,
+    filters: null 
+  },
   reducers: {},
   extraReducers: (builder) => {
     builder
@@ -32,7 +39,8 @@ const gallerySlice = createSlice({
       })
       .addCase(fetchGallery.fulfilled, (state, action) => {
         state.status = 'succeeded';
-        state.items = action.payload || [];
+        state.items = action.payload.items || [];
+        state.filters = action.payload.params;
         state.lastFetched = Date.now();
       })
       .addCase(fetchGallery.rejected, (state, action) => {

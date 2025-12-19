@@ -1,11 +1,10 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { formatCurrency } from '../../utils/formatters';
+import { imgSrc } from '../../utils/media';
 
 const getAddonTitle = (addon, idx) => addon?.name || addon?.title || addon?.label || `Addon #${idx + 1}`;
-const getAddonDescription = (addon) => addon?.short_description || addon?.subtitle || addon?.description || '';
-const getAddonDetails = (addon) => addon?.details || addon?.long_description || addon?.fine_print || '';
-const getAddonIcon = (addon) => addon?.icon || addon?.emoji || addon?.badge || '✨';
+const getAddonImage = (addon) => addon?.image_url || addon?.image || addon?.media_url || addon?.avatar || null;
 const getAddonPriceLabel = (addon) => {
   const rawPrice = addon?.price ?? addon?.amount ?? addon?.discounted_price;
   if (rawPrice === null || rawPrice === undefined) return null;
@@ -15,119 +14,75 @@ const getAddonPriceLabel = (addon) => {
 };
 
 export default function AddonsSection({ items = [], onSelectAddon }) {
-  if (!items.length) return null;
+  if (!items || !items.length) return null;
+
+  // duplicate items for seamless marquee
+  const displayItems = [...items, ...items];
 
   return (
-    <section id="addons" className="relative overflow-hidden bg-gradient-to-b from-blue-50 to-white py-16 px-4">
+    <section id="addons" className="relative overflow-hidden bg-gradient-to-b from-blue-50 to-white py-8 px-2 md:py-16 md:px-4">
+      <style>{`\n        @keyframes marquee-rtl {\n          0% { transform: translateX(0%); }\n          100% { transform: translateX(-50%); }\n        }\n        .marquee-rtl {\n          animation: marquee-rtl 20s linear infinite;\n        }\n        .marquee-rtl:hover, .marquee-rtl:active { animation-play-state: paused; }\n        @media (max-width: 640px) {\n          .marquee-rtl { animation-duration: 12s; }\n        }\n      `}</style>
+
       <motion.div
-        className="pointer-events-none absolute top-10 left-10 text-6xl opacity-10"
-        animate={{ y: [0, -15, 0] }}
-        transition={{ duration: 3, repeat: Infinity }}
-        aria-hidden="true"
+        initial={{ opacity: 0, y: 12 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        className="relative z-10 mx-auto max-w-6xl px-4"
       >
-        🎪
-      </motion.div>
-      <motion.div
-        className="pointer-events-none absolute bottom-10 right-10 text-6xl opacity-10"
-        animate={{ y: [0, 15, 0] }}
-        transition={{ duration: 4, repeat: Infinity }}
-        aria-hidden="true"
-      >
-        🎠
-      </motion.div>
-
-      <div className="relative z-10 mx-auto max-w-6xl">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center"
-        >
-          <p className="text-xs font-semibold tracking-[0.4em] text-blue-400/70">ADD-ONS</p>
-          <h2 className="mt-3 text-2xl font-semibold text-slate-900">Enhance Your Visit</h2>
-          <p className="mt-3 text-sm text-slate-500">
-            Add these extras to make your experience even more memorable
-          </p>
-        </motion.div>
-
-        <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {items.map((addon, index) => {
-            const title = getAddonTitle(addon, index);
-            const desc = getAddonDescription(addon);
-            const details = getAddonDetails(addon);
-            const icon = getAddonIcon(addon);
-            const priceLabel = getAddonPriceLabel(addon);
-
-            const handleClick = () => {
-              if (onSelectAddon) onSelectAddon(addon);
-            };
-
-            return (
-              <motion.div
-                key={addon?.addon_id || addon?.id || index}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.05, duration: 0.5 }}
-                whileHover={{ y: -10, scale: 1.02 }}
-                className="group"
-              >
-                <div
-                  role={onSelectAddon ? 'button' : undefined}
-                  tabIndex={onSelectAddon ? 0 : undefined}
-                  onClick={handleClick}
-                  onKeyDown={(e) => {
-                    if (!onSelectAddon) return;
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      handleClick();
-                    }
-                  }}
-                  className="flex h-full flex-col rounded-2xl border border-gray-200 bg-white p-6 text-center shadow-lg transition-all hover:shadow-2xl focus:outline-none"
-                >
-                  <motion.div
-                    className="mb-3 inline-block text-5xl"
-                    whileHover={{ rotate: [0, -10, 10, -10, 0], scale: 1.2 }}
-                    transition={{ duration: 0.5 }}
-                  >
-                    {icon}
-                  </motion.div>
-                  <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
-                  {desc ? <p className="mt-2 text-sm text-slate-600">{desc}</p> : null}
-                  <div className="mt-auto pt-4">
-                    {priceLabel ? (
-                      <div className="text-2xl font-bold text-blue-600">{priceLabel}</div>
-                    ) : (
-                      <div className="text-sm font-semibold text-emerald-600">Included</div>
-                    )}
-                    {details ? <div className="mt-1 text-xs text-slate-500">{details}</div> : null}
-                    {onSelectAddon ? (
-                      <div className="mt-4 text-xs font-semibold text-blue-600">
-                        Tap to add during booking →
-                      </div>
-                    ) : null}
-                  </div>
-                </div>
-              </motion.div>
-            );
-          })}
+        <div className="text-center mb-6">
+          <p className="text-xs font-semibold tracking-[0.25em] text-blue-400/70">ADD-ONS</p>
+          <h2 className="mt-2 text-2xl md:text-3xl font-semibold text-slate-900">Enhance Your Visit</h2>
+          <p className="mt-2 text-sm text-slate-500">Add these extras to make your experience even more memorable</p>
         </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="mt-12 text-center"
-        >
-          <div className="mx-auto max-w-3xl rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 p-6 text-white">
-            <h3 className="text-2xl font-bold">💡 Pro Tip!</h3>
-            <p className="mt-2 text-white/90">
-              Add these extras during booking to unlock the best bundled pricing and priority access perks.
-            </p>
+        <div className="relative">
+          <div className="overflow-hidden">
+            <div
+              className="marquee-rtl flex items-center gap-4"
+              role="list"
+              aria-label="Add-ons marquee"
+            >
+              {displayItems.map((addon, idx) => {
+                const key = addon?.addon_id || addon?.id || idx;
+                const title = getAddonTitle(addon, idx);
+                // Resolve image using project's helper to support media ids, JSON or relative paths
+                const img = imgSrc(addon) || imgSrc(getAddonImage(addon));
+                const priceLabel = getAddonPriceLabel(addon);
+
+                return (
+                  <motion.button
+                    key={key}
+                    type="button"
+                    whileHover={{ scale: 1.03 }}
+                    onClick={() => onSelectAddon && onSelectAddon(addon)}
+                    className="flex-shrink-0 w-40 md:w-48 lg:w-56 h-20 md:h-24 bg-white rounded-xl border border-gray-200 shadow-sm flex items-center gap-3 px-3 md:px-4 text-left focus:outline-none"
+                  >
+                    <div className="flex items-center justify-center w-12 h-12 md:w-14 md:h-14 bg-gray-50 rounded-lg overflow-hidden">
+                      {img ? (
+                        <img src={img} alt={title} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="text-xl">🎁</div>
+                      )}
+                    </div>
+
+                    <div className="min-w-0">
+                      <div className="text-sm md:text-base font-semibold text-slate-900 line-clamp-1">{title}</div>
+                      <div className="text-xs text-gray-500 mt-0.5">{priceLabel || 'Included'}</div>
+                    </div>
+                  </motion.button>
+                );
+              })}
+            </div>
           </div>
-        </motion.div>
-      </div>
+        </div>
+
+        <div className="mt-8 text-center">
+          <div className="mx-auto max-w-3xl rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 p-4 text-white">
+            <h3 className="text-lg md:text-xl font-bold">💡 Pro Tip!</h3>
+            <p className="mt-1 text-sm md:text-base text-white/90">Add these extras during booking to unlock the best bundled pricing and priority access perks.</p>
+          </div>
+        </div>
+      </motion.div>
     </section>
   );
 }

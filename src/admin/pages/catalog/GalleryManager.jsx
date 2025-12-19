@@ -29,7 +29,10 @@ export default function GalleryManager() {
     items: [],
     error: null,
   });
-  const [filters, setFilters] = React.useState({ q: '', type: '' });
+  const [filters, setFilters] = React.useState({ q: '', type: '', category: 'all', target_ref_id: '' });
+  const [attractions, setAttractions] = React.useState([]);
+  const [combos, setCombos] = React.useState([]);
+  const [targetsLoading, setTargetsLoading] = React.useState(false);
   const [selectedItems, setSelectedItems] = React.useState([]);
   const [deleteStatus, setDeleteStatus] = React.useState({ loading: false, error: null });
 
@@ -40,6 +43,18 @@ export default function GalleryManager() {
         q: nextFilters.q || undefined,
         type: nextFilters.type || undefined,
       };
+      
+      // Add category-specific filtering
+      if (nextFilters.category === 'attraction' && nextFilters.target_ref_id) {
+        params.target_type = 'attraction';
+        params.target_ref_id = nextFilters.target_ref_id;
+      } else if (nextFilters.category === 'combo' && nextFilters.target_ref_id) {
+        params.target_type = 'combo';
+        params.target_ref_id = nextFilters.target_ref_id;
+      } else if (nextFilters.category === 'common') {
+        params.target_type = 'none';
+      }
+      
       const res = await adminApi.get(A.gallery(), { params });
       const { items } = parseGalleryResponse(res);
       setState({ status: 'succeeded', items, error: null });
@@ -50,6 +65,26 @@ export default function GalleryManager() {
   }, [filters]);
 
   React.useEffect(() => { load(filters); }, [load, filters]);
+
+  // Load attractions and combos for filtering
+  React.useEffect(() => {
+    const loadTargets = async () => {
+      setTargetsLoading(true);
+      try {
+        const [attractionsRes, combosRes] = await Promise.all([
+          adminApi.get(A.attractions()),
+          adminApi.get(A.combos())
+        ]);
+        setAttractions(Array.isArray(attractionsRes) ? attractionsRes : []);
+        setCombos(Array.isArray(combosRes) ? combosRes : []);
+      } catch (err) {
+        console.error('Failed to load targets:', err);
+      } finally {
+        setTargetsLoading(false);
+      }
+    };
+    loadTargets();
+  }, []);
 
   const handleDelete = async (item) => {
     const confirmDelete = window.confirm(`Are you sure you want to delete "${item.title || 'this item'}"?`);
@@ -105,6 +140,22 @@ export default function GalleryManager() {
     },
     { key: 'title', title: 'Title' },
     { key: 'media_type', title: 'Type' },
+    { 
+      key: 'target', 
+      title: 'Linked To',
+      render: (row) => {
+        if (!row.target_type || row.target_type === 'none') return 'Common Gallery';
+        if (row.target_type === 'attraction') {
+          const attraction = attractions.find(a => (a.attraction_id || a.id) === row.target_ref_id);
+          return attraction ? `Attraction: ${attraction.title || attraction.name}` : `Attraction #${row.target_ref_id}`;
+        }
+        if (row.target_type === 'combo') {
+          const combo = combos.find(c => (c.combo_id || c.id) === row.target_ref_id);
+          return combo ? `Combo: ${combo.title || combo.name}` : `Combo #${row.target_ref_id}`;
+        }
+        return row.target_type;
+      }
+    },
     { key: 'status', title: 'Status' },
     { key: 'priority', title: 'Priority' },
     { key: 'created_at', title: 'Created' },
@@ -137,7 +188,7 @@ export default function GalleryManager() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-2 mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-2 mb-4">
         <input
           className="rounded-md border px-3 py-2"
           placeholder="Search title"
@@ -154,14 +205,56 @@ export default function GalleryManager() {
           <option value="video">Videos</option>
           <option value="pdf">PDFs</option>
         </select>
+        <select
+          className="rounded-md border px-3 py-2"
+          value={filters.category}
+          onChange={(e) => setFilters((f) => ({ ...f, category: e.target.value, target_ref_id: '' }))}
+        >
+          <option value="all">All Gallery</option>
+          <option value="common">Common Gallery</option>
+          <option value="attraction">Attraction Gallery</option>
+          <option value="combo">Combo Gallery</option>
+        </select>
+        {filters.category === 'attraction' && (
+          <select
+            className="rounded-md border px-3 py-2"
+            value={filters.target_ref_id}
+            onChange={(e) => setFilters((f) => ({ ...f, target_ref_id: e.target.value }))}
+            disabled={targetsLoading}
+          >
+            <option value="">Select attraction</option>
+            {attractions.map((attr) => (
+              <option key={attr.attraction_id || attr.id} value={attr.attraction_id || attr.id}>
+                {attr.title || attr.name || `Attraction #${attr.attraction_id || attr.id}`}
+              </option>
+            ))}
+          </select>
+        )}
+        {filters.category === 'combo' && (
+          <select
+            className="rounded-md border px-3 py-2"
+            value={filters.target_ref_id}
+            onChange={(e) => setFilters((f) => ({ ...f, target_ref_id: e.target.value }))}
+            disabled={targetsLoading}
+          >
+            <option value="">Select combo</option>
+            {combos.map((combo) => (
+              <option key={combo.combo_id || combo.id} value={combo.combo_id || combo.id}>
+                {combo.title || combo.name || `Combo #${combo.combo_id || combo.id}`}
+              </option>
+            ))}
+          </select>
+        )}
+      </div>
+      <div className="flex gap-2 mb-4">
         <button className="rounded-md border px-3 py-2 text-sm" onClick={() => load(filters)} disabled={state.status === 'loading'}>
           Apply
         </button>
         <button
           className="rounded-md border px-3 py-2 text-sm"
           onClick={() => {
-            setFilters({ q: '', type: '' });
-            load({ q: '', type: '' });
+            setFilters({ q: '', type: '', category: 'all', target_ref_id: '' });
+            load({ q: '', type: '', category: 'all', target_ref_id: '' });
           }}
         >
           Reset

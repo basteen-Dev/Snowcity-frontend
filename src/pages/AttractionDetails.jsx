@@ -7,6 +7,7 @@ import api from '../services/apiClient';
 import endpoints from '../services/endpoints';
 import Loader from '../components/common/Loader';
 import ErrorState from '../components/common/ErrorState';
+import GalleryViewer from '../components/gallery/GalleryViewer';
 import { addCartItem, setStep } from '../features/bookings/bookingsSlice';
 import { getAttrId } from '../utils/ids';
 import { imgSrc } from '../utils/media';
@@ -266,6 +267,14 @@ const isSlotAvailable = (slot, selectedDate) => {
   return false;
 };
 
+// Get URL for gallery item (image only)
+const getGalleryMediaUrl = (item, fallback = '') => {
+  if (!item) return fallback;
+  if (typeof item === 'string') return imgSrc(item, fallback);
+  // For gallery items, use the url field which should contain the media URL
+  return imgSrc(item.url || item.image_url, fallback);
+};
+
 /* ================= Component ================= */
 
 export default function AttractionDetails() {
@@ -283,6 +292,7 @@ export default function AttractionDetails() {
     data: null,
     error: null,
   });
+
   const [date, setDate] = React.useState(todayYMD());
   const [slots, setSlots] = React.useState({
     status: 'idle',
@@ -291,28 +301,35 @@ export default function AttractionDetails() {
   });
   const [slotKey, setSlotKey] = React.useState('');
   const [qty, setQty] = React.useState(1);
+
   const [showCalendar, setShowCalendar] = React.useState(false);
   const [calendarAnchor, setCalendarAnchor] = React.useState(null);
+
   const calendarAnchorRect = React.useMemo(() => {
     // Always center the calendar
     return null;
   }, [calendarAnchor, showCalendar]);
+
   const updateDate = React.useCallback((nextDate) => {
     setDate(nextDate);
     setSlotKey('');
   }, []);
+
   const handleToday = React.useCallback(() => {
     updateDate(todayYMD());
   }, [updateDate]);
+
   const handleTomorrow = React.useCallback(() => {
     updateDate(dayjs().add(1, 'day').format('YYYY-MM-DD'));
   }, [updateDate]);
+
   const onCalendarButtonClick = React.useCallback((event) => {
     event.preventDefault();
     event.stopPropagation();
     setCalendarAnchor(event.currentTarget);
     setShowCalendar(true);
   }, []);
+
   const handleDateSelect = React.useCallback(
     (selectedDate) => {
       updateDate(selectedDate);
@@ -320,20 +337,15 @@ export default function AttractionDetails() {
     },
     [updateDate],
   );
-  const formatDateDisplay = React.useCallback(
-    (value) => {
-      if (!value) return 'All Days';
-      if (value === todayYMD()) return 'All Days';
-      if (value === dayjs().add(1, 'day').format('YYYY-MM-DD')) return 'All Days';
-      return dayjs(value).format('D MMM');
-    },
-    [],
-  );
+
+  const [viewerIndex, setViewerIndex] = React.useState(null);
+
   const [linkedGallery, setLinkedGallery] = React.useState({
     status: 'idle',
     items: [],
     error: null,
   });
+
   const [offers, setOffers] = React.useState({
     status: 'idle',
     items: [],
@@ -351,17 +363,14 @@ export default function AttractionDetails() {
   }, [attrId]);
 
   const numericAttrId = React.useMemo(() => {
-    const fromDetails = getAttrId(details.data || {});
-    const parsedDetailsId = Number(fromDetails);
-    if (Number.isFinite(parsedDetailsId)) return parsedDetailsId;
-    const fallback = Number(attrId);
-    return Number.isFinite(fallback) ? fallback : null;
-  }, [details.data, attrId]);
+    return Number(attrId) || null;
+  }, [attrId]);
 
   const loadLinkedGallery = React.useCallback((targetId) => {
     if (!targetId) return () => {};
     let canceled = false;
     setLinkedGallery({ status: 'loading', items: [], error: null });
+    console.log('Debug - Loading gallery for attraction ID:', targetId);
     (async () => {
       try {
         const res = await api.get(endpoints.gallery.list(), {
@@ -373,14 +382,65 @@ export default function AttractionDetails() {
           },
         });
         if (canceled) return;
-        const items = Array.isArray(res?.data)
-          ? res.data
-          : Array.isArray(res)
-          ? res
-          : [];
-        setLinkedGallery({ status: 'succeeded', items, error: null });
+        
+        // Handle both { data, meta } format and direct array format
+        const items = res?.data?.data || (Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : []);
+
+        console.log('Debug - Raw gallery response:', res);
+        console.log('Debug - Processed gallery items:', items);
+        console.log('Debug - Expected target ID:', targetId);
+
+        // Additional client-side validation to ensure items belong to this attraction
+        const validItems = items.filter(item => {
+          const itemTargetType = String(item?.target_type || '').toLowerCase();
+          const itemTargetId = item?.target_ref_id;
+          
+          const typeMatches = itemTargetType === 'attraction';
+          const idMatches = itemTargetId && (
+            itemTargetId === targetId ||
+            String(itemTargetId) === String(targetId) ||
+            Number(itemTargetId) === Number(targetId)
+          );
+          
+          if (!typeMatches || !idMatches) {
+            console.warn('Debug - Filtering out invalid gallery item:', {
+              item,
+              itemTargetType,
+              itemTargetId,
+              targetId,
+              typeMatches,
+              idMatches
+            });
+          }
+          
+          return typeMatches && idMatches;
+        });
+
+        console.log('Debug - Validated gallery items for attraction', targetId, ':', validItems);
+
+        // Since we're filtering at API level, no need for additional client-side filtering
+        // Sort items so first added appears first
+        const sortedItems = validItems.sort((a, b) => {
+          if (a.created_at && b.created_at) {
+            return new Date(a.created_at) - new Date(b.created_at);
+          }
+          if (a.id && b.id) return a.id - b.id;
+          if (a.gallery_item_id && b.gallery_item_id) {
+            return a.gallery_item_id - b.gallery_item_id;
+          }
+          return 0;
+        });
+
+        console.log('Debug - Final sorted gallery items:', sortedItems);
+
+        setLinkedGallery({
+          status: 'succeeded',
+          items: sortedItems,
+          error: null,
+        });
       } catch (err) {
         if (canceled) return;
+        console.log('Debug - Gallery loading error:', err);
         setLinkedGallery({
           status: 'failed',
           items: [],
@@ -388,19 +448,32 @@ export default function AttractionDetails() {
         });
       }
     })();
-    const cancel = () => {
+    return () => {
       canceled = true;
     };
-    return cancel;
   }, []);
 
   React.useEffect(() => {
+    console.log('Debug - Gallery loading effect triggered. numericAttrId:', numericAttrId);
+    
+    // Reset gallery state when attraction changes
+    setLinkedGallery({ status: 'loading', items: [], error: null });
+    
     if (!numericAttrId) {
+      console.log('Debug - No numericAttrId, setting gallery to idle');
       setLinkedGallery({ status: 'idle', items: [], error: null });
       return () => {};
     }
-    const cancel = loadLinkedGallery(numericAttrId);
-    return cancel;
+    
+    // Add a small delay to ensure state reset
+    const timeoutId = setTimeout(() => {
+      const cancel = loadLinkedGallery(numericAttrId);
+      return cancel;
+    }, 100);
+    
+    return () => {
+      clearTimeout(timeoutId);
+    };
   }, [numericAttrId, loadLinkedGallery]);
 
   React.useEffect(() => {
@@ -503,7 +576,7 @@ export default function AttractionDetails() {
   const a = details.data;
   const title = a?.name || a?.title || 'Attraction';
 
-  // hero image: prefer desktop-style fields from DB
+  // hero image placeholders
   const placeholderDesktop = `https://picsum.photos/seed/attr${attrId}/1920/800`;
   const placeholderMobile = `https://picsum.photos/seed/attr${attrId}/800/600`;
 
@@ -527,12 +600,54 @@ export default function AttractionDetails() {
     placeholderDesktop,
   );
   const coverMobile = imgSrc(
-    a?.mobile_image || a?.image_mobile || a?.image_url || a,
+    a?.mobile_image ||
+      a?.image_mobile ||
+      a?.image_url ||
+      a,
     placeholderMobile,
   );
   const cover = isDesktop ? coverDesktop : coverMobile;
 
-  const hasLinkedGallery = linkedGallery.items.length > 0;
+  // HERO GALLERY DATA (for banner + viewer)
+  const heroGalleryItems = React.useMemo(() => {
+    const items = linkedGallery.items || [];
+    const galleryImages = items.map(item => ({
+      ...item,
+      image_url: getGalleryMediaUrl(item) || imgSrc(item.image_url || item.url || item, '')
+    }));
+    
+    // For hero display: use cover as primary, then gallery images
+    if (cover) {
+      return [{ image_url: cover, isCover: true }, ...galleryImages];
+    }
+    
+    // If no cover, use gallery images only
+    return galleryImages;
+  }, [linkedGallery.items, cover]);
+
+  // Gallery viewer items (only actual gallery images, not cover)
+  const galleryViewerItems = React.useMemo(() => {
+    const items = linkedGallery.items || [];
+    return items.map(item => ({
+      ...item,
+      image_url: getGalleryMediaUrl(item) || imgSrc(item.image_url || item.url || item, '')
+    }));
+  }, [linkedGallery.items]);
+
+  // Debug: Log image URLs
+  React.useEffect(() => {
+    console.log('Debug - Attraction ID:', numericAttrId);
+    console.log('Debug - Attraction Data:', a);
+    console.log('Debug - Cover URL:', cover);
+    console.log('Debug - Gallery Items:', linkedGallery.items);
+    console.log('Debug - Hero Gallery Items:', heroGalleryItems);
+    console.log('Debug - Gallery Viewer Items:', galleryViewerItems);
+  }, [numericAttrId, a, cover, linkedGallery.items, heroGalleryItems, galleryViewerItems]);
+
+  const heroMain = cover || galleryViewerItems[0]?.image_url || null;
+  const heroRightTop = galleryViewerItems[0]?.image_url || heroMain;
+  const heroRightBottom = galleryViewerItems[1]?.image_url || galleryViewerItems[0]?.image_url || heroMain;
+  const totalGalleryItems = galleryViewerItems.length || 1;
 
   const selectedSlot = React.useMemo(() => {
     for (let i = 0; i < slots.items.length; i += 1) {
@@ -554,12 +669,8 @@ export default function AttractionDetails() {
     ? getSlotUnitPrice(selectedSlot, fallbackUnitPrice)
     : fallbackUnitPrice;
 
-  const baseUnitPrice = Number(
-    slotPricing.base_price ?? computedBaseUnit ?? 0,
-  );
-  const unitBeforeOffer = Number(
-    slotPricing.final_price ?? computedUnit ?? 0,
-  );
+  const baseUnitPrice = Number(slotPricing.base_price ?? computedBaseUnit ?? 0);
+  const unitBeforeOffer = Number(slotPricing.final_price ?? computedUnit ?? 0);
 
   const hasBackendOffer =
     Boolean(slotOffer) ||
@@ -567,6 +678,7 @@ export default function AttractionDetails() {
       unitBeforeOffer > 0 &&
       unitBeforeOffer < baseUnitPrice &&
       slotPricing.final_price != null);
+
   const backendDiscountPercent =
     hasBackendOffer && baseUnitPrice > 0
       ? Math.round(((baseUnitPrice - unitBeforeOffer) / baseUnitPrice) * 100)
@@ -609,9 +721,7 @@ export default function AttractionDetails() {
   const discountPercent = hasBackendOffer
     ? backendDiscountPercent
     : bestOffer && baseUnitPrice > 0
-    ? Math.round(
-        ((baseUnitPrice - effectiveUnitPrice) / baseUnitPrice) * 100,
-      )
+    ? Math.round(((baseUnitPrice - effectiveUnitPrice) / baseUnitPrice) * 100)
     : getDiscountPercent(a) || 0;
 
   const hasDiscount =
@@ -629,6 +739,7 @@ export default function AttractionDetails() {
 
     const aId = getAttrId(a);
     const sanitizedQty = qtyNumber;
+
     dispatch(
       addCartItem({
         itemType: 'attraction',
@@ -645,9 +756,7 @@ export default function AttractionDetails() {
         slot: selectedSlot,
         qty: sanitizedQty,
         unitPrice: Number(
-          effectiveUnitPrice ??
-            selectedSlot?.price ??
-            baseUnitPrice,
+          effectiveUnitPrice ?? selectedSlot?.price ?? baseUnitPrice,
         ),
         title: a?.title || a?.name || `Attraction #${aId}`,
         slotLabel: getSlotLabel(selectedSlot),
@@ -663,7 +772,9 @@ export default function AttractionDetails() {
         offer_rule_id: appliedOffer?.rule_id || bestOffer?.rule?.rule_id,
       }),
     );
+
     dispatch(setStep(1));
+
     const params = new URLSearchParams({
       type: 'attraction',
       attraction_id: String(aId),
@@ -716,264 +827,174 @@ export default function AttractionDetails() {
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-b from-[#e0f2fe] via-[#bae6fd] to-white font-sans">
-      {/* HERO – desktop image from DB */}
-      <section className="relative h-[42vh] md:h-[56vh] bg-gray-200">
-        {details.status === 'loading' ? (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <Loader />
-          </div>
-        ) : cover ? (
-          <>
-            <img
-              src={cover}
-              alt={title}
-              loading="lazy"
-              className="w-full h-full object-cover"
-              draggable="false"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
-            <div className="absolute bottom-6 left-0 right-0 px-4">
-              <div className="max-w-6xl mx-auto">
-                <h1 className="text-3xl md:text-5xl font-bold text-white drop-shadow">
-                  {title}
-                </h1>
-                {shortDescription ? (
-                  <p className="text-gray-200 text-sm md:text-base max-w-2xl mt-2">
-                    {shortDescription}
-                  </p>
-                ) : null}
-              </div>
-            </div>
-          </>
-        ) : null}
-      </section>
+      {/* Add pb-24 so fixed mobile bar doesn't overlap content */}
+      <div className="min-h-screen bg-gradient-to-b from-[#e0f2fe] via-[#bae6fd] to-white font-sans pb-24 lg:pb-0">
+        {/* HERO BANNER + GALLERY (VinWonders-style) */}
+        <section className="mt-0 bg-transparent">
+          <div className="max-w-6xl mx-auto px-4 pt-6 space-y-4">
+            {/* Title above banner */}
+            <h1
+              className="text-3xl md:text-4xl font-bold text-gray-900"
+              style={{ fontFamily: 'Inter, sans-serif' }}
+            >
+              {title}
+            </h1>
 
-      {/* INLINE BOOKING BAR (A1) */}
-      <section className="bg-white/90 backdrop-blur border-b border-gray-100 shadow-sm">
-        <div className="max-w-6xl mx-auto px-4 py-4 md:py-5">
-          <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-4">
-            <div className="flex-1">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500 mb-1">
-                Book this experience
-              </p>
-              <p className="text-sm text-gray-600">
-                Choose your date, time slot & tickets to continue to checkout.
-              </p>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-3 md:gap-4 md:flex-none">
-              {/* Date */}
-              <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 sm:px-4 sm:py-2.5 flex-wrap">
-                <span className="text-xs text-gray-500 whitespace-nowrap">Date</span>
-                <div className="flex flex-wrap gap-2">
+            {/* Banner card */}
+            <div className="overflow-hidden shadow-lg bg-gray-100">
+              {galleryViewerItems.length > 0 ? (
+                // Multi-image layout when gallery has actual images
+                <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-[2px] bg-white">
+                  {/* Left side - Attraction banner image */}
                   <button
                     type="button"
-                    onClick={handleToday}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                      date === todayYMD()
-                        ? 'bg-sky-600 text-white border-sky-600'
-                        : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
-                    }`}
-                  >
-                    Today
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleTomorrow}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                      date === dayjs().add(1, 'day').format('YYYY-MM-DD')
-                        ? 'bg-sky-600 text-white border-sky-600'
-                        : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
-                    }`}
-                  >
-                    Tomorrow
-                  </button>
-                  <button
-                    type="button"
-                    onClick={onCalendarButtonClick}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                      date &&
-                      date !== '' &&
-                      date !== todayYMD() &&
-                      date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
-                        ? 'bg-sky-600 text-white border-sky-600'
-                        : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
-                    }`}
-                  >
-                    {date && date !== todayYMD() && date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
-                      ? formatDateDisplay(date)
-                      : 'All Days'}
-                  </button>
-                </div>
-              </div>
-
-              {/* Slot */}
-              <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 sm:px-4 sm:py-2.5 min-w-[190px]">
-                <span className="text-xs text-gray-500">Slot</span>
-                {slots.status === 'loading' ? (
-                  <span className="text-xs text-gray-500">Loading…</span>
-                ) : (
-                  <select
-                    className="flex-1 bg-transparent border-none outline-none text-sm font-medium text-gray-900 truncate"
-                    value={slotKey}
-                    onChange={(e) => setSlotKey(e.target.value)}
-                    disabled={
-                      slots.status === 'loading' || !slots.items.length
-                    }
-                  >
-                    {!slots.items.length ? (
-                      <option>No slots</option>
-                    ) : (
-                      <>
-                        {!slotKey && <option value="">Select slot</option>}
-                        {slots.items
-                          .filter((s) => isSlotAvailable(s, date))
-                          .map((s, i) => {
-                            const sid = getSlotKey(s, i);
-                            const disabled =
-                              s?.available === 0 || s?.capacity === 0;
-                            const pricingBase =
-                              getSlotUnitPrice(s, fallbackUnitPrice) ||
-                              fallbackUnitPrice ||
-                              0;
-                            return (
-                              <option
-                                key={sid}
-                                value={sid}
-                                disabled={disabled}
-                              >
-                                {getSlotLabel(s)}
-                                {pricingBase
-                                  ? ` • ${formatCurrency(pricingBase)}`
-                                  : ''}
-                                {disabled ? ' — Unavailable' : ''}
-                              </option>
-                            );
-                          })}
-                      </>
-                    )}
-                  </select>
-                )}
-              </div>
-
-              {/* Qty */}
-              <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 sm:px-4 sm:py-2.5">
-                <span className="text-xs text-gray-500">Qty</span>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    className="w-7 h-7 text-sm rounded-full border border-gray-300 flex items-center justify-center"
+                    className="relative w-full group"
                     onClick={() =>
-                      setQty((prev) =>
-                        Math.max(1, Number(prev || 1) - 1),
-                      )
+                      galleryViewerItems.length && setViewerIndex(0)
                     }
                   >
-                    -
+                    <div className="md:h-[420px] w-full overflow-hidden">
+                      <img
+                        src={cover}
+                        alt={title}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                        draggable="false"
+                      />
+                      
+                      {/* Attraction Title Overlay */}
+                      <div className="absolute inset-0 flex items-start justify-start p-6">
+                        <h2 
+                          className="text-2xl md:text-3xl font-bold text-white drop-shadow-lg"
+                          style={{ 
+                            fontFamily: 'Inter, sans-serif',
+                            color: '#87CEEB',
+                            textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
+                          }}
+                        >
+                          {title}
+                        </h2>
+                      </div>
+                    </div>
                   </button>
-                  <input
-                    type="number"
-                    min={1}
-                    value={qty}
-                    onChange={(e) =>
-                      setQty(Math.max(1, Number(e.target.value) || 1))
-                    }
-                    className="w-12 bg-transparent border-none text-center text-sm font-semibold outline-none"
-                  />
-                  <button
-                    type="button"
-                    className="w-7 h-7 text-sm rounded-full border border-gray-300 flex items-center justify-center"
-                    onClick={() =>
-                      setQty((prev) =>
-                        Math.max(1, Number(prev || 1) + 1),
-                      )
-                    }
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
 
-              {/* Book button */}
-              <button
-                type="button"
-                className="w-full sm:w-auto inline-flex items-center justify-center rounded-xl bg-blue-600 text-white px-6 py-2.5 text-sm font-semibold shadow-md hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed"
-                disabled={!selectedSlotForBar || !effectiveUnitPrice}
-                onClick={onBookNow}
-              >
-                {barPrice ? (
-                  <>
-                    Book Now •{' '}
-                    <span className="ml-1 rupee">
-                      {formatCurrency(barPrice)}
-                    </span>
-                  </>
-                ) : (
-                  'Book Now'
-                )}
-              </button>
+                  {/* Right column - Gallery images */}
+                  <div className="hidden md:grid grid-rows-2 gap-[2px] h-[420px]">
+                    {/* First gallery image */}
+                    <button
+                      type="button"
+                      className="relative w-full group"
+                      onClick={() =>
+                        galleryViewerItems.length > 0 && setViewerIndex(0)
+                      }
+                    >
+                      <div className="w-full h-full overflow-hidden">
+                        <img
+                          src={galleryViewerItems[0]?.image_url || ''}
+                          alt={title}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                          draggable="false"
+                        />
+                      </div>
+                    </button>
+
+                    {/* Second gallery image with pagination */}
+                    <button
+                      type="button"
+                      className="relative w-full group"
+                      onClick={() =>
+                        galleryViewerItems.length > 1 && setViewerIndex(1)
+                      }
+                    >
+                      <div className="w-full h-full overflow-hidden">
+                        <img
+                          src={galleryViewerItems[1]?.image_url || galleryViewerItems[0]?.image_url || ''}
+                          alt={title}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                          draggable="false"
+                        />
+
+                        <div className="absolute bottom-3 right-3 bg-black/60 text-white text-xs px-2 py-1 rounded-full">
+                          {galleryViewerItems.length > 1 ? (
+                            <>1 / {galleryViewerItems.length}</>
+                          ) : null}
+                        </div>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                // Full-width banner when no gallery images
+                <button
+                  type="button"
+                  className="relative w-full group"
+                  onClick={() =>
+                    galleryViewerItems.length && setViewerIndex(0)
+                  }
+                >
+                  <div className="h-[420px] w-full overflow-hidden">
+                    <img
+                      src={cover}
+                      alt={title}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                      draggable="false"
+                    />
+                    
+                    {/* Attraction Title Overlay */}
+                    <div className="absolute inset-0 flex items-start justify-start p-6">
+                      <h2 
+                        className="text-2xl md:text-3xl font-bold text-white drop-shadow-lg"
+                        style={{ 
+                          fontFamily: 'Inter, sans-serif',
+                          color: '#87CEEB',
+                          textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
+                        }}
+                      >
+                        {title}
+                      </h2>
+                    </div>
+                  </div>
+                </button>
+              )}
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* MAIN CONTENT */}
-      <section className="max-w-6xl mx-auto px-4 py-8 md:py-12 grid grid-cols-1 lg:grid-cols-3 gap-10 md:gap-12">
-        {/* LEFT CONTENT */}
-        <div className="lg:col-span-2 space-y-8">
-          {details.status === 'failed' ? (
-            <ErrorState message={details.error} />
-          ) : (
-            <>
-              {/* Short description */}
-              {shortDescription ? (
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 md:p-6">
-                  <p className="text-gray-700 text-base md:text-lg">
-                    {shortDescription}
-                  </p>
-                </div>
-              ) : null}
-
-              {/* Full description */}
-              {a?.description ? (
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 md:p-6">
-                  <h2 className="text-xl font-semibold text-gray-900 mb-3">
-                    About this attraction
-                  </h2>
-                  <div
-                    className="prose prose-sm md:prose max-w-none text-gray-700 leading-relaxed"
-                    style={{ textAlign: 'left' }}
-                    dangerouslySetInnerHTML={{ __html: a.description }}
-                  />
-                </div>
-              ) : null}
-
-
-            </>
-          )}
-        </div>
-
-        {/* RIGHT SIDEBAR */}
-        <aside className="lg:col-span-1">
-          <div className="rounded-3xl border shadow-lg bg-white p-6 sticky top-24 space-y-6">
+        {/* MOBILE BOOKING CONTROLS (gallery is handled by hero) */}
+        <div className="lg:hidden max-w-6xl mx-auto px-4 py-6">
+          <div className="rounded-3xl border shadow-lg bg-white p-6 space-y-6">
             {/* Price summary */}
             <div className="flex items-baseline justify-between">
               <div className="flex flex-col gap-1 flex-1">
                 <div>
-                  <div className="text-[11px] uppercase tracking-wide text-gray-500 font-semibold">
+                  <div
+                    className="text-[11px] uppercase tracking-wide text-gray-500 font-semibold"
+                    style={{ fontFamily: 'Inter, sans-serif' }}
+                  >
                     Base price
                   </div>
-                  <div className="text-lg font-semibold text-gray-900 rupee">
+                  <div
+                    className="text-lg font-semibold text-gray-900 rupee"
+                    style={{ fontFamily: 'Inter, sans-serif' }}
+                  >
                     {formatCurrency(baseUnitPrice || effectiveUnitPrice || 0)}
                   </div>
                 </div>
                 {hasDiscount ? (
                   <div>
-                    <div className="text-[11px] uppercase tracking-wide text-gray-500">
+                    <div
+                      className="text-[11px] uppercase tracking-wide text-gray-500"
+                      style={{ fontFamily: 'Inter, sans-serif' }}
+                    >
                       Offer price
                     </div>
-                    <div className="text-2xl font-bold text-emerald-600 rupee">
+                    <div
+                      className="text-2xl font-bold text-emerald-600 rupee"
+                      style={{ fontFamily: 'Inter, sans-serif' }}
+                    >
                       {formatCurrency(effectiveUnitPrice || 0)}
                     </div>
                     {offerDescription ? (
@@ -1009,6 +1030,156 @@ export default function AttractionDetails() {
               </div>
             </div>
 
+            {/* Date Selection */}
+            <div className="space-y-3">
+              <label
+                className="text-sm font-medium text-gray-700"
+                style={{ fontFamily: 'Inter, sans-serif' }}
+              >
+                Select Date
+              </label>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={handleToday}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                    date === todayYMD()
+                      ? 'bg-sky-600 text-white border-sky-600'
+                      : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
+                  }`}
+                  style={{ fontFamily: 'Inter, sans-serif' }}
+                >
+                  Today
+                </button>
+                <button
+                  type="button"
+                  onClick={handleTomorrow}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                    date === dayjs().add(1, 'day').format('YYYY-MM-DD')
+                      ? 'bg-sky-600 text-white border-sky-600'
+                      : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
+                  }`}
+                  style={{ fontFamily: 'Inter, sans-serif' }}
+                >
+                  Tomorrow
+                </button>
+
+                {/* All Days (calendar) */}
+                <button
+                  type="button"
+                  onClick={onCalendarButtonClick}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                    date &&
+                    date !== todayYMD() &&
+                    date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
+                      ? 'bg-sky-600 text-white border-sky-600'
+                      : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
+                  }`}
+                  style={{ fontFamily: 'Inter, sans-serif' }}
+                >
+                  {date &&
+                  date !== todayYMD() &&
+                  date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
+                    ? dayjs(date).format('D MMM')
+                    : 'All Days'}
+                </button>
+              </div>
+            </div>
+
+            {/* Time Slot Selection */}
+            <div className="space-y-3">
+              <label
+                className="text-sm font-medium text-gray-700"
+                style={{ fontFamily: 'Inter, sans-serif' }}
+              >
+                Select Time Slot
+              </label>
+              {slots.status === 'loading' ? (
+                <div className="py-3">
+                  <Loader size="sm" />
+                </div>
+              ) : slots.status === 'failed' ? (
+                <div className="py-3">
+                  <ErrorState message={slots.error || 'Failed to load slots'} />
+                </div>
+              ) : (
+                <select
+                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-900 outline-none"
+                  value={slotKey}
+                  onChange={(e) => setSlotKey(e.target.value)}
+                  disabled={!slots.items.length}
+                  style={{ fontFamily: 'Inter, sans-serif' }}
+                >
+                  {!slots.items.length ? (
+                    <option>No slots</option>
+                  ) : (
+                    <>
+                      {!slotKey && <option value="">Select slot</option>}
+                      {slots.items
+                        .filter((s) => isSlotAvailable(s, date))
+                        .map((s, i) => {
+                          const sid = getSlotKey(s, i);
+                          const disabled =
+                            s?.available === 0 || s?.capacity === 0;
+                          const pricingBase =
+                            getSlotUnitPrice(s, fallbackUnitPrice) ||
+                            fallbackUnitPrice ||
+                            0;
+
+                          return (
+                            <option key={sid} value={sid} disabled={disabled}>
+                              {getSlotLabel(s)}
+                              {pricingBase
+                                ? ` • ${formatCurrency(pricingBase)}`
+                                : ''}
+                              {disabled ? ' — Unavailable' : ''}
+                            </option>
+                          );
+                        })}
+                    </>
+                  )}
+                </select>
+              )}
+            </div>
+
+            {/* Quantity Selection */}
+            <div className="space-y-3">
+              <label
+                className="text-sm font-medium text-gray-700"
+                style={{ fontFamily: 'Inter, sans-serif' }}
+              >
+                Number of Tickets
+              </label>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  className="w-7 h-7 text-sm rounded-full border border-gray-300 flex items-center justify-center"
+                  onClick={() =>
+                    setQty((prev) => Math.max(1, Number(prev || 1) - 1))
+                  }
+                >
+                  -
+                </button>
+                <input
+                  type="number"
+                  min={1}
+                  value={qty}
+                  readOnly
+                  className="w-16 text-center border border-gray-300 rounded-lg px-2 py-1 text-sm bg-gray-50"
+                  style={{ fontFamily: 'Inter, sans-serif' }}
+                />
+                <button
+                  type="button"
+                  className="w-7 h-7 text-sm rounded-full border border-gray-300 flex items-center justify-center"
+                  onClick={() =>
+                    setQty((prev) => Math.max(1, Number(prev || 1) + 1))
+                  }
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
             {/* Subtotal / total */}
             <div className="mt-3 rounded-2xl border bg-gray-50 px-3 py-2 text-sm">
               <div className="flex items-center justify-between text-gray-600">
@@ -1019,35 +1190,434 @@ export default function AttractionDetails() {
               </div>
               <div className="mt-1 flex items-center justify-between text-gray-900 font-semibold">
                 <span>Total</span>
-                <span className="rupee">
-                  {formatCurrency(totalPrice || 0)}
-                </span>
+                <span className="rupee">{formatCurrency(totalPrice || 0)}</span>
               </div>
             </div>
 
-            {/* Helper links */}
-            <div className="space-y-3 text-sm">
-              <p className="text-gray-600">
-                Slots and pricing may vary by date and time. Use the booking
-                bar above to choose your preferred session.
-              </p>
-              <Link
-                to="/attractions"
-                className="inline-flex items-center justify-center rounded-full border border-blue-100 text-blue-600 px-5 py-2.5 text-sm font-medium hover:bg-blue-50"
-              >
-                Explore other attractions
-              </Link>
+            {/* Book button */}
+            <button
+              type="button"
+              className="w-full inline-flex items-center justify-center rounded-xl bg-blue-600 text-white px-6 py-2.5 text-sm font-semibold shadow-md hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed"
+              disabled={!selectedSlotForBar || !effectiveUnitPrice}
+              onClick={onBookNow}
+              style={{ fontFamily: 'Inter, sans-serif' }}
+            >
+              {barPrice ? (
+                <>
+                  Book Now •{' '}
+                  <span className="ml-1 rupee">{formatCurrency(barPrice)}</span>
+                </>
+              ) : (
+                'Book Now'
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* MAIN CONTENT */}
+        <section className="max-w-6xl mx-auto px-4 py-8 md:py-12 mt-0">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 md:gap-12">
+            {/* LEFT CONTENT */}
+            <div className="lg:col-span-2 space-y-8">
+              {details.status === 'failed' ? (
+                <ErrorState message={details.error} />
+              ) : (
+                <>
+                  {/* Short description */}
+                  {shortDescription ? (
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 md:p-6">
+                      <p
+                        className="text-gray-700 text-base md:text-lg"
+                        style={{ fontFamily: 'Inter, sans-serif' }}
+                      >
+                        {shortDescription}
+                      </p>
+                    </div>
+                  ) : null}
+
+                  {/* Full description */}
+                  {a?.description ? (
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 md:p-6">
+                      <h2
+                        className="text-xl font-semibold text-gray-900 mb-3"
+                        style={{
+                          fontFamily: 'Inter, sans-serif',
+                          color: '#87CEEB',
+                        }}
+                      >
+                        About this attraction
+                      </h2>
+                      <div
+                        className="prose prose-sm md:prose max-w-none text-gray-700 leading-relaxed text-left"
+                        style={{ fontFamily: 'Inter, sans-serif' }}
+                        dangerouslySetInnerHTML={{ __html: a.description }}
+                      />
+                    </div>
+                  ) : null}
+
+                  {/* Gallery Link */}
+                  {linkedGallery.items && linkedGallery.items.length > 0 ? (
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 md:p-6">
+                      <Link
+                        to={`/gallery?attraction=${numericAttrId}`}
+                        className="inline-flex items-center gap-2 text-sky-600 hover:text-sky-700 font-medium transition-colors"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        View {linkedGallery.items.length} Gallery {linkedGallery.items.length === 1 ? 'Image' : 'Images'}
+                      </Link>
+                    </div>
+                  ) : null}
+                </>
+              )}
             </div>
 
-            <p className="text-[11px] text-gray-400 text-center">
-              We’ll add this to your cart so you can add more attractions before
-              checkout.
-            </p>
+            {/* RIGHT SIDEBAR (DESKTOP) */}
+            <aside className="hidden lg:block lg:col-span-1">
+              <div className="rounded-3xl border shadow-lg bg-white p-6 sticky top-24 space-y-6">
+                {/* Price summary */}
+                <div className="flex items-baseline justify-between">
+                  <div className="flex flex-col gap-1 flex-1">
+                    <div>
+                      <div
+                        className="text-[11px] uppercase tracking-wide text-gray-500 font-semibold"
+                        style={{ fontFamily: 'Inter, sans-serif' }}
+                      >
+                        Base price
+                      </div>
+                      <div
+                        className="text-lg font-semibold text-gray-900 rupee"
+                        style={{ fontFamily: 'Inter, sans-serif' }}
+                      >
+                        {formatCurrency(
+                          baseUnitPrice || effectiveUnitPrice || 0,
+                        )}
+                      </div>
+                    </div>
+
+                    {hasDiscount ? (
+                      <div>
+                        <div
+                          className="text-[11px] uppercase tracking-wide text-gray-500"
+                          style={{ fontFamily: 'Inter, sans-serif' }}
+                        >
+                          Offer price
+                        </div>
+                        <div
+                          className="text-2xl font-bold text-emerald-600 rupee"
+                          style={{ fontFamily: 'Inter, sans-serif' }}
+                        >
+                          {formatCurrency(effectiveUnitPrice || 0)}
+                        </div>
+                        {offerDescription ? (
+                          <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                            {offerDescription}
+                          </p>
+                        ) : null}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-gray-500">
+                        Per person • taxes included
+                      </p>
+                    )}
+
+                    {appliedOffer ? (
+                      <span className="mt-1 text-xs font-semibold text-emerald-600 flex items-center gap-1">
+                        <span>
+                          {appliedOffer.rule_type === 'happy_hour'
+                            ? 'Happy Hour'
+                            : 'Offer'}{' '}
+                          applied:
+                        </span>
+                        <span>{appliedOffer.title || 'Special offer'}</span>
+                      </span>
+                    ) : null}
+                  </div>
+
+                  <div className="text-right">
+                    <div className="text-xs text-gray-500">per ticket</div>
+                    {hasDiscount && (
+                      <div className="text-xs font-semibold text-emerald-600">
+                        Save {discountPercent}%
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Booking controls (desktop) */}
+                <div className="space-y-5">
+                  {/* Date */}
+                  <div className="space-y-2">
+                    <label
+                      className="text-sm font-medium text-gray-700"
+                      style={{ fontFamily: 'Inter, sans-serif' }}
+                    >
+                      Select Date
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={handleToday}
+                        className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                          date === todayYMD()
+                            ? 'bg-sky-600 text-white border-sky-600'
+                            : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
+                        }`}
+                        style={{ fontFamily: 'Inter, sans-serif' }}
+                      >
+                        Today
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleTomorrow}
+                        className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                          date === dayjs().add(1, 'day').format('YYYY-MM-DD')
+                            ? 'bg-sky-600 text-white border-sky-600'
+                            : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
+                        }`}
+                        style={{ fontFamily: 'Inter, sans-serif' }}
+                      >
+                        Tomorrow
+                      </button>
+                      <button
+                        type="button"
+                        onClick={onCalendarButtonClick}
+                        className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                          date &&
+                          date !== todayYMD() &&
+                          date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
+                            ? 'bg-sky-600 text-white border-sky-600'
+                            : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
+                        }`}
+                        style={{ fontFamily: 'Inter, sans-serif' }}
+                      >
+                        {date &&
+                        date !== todayYMD() &&
+                        date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
+                          ? dayjs(date).format('D MMM')
+                          : 'All Days'}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Slot */}
+                  <div className="space-y-2">
+                    <label
+                      className="text-sm font-medium text-gray-700"
+                      style={{ fontFamily: 'Inter, sans-serif' }}
+                    >
+                      Select Time Slot
+                    </label>
+
+                    {slots.status === 'loading' ? (
+                      <div className="py-2">
+                        <Loader size="sm" />
+                      </div>
+                    ) : slots.status === 'failed' ? (
+                      <ErrorState
+                        message={slots.error || 'Failed to load slots'}
+                      />
+                    ) : (
+                      <select
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-900 outline-none"
+                        value={slotKey}
+                        onChange={(e) => setSlotKey(e.target.value)}
+                        disabled={!slots.items.length}
+                        style={{ fontFamily: 'Inter, sans-serif' }}
+                      >
+                        {!slots.items.length ? (
+                          <option>No slots</option>
+                        ) : (
+                          <>
+                            {!slotKey && <option value="">Select slot</option>}
+                            {slots.items
+                              .filter((s) => isSlotAvailable(s, date))
+                              .map((s, i) => {
+                                const sid = getSlotKey(s, i);
+                                const disabled =
+                                  s?.available === 0 || s?.capacity === 0;
+                                const pricingBase =
+                                  getSlotUnitPrice(s, fallbackUnitPrice) ||
+                                  fallbackUnitPrice ||
+                                  0;
+
+                                return (
+                                  <option key={sid} value={sid} disabled={disabled}>
+                                    {getSlotLabel(s)}
+                                    {pricingBase
+                                      ? ` • ${formatCurrency(pricingBase)}`
+                                      : ''}
+                                    {disabled ? ' — Unavailable' : ''}
+                                  </option>
+                                );
+                              })}
+                          </>
+                        )}
+                      </select>
+                    )}
+                  </div>
+
+                  {/* Qty */}
+                  <div className="space-y-2">
+                    <label
+                      className="text-sm font-medium text-gray-700"
+                      style={{ fontFamily: 'Inter, sans-serif' }}
+                    >
+                      Number of Tickets
+                    </label>
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        className="w-8 h-8 text-sm rounded-full border border-gray-300 flex items-center justify-center"
+                        onClick={() =>
+                          setQty((prev) => Math.max(1, Number(prev || 1) - 1))
+                        }
+                      >
+                        -
+                      </button>
+
+                      <input
+                        type="number"
+                        min={1}
+                        value={qty}
+                        onChange={(e) =>
+                          setQty(Math.max(1, Number(e.target.value) || 1))
+                        }
+                        className="w-16 text-center border border-gray-300 rounded-lg px-2 py-1 text-sm"
+                        style={{ fontFamily: 'Inter, sans-serif' }}
+                      />
+
+                      <button
+                        type="button"
+                        className="w-8 h-8 text-sm rounded-full border border-gray-300 flex items-center justify-center"
+                        onClick={() =>
+                          setQty((prev) => Math.max(1, Number(prev || 1) + 1))
+                        }
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Subtotal / total */}
+                  <div className="mt-3 rounded-2xl border bg-gray-50 px-3 py-2 text-sm">
+                    <div className="flex items-center justify-between text-gray-600">
+                      <span>Subtotal</span>
+                      <span className="rupee">
+                        {qtyNumber} × {formatCurrency(effectiveUnitPrice || 0)}
+                      </span>
+                    </div>
+                    <div className="mt-1 flex items-center justify-between text-gray-900 font-semibold">
+                      <span>Total</span>
+                      <span className="rupee">
+                        {formatCurrency(totalPrice || 0)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Book button */}
+                  <button
+                    type="button"
+                    className="w-full inline-flex items-center justify-center rounded-xl bg-blue-600 text-white px-6 py-2.5 text-sm font-semibold shadow-md hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed"
+                    disabled={!selectedSlotForBar || !effectiveUnitPrice}
+                    onClick={onBookNow}
+                    style={{ fontFamily: 'Inter, sans-serif' }}
+                  >
+                    {barPrice ? (
+                      <>
+                        Book Now •{' '}
+                        <span className="ml-1 rupee">
+                          {formatCurrency(barPrice)}
+                        </span>
+                      </>
+                    ) : (
+                      'Book Now'
+                    )}
+                  </button>
+                </div>
+
+                {/* Helper links */}
+                <div className="space-y-3 text-sm">
+                  <p
+                    className="text-gray-600"
+                    style={{ fontFamily: 'Inter, sans-serif' }}
+                  >
+                    Slots and pricing may vary by date and time. Use the options
+                    above to choose your preferred session.
+                  </p>
+                  <Link
+                    to="/attractions"
+                    className="inline-flex items-center justify-center rounded-full border border-blue-100 text-blue-600 px-5 py-2.5 text-sm font-medium hover:bg-blue-50"
+                    style={{ fontFamily: 'Inter, sans-serif' }}
+                  >
+                    Explore other attractions
+                  </Link>
+                </div>
+
+                <p className="text-[11px] text-gray-400 text-center">
+                  We'll add this to your cart so you can add more attractions
+                  before checkout.
+                </p>
+              </div>
+            </aside>
           </div>
-        </aside>
-      </section>
+        </section>
+
+        {/* MOBILE FIXED PRICE BAR */}
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[70] border-t border-gray-200 bg-white/95 backdrop-blur">
+          <div className="max-w-6xl mx-auto px-4 py-3 pb-[calc(env(safe-area-inset-bottom)+12px)]">
+            <div className="flex items-center gap-3">
+              <div className="flex-1 min-w-0">
+                <div className="text-[11px] uppercase tracking-wide text-gray-500 font-semibold">
+                  {hasDiscount ? 'Offer price' : 'Base price'}
+                </div>
+
+                <div className="flex items-baseline gap-2">
+                  <div className="text-lg font-bold text-gray-900 rupee">
+                    {formatCurrency(
+                      hasDiscount
+                        ? effectiveUnitPrice || 0
+                        : baseUnitPrice || effectiveUnitPrice || 0,
+                    )}
+                  </div>
+
+                  {hasDiscount ? (
+                    <div className="text-sm text-gray-400 line-through rupee">
+                      {formatCurrency(baseUnitPrice || 0)}
+                    </div>
+                  ) : null}
+
+                  {hasDiscount ? (
+                    <div className="text-xs font-semibold text-emerald-600">
+                      Save {discountPercent}%
+                    </div>
+                  ) : null}
+                </div>
+
+                <div className="text-xs text-gray-500 truncate">
+                  {qtyNumber} ticket{qtyNumber > 1 ? 's' : ''} • Total{' '}
+                  <span className="rupee font-semibold text-gray-800">
+                    {formatCurrency(totalPrice || 0)}
+                  </span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                className="shrink-0 inline-flex items-center justify-center rounded-xl bg-blue-600 text-white px-5 py-2.5 text-sm font-semibold shadow-md hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed"
+                disabled={!selectedSlotForBar || !effectiveUnitPrice}
+                onClick={onBookNow}
+                style={{ fontFamily: 'Inter, sans-serif' }}
+              >
+                Book Now
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
+      {/* Calendar Modal */}
       {showCalendar && (
         <div
           className="fixed inset-0 z-[80] flex"
@@ -1058,20 +1628,26 @@ export default function AttractionDetails() {
             className="absolute bg-white rounded-2xl shadow-2xl border border-gray-200 p-4 w-80 max-h-[70vh] overflow-y-auto"
             style={{
               top: calendarAnchorRect ? `${calendarAnchorRect.top}px` : '50%',
-              left: calendarAnchorRect ? `${calendarAnchorRect.left - 160}px` : '50%',
+              left: calendarAnchorRect
+                ? `${calendarAnchorRect.left - 160}px`
+                : '50%',
               transform: calendarAnchorRect ? 'none' : 'translate(-50%, -50%)',
             }}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-base font-semibold text-gray-900">Select Date</h3>
+              <h3 className="text-base font-semibold text-gray-900">
+                Select Date
+              </h3>
               <button
+                type="button"
                 onClick={() => setShowCalendar(false)}
                 className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 transition-colors"
               >
                 <X size={18} />
               </button>
             </div>
+
             <div className="space-y-3">
               {[0, 1, 2].map((monthOffset) => {
                 const currentDate = dayjs().add(monthOffset, 'month');
@@ -1080,26 +1656,37 @@ export default function AttractionDetails() {
                 const startDay = monthStart.day();
                 const daysInMonth = monthEnd.date();
                 const today = dayjs();
+
                 return (
-                  <div key={monthOffset} className="border border-gray-100 rounded-xl p-3 bg-white">
+                  <div
+                    key={monthOffset}
+                    className="border border-gray-100 rounded-xl p-3 bg-white"
+                  >
                     <h4 className="text-sm font-semibold text-gray-700 mb-3">
                       {currentDate.format('MMMM YYYY')}
                     </h4>
+
                     <div className="grid grid-cols-7 gap-1 text-xs">
                       {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day) => (
-                        <div key={day} className="text-center text-gray-400 font-medium py-2">
+                        <div
+                          key={day}
+                          className="text-center text-gray-400 font-medium py-2"
+                        >
                           {day}
                         </div>
                       ))}
+
                       {Array.from({ length: startDay }).map((_, idx) => (
                         <div key={`empty-${idx}`} className="p-2" />
                       ))}
+
                       {Array.from({ length: daysInMonth }).map((_, idx) => {
                         const current = monthStart.date(idx + 1);
                         const dateStr = current.format('YYYY-MM-DD');
                         const isPast = current.isBefore(today, 'day');
                         const isSelected = date === dateStr;
                         const isToday = current.isSame(today, 'day');
+
                         return (
                           <button
                             key={dateStr}
@@ -1108,8 +1695,16 @@ export default function AttractionDetails() {
                             disabled={isPast}
                             className={`
                               p-2 rounded-lg text-sm font-medium transition-all duration-200
-                              ${isPast ? 'text-gray-300 cursor-not-allowed bg-gray-50' : ''}
-                              ${isSelected ? 'bg-sky-600 text-white shadow-sm scale-105' : ''}
+                              ${
+                                isPast
+                                  ? 'text-gray-300 cursor-not-allowed bg-gray-50'
+                                  : ''
+                              }
+                              ${
+                                isSelected
+                                  ? 'bg-sky-600 text-white shadow-sm scale-105'
+                                  : ''
+                              }
                               ${
                                 !isPast && !isSelected
                                   ? 'hover:bg-sky-50 text-gray-700 hover:text-sky-700'
@@ -1133,6 +1728,15 @@ export default function AttractionDetails() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Gallery Viewer - uses only actual gallery images */}
+      {viewerIndex !== null && galleryViewerItems.length > 0 && (
+        <GalleryViewer
+          items={galleryViewerItems}
+          initialIndex={viewerIndex}
+          onClose={() => setViewerIndex(null)}
+        />
       )}
     </>
   );

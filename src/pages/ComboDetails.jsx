@@ -3,6 +3,8 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import Loader from '../components/common/Loader';
 import ErrorState from '../components/common/ErrorState';
+import GalleryGrid from '../components/gallery/GalleryGrid';
+import GalleryViewer from '../components/gallery/GalleryViewer';
 import api from '../services/apiClient';
 import endpoints from '../services/endpoints';
 import { fetchCombos } from '../features/combos/combosSlice';
@@ -18,6 +20,7 @@ import {
 } from '../utils/pricing';
 import { imgSrc } from '../utils/media';
 import dayjs from 'dayjs';
+import { X } from 'lucide-react';
 
 /* ========= Small helpers / utilities ========= */
 
@@ -410,6 +413,7 @@ export default function ComboDetails() {
     items: [],
     error: null,
   });
+  const [viewerIndex, setViewerIndex] = React.useState(null);
   const [offers, setOffers] = React.useState({
     status: 'idle',
     items: [],
@@ -511,6 +515,34 @@ export default function ComboDetails() {
     // Always center the calendar
     return null;
   }, [calendarAnchor, showCalendar]);
+
+  // Hero carousel state
+  const [carouselIndex, setCarouselIndex] = React.useState(0);
+  const carouselImages = React.useMemo(() => {
+    const images = [];
+    if (heroImage) images.push({ src: heroImage, alt: 'Snow City Banner', isBanner: true });
+    linkedGallery.items.forEach((item, idx) => {
+      const src = item.image_url || item.url || '';
+      if (src) images.push({ src, alt: item.title || `Gallery ${idx + 1}`, isBanner: false, item, index: idx });
+    });
+    return images;
+  }, [heroImage, linkedGallery.items]);
+
+  const nextCarousel = React.useCallback(() => {
+    setCarouselIndex((prev) => (prev + 1) % carouselImages.length);
+  }, [carouselImages.length]);
+
+  const prevCarousel = React.useCallback(() => {
+    setCarouselIndex((prev) => (prev - 1 + carouselImages.length) % carouselImages.length);
+  }, [carouselImages.length]);
+
+  // Auto-play carousel
+  React.useEffect(() => {
+    if (carouselImages.length <= 1) return;
+    const interval = setInterval(nextCarousel, 5000); // 5 seconds
+    return () => clearInterval(interval);
+  }, [nextCarousel, carouselImages.length]);
+
   const updateDate = React.useCallback((nextDate) => {
     setDate(nextDate);
     setSlotState((s) => ({ ...s, selectedKey: '' }));
@@ -634,11 +666,8 @@ export default function ComboDetails() {
           },
         });
         if (canceled) return;
-        const items = Array.isArray(res?.data)
-          ? res.data
-          : Array.isArray(res)
-          ? res
-          : [];
+        // Handle both { data, meta } format and direct array format
+        const items = res?.data?.data || (Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : []);
         setLinkedGallery({ status: 'succeeded', items, error: null });
       } catch (err) {
         if (canceled) return;
@@ -724,34 +753,7 @@ export default function ComboDetails() {
   ];
   const isInitialLoading = state.status === 'loading' && !combo;
 
-  if (isInitialLoading) {
-    return (
-      <div className="min-h-[60vh] flex items-center justify-center bg-white">
-        <Loader />
-      </div>
-    );
-  }
-
-  if (state.status === 'failed') {
-    return (
-      <div className="min-h-[60vh] flex items-center justify-center bg-white px-4">
-        <div className="max-w-lg w-full">
-          <ErrorState message={state.error || 'Combo not found'} />
-        </div>
-      </div>
-    );
-  }
-
-  if (!combo) {
-    return (
-      <div className="min-h-[60vh] flex items-center justify-center bg-white px-4">
-        <div className="max-w-lg w-full">
-          <ErrorState message="Combo not found" />
-        </div>
-      </div>
-    );
-  }
-
+  // Move hooks before conditional returns
   const comboId = combo?.combo_id || combo?.id || fetchId || null;
   const title = combo?.name || combo?.title || 'Combo Deal';
   const subtitle = combo?.short_description || combo?.subtitle || '';
@@ -831,6 +833,53 @@ export default function ComboDetails() {
     [comboPrice, comboBasePrice, baseSum, offers.items, comboId, date],
   );
 
+  const selectedSlot =
+    slots.find((s) => buildSlotKey(s) === slotState.selectedKey) || null;
+  const selectedSlotPricing = selectedSlot
+    ? getSlotPricing(selectedSlot)
+    : null;
+
+  // Quantity handling
+  const qtyNumber = Math.max(1, Number(qty) || 1);
+
+  // Pricing calculations for mobile bar and booking
+  const effectiveUnitPrice = selectedSlotPricing?.finalPrice || 0;
+  const baseUnitPrice = selectedSlotPricing?.originalPrice || comboPrice || 0;
+  const hasDiscount = baseUnitPrice > 0 && effectiveUnitPrice > 0 && effectiveUnitPrice < baseUnitPrice;
+  const selectedDiscountPercent = hasDiscount
+    ? Math.round(((baseUnitPrice - effectiveUnitPrice) / baseUnitPrice) * 100)
+    : 0;
+  const totalPrice = Number(effectiveUnitPrice || 0) * qtyNumber;
+  const barPrice = selectedSlot && effectiveUnitPrice ? effectiveUnitPrice * qtyNumber : null;
+
+  if (isInitialLoading) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center bg-white">
+        <Loader />
+      </div>
+    );
+  }
+
+  if (state.status === 'failed') {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center bg-white px-4">
+        <div className="max-w-lg w-full">
+          <ErrorState message={state.error || 'Combo not found'} />
+        </div>
+      </div>
+    );
+  }
+
+  if (!combo) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center bg-white px-4">
+        <div className="max-w-lg w-full">
+          <ErrorState message="Combo not found" />
+        </div>
+      </div>
+    );
+  }
+
   const onBook = (slot, pricingInfo) => {
     const q = Math.max(1, Number(qty) || 1);
     const pricing = pricingInfo || getSlotPricing(slot);
@@ -888,47 +937,114 @@ export default function ComboDetails() {
     navigate(`/booking?${params.toString()}`);
   };
 
-  const selectedSlot =
-    slots.find((s) => buildSlotKey(s) === slotState.selectedKey) || null;
-  const selectedSlotPricing = selectedSlot
-    ? getSlotPricing(selectedSlot)
-    : null;
-
   /* ========= Render ========= */
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#e0f2fe] via-[#bae6fd] to-white font-sans">
-      {/* HERO */}
-      <section className="relative h-[42vh] md:h-[56vh] bg-gray-200">
-        {heroImage ? (
-          <img
-            src={heroImage}
-            alt={title}
-            className="w-full h-full object-cover"
-            loading="lazy"
-            draggable="false"
-          />
-        ) : (
-          <div
-            className="absolute inset-0 grid gap-1"
-            style={{
-              gridTemplateColumns: `repeat(${heroTiles.length}, minmax(0, 1fr))`,
-            }}
+      {/* HERO BANNER + GALLERY (VinWonders-style) */}
+      <section className="mt-0 bg-transparent">
+        <div className="max-w-6xl mx-auto px-4 pt-6 space-y-4">
+          {/* Title above banner */}
+          <h1
+            className="text-3xl md:text-4xl font-bold text-gray-900"
+            style={{ fontFamily: 'Inter, sans-serif' }}
           >
-            {heroTiles.map((attr, idx) => (
-              <div key={`hero-attr-${idx}`} className="relative overflow-hidden">
-                <img
-                  src={attr.image_url || HERO_PLACEHOLDER}
-                  alt={attr.title}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                  draggable="false"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+            {title}
+          </h1>
+
+          {/* Banner card */}
+          <div className="overflow-hidden shadow-lg bg-gray-100 relative">
+            {carouselImages.length > 0 ? (
+              <div className="relative h-[420px] w-full overflow-hidden">
+                {/* Carousel Image */}
+                <button
+                  type="button"
+                  className="relative w-full h-full group"
+                  onClick={() => {
+                    const current = carouselImages[carouselIndex];
+                    if (current.isBanner) {
+                      // Open gallery viewer if there are gallery items
+                      if (linkedGallery.items.length > 0) setViewerIndex(0);
+                    } else {
+                      setViewerIndex(current.index);
+                    }
+                  }}
+                >
+                  <img
+                    src={carouselImages[carouselIndex].src}
+                    alt={carouselImages[carouselIndex].alt}
+                    className="w-full h-full object-cover transition-opacity duration-500"
+                    loading="lazy"
+                    draggable="false"
+                  />
+                  
+                  {/* Combo Title Overlay */}
+                  <div className="absolute inset-0 flex items-start justify-start p-6">
+                    <h2 
+                      className="text-2xl md:text-3xl font-bold text-white drop-shadow-lg"
+                      style={{ 
+                        fontFamily: 'Inter, sans-serif',
+                        color: '#87CEEB',
+                        textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
+                      }}
+                    >
+                      {title}
+                    </h2>
+                  </div>
+                </button>
+
+                {/* Navigation Buttons */}
+                {carouselImages.length > 1 && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={prevCarousel}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-colors"
+                      aria-label="Previous image"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                      </svg>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={nextCarousel}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-colors"
+                      aria-label="Next image"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  </>
+                )}
+
+                {/* Dots Indicator */}
+                {carouselImages.length > 1 && (
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
+                    {carouselImages.map((_, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => setCarouselIndex(idx)}
+                        className={`w-2 h-2 rounded-full transition-colors ${
+                          idx === carouselIndex ? 'bg-white' : 'bg-white/50'
+                        }`}
+                        aria-label={`Go to image ${idx + 1}`}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
-            ))}
+            ) : (
+              // Fallback if no images
+              <div className="h-[420px] w-full bg-gray-200 flex items-center justify-center">
+                <span className="text-gray-500">No images available</span>
+              </div>
+            )}
           </div>
-        )}
+        </div>
+        
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
         <div className="absolute bottom-6 left-0 right-0 px-4">
           <div className="max-w-6xl mx-auto">
@@ -936,11 +1052,11 @@ export default function ComboDetails() {
               <span>Combo Deal</span>
               {discountPercent > 0 ? <span>Save {discountPercent}%</span> : null}
             </div>
-            <h1 className="text-3xl md:text-5xl font-bold text-white drop-shadow">
+            <h1 className="text-3xl md:text-5xl font-bold text-white drop-shadow" style={{ fontFamily: 'Inter, sans-serif', color: '#87CEEB' }}>
               {title}
             </h1>
             {subtitle ? (
-              <p className="text-gray-200 text-sm md:text-base max-w-2xl mt-2">
+              <p className="text-gray-200 text-sm md:text-base max-w-2xl mt-2" style={{ fontFamily: 'Inter, sans-serif' }}>
                 {subtitle}
               </p>
             ) : null}
@@ -953,218 +1069,121 @@ export default function ComboDetails() {
         </div>
       </section>
 
-      {/* INLINE BOOKING BAR (Option A) */}
-      <section className="bg-white/90 backdrop-blur border-b border-gray-100 shadow-sm">
-        <div className="max-w-6xl mx-auto px-4 py-4 md:py-5">
-          <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-4">
-            <div className="flex-1">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500 mb-1">
-                Book this combo
-              </p>
-              <p className="text-sm text-gray-600">
-                Choose your date, time slot & tickets to continue to checkout.
-              </p>
+      {/* GALLERY BANNER SECTION */}
+      {linkedGallery.items.length > 0 ? (
+        <section className="max-w-6xl mx-auto px-4 py-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Banner - 2/3 */}
+            <div className="lg:col-span-2">
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 md:p-6">
+                <h2 className="text-xl font-semibold text-gray-900 mb-3" style={{ fontFamily: 'Inter, sans-serif', color: '#87CEEB' }}>
+                  Photo Gallery
+                </h2>
+                {linkedGallery.status === 'loading' ? (
+                  <div className="py-8 text-center">
+                    <Loader />
+                  </div>
+                ) : linkedGallery.status === 'failed' ? (
+                  <div className="py-8 text-center">
+                    <ErrorState message={linkedGallery.error} />
+                  </div>
+                ) : (
+                  <GalleryGrid items={linkedGallery.items} />
+                )}
+              </div>
             </div>
-
-            <div className="flex flex-col sm:flex-row gap-3 md:gap-4 md:flex-none">
-              {/* Date */}
-              <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 sm:px-4 sm:py-2.5 flex-wrap">
-                <span className="text-xs text-gray-500 whitespace-nowrap">Date</span>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={handleAllDays}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                      !date || date === ''
-                        ? 'bg-sky-600 text-white border-sky-600'
-                        : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
-                    }`}
-                  >
-                    All Days
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleToday}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                      date === dayjs().format('YYYY-MM-DD')
-                        ? 'bg-sky-600 text-white border-sky-600'
-                        : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
-                    }`}
-                  >
-                    Today
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleTomorrow}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                      date === dayjs().add(1, 'day').format('YYYY-MM-DD')
-                        ? 'bg-sky-600 text-white border-sky-600'
-                        : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
-                    }`}
-                  >
-                    Tomorrow
-                  </button>
-                  <button
-                    type="button"
-                    onClick={onCalendarButtonClick}
-                    ref={setCalendarAnchor}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                      date && date !== '' && date !== dayjs().format('YYYY-MM-DD') && date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
-                        ? 'bg-sky-600 text-white border-sky-600'
-                        : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
-                    }`}
-                  >
-                    {date && date !== '' && date !== dayjs().format('YYYY-MM-DD') && date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
-                      ? formatDateDisplay(date)
-                      : 'All Days'}
-                  </button>
+            {/* Gallery Preview - 1/3 */}
+            <div className="lg:col-span-1">
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 md:p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3" style={{ fontFamily: 'Inter, sans-serif' }}>
+                  Gallery Preview
+                </h3>
+                <div className="space-y-3">
+                  {linkedGallery.items.slice(0, 3).map((item, index) => {
+                    const isVideo = String(item.media_type || '').toLowerCase() === 'video';
+                    const mediaUrl = isVideo
+                      ? imgSrc(item.media_url || item.url || item)
+                      : imgSrc(item.image_url || item.url || item);
+                    
+                    return (
+                      <div key={item.gallery_item_id || item.id || index} className="relative group">
+                        {isVideo ? (
+                          <video
+                            className="w-full h-32 object-cover rounded-lg"
+                            src={mediaUrl}
+                            muted
+                            preload="metadata"
+                          />
+                        ) : (
+                          <img
+                            src={mediaUrl}
+                            alt={item.title || 'Gallery item'}
+                            className="w-full h-32 object-cover rounded-lg transition-transform duration-300 group-hover:scale-105"
+                            loading="lazy"
+                          />
+                        )}
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
+                          <span className="text-white text-sm font-medium">+{linkedGallery.items.length - 3} more</span>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
-
-              {/* Slot */}
-              <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 sm:px-4 sm:py-2.5 min-w-[180px]">
-                <span className="text-xs text-gray-500">Slot</span>
-                <select
-                  className="flex-1 bg-transparent border-none outline-none text-sm font-medium text-gray-900 truncate"
-                  value={slotState.selectedKey}
-                  onChange={(e) =>
-                    setSlotState((s) => ({
-                      ...s,
-                      selectedKey: e.target.value,
-                    }))
-                  }
-                  disabled={slotState.status === 'loading' || !slots.length}
-                >
-                  {slotState.status === 'loading' && (
-                    <option>Loading slots…</option>
-                  )}
-                  {slotState.status !== 'loading' && !slots.length && (
-                    <option>No slots</option>
-                  )}
-                  {slotState.status !== 'loading' &&
-                    slots
-                      .filter((slot) => isSlotBookableForDate(slot, date))
-                      .map((slot) => {
-                        const key = buildSlotKey(slot);
-                        const pricing = getSlotPricing(slot);
-                        const label = labelTime(slot) || 'Slot';
-                        const priceText =
-                          pricing?.finalPrice != null
-                            ? ` • ${formatCurrency(pricing.finalPrice)}`
-                            : '';
-                        return (
-                          <option key={key} value={key}>
-                            {label}
-                            {priceText}
-                          </option>
-                        );
-                      })}
-                </select>
-              </div>
-
-              {/* Qty */}
-              <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 sm:px-4 sm:py-2.5">
-                <span className="text-xs text-gray-500">Qty</span>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    className="w-7 h-7 text-sm rounded-full border border-gray-300 flex items-center justify-center"
-                    onClick={() =>
-                      setQty((prev) => Math.max(1, Number(prev || 1) - 1))
-                    }
-                  >
-                    -
-                  </button>
-                  <input
-                    type="number"
-                    min={1}
-                    value={qty}
-                    onChange={(e) =>
-                      setQty(Math.max(1, Number(e.target.value) || 1))
-                    }
-                    className="w-12 bg-transparent border-none text-center text-sm font-semibold outline-none"
-                  />
-                  <button
-                    type="button"
-                    className="w-7 h-7 text-sm rounded-full border border-gray-300 flex items-center justify-center"
-                    onClick={() =>
-                      setQty((prev) => Math.max(1, Number(prev || 1) + 1))
-                    }
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-
-              {/* Book button */}
-              <button
-                type="button"
-                className="w-full sm:w-auto inline-flex items-center justify-center rounded-xl bg-blue-600 text-white px-6 py-2.5 text-sm font-semibold shadow-md hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed"
-                disabled={!selectedSlot || slotState.status === 'loading'}
-                onClick={() => {
-                  if (!selectedSlot) return;
-                  onBook(selectedSlot, selectedSlotPricing);
-                }}
-              >
-                {selectedSlotPricing?.finalPrice
-                  ? `Book Now • ${formatCurrency(
-                      selectedSlotPricing.finalPrice * qty,
-                    )}`
-                  : 'Book Now'}
-              </button>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      ) : null}
 
-      {/* MAIN CONTENT */}
-      <section className="max-w-6xl mx-auto px-4 py-8 md:py-12 grid grid-cols-1 lg:grid-cols-3 gap-10 md:gap-12">
-        {/* LEFT CONTENT */}
-        <div className="lg:col-span-2 space-y-8">
-          {/* Included attractions */}
-          {normalizedAttractions.length > 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {normalizedAttractions.map((attr, idx) => (
-                <figure
-                  key={`included-${idx}`}
-                  className="relative rounded-2xl overflow-hidden shadow-sm bg-white"
-                >
-                  <img
-                    src={attr.image_url}
-                    alt={attr.title}
-                    className="w-full h-60 md:h-64 object-cover"
-                    loading="lazy"
-                  />
-                  <figcaption className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/75 to-transparent p-4 text-white">
-                    <p className="text-[11px] uppercase tracking-wide text-gray-300">
-                      Experience {idx + 1}
-                    </p>
-                    <h2 className="text-lg font-semibold line-clamp-2">
-                      {attr.title}
-                    </h2>
-                    {attr.price ? (
-                      <p className="text-xs text-gray-200 mt-1">
-                        Base price: {formatCurrency(attr.price)}
+      <section className="max-w-6xl mx-auto px-4 py-8 md:py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 md:gap-12">
+          {/* LEFT CONTENT */}
+          <div className="lg:col-span-2 space-y-8">
+            {/* Included attractions */}
+            {normalizedAttractions.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {normalizedAttractions.map((attr, idx) => (
+                  <figure
+                    key={`included-${idx}`}
+                    className="relative rounded-2xl overflow-hidden shadow-sm bg-white"
+                  >
+                    <img
+                      src={attr.image_url}
+                      alt={attr.title}
+                      className="w-full h-60 md:h-64 object-cover"
+                      loading="lazy"
+                    />
+                    <figcaption className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/75 to-transparent p-4 text-white">
+                      <p className="text-[11px] uppercase tracking-wide text-gray-300">
+                        Experience {idx + 1}
                       </p>
-                    ) : null}
-                  </figcaption>
-                </figure>
-              ))}
-            </div>
-          )}
+                      <h2 className="text-lg font-semibold line-clamp-2" style={{ fontFamily: 'Inter, sans-serif' }}>
+                        {attr.title}
+                      </h2>
+                      {attr.price ? (
+                        <p className="text-xs text-gray-200 mt-1">
+                          Base price: {formatCurrency(attr.price)}
+                        </p>
+                      ) : null}
+                    </figcaption>
+                  </figure>
+                ))}
+              </div>
+            )}
 
-          {/* Description – tidied up */}
-          {description ? (
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 md:p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-3">
-                About this combo
-              </h2>
-              <div
-                className="prose prose-sm md:prose max-w-none text-gray-700 leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: description }}
-              />
-            </div>
-          ) : null}
+            {/* Description – tidied up */}
+            {description ? (
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 md:p-6">
+                <h2 className="text-xl font-semibold text-gray-900 mb-3" style={{ fontFamily: 'Inter, sans-serif', color: '#87CEEB' }}>
+                  About this combo
+                </h2>
+                <div
+                  className="prose prose-sm md:prose max-w-none text-gray-700 leading-relaxed"
+                  style={{ textAlign: 'left', fontFamily: 'Inter, sans-serif' }}
+                  dangerouslySetInnerHTML={{ __html: description }}
+                />
+              </div>
+            ) : null}
 
 
 
@@ -1314,6 +1333,194 @@ export default function ComboDetails() {
               )}
             </div>
 
+            {/* Booking controls (desktop) */}
+            <div className="space-y-5">
+              {/* Date */}
+              <div className="space-y-2">
+                <label
+                  className="text-sm font-medium text-gray-700"
+                  style={{ fontFamily: 'Inter, sans-serif' }}
+                >
+                  Select Date
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  
+                  <button
+                    type="button"
+                    onClick={handleToday}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                      date === dayjs().format('YYYY-MM-DD')
+                        ? 'bg-sky-600 text-white border-sky-600'
+                        : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
+                    }`}
+                    style={{ fontFamily: 'Inter, sans-serif' }}
+                  >
+                    Today
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleTomorrow}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                      date === dayjs().add(1, 'day').format('YYYY-MM-DD')
+                        ? 'bg-sky-600 text-white border-sky-600'
+                        : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
+                    }`}
+                    style={{ fontFamily: 'Inter, sans-serif' }}
+                  >
+                    Tomorrow
+                  </button>
+                  <button
+                    type="button"
+                    onClick={onCalendarButtonClick}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                      date && date !== '' && date !== dayjs().format('YYYY-MM-DD') && date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
+                        ? 'bg-sky-600 text-white border-sky-600'
+                        : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
+                    }`}
+                    style={{ fontFamily: 'Inter, sans-serif' }}
+                  >
+                    {date && date !== '' && date !== dayjs().format('YYYY-MM-DD') && date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
+                      ? dayjs(date).format('D MMM')
+                      : 'All Days'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Slot */}
+              <div className="space-y-2">
+                <label
+                  className="text-sm font-medium text-gray-700"
+                  style={{ fontFamily: 'Inter, sans-serif' }}
+                >
+                  Select Time Slot
+                </label>
+
+                {slotState.status === 'loading' ? (
+                  <div className="py-2">
+                    <Loader size="sm" />
+                  </div>
+                ) : slotState.status === 'failed' ? (
+                  <ErrorState
+                    message={slotErr || 'Failed to load slots'}
+                  />
+                ) : (
+                  <select
+                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-900 outline-none"
+                    value={slotState.selectedKey}
+                    onChange={(e) =>
+                      setSlotState((s) => ({
+                        ...s,
+                        selectedKey: e.target.value,
+                      }))
+                    }
+                    disabled={!slots.length}
+                    style={{ fontFamily: 'Inter, sans-serif' }}
+                  >
+                    {!slots.length ? (
+                      <option>No slots</option>
+                    ) : (
+                      <>
+                        {!slotState.selectedKey && <option value="">Select slot</option>}
+                        {slots
+                          .filter((slot) => isSlotBookableForDate(slot, date))
+                          .map((slot) => {
+                            const key = buildSlotKey(slot);
+                            const pricing = getSlotPricing(slot);
+                            const label = labelTime(slot) || 'Slot';
+                            const priceText =
+                              pricing?.finalPrice != null
+                                ? ` • ${formatCurrency(pricing.finalPrice)}`
+                                : '';
+                            return (
+                              <option key={key} value={key}>
+                                {label}
+                                {priceText}
+                              </option>
+                            );
+                          })}
+                      </>
+                    )}
+                  </select>
+                )}
+              </div>
+
+              {/* Qty */}
+              <div className="space-y-2">
+                <label
+                  className="text-sm font-medium text-gray-700"
+                  style={{ fontFamily: 'Inter, sans-serif' }}
+                >
+                  Number of Tickets
+                </label>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    className="w-8 h-8 text-sm rounded-full border border-gray-300 flex items-center justify-center"
+                    onClick={() =>
+                      setQty((prev) => Math.max(1, Number(prev || 1) - 1))
+                    }
+                  >
+                    -
+                  </button>
+
+                  <input
+                    type="number"
+                    min={1}
+                    value={qty}
+                    onChange={(e) =>
+                      setQty(Math.max(1, Number(e.target.value) || 1))
+                    }
+                    className="w-16 text-center border border-gray-300 rounded-lg px-2 py-1 text-sm"
+                    style={{ fontFamily: 'Inter, sans-serif' }}
+                  />
+
+                  <button
+                    type="button"
+                    className="w-8 h-8 text-sm rounded-full border border-gray-300 flex items-center justify-center"
+                    onClick={() =>
+                      setQty((prev) => Math.max(1, Number(prev || 1) + 1))
+                    }
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              {/* Subtotal / total */}
+              <div className="mt-3 rounded-2xl border bg-gray-50 px-3 py-2 text-sm">
+                <div className="flex items-center justify-between text-gray-600">
+                  <span>Subtotal</span>
+                  <span className="rupee">
+                    {qty} × {formatCurrency(selectedSlotPricing?.finalPrice || comboPrice || 0)}
+                  </span>
+                </div>
+                <div className="mt-1 flex items-center justify-between text-gray-900 font-semibold">
+                  <span>Total</span>
+                  <span className="rupee">
+                    {formatCurrency((selectedSlotPricing?.finalPrice || comboPrice || 0) * qty)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Book button */}
+              <button
+                type="button"
+                className="w-full inline-flex items-center justify-center rounded-xl bg-blue-600 text-white px-6 py-2.5 text-sm font-semibold shadow-md hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed"
+                disabled={!selectedSlot || slotState.status === 'loading'}
+                onClick={() => {
+                  if (!selectedSlot) return;
+                  onBook(selectedSlot, selectedSlotPricing);
+                }}
+                style={{ fontFamily: 'Inter, sans-serif' }}
+              >
+                {selectedSlotPricing?.finalPrice
+                  ? `Book Now • ${formatCurrency(
+                      selectedSlotPricing.finalPrice * qty,
+                    )}`
+                  : 'Book Now'}
+              </button>
+            </div>
+
             <div className="space-y-2 text-sm text-gray-600">
               <p>
                 Includes admission for{' '}
@@ -1343,7 +1550,170 @@ export default function ComboDetails() {
             </div>
           </div>
         </aside>
+        </div>
       </section>
+
+      {/* MOBILE FIXED PRICE BAR */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[70] border-t border-gray-200 bg-white/95 backdrop-blur">
+        <div className="max-w-6xl mx-auto px-4 py-3 pb-[calc(env(safe-area-inset-bottom)+12px)]">
+          <div className="flex items-center gap-3">
+            <div className="flex-1 min-w-0">
+              <div className="text-[11px] uppercase tracking-wide text-gray-500 font-semibold">
+                {hasDiscount ? 'Offer price' : 'Base price'}
+              </div>
+
+              <div className="flex items-baseline gap-2">
+                <div className="text-lg font-bold text-gray-900 rupee">
+                  {formatCurrency(
+                    hasDiscount
+                      ? selectedSlotPricing?.finalPrice || 0
+                      : baseUnitPrice || selectedSlotPricing?.finalPrice || 0,
+                  )}
+                </div>
+
+                {hasDiscount ? (
+                  <div className="text-sm text-gray-400 line-through rupee">
+                    {formatCurrency(baseUnitPrice || 0)}
+                  </div>
+                ) : null}
+
+                {hasDiscount ? (
+                  <div className="text-xs font-semibold text-emerald-600">
+                    Save {selectedDiscountPercent}%
+                  </div>
+                ) : null}
+              </div>
+
+              <div className="text-xs text-gray-500 truncate">
+                {qty} ticket{qty > 1 ? 's' : ''} • Total{' '}
+                <span className="rupee font-semibold text-gray-800">
+                  {formatCurrency(totalPrice || 0)}
+                </span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              className="inline-flex items-center justify-center rounded-xl bg-blue-600 text-white px-6 py-2.5 text-sm font-semibold shadow-md hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed"
+              disabled={!selectedSlot || slotState.status === 'loading'}
+              onClick={() => {
+                if (!selectedSlot) return;
+                onBook(selectedSlot, selectedSlotPricing);
+              }}
+            >
+              {barPrice ? (
+                <>
+                  Book •{' '}
+                  <span className="ml-1 rupee">
+                    {formatCurrency(barPrice)}
+                  </span>
+                </>
+              ) : (
+                'Book Now'
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Calendar Modal */}
+      {showCalendar && (
+        <div
+          className="fixed inset-0 z-[80] flex"
+          onClick={() => setShowCalendar(false)}
+        >
+          <div className="flex-1" />
+          <div
+            className="absolute bg-white rounded-2xl shadow-2xl border border-gray-200 p-4 w-80 max-h-[70vh] overflow-y-auto"
+            style={{
+              top: calendarAnchorRect ? `${calendarAnchorRect.top}px` : '50%',
+              left: calendarAnchorRect
+                ? `${calendarAnchorRect.left - 160}px`
+                : '50%',
+              transform: calendarAnchorRect ? 'none' : 'translate(-50%, -50%)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-base font-semibold text-gray-900">Select Date</h3>
+              <button
+                type="button"
+                onClick={() => setShowCalendar(false)}
+                className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              {[0, 1, 2].map((monthOffset) => {
+                const currentDate = dayjs().add(monthOffset, 'month');
+                const monthStart = currentDate.startOf('month');
+                const monthEnd = currentDate.endOf('month');
+                const startDay = monthStart.day();
+                const daysInMonth = monthEnd.date();
+                const today = dayjs();
+
+                return (
+                  <div key={monthOffset} className="border border-gray-100 rounded-xl p-3 bg-white">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="text-sm font-semibold text-gray-900">{currentDate.format('MMMM YYYY')}</div>
+                    </div>
+
+                    <div className="grid grid-cols-7 gap-1 text-center text-xs text-gray-500 mb-2">
+                      {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((d) => (
+                        <div key={d} className="py-1 font-medium">{d}</div>
+                      ))}
+                    </div>
+
+                    <div className="grid grid-cols-7 gap-1 text-sm">
+                      {Array.from({ length: startDay }).map((_, i) => (
+                        <div key={`pad-${i}`} />
+                      ))}
+
+                      {Array.from({ length: daysInMonth }).map((_, dIndex) => {
+                        const dayNum = dIndex + 1;
+                        const dayVal = monthStart.date(dayNum).format('YYYY-MM-DD');
+                        const disabled = false;
+                        const isToday = today.format('YYYY-MM-DD') === dayVal;
+
+                        return (
+                          <button
+                            key={dayVal}
+                            type="button"
+                            onClick={() => {
+                              handleDateSelect(dayVal);
+                            }}
+                            disabled={disabled}
+                            className={`w-full h-8 rounded-lg flex items-center justify-center transition-colors ${
+                              disabled
+                                ? 'text-gray-300'
+                                : isToday
+                                ? 'bg-sky-100 text-sky-700 font-semibold'
+                                : 'hover:bg-gray-100'
+                            }`}
+                          >
+                            {dayNum}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* GALLERY VIEWER MODAL */}
+      {viewerIndex !== null && linkedGallery.items.length > 0 ? (
+        <GalleryViewer
+          items={linkedGallery.items}
+          initialIndex={viewerIndex}
+          onClose={() => setViewerIndex(null)}
+        />
+      ) : null}
     </div>
   );
 }

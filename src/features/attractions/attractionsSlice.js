@@ -12,7 +12,7 @@ export const fetchAttractions = createAsyncThunk(
   async (params = { active: true, page: 1, limit: 12 }, { signal, rejectWithValue }) => {
     try {
       const res = await api.get(endpoints.attractions.list(), { params, signal });
-      const list = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
+      const list = res?.data?.data || (Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : []);
       return list;
     } catch (err) {
       return rejectWithValue(err);

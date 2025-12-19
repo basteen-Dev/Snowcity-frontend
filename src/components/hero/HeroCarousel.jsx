@@ -54,6 +54,13 @@ function deriveHref(b) {
 export default function HeroCarousel({ banners = [], waveColor = "#0b1a33" }) {
   if (!banners.length) return null;
 
+  // Sort banners by created_at ascending (first inserted first)
+  const sortedBanners = [...banners].sort((a, b) => {
+    const aDate = new Date(a.created_at || a.inserted_at || 0);
+    const bDate = new Date(b.created_at || b.inserted_at || 0);
+    return aDate - bDate;
+  });
+
   return (
     <section id="hero" className="relative w-full overflow-hidden h-[80vh] min-h-[600px] pt-14 md:pt-0">
       <span id="hero-sentinel" className="pointer-events-none absolute bottom-0 left-0 h-px w-px" />
@@ -74,7 +81,7 @@ export default function HeroCarousel({ banners = [], waveColor = "#0b1a33" }) {
         }}
         className="h-full"
       >
-        {banners.map((b, idx) => {
+        {sortedBanners.map((b, idx) => {
           const desktopImg = getWebImage(b, `https://picsum.photos/seed/banner${idx}/1400/700`);
           const mobileImg = getMobileImage(b, `https://picsum.photos/seed/banner${idx}-m/600/800`);
           const title = b?.title || b?.name || "";

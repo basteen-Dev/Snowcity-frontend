@@ -149,6 +149,24 @@ export default function GalleryForm() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div>
+          <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Gallery Category</label>
+          <select
+            className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200"
+            value={f.target_type}
+            onChange={(e) => onChange({ target_type: e.target.value, target_ref_id: null })}
+          >
+            <option value="none">Common Gallery (General)</option>
+            <option value="attraction">Attraction Gallery</option>
+            <option value="combo">Combo Gallery</option>
+          </select>
+          <p className="text-xs text-gray-500 mt-1">
+            {f.target_type === 'none' ? 'Images will appear in general gallery' : 
+             f.target_type === 'attraction' ? 'Images will appear only on selected attraction page' :
+             'Images will appear only on selected combo page'}
+          </p>
+        </div>
+
+        <div>
           <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Media Type</label>
           <select
             className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200"
@@ -230,19 +248,6 @@ export default function GalleryForm() {
           />
         </div>
 
-        <div>
-          <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Link to</label>
-          <select
-            className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200"
-            value={f.target_type}
-            onChange={(e) => onChange({ target_type: e.target.value, target_ref_id: null })}
-          >
-            <option value="none">No specific page</option>
-            <option value="attraction">Attraction</option>
-            <option value="combo">Combo</option>
-          </select>
-        </div>
-
         {f.target_type !== 'none' ? (
           <div>
             <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">
@@ -263,6 +268,10 @@ export default function GalleryForm() {
                 </option>
               ))}
             </select>
+            <p className="text-xs text-gray-500 mt-1">
+              {f.target_type === 'attraction' ? 'Images will appear only on selected attraction page' :
+               'Images will appear only on selected combo page'}
+            </p>
           </div>
         ) : null}
 

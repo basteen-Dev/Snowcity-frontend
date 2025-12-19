@@ -188,6 +188,7 @@ export default function ComboCard({ item }) {
     hasBase && comboDisplayPrice > 0 ? Math.max(0, Math.round((1 - comboDisplayPrice / baseSum) * 100))
       : Number(item?.discount_percent || 0);
 
+  const comboHref = comboId ? `/combos/${comboId}` : '/combos';
   const numericComboId = item?.combo_id || item?.id || null;
   const bookHref = numericComboId ? `/booking?combo_id=${numericComboId}&openDrawer=true` : '/booking?openDrawer=true';
 
@@ -199,8 +200,9 @@ export default function ComboCard({ item }) {
         group relative h-[420px] w-full overflow-hidden rounded-2xl
         bg-white shadow-[0_20px_50px_rgba(0,0,0,0.18)]
         transition-all duration-300 hover:-translate-y-1
-        focus:outline-none
+        focus:outline-none cursor-pointer
       "
+      onClick={() => window.location.href = comboHref}
     >
       {/* Image */}
       {heroImage ? (
