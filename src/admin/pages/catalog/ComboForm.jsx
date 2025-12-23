@@ -15,6 +15,7 @@ export default function ComboForm() {
     attractions: [],
     form: {
       name: '',
+      slug: '',
       attraction_ids: isEdit ? [] : ['', ''], // Start with 2 empty slots for new combos
       attraction_prices: {},
       total_price: 0,
@@ -47,6 +48,7 @@ export default function ComboForm() {
         // Handle both legacy and new format
         let formdata = {
           name: c.name || '',
+          slug: c.slug || '',
           attraction_ids: [],
           attraction_prices: {},
           total_price: 0,
@@ -99,6 +101,7 @@ export default function ComboForm() {
       
       const payload = {
         name: f.name.trim(),
+        slug: f.slug?.trim() || null,
         attraction_ids: f.attraction_ids,
         attraction_prices: f.attraction_prices,
         total_price: Number(f.total_price || 0),
@@ -266,6 +269,21 @@ export default function ComboForm() {
           placeholder="Enter combo name"
           required
         />
+      </div>
+
+      {/* Combo Slug */}
+      <div className="mb-4">
+        <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Slug (URL-friendly identifier)</label>
+        <input 
+          type="text" 
+          className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" 
+          value={f.slug} 
+          onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, slug: e.target.value } }))}
+          placeholder="auto-generated-from-name"
+        />
+        <div className="text-xs text-gray-500 dark:text-neutral-400 mt-1">
+          Leave empty to auto-generate from name. Used in URLs like /combo-your-slug-here
+        </div>
       </div>
 
       {/* Attractions Selection */}

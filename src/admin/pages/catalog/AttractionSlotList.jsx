@@ -475,7 +475,7 @@ export default function AttractionSlotList() {
               <th className="px-3 py-2 text-left">Attraction</th>
               <th className="px-3 py-2 text-left">Context</th>
               <th className="px-3 py-2 text-left">Capacity</th>
-              <th className="px-3 py-2 text-left">Price</th>
+              <th className="px-3 py-2 text-left">Bookings</th>
               <th className="px-3 py-2 text-left">Status / Bookings</th>
               <th className="px-3 py-2 text-left">Actions</th>
             </tr>
@@ -483,7 +483,7 @@ export default function AttractionSlotList() {
           <tbody className="text-gray-800 dark:text-neutral-200">
             {tableRows.length > 0 ? tableRows.map((row) => {
               const isSlotRow = row.variant === 'slot';
-              const priceDisplay = row.priceValue != null ? formatCurrency(row.priceValue) : '—';
+              const bookingCountDisplay = row.bookingCount > 0 ? `${row.bookingCount}` : '0';
               const slot = row.slot;
               return (
                 <tr
@@ -501,7 +501,7 @@ export default function AttractionSlotList() {
                     </span>
                   </td>
                   <td className="px-3 py-2">{isSlotRow ? slot.capacity : '—'}</td>
-                  <td className="px-3 py-2">{priceDisplay}</td>
+                  <td className="px-3 py-2">{bookingCountDisplay}</td>
                   <td className="px-3 py-2">
                     {isSlotRow ? (
                       <span className={`px-2 py-1 text-xs rounded ${slot.available ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>

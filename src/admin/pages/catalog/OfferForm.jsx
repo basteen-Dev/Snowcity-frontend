@@ -85,6 +85,18 @@ const RULE_TEMPLATES = [
       rule_discount_value: 200,
     },
   },
+  {
+    key: 'date-price-increase',
+    label: 'Date Price Increase',
+    badge: 'Price Increase',
+    description: 'Increase prices for specific dates (use negative discount values).',
+    ruleType: 'date_slot_pricing',
+    defaults: {
+      specific_date: '',
+      rule_discount_type: 'amount',
+      rule_discount_value: -500, // Negative for price increase
+    },
+  },
 ];
 
 const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -97,6 +109,11 @@ const createRule = (overrides = {}) => ({
 const formatDiscountValue = (value, type) => {
   const num = Number(value || 0);
   if (!num) return 'Inherit offer discount';
+  if (num < 0) {
+    // Negative values mean price increases
+    const absValue = Math.abs(num);
+    return type === 'amount' ? `+₹${absValue.toFixed(2)}` : `+${absValue}%`;
+  }
   return type === 'amount' ? `₹${num.toFixed(2)}` : `${num}%`;
 };
 
@@ -582,7 +599,7 @@ export default function OfferForm() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-500 mb-1">Rule Discount Value</label>
+                  <label className="block text-xs text-gray-500 mb-1">Rule Discount Value <span className="text-xs text-blue-600">(negative for price increase)</span></label>
                   <input type="number" className="w-full rounded-md border px-3 py-2" value={rule.rule_discount_value ?? ''} onChange={(e) => updateRule(idx, { rule_discount_value: e.target.value })} placeholder="Optional" />
                 </div>
               </div>

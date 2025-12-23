@@ -119,7 +119,8 @@ export default function AttractionCard({ item }) {
   const desc = item?.short_description || item?.subtitle || '';
   const img = imgSrc(item, 'https://picsum.photos/seed/attr/640/400');
   const attrId = getAttrId(item);
-  const detailHref = attrId ? `/attractions/${attrId}` : '/attractions';
+  // Prefer slug-based friendly URLs when available (e.g. /snow-park)
+  const detailHref = item?.slug ? `/${item.slug}` : (attrId ? `/attractions/${attrId}` : '/attractions');
 
   const finalPrice = getPrice(item, { includeOffers: false });
   const basePrice = getBasePrice(item);

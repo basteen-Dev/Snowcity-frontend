@@ -4,6 +4,7 @@ import adminApi from '../../services/adminApi';
 import RawEditor from '../../components/common/RawEditor';
 import RichText from '../../components/common/RichText';
 import GalleryField from '../../components/common/GalleryField';
+import BulkImageUploader from '../../components/common/BulkImageUploader';
 import useCatalogTargets from '../../hooks/useCatalogTargets';
 
 const NAV_GROUPS = [
@@ -37,6 +38,7 @@ export default function PageForm() {
     section_type: 'none',
     section_ref_id: null,
     gallery: [],
+    bulk_images: [],
     nav_group: '',
     nav_order: 0,
     placement: 'none',
@@ -140,11 +142,88 @@ ${form.raw_html || ''}
   };
 
   return (
-    <form onSubmit={save} className="space-y-3 max-w-3xl">
-      <div className="text-lg font-semibold">{isEdit ? 'Edit Page' : 'Create Page'}</div>
-      {err ? <div className="text-sm text-red-600">{err}</div> : null}
+    <div className="min-h-screen bg-gray-50 dark:bg-neutral-900">
+      <div className="max-w-7xl mx-auto px-4 py-6">
+        {/* Header */}
+        <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-neutral-700 p-6 mb-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100">
+                {isEdit ? 'Edit Page' : 'Create New Page'}
+              </h1>
+              <p className="text-gray-600 dark:text-neutral-400 mt-1">
+                {isEdit ? 'Update your page content and settings' : 'Create custom pages for your website'}
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={preview}
+                className="px-4 py-2 bg-gray-100 dark:bg-neutral-700 text-gray-700 dark:text-neutral-300 rounded-lg hover:bg-gray-200 dark:hover:bg-neutral-600 transition-colors"
+              >
+                Preview
+              </button>
+              <button
+                type="button"
+                onClick={() => nav('/admin/catalog/pages')}
+                className="px-4 py-2 border border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-neutral-300 rounded-lg hover:bg-gray-50 dark:hover:bg-neutral-700 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={saving}
+                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {saving ? 'Saving...' : 'Save Page'}
+              </button>
+            </div>
+          </div>
+        </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <form onSubmit={save} className="space-y-6">
+          {/* Basic Info */}
+          <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-neutral-700 p-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-neutral-100 mb-4">Basic Information</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">
+                  Title *
+                </label>
+                <input
+                  type="text"
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-neutral-700 dark:text-neutral-100"
+                  value={form.title}
+                  onChange={(e) => onChange({ title: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">
+                  Slug *
+                </label>
+                <input
+                  type="text"
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-neutral-700 dark:text-neutral-100"
+                  value={form.slug}
+                  onChange={(e) => onChange({ slug: e.target.value })}
+                  placeholder="my-custom-page"
+                />
+              </div>
+            </div>
+            <div className="mt-4">
+              <label className="inline-flex items-center">
+                <input
+                  type="checkbox"
+                  checked={!!form.active}
+                  onChange={(e) => onChange({ active: e.target.checked })}
+                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                />
+                <span className="ml-2 text-sm text-gray-700 dark:text-neutral-300">Publish page</span>
+              </label>
+            </div>
+          </div>
         <div>
           <label className="block text-sm">Title</label>
           <input className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700"
@@ -162,43 +241,81 @@ ${form.raw_html || ''}
         Active
       </label>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <div>
-          <label className="block text-sm">Nav group</label>
-          <select className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700"
-            value={form.nav_group || ''} onChange={(e) => onChange({ nav_group: e.target.value })}>
-            {NAV_GROUPS.map((g) => <option key={g.key} value={g.key}>{g.label}</option>)}
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm">Nav order</label>
-          <input type="number" className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700"
-            value={form.nav_order ?? 0} onChange={(e) => onChange({ nav_order: Number(e.target.value) })} />
-        </div>
-        <div>
-          <label className="block text-sm">Placement</label>
-          <select className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700"
-            value={form.placement} onChange={(e) => onChange({ placement: e.target.value })}>
-            {PLACEMENTS.map((p) => <option key={p.key} value={p.key}>{p.label}</option>)}
-          </select>
-        </div>
-      </div>
+          {/* Navigation & Placement */}
+          <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-neutral-700 p-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-neutral-100 mb-4">Navigation & Placement</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">
+                  Navigation Group
+                </label>
+                <select
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-neutral-700 dark:text-neutral-100"
+                  value={form.nav_group || ''}
+                  onChange={(e) => onChange({ nav_group: e.target.value })}
+                >
+                  {NAV_GROUPS.map((g) => <option key={g.key} value={g.key}>{g.label}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">
+                  Navigation Order
+                </label>
+                <input
+                  type="number"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-neutral-700 dark:text-neutral-100"
+                  value={form.nav_order ?? 0}
+                  onChange={(e) => onChange({ nav_order: Number(e.target.value) })}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">
+                  Special Placement
+                </label>
+                <select
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-neutral-700 dark:text-neutral-100"
+                  value={form.placement}
+                  onChange={(e) => onChange({ placement: e.target.value })}
+                >
+                  {PLACEMENTS.map((p) => <option key={p.key} value={p.key}>{p.label}</option>)}
+                </select>
+              </div>
+            </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <div>
-          <label className="block text-sm">Section type</label>
-          <select
-            className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700"
-            value={form.section_type || 'none'}
-            onChange={(e) => onChange({ section_type: e.target.value, section_ref_id: null })}
-          >
-            <option value="none">None</option>
-            <option value="attraction">Attraction</option>
-            <option value="combo">Combo</option>
-          </select>
-        </div>
-        {form.section_type && form.section_type !== 'none' ? (
-          <div className="md:col-span-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">
+                  Section Type
+                </label>
+                <select
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-neutral-700 dark:text-neutral-100"
+                  value={form.section_type || 'none'}
+                  onChange={(e) => onChange({ section_type: e.target.value, section_ref_id: null })}
+                >
+                  <option value="none">None</option>
+                  <option value="attraction">Attraction</option>
+                  <option value="combo">Combo</option>
+                </select>
+              </div>
+              {form.section_type !== 'none' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">
+                    {form.section_type === 'attraction' ? 'Attraction' : 'Combo'}
+                  </label>
+                  <select
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-neutral-700 dark:text-neutral-100"
+                    value={form.section_ref_id || ''}
+                    onChange={(e) => onChange({ section_ref_id: e.target.value })}
+                  >
+                    <option value="">Select...</option>
+                    {targets[form.section_type]?.map((t) => (
+                      <option key={t.id} value={t.id}>{t.title}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </div>
+          </div>
             <label className="block text-sm">{form.section_type === 'attraction' ? 'Select attraction' : 'Select combo'}</label>
             <select
               className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700"
@@ -256,7 +373,11 @@ ${form.raw_html || ''}
       ) : (
         <>
           <label className="block text-sm">Content</label>
-          <RichText value={form.content || ''} onChange={(v) => onChange({ content: v })} />
+                  <RichText
+                    value={form.content || ''}
+                    onChange={(v) => onChange({ content: v })}
+                    gallery={form.bulk_images && form.bulk_images.length ? form.bulk_images : form.gallery}
+                  />
           <GalleryField
             label="Content gallery"
             helper="Upload multiple inline assets to reuse inside the visual editor or elsewhere in the page."

@@ -92,6 +92,7 @@ const endpoints = {
   attractions: {
     list: () => '/api/attractions', // GET
     byId: (id) => `/api/attractions/${encodeSeg(id)}`, // GET
+    bySlug: (slug) => `/api/attractions/slug/${encodeSeg(slug)}`, // GET
     slotsByAttraction: (id) => `/api/attractions/${encodeSeg(id)}/slots` // GET
   },
   slots: {
@@ -107,6 +108,7 @@ const endpoints = {
   combos: {
     list: () => '/api/combos',
     byId: (id) => `/api/combos/${encodeSeg(id)}`,
+    bySlug: (slug) => `/api/combos/slug/${encodeSeg(slug)}`,
     slots: (id) => `/api/combos/${encodeSeg(id)}/slots`
   },
   coupons: {

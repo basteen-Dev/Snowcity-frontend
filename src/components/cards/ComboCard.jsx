@@ -9,6 +9,15 @@ const IMAGE_PLACEHOLDER = (seed = 'combo') => `https://picsum.photos/seed/${seed
 const pickImage = (src, seed = 'combo') =>
   imgSrc(typeof src === 'string' && src ? src : IMAGE_PLACEHOLDER(seed));
 
+const generateComboSlug = (combo) => {
+  if (combo.slug) return combo.slug;
+  if (Array.isArray(combo.attractions) && combo.attractions.length) {
+    const slugs = combo.attractions.map(a => a.slug).filter(Boolean);
+    if (slugs.length) return slugs.join('-');
+  }
+  return null;
+};
+
 const resolveImageSource = (value) => {
   if (!value && value !== 0) return '';
   const src = imgSrc(value, '') || '';
@@ -94,7 +103,7 @@ const normalizeAttraction = (raw, fallbackTitle = 'Attraction', seed = 'combo-at
     image_url: image,
     slug,
     price,
-    href: slug ? `/attractions/${slug}` : null,
+    href: slug ? `/${slug}` : null,
   };
 };
 
@@ -188,7 +197,8 @@ export default function ComboCard({ item }) {
     hasBase && comboDisplayPrice > 0 ? Math.max(0, Math.round((1 - comboDisplayPrice / baseSum) * 100))
       : Number(item?.discount_percent || 0);
 
-  const comboHref = comboId ? `/combos/${comboId}` : '/combos';
+  const comboSlug = generateComboSlug(item);
+  const comboHref = comboSlug ? `/combo-${comboSlug}` : (comboId ? `/combos/${comboId}` : '/combos');
   const numericComboId = item?.combo_id || item?.id || null;
   const bookHref = numericComboId ? `/booking?combo_id=${numericComboId}&openDrawer=true` : '/booking?openDrawer=true';
 
@@ -311,7 +321,7 @@ export default function ComboCard({ item }) {
 
         {/* Extra links */}
         <div className="sr-only">
-          {comboId ? <Link to={`/combos/${comboId}`}>View Combo</Link> : null}
+          {comboId ? <Link to={comboHref}>View Combo</Link> : null}
         </div>
       </div>
 

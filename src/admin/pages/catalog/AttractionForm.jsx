@@ -12,7 +12,7 @@ export default function AttractionForm() {
   const [state, setState] = React.useState({
     status: isEdit ? 'loading' : 'idle',
     error: null,
-    form: { title: '', image_url: '', desktop_image_url: '', base_price: 0, active: true, description: '' }
+    form: { title: '', slug: '', image_url: '', desktop_image_url: '', base_price: 0, active: true, description: '' }
   });
 
   React.useEffect(() => {
@@ -26,6 +26,7 @@ export default function AttractionForm() {
           status: 'idle',
           form: {
             title: a.title || '',
+            slug: a.slug || '',
             image_url: a.image_url || '',
             desktop_image_url: a.desktop_image_url || '',
             base_price: a.base_price || 0,
@@ -57,6 +58,10 @@ export default function AttractionForm() {
         <div>
           <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Title</label>
           <input className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" value={f.title} onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, title: e.target.value } }))} />
+        </div>
+        <div>
+          <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Slug (URL-friendly identifier)</label>
+          <input className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" value={f.slug} onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, slug: e.target.value } }))} placeholder="auto-generated-from-title" />
         </div>
         <div>
           <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Base Price</label>

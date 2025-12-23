@@ -186,6 +186,7 @@ export default function AdminSidebar({ collapsed, onClose }) {
           { to: '/admin/catalog/addons', label: 'Add-ons', icon: Gift },
           { to: '/admin/catalog/combos', label: 'Combos', icon: Boxes },
           { to: '/admin/catalog/offers', label: 'Offers', icon: BadgePercent },
+          { to: '/admin/catalog/dynamic-pricing', label: 'Dynamic Pricing', icon: DollarSign },
           { to: '/admin/catalog/coupons', label: 'Coupons', icon: Ticket },
           { to: '/admin/catalog/banners', label: 'Banners', icon: ImageIcon },
           { to: '/admin/catalog/gallery', label: 'Gallery', icon: ImageIcon },

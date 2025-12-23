@@ -359,9 +359,17 @@ const buildSlotKey = (slot) => {
 /* ========= Component ========= */
 
 export default function ComboDetails() {
-  const { id: rawParam } = useParams();
+  const params = useParams();
+  const slugParam = params?.slug ?? params?.id ?? params?.comboId ?? params?.combo_id ?? null;
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
+  const slug = React.useMemo(() => {
+    if (!slugParam || slugParam === 'undefined' || slugParam === 'null') return null;
+    let s = slugParam;
+    if (String(s).startsWith('combo-')) s = String(s).substring(6);
+    return s;
+  }, [slugParam]);
 
   const { items: comboItems = [], status: combosStatus } = useSelector(
     (s) => s.combos || { items: [], status: 'idle' },
@@ -380,21 +388,21 @@ export default function ComboDetails() {
   }, [attractionsStatus, combosStatus, dispatch]);
 
   const numericParam = React.useMemo(() => {
-    if (!rawParam) return null;
-    const num = Number(rawParam);
+    if (!slug) return null;
+    const num = Number(slug);
     return Number.isFinite(num) ? num : null;
-  }, [rawParam]);
+  }, [slug]);
 
   const matchedCombo = React.useMemo(() => {
-    if (!rawParam || !comboItems.length) return null;
+    if (!slug || !comboItems.length) return null;
     return (
-      comboItems.find((c) => String(c?.combo_id ?? c?.id ?? '') === rawParam) ||
+      comboItems.find((c) => String(c?.combo_id ?? c?.id ?? '') === slug) ||
       comboItems.find(
-        (c) => rawParam && c?.slug && String(c.slug) === rawParam,
+        (c) => slug && c?.slug && String(c.slug) === slug,
       ) ||
       null
     );
-  }, [comboItems, rawParam]);
+  }, [comboItems, slug]);
 
   const fetchId = React.useMemo(() => {
     if (numericParam != null) return numericParam;
@@ -432,7 +440,7 @@ export default function ComboDetails() {
   }, []);
 
   React.useEffect(() => {
-    if (!rawParam) {
+    if (!slug) {
       setState({ status: 'failed', data: null, error: 'Combo not found' });
     } else if (fetchId == null) {
       if (
@@ -448,52 +456,35 @@ export default function ComboDetails() {
         setState({ status: 'failed', data: null, error: 'Combo not found' });
       }
     }
-  }, [rawParam, fetchId, numericParam, combosStatus]);
+  }, [slug, fetchId, numericParam, combosStatus]);
 
   React.useEffect(() => {
     let mounted = true;
     const controller = new AbortController();
 
-    if (!rawParam) {
+    if (!slug) {
       setState({ status: 'failed', data: null, error: 'Combo not found' });
-    } else if (fetchId == null) {
-      if (
-        numericParam == null &&
-        (combosStatus === 'loading' || combosStatus === 'idle')
-      ) {
-        setState((prev) =>
-          prev.status === 'loading'
-            ? prev
-            : { status: 'loading', data: null, error: null },
-        );
-      } else if (numericParam == null && combosStatus === 'failed') {
-        setState({ status: 'failed', data: null, error: 'Combo not found' });
-      }
     } else {
       setState({ status: 'loading', data: null, error: null });
 
       (async () => {
         try {
-          const res = await api.get(endpoints.combos.byId(fetchId), {
-            signal: controller.signal,
-          });
+          const url = numericParam != null ? endpoints.combos.byId(fetchId) : endpoints.combos.bySlug(slug);
+          const res = await api.get(url, { signal: controller.signal });
           if (!mounted) return;
           setState({ status: 'succeeded', data: res, error: null });
+          // Set page title
+          document.title = res?.title || res?.name || 'Combo Details';
         } catch (err) {
           if (err?.canceled || !mounted) return;
-          if (matchedCombo) {
-            setState({
-              status: 'succeeded',
-              data: matchedCombo,
-              error: null,
-            });
-          } else {
-            setState({
-              status: 'failed',
-              data: null,
-              error: err?.message || 'Failed to load combo',
-            });
+
+          // If combo not found (404), redirect to 404 page
+          if (err?.status === 404 || err?.response?.status === 404) {
+            navigate('/404', { replace: true });
+            return;
           }
+
+          setState({ status: 'failed', data: null, error: err?.message || 'Failed to load combo' });
         }
       })();
     }
@@ -502,7 +493,7 @@ export default function ComboDetails() {
       mounted = false;
       controller.abort();
     };
-  }, [rawParam, fetchId, numericParam, combosStatus, matchedCombo]);
+  }, [slug]);
 
   /* ===== Availability / slots state ===== */
 
@@ -518,30 +509,6 @@ export default function ComboDetails() {
 
   // Hero carousel state
   const [carouselIndex, setCarouselIndex] = React.useState(0);
-  const carouselImages = React.useMemo(() => {
-    const images = [];
-    if (heroImage) images.push({ src: heroImage, alt: 'Snow City Banner', isBanner: true });
-    linkedGallery.items.forEach((item, idx) => {
-      const src = item.image_url || item.url || '';
-      if (src) images.push({ src, alt: item.title || `Gallery ${idx + 1}`, isBanner: false, item, index: idx });
-    });
-    return images;
-  }, [heroImage, linkedGallery.items]);
-
-  const nextCarousel = React.useCallback(() => {
-    setCarouselIndex((prev) => (prev + 1) % carouselImages.length);
-  }, [carouselImages.length]);
-
-  const prevCarousel = React.useCallback(() => {
-    setCarouselIndex((prev) => (prev - 1 + carouselImages.length) % carouselImages.length);
-  }, [carouselImages.length]);
-
-  // Auto-play carousel
-  React.useEffect(() => {
-    if (carouselImages.length <= 1) return;
-    const interval = setInterval(nextCarousel, 5000); // 5 seconds
-    return () => clearInterval(interval);
-  }, [nextCarousel, carouselImages.length]);
 
   const updateDate = React.useCallback((nextDate) => {
     setDate(nextDate);
@@ -587,11 +554,11 @@ export default function ComboDetails() {
   const [slotErr, setSlotErr] = React.useState('');
 
   const loadSlots = React.useCallback(async () => {
-    if (!fetchId) return;
+    if (!state.data?.combo_id) return;
     try {
       setSlotState((s) => ({ ...s, status: 'loading' }));
       setSlotErr('');
-      const out = await api.get(endpoints.combos.slots(fetchId), {
+      const out = await api.get(endpoints.combos.slots(state.data.combo_id), {
         params: date ? { date } : {},
       });
       const list = Array.isArray(out)
@@ -612,14 +579,14 @@ export default function ComboDetails() {
       setSlotErr(e?.message || 'Failed to load slots');
       setSlotState((s) => ({ ...s, status: 'failed', selectedKey: '' }));
     }
-  }, [fetchId, date]);
+  }, [state.data?.combo_id, date]);
 
   React.useEffect(() => {
-    if (fetchId && date) loadSlots();
-  }, [fetchId, date, loadSlots]);
+    if (state.data?.combo_id && date) loadSlots();
+  }, [state.data?.combo_id, date, loadSlots]);
 
   React.useEffect(() => {
-    if (!fetchId) {
+    if (!state.data?.combo_id) {
       setOffers({ status: 'idle', items: [], error: null });
       return () => {};
     }
@@ -628,7 +595,7 @@ export default function ComboDetails() {
     (async () => {
       try {
         const res = await api.get(endpoints.offers.list(), {
-          params: { active: true, target_type: 'combo', target_id: fetchId },
+          params: { active: true, target_type: 'combo', target_id: state.data?.combo_id },
         });
         if (cancelled) return;
         const list = Array.isArray(res?.data)
@@ -649,10 +616,10 @@ export default function ComboDetails() {
     return () => {
       cancelled = true;
     };
-  }, [fetchId]);
+  }, [state.data?.combo_id]);
 
   React.useEffect(() => {
-    if (!fetchId) return undefined;
+    if (!state.data?.combo_id) return undefined;
     let canceled = false;
     setLinkedGallery((s) => ({ ...s, status: 'loading', error: null }));
     (async () => {
@@ -661,7 +628,7 @@ export default function ComboDetails() {
           params: {
             active: true,
             target_type: 'combo',
-            target_ref_id: fetchId,
+            target_ref_id: state.data.combo_id,
             limit: 12,
           },
         });
@@ -681,7 +648,7 @@ export default function ComboDetails() {
     return () => {
       canceled = true;
     };
-  }, [fetchId]);
+  }, [state.data?.combo_id]);
 
   const combo = state.data || matchedCombo;
 
@@ -765,6 +732,31 @@ export default function ComboDetails() {
     secondAttraction,
     isDesktop,
   );
+
+  const carouselImages = React.useMemo(() => {
+    const images = [];
+    if (heroImage) images.push({ src: heroImage, alt: 'Snow City Banner', isBanner: true });
+    linkedGallery.items.forEach((item, idx) => {
+      const src = item.image_url || item.url || '';
+      if (src) images.push({ src, alt: item.title || `Gallery ${idx + 1}`, isBanner: false, item, index: idx });
+    });
+    return images;
+  }, [heroImage, linkedGallery.items]);
+
+  const nextCarousel = React.useCallback(() => {
+    setCarouselIndex((prev) => (prev + 1) % carouselImages.length);
+  }, [carouselImages.length]);
+
+  const prevCarousel = React.useCallback(() => {
+    setCarouselIndex((prev) => (prev - 1 + carouselImages.length) % carouselImages.length);
+  }, [carouselImages.length]);
+
+  // Auto-play carousel
+  React.useEffect(() => {
+    if (carouselImages.length <= 1) return;
+    const interval = setInterval(nextCarousel, 5000); // 5 seconds
+    return () => clearInterval(interval);
+  }, [nextCarousel, carouselImages.length]);
 
   const heroTiles = (normalizedAttractions.length
     ? normalizedAttractions

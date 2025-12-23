@@ -482,10 +482,11 @@ export default function FloatingNavBar() {
                     {topAttractions.map((a, idx) => {
                       const attrId = getAttrId(a);
                       const label = a?.name || a?.title || "Attraction";
+                      const href = a?.slug ? `/${a.slug}` : (attrId ? `/attractions/${attrId}` : '/attractions');
                       return (
                         <Link
                           key={idx}
-                          to={`/attractions/${attrId}`}
+                          to={href}
                           className="block px-4 py-2.5 text-sm text-gray-800 hover:bg-sky-100 rounded-lg transition-all duration-200 font-medium"
                           onClick={() => setMenuOpen(null)}
                         >
@@ -725,7 +726,7 @@ export default function FloatingNavBar() {
                 {topAttractions.slice(0, 8).map((a, idx) => (
                   <Link
                     key={idx}
-                    to={`/attractions/${getAttrId(a)}`}
+                    to={a?.slug ? `/${a.slug}` : `/attractions/${getAttrId(a)}`}
                     className="block py-2 pl-4 text-gray-700 hover:text-black font-medium hover:bg-gray-50 rounded-lg transition-all duration-200"
                     onClick={() => setMobileOpen(false)}
                   >

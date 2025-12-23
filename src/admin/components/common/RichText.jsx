@@ -1,7 +1,7 @@
 import React from 'react';
 import uploadAdminMedia from '../../utils/uploadMedia';
 
-export default function RichText({ value, onChange, placeholder = 'Type here…', height = 260 }) {
+export default function RichText({ value, onChange, placeholder = 'Type here…', height = 260, gallery = [] }) {
   const ref = React.useRef({ Editor: null });
   const quillRef = React.useRef(null);
   const fileInputRef = React.useRef(null);
@@ -60,6 +60,19 @@ export default function RichText({ value, onChange, placeholder = 'Type here…'
       event.target.value = '';
     }
   };
+
+  const insertImageUrl = React.useCallback(async (url) => {
+    try {
+      const quill = quillRef.current?.getEditor?.();
+      if (!quill) return;
+      const range = quill.getSelection(true);
+      const insertAt = range ? range.index : quill.getLength();
+      quill.insertEmbed(insertAt, 'image', url, 'user');
+      quill.setSelection(insertAt + 1);
+    } catch (err) {
+      console.error('Insert image failed', err);
+    }
+  }, []);
 
   const applyWidth = React.useCallback(
     (node, pct) => {
@@ -227,6 +240,21 @@ export default function RichText({ value, onChange, placeholder = 'Type here…'
 
   return (
     <div ref={wrapperRef} className="richtext space-y-2 relative">
+      {Array.isArray(gallery) && gallery.length ? (
+        <div className="rounded-md border p-2 flex gap-2 overflow-x-auto mb-2 bg-white dark:bg-neutral-800">
+          {gallery.map((url, i) => (
+            <button
+              key={`g-${i}`}
+              type="button"
+              onClick={() => insertImageUrl(url)}
+              className="w-20 h-12 shrink-0 rounded-md overflow-hidden border hover:ring-2 hover:ring-blue-500"
+              title="Insert image into editor"
+            >
+              <img src={url} alt={`img-${i}`} className="w-full h-full object-cover" />
+            </button>
+          ))}
+        </div>
+      ) : null}
       <EditorComponent
         ref={quillRef}
         theme="snow"

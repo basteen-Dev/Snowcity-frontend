@@ -278,14 +278,14 @@ const getGalleryMediaUrl = (item, fallback = '') => {
 /* ================= Component ================= */
 
 export default function AttractionDetails() {
-  const { id: idParam } = useParams();
+  const { slug: slugParam } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const attrId = React.useMemo(() => {
-    if (!idParam || idParam === 'undefined' || idParam === 'null') return null;
-    return idParam;
-  }, [idParam]);
+  const slug = React.useMemo(() => {
+    if (!slugParam || slugParam === 'undefined' || slugParam === 'null') return null;
+    return slugParam;
+  }, [slugParam]);
 
   const [details, setDetails] = React.useState({
     status: 'idle',
@@ -353,18 +353,18 @@ export default function AttractionDetails() {
   });
 
   React.useEffect(() => {
-    if (!attrId) {
+    if (!slug) {
       setDetails({
         status: 'failed',
         data: null,
-        error: 'Invalid attraction id',
+        error: 'Invalid attraction slug',
       });
     }
-  }, [attrId]);
+  }, [slug]);
 
   const numericAttrId = React.useMemo(() => {
-    return Number(attrId) || null;
-  }, [attrId]);
+    return details.data?.attraction_id || null;
+  }, [details.data]);
 
   const loadLinkedGallery = React.useCallback((targetId) => {
     if (!targetId) return () => {};
@@ -477,18 +477,27 @@ export default function AttractionDetails() {
   }, [numericAttrId, loadLinkedGallery]);
 
   React.useEffect(() => {
-    if (!attrId) return;
+    if (!slug) return;
     setDetails({ status: 'loading', data: null, error: null });
     const ac = new AbortController();
     (async () => {
       try {
-        const res = await api.get(endpoints.attractions.byId(attrId), {
+        const res = await api.get(endpoints.attractions.bySlug(slug), {
           signal: ac.signal,
         });
         const data = res?.attraction || res || null;
         setDetails({ status: 'succeeded', data, error: null });
+        // Set page title
+        document.title = data?.title || data?.name || 'Attraction Details';
       } catch (err) {
         if (err?.canceled) return;
+        
+        // If attraction not found (404), redirect to 404 page
+        if (err?.status === 404 || err?.response?.status === 404) {
+          navigate('/404', { replace: true });
+          return;
+        }
+        
         setDetails({
           status: 'failed',
           data: null,
@@ -497,15 +506,15 @@ export default function AttractionDetails() {
       }
     })();
     return () => ac.abort();
-  }, [attrId]);
+  }, [slug]);
 
   const fetchSlots = React.useCallback(async () => {
-    if (!attrId || !date) return;
+    if (!numericAttrId || !date) return;
     setSlots((s) => ({ ...s, status: 'loading', error: null, items: [] }));
     const ac = new AbortController();
     try {
       const res = await api.get(endpoints.slots.list(), {
-        params: { attraction_id: attrId, date: toYMD(date) },
+        params: { attraction_id: numericAttrId, date: toYMD(date) },
         signal: ac.signal,
       });
       const list = Array.isArray(res?.data)
@@ -528,19 +537,19 @@ export default function AttractionDetails() {
       });
     }
     return () => ac.abort();
-  }, [attrId, date]);
+  }, [numericAttrId, date]);
 
   React.useEffect(() => {
-    if (attrId && date) {
+    if (numericAttrId && date) {
       setSlotKey('');
       fetchSlots();
     } else {
       setSlots({ status: 'idle', items: [], error: null });
     }
-  }, [attrId, date, fetchSlots]);
+  }, [numericAttrId, date, fetchSlots]);
 
   React.useEffect(() => {
-    if (!attrId || offers.status === 'loading') return;
+    if (!numericAttrId || offers.status === 'loading') return;
     let cancelled = false;
     setOffers((s) => ({ ...s, status: 'loading', error: null }));
     (async () => {
@@ -549,7 +558,7 @@ export default function AttractionDetails() {
           params: {
             active: true,
             target_type: 'attraction',
-            target_id: attrId,
+            target_id: numericAttrId,
           },
         });
         if (cancelled) return;
@@ -571,14 +580,14 @@ export default function AttractionDetails() {
     return () => {
       cancelled = true;
     };
-  }, [attrId, offers.status]);
+  }, [numericAttrId, offers.status]);
 
   const a = details.data;
   const title = a?.name || a?.title || 'Attraction';
 
   // hero image placeholders
-  const placeholderDesktop = `https://picsum.photos/seed/attr${attrId}/1920/800`;
-  const placeholderMobile = `https://picsum.photos/seed/attr${attrId}/800/600`;
+  const placeholderDesktop = `https://picsum.photos/seed/attr${numericAttrId}/1920/800`;
+  const placeholderMobile = `https://picsum.photos/seed/attr${numericAttrId}/800/600`;
 
   const [isDesktop, setIsDesktop] = React.useState(
     typeof window !== 'undefined' ? window.innerWidth >= 1024 : false,

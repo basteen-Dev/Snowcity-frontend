@@ -13,13 +13,15 @@ export default function ImageUploader({
   extra = {},
   accept = 'image/*,video/*,.pdf',
   requiredPerm = null,
-  folder = ''
+  folder = '',
+  multiple = false,
+  onMultipleChange
 }) {
   const inputId = React.useId();
-  const [file, setFile] = React.useState(null);
-  const [fileName, setFileName] = React.useState('');
-  const [preview, setPreview] = React.useState('');
-  const [status, setStatus] = React.useState('idle'); // idle|loading|done|error
+  const [files, setFiles] = React.useState([]);
+  const [fileNames, setFileNames] = React.useState([]);
+  const [previews, setPreviews] = React.useState([]);
+  const [statuses, setStatuses] = React.useState([]);
   const [errMsg, setErrMsg] = React.useState('');
   const canUpload = true;
   const resolvedValue = React.useMemo(() => imgSrc(value || ''), [value]);

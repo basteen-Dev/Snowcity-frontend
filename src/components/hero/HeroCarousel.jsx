@@ -35,7 +35,7 @@ function deriveHref(b) {
 
   const attSlug = b?.attraction_slug || b?.linked_attraction_slug || b?.attraction?.slug;
   const attId = b?.linked_attraction_id || b?.attraction_id || b?.attraction?.id;
-  if (attSlug) return `/attractions/${attSlug}`;
+  if (attSlug) return `/${attSlug}`;
   if (attId) return `/attractions/${attId}`;
 
   const offerSlug = b?.offer_slug || b?.linked_offer_slug;
@@ -43,7 +43,9 @@ function deriveHref(b) {
   if (offerSlug) return `/offers/${offerSlug}`;
   if (offerId) return `/offers/${offerId}`;
 
-  const comboId = b?.combo_id || b?.linked_combo_id;
+  const comboSlug = b?.combo_slug || b?.linked_combo_slug || b?.combo?.slug;
+  const comboId = b?.combo_id || b?.linked_combo_id || b?.combo?.id;
+  if (comboSlug) return `/combo-${comboSlug}`;
   if (comboId) return `/combos/${comboId}`;
 
   return null;

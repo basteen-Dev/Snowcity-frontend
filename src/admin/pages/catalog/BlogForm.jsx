@@ -5,6 +5,7 @@ import ImageUploader from '../../components/common/ImageUploader';
 import RawEditor from '../../components/common/RawEditor';
 import RichText from '../../components/common/RichText';
 import GalleryField from '../../components/common/GalleryField';
+import BulkImageUploader from '../../components/common/BulkImageUploader';
 
 export default function BlogForm() {
   const nav = useNavigate();
@@ -28,6 +29,7 @@ export default function BlogForm() {
     section_type: 'none',
     section_ref_id: null,
     gallery: [],
+    bulk_images: [],
   });
   const [err, setErr] = React.useState('');
   const [saving, setSaving] = React.useState(false);
@@ -88,100 +90,219 @@ ${form.raw_html || ''}
   };
 
   return (
-    <form onSubmit={save} className="space-y-3 max-w-3xl">
-      <div className="text-lg font-semibold">{isEdit ? 'Edit Blog' : 'Create Blog'}</div>
-      {err ? <div className="text-sm text-red-600">{err}</div> : null}
+    <div className="min-h-screen bg-gray-50 dark:bg-neutral-900">
+      <div className="max-w-7xl mx-auto px-4 py-6">
+        {/* Header */}
+        <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-neutral-700 p-6 mb-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100">
+                {isEdit ? 'Edit Blog Post' : 'Create New Blog Post'}
+              </h1>
+              <p className="text-gray-600 dark:text-neutral-400 mt-1">
+                {isEdit ? 'Update your blog post content and settings' : 'Create engaging content for your audience'}
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={preview}
+                className="px-4 py-2 bg-gray-100 dark:bg-neutral-700 text-gray-700 dark:text-neutral-300 rounded-lg hover:bg-gray-200 dark:hover:bg-neutral-600 transition-colors"
+              >
+                Preview
+              </button>
+              <button
+                type="button"
+                onClick={() => nav('/admin/catalog/blogs')}
+                className="px-4 py-2 border border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-neutral-300 rounded-lg hover:bg-gray-50 dark:hover:bg-neutral-700 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={saving}
+                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {saving ? 'Saving...' : 'Save Blog'}
+              </button>
+            </div>
+          </div>
+        </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div>
-          <label className="block text-sm">Title</label>
-          <input className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700"
-            value={form.title ?? ''} onChange={(e) => onChange({ title: e.target.value })} />
-        </div>
-        <div>
-          <label className="block text-sm">Slug</label>
-          <input className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700"
-            value={form.slug ?? ''} onChange={(e) => onChange({ slug: e.target.value })} placeholder="my-blog" />
-        </div>
+        <form onSubmit={save} className="space-y-6">
+          {/* Basic Info */}
+          <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-neutral-700 p-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-neutral-100 mb-4">Basic Information</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">
+                  Title *
+                </label>
+                <input
+                  type="text"
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-neutral-700 dark:text-neutral-100"
+                  value={form.title ?? ''}
+                  onChange={(e) => onChange({ title: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">
+                  Slug *
+                </label>
+                <input
+                  type="text"
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-neutral-700 dark:text-neutral-100"
+                  value={form.slug ?? ''}
+                  onChange={(e) => onChange({ slug: e.target.value })}
+                  placeholder="my-awesome-blog-post"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">
+                  Author
+                </label>
+                <input
+                  type="text"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-neutral-700 dark:text-neutral-100"
+                  value={form.author ?? ''}
+                  onChange={(e) => onChange({ author: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">
+                  Featured Image
+                </label>
+                <ImageUploader
+                  value={form.image_url}
+                  onChange={(url) => onChange({ image_url: url })}
+                  folder="blogs"
+                />
+              </div>
+            </div>
+            <div className="mt-4">
+              <label className="inline-flex items-center">
+                <input
+                  type="checkbox"
+                  checked={!!form.active}
+                  onChange={(e) => onChange({ active: e.target.checked })}
+                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                />
+                <span className="ml-2 text-sm text-gray-700 dark:text-neutral-300">Publish immediately</span>
+              </label>
+            </div>
+          </div>
+
+          {/* Content Editor */}
+          <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-neutral-700 p-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-neutral-100 mb-4">Content</h2>
+            <div className="mb-4">
+              <div className="flex items-center gap-4">
+                <label className="inline-flex items-center">
+                  <input
+                    type="radio"
+                    checked={form.editor_mode === 'rich'}
+                    onChange={() => onChange({ editor_mode: 'rich' })}
+                    className="text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="ml-2 text-sm text-gray-700 dark:text-neutral-300">Rich Text Editor</span>
+                </label>
+                <label className="inline-flex items-center">
+                  <input
+                    type="radio"
+                    checked={form.editor_mode === 'raw'}
+                    onChange={() => onChange({ editor_mode: 'raw' })}
+                    className="text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="ml-2 text-sm text-gray-700 dark:text-neutral-300">HTML/CSS/JS Editor</span>
+                </label>
+              </div>
+            </div>
+
+            {form.editor_mode === 'raw' ? (
+              <RawEditor
+                value={{ raw_html: form.raw_html, raw_css: form.raw_css, raw_js: form.raw_js }}
+                onChange={(v) => onChange(v)}
+              />
+            ) : (
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">
+                    Content
+                  </label>
+                  <RichText
+                    value={form.content || ''}
+                    onChange={(v) => onChange({ content: v })}
+                    gallery={form.bulk_images && form.bulk_images.length ? form.bulk_images : form.gallery}
+                  />
+                </div>
+                <GalleryField
+                  label="Content Gallery"
+                  helper="Upload multiple images to use within your blog post content."
+                  value={form.gallery || []}
+                  onChange={(gallery) => onChange({ gallery })}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Bulk Image Upload */}
+          <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-neutral-700 p-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-neutral-100 mb-4">Bulk Image Upload</h2>
+            <BulkImageUploader
+              label="Upload Multiple Images"
+              value={form.bulk_images || []}
+              onChange={(urls) => onChange({ bulk_images: urls })}
+              folder="blogs"
+              maxFiles={20}
+            />
+            <p className="text-sm text-gray-600 dark:text-neutral-400 mt-2">
+              Upload multiple images at once. These images will be available for use in your content editor.
+            </p>
+          </div>
+
+          {/* SEO Settings */}
+          <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-neutral-700 p-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-neutral-100 mb-4">SEO Settings</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">
+                  Meta Title
+                </label>
+                <input
+                  type="text"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-neutral-700 dark:text-neutral-100"
+                  value={form.meta_title || ''}
+                  onChange={(e) => onChange({ meta_title: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">
+                  Meta Description
+                </label>
+                <input
+                  type="text"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-neutral-700 dark:text-neutral-100"
+                  value={form.meta_description || ''}
+                  onChange={(e) => onChange({ meta_description: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">
+                  Meta Keywords
+                </label>
+                <input
+                  type="text"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-neutral-700 dark:text-neutral-100"
+                  value={form.meta_keywords || ''}
+                  onChange={(e) => onChange({ meta_keywords: e.target.value })}
+                />
+              </div>
+            </div>
+          </div>
+        </form>
       </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div>
-          <label className="block text-sm">Author</label>
-          <input className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700"
-            value={form.author ?? ''} onChange={(e) => onChange({ author: e.target.value })} />
-        </div>
-        <div>
-          <label className="block text-sm">Featured image</label>
-          <ImageUploader value={form.image_url} onChange={(url) => onChange({ image_url: url })} folder="blogs" />
-        </div>
-      </div>
-
-      <label className="inline-flex items-center gap-2 text-sm">
-        <input type="checkbox" checked={!!form.active} onChange={(e) => onChange({ active: e.target.checked })} />
-        Active
-      </label>
-
-      <div className="rounded-lg border dark:border-neutral-800 p-2">
-        <div className="flex items-center gap-3 text-sm">
-          <label className="inline-flex items-center gap-2">
-            <input type="radio" checked={form.editor_mode === 'rich'} onChange={() => onChange({ editor_mode: 'rich' })} />
-            Visual editor
-          </label>
-          <label className="inline-flex items-center gap-2">
-            <input type="radio" checked={form.editor_mode === 'raw'} onChange={() => onChange({ editor_mode: 'raw' })} />
-            Raw (HTML/CSS/JS)
-          </label>
-          <button type="button" className="ml-auto px-3 py-1 rounded-md border text-sm" onClick={preview}>
-            Preview
-          </button>
-        </div>
-      </div>
-
-      {form.editor_mode === 'raw' ? (
-        <RawEditor
-          value={{ raw_html: form.raw_html, raw_css: form.raw_css, raw_js: form.raw_js }}
-          onChange={(v) => onChange(v)}
-        />
-      ) : (
-        <>
-          <label className="block text-sm">Content</label>
-          <RichText value={form.content || ''} onChange={(v) => onChange({ content: v })} />
-          <GalleryField
-            label="Content gallery"
-            helper="Upload multiple inline images to reuse inside your article."
-            value={form.gallery || []}
-            onChange={(gallery) => onChange({ gallery })}
-          />
-        </>
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <div>
-          <label className="block text-sm">Meta title</label>
-          <input className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700"
-            value={form.meta_title || ''} onChange={(e) => onChange({ meta_title: e.target.value })} />
-        </div>
-        <div>
-          <label className="block text-sm">Meta description</label>
-          <input className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700"
-            value={form.meta_description || ''} onChange={(e) => onChange({ meta_description: e.target.value })} />
-        </div>
-        <div>
-          <label className="block text-sm">Meta keywords</label>
-          <input className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700"
-            value={form.meta_keywords || ''} onChange={(e) => onChange({ meta_keywords: e.target.value })} />
-        </div>
-      </div>
-
-      <div className="flex gap-2">
-        <button className="px-3 py-2 rounded-md bg-gray-900 text-white" disabled={saving}>
-          {saving ? 'Saving…' : 'Save'}
-        </button>
-        <button className="px-3 py-2 rounded-md border" type="button" onClick={() => nav('/admin/catalog/blogs')}>
-          Cancel
-        </button>
-      </div>
-    </form>
+    </div>
   );
 }

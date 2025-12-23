@@ -1,5 +1,5 @@
 import React, { Suspense, lazy } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation, useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import Loader from '../components/common/Loader';
 const AdminApp = lazy(() => import('../admin/AdminApp.jsx'));
@@ -38,6 +38,19 @@ const VisitorPages = safeLazy(() => import('../pages/VisitorPages.jsx'), () => <
 const VisitorBlogs = safeLazy(() => import('../pages/VisitorBlogs.jsx'), () => <Placeholder title="Visitor Guide" />);
 const FloatingNavBar = safeLazy(() => import('../components/layout/FloatingNavBar.jsx'), FallbackNav);
 const Footer = safeLazy(() => import('../components/layout/Footer.jsx'), FallbackFooter);
+
+const SlugRouter = () => {
+  const { slug } = useParams();
+  
+  // If slug starts with 'combo-', treat it as a combo slug (remove prefix)
+  if (slug.startsWith('combo-')) {
+    const comboSlug = slug.substring(6); // Remove 'combo-' prefix
+    return <ComboDetails />;
+  }
+  
+  // Otherwise, treat as attraction slug
+  return <AttractionDetails />;
+};
 
 function ScrollToTop() {
   const { pathname, search, hash } = useLocation();
@@ -82,7 +95,6 @@ export default function AppRouter() {
           <Route element={<AppLayout />}>
             <Route index element={<Home />} />
             <Route path="/attractions" element={<Attractions />} />
-            <Route path="/attractions/:id" element={<AttractionDetails />} />
             <Route path="/offers" element={<Offers />} />
             <Route path="/combos" element={<Combos />} />
             <Route path="/combos/:id" element={<ComboDetails />} />
@@ -102,6 +114,11 @@ export default function AppRouter() {
 
             <Route path="/home" element={<Navigate to="/" replace />} />
             <Route path="/blogs/:slug" element={<BlogDetails />} />
+            <Route path="/404" element={<NotFound />} />
+            
+            {/* 👇 Catch-all routes for slugs - combos first, then attractions */}
+            <Route path="/:slug" element={<SlugRouter />} />
+            
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>

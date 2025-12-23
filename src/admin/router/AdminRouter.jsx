@@ -57,6 +57,7 @@ const ComboSlotList = lazy(() => import('../pages/catalog/ComboSlotList.jsx'));
 const ComboSlotForm = lazy(() => import('../pages/catalog/ComboSlotForm.jsx'));
 const ComboSlotBulk = lazy(() => import('../pages/catalog/ComboSlotBulk.jsx'));
 
+const DynamicPricing = lazy(() => import('../pages/DynamicPricing'));
 
 const UsersList = lazy(() => import('../pages/users/UsersList'));
 const UserEdit = lazy(() => import('../pages/users/UserEdit'));
@@ -150,6 +151,7 @@ export default function AdminRouter() {
           <Route path="catalog/offers/new" element={<OfferForm />} />
           <Route path="catalog/offers/:id" element={<OfferForm />} />
 
+          <Route path="catalog/dynamic-pricing" element={<DynamicPricing />} />
 
           <Route path="catalog/coupons" element={<CouponsList />} />
           <Route path="catalog/coupons/new" element={<CouponForm />} />
