@@ -170,11 +170,19 @@ ${form.raw_html || ''}
               >
                 Cancel
               </button>
+              <button
+                type="submit"
+                form="page-form"
+                disabled={saving}
+                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {saving ? 'Saving...' : 'Save Page'}
+              </button>
             </div>
           </div>
         </div>
 
-        <form onSubmit={save}>
+        <form id="page-form" onSubmit={save}>
           {/* Basic Info */}
           <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-neutral-700 p-6">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-neutral-100 mb-4">Basic Information</h2>

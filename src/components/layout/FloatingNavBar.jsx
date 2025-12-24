@@ -555,7 +555,7 @@ export default function FloatingNavBar() {
             <Link to="/contact" className={navLinkClass}>
               Contact Us
             </Link>
-            <Link to="/blogs" className={navLinkClass}>
+            <Link to="/blog" className={navLinkClass}>
               Blogs
             </Link>
 
@@ -791,7 +791,7 @@ export default function FloatingNavBar() {
               📞 Contact Us
             </Link>
             <Link
-              to="/blogs"
+              to="/blog"
               className="block py-3 px-4 text-black hover:text-gray-800 font-semibold transition-all duration-200 rounded-lg hover:bg-gray-100"
               onClick={() => setMobileOpen(false)}
             >

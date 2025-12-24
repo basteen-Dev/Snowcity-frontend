@@ -23,6 +23,10 @@ export default function ImageUploader({
   const [previews, setPreviews] = React.useState([]);
   const [statuses, setStatuses] = React.useState([]);
   const [errMsg, setErrMsg] = React.useState('');
+  const [file, setFile] = React.useState(null);
+  const [preview, setPreview] = React.useState('');
+  const [fileName, setFileName] = React.useState('');
+  const [status, setStatus] = React.useState('idle');
   const canUpload = true;
   const resolvedValue = React.useMemo(() => imgSrc(value || ''), [value]);
 
@@ -186,9 +190,13 @@ export default function ImageUploader({
             ) : (
               <img
                 src={resolvedValue}
-                alt="snowcity"
+                alt="Current media"
                 loading="lazy"
                 className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = '/placeholder-image.png';
+                }}
               />
             )}
           </div>

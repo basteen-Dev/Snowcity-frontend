@@ -2,6 +2,8 @@ import React, { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation, useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import Loader from '../components/common/Loader';
+import api from '../services/apiClient';
+import endpoints from '../services/endpoints';
 const AdminApp = lazy(() => import('../admin/AdminApp.jsx'));
 
 function safeLazy(factory, FallbackComp) {
@@ -48,8 +50,8 @@ const SlugRouter = () => {
     const checkSlug = async () => {
       // Try blog first
       try {
-        const res = await fetch(`/api/blogs/slug/${slug}`);
-        if (res.ok) {
+        const res = await api.get(endpoints.blogs.bySlug(slug));
+        if (res) {
           setContentType('blog');
           setLoading(false);
           return;

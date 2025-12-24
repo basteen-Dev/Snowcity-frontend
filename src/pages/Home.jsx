@@ -379,7 +379,7 @@ export default function Home() {
 
               <div className="mt-12 text-center">
                 <Link
-                  to="/blogs"
+                  to="/blog"
                   className="inline-flex items-center gap-2 rounded-full border-2 border-blue-600 px-8 py-3 text-sm font-semibold text-blue-600 transition-all duration-300 hover:bg-blue-600 hover:text-white"
                 >
                   View All Articles

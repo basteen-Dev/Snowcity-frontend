@@ -64,7 +64,7 @@ export default function BlogCard({ item }) {
 
         <div className="mt-auto">
           <Link
-            to={`/blogs/${slug}`}
+            to={`/${slug}`}
             className="inline-flex items-center text-blue-600 font-semibold hover:text-blue-700"
           >
             Read More

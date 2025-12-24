@@ -19,7 +19,7 @@ export const fetchBlogs = createAsyncThunk(
           : (res?.data && typeof res.data === 'object' && Array.isArray(res.data.data))
             ? res.data.data
             : [];
-      return list;
+      return { items: list, page: params.page || 1, hasMore: list.length >= (params.limit || 12) };
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -28,13 +28,39 @@ export const fetchBlogs = createAsyncThunk(
 
 const blogsSlice = createSlice({
   name: 'blogs',
-  initialState: { items: [], status: 'idle', error: null, lastFetched: null },
-  reducers: {},
+  initialState: { items: [], status: 'idle', error: null, lastFetched: null, currentPage: 0, hasMore: true },
+  reducers: {
+    clearBlogs: (state) => {
+      state.items = [];
+      state.currentPage = 0;
+      state.hasMore = true;
+      state.status = 'idle';
+      state.error = null;
+    }
+  },
   extraReducers: (b) => {
-    b.addCase(fetchBlogs.pending, (s) => { s.status = 'loading'; s.error = null; });
-    b.addCase(fetchBlogs.fulfilled, (s, a) => { s.status = 'succeeded'; s.items = a.payload || []; s.lastFetched = Date.now(); });
-    b.addCase(fetchBlogs.rejected, (s, a) => { s.status = 'failed'; s.error = toErr(a.payload || a.error); });
+    b.addCase(fetchBlogs.pending, (s, a) => {
+      s.status = 'loading';
+      s.error = null;
+    });
+    b.addCase(fetchBlogs.fulfilled, (s, a) => {
+      s.status = 'succeeded';
+      const { items, page, hasMore } = a.payload;
+      if (page === 1) {
+        s.items = items;
+      } else {
+        s.items = [...s.items, ...items];
+      }
+      s.currentPage = page;
+      s.hasMore = hasMore;
+      s.lastFetched = Date.now();
+    });
+    b.addCase(fetchBlogs.rejected, (s, a) => {
+      s.status = 'failed';
+      s.error = toErr(a.payload || a.error);
+    });
   }
 });
 
+export const { clearBlogs } = blogsSlice.actions;
 export default blogsSlice.reducer;
