@@ -21,6 +21,8 @@ export default function Blog() {
         const res = await api.get(endpoints.blogs.bySlug(slug), { signal: ac.signal });
         const blog = res?.blog || res || null;
         setSt({ status: 'succeeded', data: blog, error: null });
+        // Set page title
+        document.title = blog?.title || 'Blog';
       } catch (e) {
         setSt({ status: 'failed', data: null, error: e?.message || 'Failed to load blog' });
       }

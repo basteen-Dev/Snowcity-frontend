@@ -12,7 +12,7 @@ export default function AttractionForm() {
   const [state, setState] = React.useState({
     status: isEdit ? 'loading' : 'idle',
     error: null,
-    form: { title: '', slug: '', image_url: '', desktop_image_url: '', base_price: 0, active: true, description: '' }
+    form: { title: '', slug: '', image_url: '', desktop_image_url: '', base_price: 0, active: true, description: '', meta_title: '' }
   });
 
   React.useEffect(() => {
@@ -31,7 +31,8 @@ export default function AttractionForm() {
             desktop_image_url: a.desktop_image_url || '',
             base_price: a.base_price || 0,
             active: !!a.active,
-            description: a.description || ''
+            description: a.description || '',
+            meta_title: a.meta_title || ''
           }
         }));
       } catch (err) { setState((s) => ({ ...s, status: 'failed', error: err })); }
@@ -62,6 +63,10 @@ export default function AttractionForm() {
         <div>
           <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Slug (URL-friendly identifier)</label>
           <input className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" value={f.slug} onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, slug: e.target.value } }))} placeholder="auto-generated-from-title" />
+        </div>
+        <div>
+          <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Meta Title (SEO title, leave empty to use default)</label>
+          <input className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" value={f.meta_title} onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, meta_title: e.target.value } }))} placeholder="Custom page title for SEO" />
         </div>
         <div>
           <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Base Price</label>

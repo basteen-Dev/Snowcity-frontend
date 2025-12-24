@@ -488,7 +488,7 @@ export default function AttractionDetails() {
         const data = res?.attraction || res || null;
         setDetails({ status: 'succeeded', data, error: null });
         // Set page title
-        document.title = data?.title || data?.name || 'Attraction Details';
+        document.title = data?.meta_title || data?.title || data?.name || 'Attraction Details';
       } catch (err) {
         if (err?.canceled) return;
         

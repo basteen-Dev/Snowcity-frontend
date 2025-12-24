@@ -41,14 +41,40 @@ const Footer = safeLazy(() => import('../components/layout/Footer.jsx'), Fallbac
 
 const SlugRouter = () => {
   const { slug } = useParams();
-  
-  // If slug starts with 'combo-', treat it as a combo slug (remove prefix)
-  if (slug.startsWith('combo-')) {
-    const comboSlug = slug.substring(6); // Remove 'combo-' prefix
-    return <ComboDetails />;
-  }
-  
-  // Otherwise, treat as attraction slug
+  const [contentType, setContentType] = React.useState(null);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const checkSlug = async () => {
+      // Try blog first
+      try {
+        const res = await fetch(`/api/blogs/slug/${slug}`);
+        if (res.ok) {
+          setContentType('blog');
+          setLoading(false);
+          return;
+        }
+      } catch {}
+
+      // Try combo
+      if (slug.startsWith('combo-')) {
+        setContentType('combo');
+        setLoading(false);
+        return;
+      }
+
+      // Default to attraction
+      setContentType('attraction');
+      setLoading(false);
+    };
+
+    checkSlug();
+  }, [slug]);
+
+  if (loading) return <Placeholder title="Loading…" />;
+
+  if (contentType === 'blog') return <BlogDetails />;
+  if (contentType === 'combo') return <ComboDetails />;
   return <AttractionDetails />;
 };
 
@@ -102,7 +128,7 @@ export default function AppRouter() {
             <Route path="/contact" element={<Contact />} />
             <Route path="/booking" element={<Booking />} />
             <Route path="/gallery" element={<Gallery />} />
-            <Route path="/blogs" element={<VisitorBlogs />} />
+            <Route path="/blog" element={<VisitorBlogs />} />
             <Route path="/visitor-guide/pages" element={<VisitorPages />} />
             <Route path="/visitor-guide/blogs" element={<VisitorBlogs />} />
             <Route path="/payment/success" element={<PaymentSuccess />} />
@@ -113,7 +139,6 @@ export default function AppRouter() {
             </Route>
 
             <Route path="/home" element={<Navigate to="/" replace />} />
-            <Route path="/blogs/:slug" element={<BlogDetails />} />
             <Route path="/404" element={<NotFound />} />
             
             {/* 👇 Catch-all routes for slugs - combos first, then attractions */}

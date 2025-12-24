@@ -474,7 +474,7 @@ export default function ComboDetails() {
           if (!mounted) return;
           setState({ status: 'succeeded', data: res, error: null });
           // Set page title
-          document.title = res?.title || res?.name || 'Combo Details';
+          document.title = res?.meta_title || res?.title || res?.name || 'Combo Details';
         } catch (err) {
           if (err?.canceled || !mounted) return;
 

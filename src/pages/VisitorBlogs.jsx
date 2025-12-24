@@ -8,8 +8,8 @@ import { imgSrc } from '../utils/media';
 
 const toBlogUrl = (blog) => {
   if (!blog) return '#';
-  if (blog.slug) return `/blogs/${blog.slug}`;
-  if (blog.blog_id || blog.id) return `/blogs/${blog.blog_id || blog.id}`;
+  if (blog.slug) return `/${blog.slug}`;
+  if (blog.blog_id || blog.id) return `/${blog.blog_id || blog.id}`;
   return '#';
 };
 

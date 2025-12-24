@@ -22,7 +22,8 @@ export default function ComboForm() {
       image_url: '',
       desktop_image_url: '',
       discount_percent: 0,
-      active: true
+      active: true,
+      meta_title: ''
     }
   });
 
@@ -55,7 +56,8 @@ export default function ComboForm() {
           image_url: c.image_url || '',
           desktop_image_url: c.desktop_image_url || '',
           discount_percent: c.discount_percent || 0,
-          active: !!c.active
+          active: !!c.active,
+          meta_title: c.meta_title || ''
         };
         
         // Check if it's legacy format (has attraction_1_id and attraction_2_id)
@@ -283,6 +285,21 @@ export default function ComboForm() {
         />
         <div className="text-xs text-gray-500 dark:text-neutral-400 mt-1">
           Leave empty to auto-generate from name. Used in URLs like /combo-your-slug-here
+        </div>
+      </div>
+
+      {/* Meta Title */}
+      <div className="mb-4">
+        <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Meta Title (SEO title)</label>
+        <input 
+          type="text" 
+          className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" 
+          value={f.meta_title} 
+          onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, meta_title: e.target.value } }))}
+          placeholder="Custom page title for SEO (leave empty to use default)"
+        />
+        <div className="text-xs text-gray-500 dark:text-neutral-400 mt-1">
+          Optional custom title for search engines and browser tabs
         </div>
       </div>
 
