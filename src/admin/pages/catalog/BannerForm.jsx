@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import adminApi from '../../services/adminApi';
 import A from '../../services/adminEndpoints';
 import ImageUploader from '../../components/common/ImageUploader';
+import SaveOverlay from '../../components/common/SaveOverlay';
 
 export default function BannerForm() {
   const { id } = useParams();
@@ -59,8 +60,12 @@ export default function BannerForm() {
     })();
   }, [id, isEdit]);
 
+  const [saving, setSaving] = React.useState(false);
+
   const save = async (e) => {
     e.preventDefault();
+    setSaving(true);
+    setState((s) => ({ ...s, error: null }));
     try {
       const payload = { ...state.form };
       if (!payload.linked_attraction_id) delete payload.linked_attraction_id;
@@ -70,6 +75,8 @@ export default function BannerForm() {
       navigate('/admin/catalog/banners');
     } catch (err) {
       setState((s) => ({ ...s, error: err }));
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -79,7 +86,9 @@ export default function BannerForm() {
   const f = state.form;
 
   return (
-    <form onSubmit={save} className="max-w-2xl bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl p-4">
+    <div className="relative">
+      <SaveOverlay visible={saving} label={isEdit ? 'Updating banner…' : 'Saving banner…'} />
+      <form onSubmit={save} className="max-w-2xl bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl p-4">
       <h1 className="text-xl font-semibold mb-4">{isEdit ? 'Edit' : 'New'} Banner</h1>
       {state.error ? (
         <div className="mb-3 text-sm text-red-600">{state.error?.message || 'Save failed'}</div>
@@ -127,9 +136,10 @@ export default function BannerForm() {
       </div>
 
       <div className="mt-4 flex gap-2">
-        <button type="submit" className="rounded-md bg-gray-900 text-white px-4 py-2 text-sm">Save</button>
+        <button type="submit" disabled={saving} className="rounded-md bg-gray-900 text-white px-4 py-2 text-sm disabled:opacity-60 disabled:cursor-not-allowed">{saving ? 'Saving…' : 'Save'}</button>
         <button type="button" className="rounded-md border px-4 py-2 text-sm" onClick={() => navigate(-1)}>Cancel</button>
       </div>
     </form>
+    </div>
   );
 }

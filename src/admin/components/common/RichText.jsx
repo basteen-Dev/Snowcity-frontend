@@ -1,5 +1,20 @@
 import React from 'react';
 import uploadAdminMedia from '../../utils/uploadMedia';
+import { absoluteUrl } from '../../../utils/media';
+
+const resolveAssetUrl = (url) => {
+  const resolved = absoluteUrl(url);
+  if (resolved) return resolved;
+  if (!url) return '';
+  if (/^https?:\/\//i.test(url)) return url;
+  if (typeof window !== 'undefined' && window.location?.origin) {
+    if (url.startsWith('/')) return `${window.location.origin}${url}`;
+    return `${window.location.origin}/${url}`;
+  }
+  return url;
+};
+
+const FONT_WHITELIST = ['inter', 'poppins', 'roboto', 'serif', 'monospace'];
 
 export default function RichText({ value, onChange, placeholder = 'Type here…', height = 260, gallery = [] }) {
   const ref = React.useRef({ Editor: null });
@@ -14,6 +29,9 @@ export default function RichText({ value, onChange, placeholder = 'Type here…'
   const dragStateRef = React.useRef({ index: null, src: null });
   const [editorReady, setEditorReady] = React.useState(false);
   const [dragHint, setDragHint] = React.useState(null);
+  const fontSetupRef = React.useRef(false);
+  const [imageAlignment, setImageAlignment] = React.useState('inline');
+  const [previewOpen, setPreviewOpen] = React.useState(false);
 
   React.useEffect(() => {
     let mounted = true;
@@ -23,7 +41,17 @@ export default function RichText({ value, onChange, placeholder = 'Type here…'
         const mod2 = await import('react-quill-new');
         try { await import('react-quill-new/dist/quill.snow.css'); } catch {}
         if (mounted) {
-          ref.current.Editor = mod2.default || mod2;
+          const EditorComponent = mod2.default || mod2;
+          const QuillCtor = mod2.Quill || window.Quill;
+          if (QuillCtor && !fontSetupRef.current) {
+            const Font = QuillCtor.import?.('formats/font');
+            if (Font) {
+              Font.whitelist = FONT_WHITELIST;
+              QuillCtor.register(Font, true);
+              fontSetupRef.current = true;
+            }
+          }
+          ref.current.Editor = EditorComponent;
           force();
           setEditorReady(true);
           return;
@@ -52,9 +80,7 @@ export default function RichText({ value, onChange, placeholder = 'Type here…'
       const range = quill.getSelection(true);
       const insertAt = range ? range.index : quill.getLength();
       
-      // Ensure URL is properly formatted
-      const imageUrl = url.startsWith('http') ? url : `${window.location.origin}${url}`;
-      
+      const imageUrl = resolveAssetUrl(url);
       quill.insertEmbed(insertAt, 'image', imageUrl, 'user');
       quill.setSelection(insertAt + 1);
     } catch (err) {
@@ -71,10 +97,8 @@ export default function RichText({ value, onChange, placeholder = 'Type here…'
       if (!quill) return;
       const range = quill.getSelection(true);
       const insertAt = range ? range.index : quill.getLength();
-      
-      // Ensure URL is properly formatted
-      const imageUrl = url.startsWith('http') ? url : `${window.location.origin}${url}`;
-      
+
+      const imageUrl = resolveAssetUrl(url);
       quill.insertEmbed(insertAt, 'image', imageUrl, 'user');
       quill.setSelection(insertAt + 1);
     } catch (err) {
@@ -93,10 +117,43 @@ export default function RichText({ value, onChange, placeholder = 'Type here…'
     []
   );
 
+  const applyAlignment = React.useCallback((node, mode) => {
+    if (!node) return;
+    const align = mode || 'inline';
+    node.dataset.alignMode = align;
+    node.style.float = '';
+    node.style.display = '';
+    node.style.margin = '';
+    node.style.marginLeft = '';
+    node.style.marginRight = '';
+    node.style.marginTop = '';
+    node.style.marginBottom = '';
+
+    if (align === 'left') {
+      node.style.float = 'left';
+      node.style.margin = '0 1rem 1rem 0';
+      node.style.display = 'block';
+    } else if (align === 'right') {
+      node.style.float = 'right';
+      node.style.margin = '0 0 1rem 1rem';
+      node.style.display = 'block';
+    } else if (align === 'center') {
+      node.style.display = 'block';
+      node.style.marginLeft = 'auto';
+      node.style.marginRight = 'auto';
+      node.style.marginBottom = '1rem';
+    } else {
+      node.style.display = 'inline-block';
+      node.style.marginBottom = '1rem';
+    }
+  }, []);
+
   const onSelectionChange = React.useCallback(
     (range) => {
       if (!range) {
         setSelectedImage(null);
+        setImageWidth(100);
+        setImageAlignment('inline');
         return;
       }
       const quill = quillRef.current?.getEditor?.();
@@ -106,8 +163,10 @@ export default function RichText({ value, onChange, placeholder = 'Type here…'
         setSelectedImage(leaf.domNode);
         const pct = Number(leaf.domNode.dataset.widthPct || 100);
         setImageWidth(Number.isFinite(pct) ? pct : 100);
+        setImageAlignment(leaf.domNode.dataset.alignMode || 'inline');
       } else {
         setSelectedImage(null);
+        setImageAlignment('inline');
       }
     },
     []
@@ -117,6 +176,17 @@ export default function RichText({ value, onChange, placeholder = 'Type here…'
     setImageWidth(pct);
     applyWidth(selectedImage, pct);
   };
+
+  const onAlignmentChange = (mode) => {
+    setImageAlignment(mode);
+    applyAlignment(selectedImage, mode);
+  };
+
+  React.useEffect(() => {
+    if (!selectedImage) return;
+    applyWidth(selectedImage, imageWidth);
+    applyAlignment(selectedImage, imageAlignment);
+  }, [selectedImage, imageWidth, imageAlignment, applyWidth, applyAlignment]);
 
   React.useEffect(() => {
     if (!editorReady) return undefined;
@@ -215,6 +285,7 @@ export default function RichText({ value, onChange, placeholder = 'Type here…'
     () => ({
       toolbar: {
         container: [
+          [{ font: FONT_WHITELIST }],
           [{ header: [1, 2, 3, false] }],
           ['bold', 'italic', 'underline', 'strike'],
           [{ color: [] }, { background: [] }],
@@ -271,6 +342,16 @@ export default function RichText({ value, onChange, placeholder = 'Type here…'
           ))}
         </div>
       ) : null}
+      <div className="flex items-center justify-between text-xs text-gray-500">
+        <span>Visual Editor</span>
+        <button
+          type="button"
+          onClick={() => setPreviewOpen((prev) => !prev)}
+          className="px-2 py-1 rounded-md border"
+        >
+          {previewOpen ? 'Hide preview' : 'Show preview'}
+        </button>
+      </div>
       <EditorComponent
         ref={quillRef}
         theme="snow"
@@ -301,7 +382,7 @@ export default function RichText({ value, onChange, placeholder = 'Type here…'
             value={imageWidth}
             onChange={(e) => onWidthChange(Number(e.target.value))}
           />
-          <div className="flex gap-2 text-xs">
+          <div className="flex flex-wrap gap-2 text-xs">
             <button type="button" className="px-2 py-1 rounded-md border" onClick={() => onWidthChange(100)}>
               Reset width
             </button>
@@ -313,6 +394,28 @@ export default function RichText({ value, onChange, placeholder = 'Type here…'
               50%
             </button>
           </div>
+          <div className="text-xs font-medium mt-2">Alignment</div>
+          <div className="flex flex-wrap gap-2 text-xs">
+            {['inline', 'left', 'center', 'right'].map((mode) => (
+              <button
+                key={mode}
+                type="button"
+                className={`px-2 py-1 rounded-md border ${imageAlignment === mode ? 'bg-gray-900 text-white' : ''}`}
+                onClick={() => onAlignmentChange(mode)}
+              >
+                {mode.charAt(0).toUpperCase() + mode.slice(1)}
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
+      {previewOpen ? (
+        <div className="richtext-preview text-sm mt-2">
+          {value ? (
+            <div dangerouslySetInnerHTML={{ __html: value }} />
+          ) : (
+            <div className="text-gray-400 text-xs">Start typing to see a live preview…</div>
+          )}
         </div>
       ) : null}
       {dragHint ? (

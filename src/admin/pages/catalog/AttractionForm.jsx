@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import adminApi from '../../services/adminApi';
 import A from '../../services/adminEndpoints';
 import ImageUploader from '../../components/common/ImageUploader';
+import SaveOverlay from '../../components/common/SaveOverlay';
 
 export default function AttractionForm() {
   const { id } = useParams();
@@ -14,6 +15,7 @@ export default function AttractionForm() {
     error: null,
     form: { title: '', slug: '', image_url: '', desktop_image_url: '', base_price: 0, active: true, description: '', meta_title: '' }
   });
+  const [saving, setSaving] = React.useState(false);
 
   React.useEffect(() => {
     if (!isEdit) return;
@@ -41,11 +43,16 @@ export default function AttractionForm() {
 
   const save = async (e) => {
     e.preventDefault();
+    setSaving(true);
+    setState((s) => ({ ...s, error: null }));
     try {
       if (isEdit) await adminApi.put(A.attractionById(id), state.form);
       else await adminApi.post(A.attractions(), state.form);
       navigate('/admin/catalog/attractions');
     } catch (err) { setState((s) => ({ ...s, error: err })); }
+    finally {
+      setSaving(false);
+    }
   };
 
   if (state.status === 'loading') return <div>Loading…</div>;
@@ -53,8 +60,11 @@ export default function AttractionForm() {
 
   const f = state.form;
   return (
-    <form onSubmit={save} className="max-w-2xl bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl p-4">
+    <div className="relative">
+      <SaveOverlay visible={saving} label={isEdit ? 'Updating attraction…' : 'Saving attraction…'} />
+      <form onSubmit={save} className="max-w-2xl bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl p-4">
       <h1 className="text-xl font-semibold mb-4">{isEdit ? 'Edit' : 'New'} Attraction</h1>
+      {state.error ? <div className="mb-3 text-sm text-red-600">{state.error?.message || 'Save failed'}</div> : null}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div>
           <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Title</label>
@@ -89,9 +99,10 @@ export default function AttractionForm() {
       </div>
 
       <div className="mt-4 flex gap-2">
-        <button type="submit" className="rounded-md bg-gray-900 text-white px-4 py-2 text-sm">Save</button>
+        <button type="submit" disabled={saving} className="rounded-md bg-gray-900 text-white px-4 py-2 text-sm disabled:opacity-60 disabled:cursor-not-allowed">{saving ? 'Saving…' : 'Save'}</button>
         <button type="button" className="rounded-md border px-4 py-2 text-sm" onClick={() => navigate(-1)}>Cancel</button>
       </div>
     </form>
+    </div>
   );
 }

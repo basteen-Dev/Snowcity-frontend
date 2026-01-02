@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import adminApi from '../../services/adminApi';
 import A from '../../services/adminEndpoints';
 import ImageUploader from '../../components/common/ImageUploader';
+import SaveOverlay from '../../components/common/SaveOverlay';
 
 export default function AddonForm() {
   const { id } = useParams();
@@ -14,6 +15,7 @@ export default function AddonForm() {
     error: null,
     form: { title: '', description: '', price: 0, discount_percent: 0, image_url: '', active: true }
   });
+  const [saving, setSaving] = React.useState(false);
 
   React.useEffect(() => {
     if (!isEdit) return;
@@ -35,6 +37,8 @@ export default function AddonForm() {
 
   const save = async (e) => {
     e.preventDefault();
+    setSaving(true);
+    setState((s) => ({ ...s, error: null }));
     try {
       const payload = {
         ...state.form,
@@ -45,6 +49,9 @@ export default function AddonForm() {
       else await adminApi.post(A.addons(), payload);
       navigate('/admin/catalog/addons');
     } catch (err) { setState((s) => ({ ...s, error: err })); }
+    finally {
+      setSaving(false);
+    }
   };
 
   if (state.status === 'loading') return <div>Loading…</div>;
@@ -53,7 +60,9 @@ export default function AddonForm() {
   const f = state.form;
 
   return (
-    <form onSubmit={save} className="max-w-2xl bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl p-4">
+    <div className="relative">
+      <SaveOverlay visible={saving} label={isEdit ? 'Updating addon…' : 'Saving addon…'} />
+      <form onSubmit={save} className="max-w-2xl bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl p-4">
       <h1 className="text-xl font-semibold mb-4">{isEdit ? 'Edit' : 'New'} Addon</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div>
@@ -82,9 +91,10 @@ export default function AddonForm() {
       </div>
 
       <div className="mt-4 flex gap-2">
-        <button type="submit" className="rounded-md bg-gray-900 text-white px-4 py-2 text-sm">Save</button>
+        <button type="submit" disabled={saving} className="rounded-md bg-gray-900 text-white px-4 py-2 text-sm disabled:opacity-60 disabled:cursor-not-allowed">{saving ? 'Saving…' : 'Save'}</button>
         <button type="button" className="rounded-md border px-4 py-2 text-sm" onClick={() => navigate(-1)}>Cancel</button>
       </div>
     </form>
+  </div>
   );
 }

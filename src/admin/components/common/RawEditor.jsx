@@ -1,5 +1,6 @@
 import React from 'react';
 import ImageUploader from './ImageUploader';
+import { absoluteUrl } from '../../../utils/media';
 
 function buildHtmlDoc(html, css, js) {
   return `
@@ -17,11 +18,26 @@ ${html || ''}
 </html>`;
 }
 
+function ensureAbsolute(url) {
+  const resolved = absoluteUrl(url);
+  if (resolved) return resolved;
+  if (!url) return '';
+  if (/^https?:\/\//i.test(url)) return url;
+  if (typeof window !== 'undefined' && window.location?.origin) {
+    if (url.startsWith('/')) return `${window.location.origin}${url}`;
+    return `${window.location.origin}/${url}`;
+  }
+  return url;
+}
+
 export default function RawEditor({ value = {}, onChange }) {
+  const htmlRef = React.useRef(null);
   const [html, setHtml] = React.useState(value.raw_html || '');
   const [css, setCss] = React.useState(value.raw_css || '');
   const [js, setJs] = React.useState(value.raw_js || '');
   const [srcDoc, setSrcDoc] = React.useState('');
+  const [assets, setAssets] = React.useState([]);
+  const [copiedUrl, setCopiedUrl] = React.useState('');
 
   React.useEffect(() => { setHtml(value.raw_html || ''); setCss(value.raw_css || ''); setJs(value.raw_js || ''); }, [value.raw_html, value.raw_css, value.raw_js]);
 
@@ -32,20 +48,106 @@ export default function RawEditor({ value = {}, onChange }) {
     // eslint-disable-next-line
   }, [html, css, js]);
 
+  const rememberAsset = React.useCallback((url) => {
+    if (!url) return;
+    const absolute = ensureAbsolute(url);
+    setAssets((prev) => {
+      const next = [{ id: `${Date.now()}-${Math.random()}`, url, absolute }];
+      for (const entry of prev) {
+        if (entry.absolute === absolute) continue;
+        next.push(entry);
+      }
+      return next.slice(0, 6);
+    });
+  }, []);
+
+  const copyUrl = React.useCallback(async (url) => {
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(url);
+        setCopiedUrl(url);
+        setTimeout(() => setCopiedUrl(''), 2000);
+      }
+    } catch (err) {
+      console.warn('Copy failed', err);
+    }
+  }, []);
+
+  const insertIntoHtml = React.useCallback((snippet) => {
+    setHtml((prev) => {
+      const target = htmlRef.current;
+      if (!target) return `${prev}${snippet}`;
+      const start = target.selectionStart ?? prev.length;
+      const end = target.selectionEnd ?? start;
+      const next = `${prev.slice(0, start)}${snippet}${prev.slice(end)}`;
+      requestAnimationFrame(() => {
+        target.focus();
+        const pos = start + snippet.length;
+        target.selectionStart = pos;
+        target.selectionEnd = pos;
+      });
+      return next;
+    });
+  }, []);
+
+  const handleUploadComplete = React.useCallback((url) => {
+    rememberAsset(url);
+  }, [rememberAsset]);
+
   return (
     <div className="space-y-3">
       <div className="rounded-lg border dark:border-neutral-800 p-3">
         <div className="text-sm font-medium mb-2">Upload assets (images/videos) to use in your HTML/CSS</div>
-        <ImageUploader label="Upload" onChange={(url) => { /* user can paste url into HTML/CSS */ }} />
+        <ImageUploader
+          label="Upload"
+          onChange={(url) => { /* allow manual override */ }}
+          onUploadComplete={handleUploadComplete}
+        />
         <div className="text-xs text-gray-500 mt-1">
           Tip: After uploading, copy the returned URL and reference it in &lt;img src="..."/&gt; or CSS backgrounds.
         </div>
+        {assets.length ? (
+          <div className="mt-3 space-y-2">
+            {assets.map((asset) => (
+              <div key={asset.id} className="rounded-md border border-dashed dark:border-neutral-700 p-2 space-y-1 text-xs">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="flex-1 break-all text-gray-700 dark:text-neutral-200">{asset.absolute}</span>
+                  <button
+                    type="button"
+                    className="px-2 py-1 rounded-md border text-[11px]"
+                    onClick={() => copyUrl(asset.absolute)}
+                  >
+                    {copiedUrl === asset.absolute ? 'Copied!' : 'Copy URL'}
+                  </button>
+                  <button
+                    type="button"
+                    className="px-2 py-1 rounded-md border text-[11px]"
+                    onClick={() => insertIntoHtml(`<img src="${asset.absolute}" alt="" />`)}
+                  >
+                    Insert &lt;img&gt;
+                  </button>
+                </div>
+                <div className="flex flex-wrap gap-2 text-[11px] text-gray-500 dark:text-neutral-400">
+                  <button
+                    type="button"
+                    className="underline"
+                    onClick={() => insertIntoHtml(`style="background-image: url('${asset.absolute}');"`)}
+                  >
+                    Add background snippet
+                  </button>
+                  <span className="opacity-75 break-all">Original: {asset.url}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : null}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
         <div className="rounded-lg border dark:border-neutral-800 p-2">
           <div className="text-xs font-medium mb-1">HTML</div>
           <textarea className="w-full h-64 rounded-md border px-2 py-2 dark:bg-neutral-900 dark:border-neutral-700"
+            ref={htmlRef}
             value={html} onChange={(e) => setHtml(e.target.value)} placeholder="<div>Hello</div>" />
         </div>
         <div className="rounded-lg border dark:border-neutral-800 p-2">

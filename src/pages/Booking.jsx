@@ -5,6 +5,8 @@ import dayjs from 'dayjs';
 import api from '../services/apiClient';
 import endpoints from '../services/endpoints';
 import { imgSrc } from '../utils/media';
+import { prioritizeSnowcityFirst } from '../utils/attractions';
+
 import { getPrice, getBasePrice, getSlotUnitPrice, getSlotBasePrice } from '../utils/pricing';
 import { formatCurrency } from '../utils/formatters';
 import {
@@ -510,6 +512,11 @@ export default function Booking() {
   const [promosLoading, setPromosLoading] = useState(false);
 
   const attractions = attractionsState.items || [];
+  const prioritizedAttractions = useMemo(
+    () => prioritizeSnowcityFirst(attractions),
+    [attractions]
+  );
+
   const combos = combosState.items || [];
 
   const computeBestOffer = useCallback(() => {
@@ -648,93 +655,94 @@ export default function Booking() {
       cancelled = true;
     };
   }, []);
+
   const handleCloseBooking = useCallback(() => {
-  navigate('/');
-}, [navigate]);
+    navigate('/');
+  }, [navigate]);
 
-const [search] = useSearchParams();
-const preselectType = search.get('type');
-const preselectAttrId = search.get('attraction_id');
-const preselectComboId = search.get('combo_id');
-const preselectDate = search.get('date');
-const preselectSlot = search.get('slot');
-const preselectQty = search.get('qty');
-const preselectOpenDrawer = search.get('openDrawer');
+  const [search] = useSearchParams();
+  const preselectType = search.get('type');
+  const preselectAttrId = search.get('attraction_id');
+  const preselectComboId = search.get('combo_id');
+  const preselectDate = search.get('date');
+  const preselectSlot = search.get('slot');
+  const preselectQty = search.get('qty');
+  const preselectOpenDrawer = search.get('openDrawer');
 
-useEffect(() => {
-  if (attractionsState.status === 'idle')
-    dispatch(fetchAttractions({ active: true, limit: 100 }));
-  if (combosState.status === 'idle') dispatch(fetchCombos({ active: true, limit: 100 }));
-  if (addonsState.status === 'idle') dispatch(fetchAddons({ active: true, limit: 100 }));
-}, [dispatch, attractionsState.status, combosState.status, addonsState.status]);
+  useEffect(() => {
+    if (attractionsState.status === 'idle')
+      dispatch(fetchAttractions({ active: true, limit: 100 }));
+    if (combosState.status === 'idle') dispatch(fetchCombos({ active: true, limit: 100 }));
+    if (addonsState.status === 'idle') dispatch(fetchAddons({ active: true, limit: 100 }));
+  }, [dispatch, attractionsState.status, combosState.status, addonsState.status]);
 
-useEffect(() => {
-  if (step === 3 && hasToken) dispatch(setStep(4));
-}, [step, hasToken, dispatch]);
+  useEffect(() => {
+    if (step === 3 && hasToken) dispatch(setStep(4));
+  }, [step, hasToken, dispatch]);
 
-// Hide global footer while on booking page (restore on unmount)
-useEffect(() => {
-  const footer = typeof document !== 'undefined' && document.querySelector('footer');
-  const prevDisplay = footer ? footer.style.display : null;
-  if (footer) footer.style.display = 'none';
-  return () => {
-    if (footer) footer.style.display = prevDisplay || '';
-  };
-}, []);
+  // Hide global footer while on booking page (restore on unmount)
+  useEffect(() => {
+    const footer = typeof document !== 'undefined' && document.querySelector('footer');
+    const prevDisplay = footer ? footer.style.display : null;
+    if (footer) footer.style.display = 'none';
+    return () => {
+      if (footer) footer.style.display = prevDisplay || '';
+    };
+  }, []);
 
-useEffect(() => {
-  if (!preselectAttrId && !preselectComboId) dispatch(resetCart());
-}, [dispatch, preselectAttrId || '', preselectComboId || '']);
+  useEffect(() => {
+    if (!preselectAttrId && !preselectComboId) dispatch(resetCart());
+  }, [dispatch, preselectAttrId || '', preselectComboId || '']);
 
-// Apply pre-selection from query params
-useEffect(() => {
-  const newSelection = {};
+  // Apply pre-selection from query params
+  useEffect(() => {
+    const newSelection = {};
 
-  if (preselectType) newSelection.itemType = preselectType;
+    if (preselectType) newSelection.itemType = preselectType;
 
-  if (preselectAttrId) {
-    const exists = (attractionsState.items || []).some(
-      (a) => String(getAttrId(a)) === String(preselectAttrId),
-    );
-    if (exists) {
-      newSelection.attractionId = String(preselectAttrId);
-      if (!preselectType) newSelection.itemType = 'attraction';
+    if (preselectAttrId) {
+      const exists = (attractionsState.items || []).some(
+        (a) => String(getAttrId(a)) === String(preselectAttrId),
+      );
+      if (exists) {
+        newSelection.attractionId = String(preselectAttrId);
+        if (!preselectType) newSelection.itemType = 'attraction';
+      }
     }
-  }
 
-  if (preselectComboId) {
-    const existsC = (combosState.items || []).some(
-      (c) => String(getComboId(c)) === String(preselectComboId),
-    );
-    if (existsC) {
-      newSelection.comboId = String(preselectComboId);
-      if (!preselectType) newSelection.itemType = 'combo';
+    if (preselectComboId) {
+      const existsC = (combosState.items || []).some(
+        (c) => String(getComboId(c)) === String(preselectComboId),
+      );
+      if (existsC) {
+        newSelection.comboId = String(preselectComboId);
+        if (!preselectType) newSelection.itemType = 'combo';
+      }
     }
-  }
 
-  if (preselectDate) newSelection.date = preselectDate;
-  if (preselectSlot) newSelection.slotKey = preselectSlot;
-  if (preselectQty) newSelection.qty = Math.max(1, Number(preselectQty) || 1);
+    if (preselectDate) newSelection.date = preselectDate;
+    if (preselectSlot) newSelection.slotKey = preselectSlot;
+    if (preselectQty) newSelection.qty = Math.max(1, Number(preselectQty) || 1);
 
-  if (Object.keys(newSelection).length > 0) {
-    setSel((s) => ({ ...s, ...newSelection }));
-  }
-}, [
-  preselectType || '',
-  preselectAttrId || '',
-  preselectComboId || '',
-  preselectDate || '',
-  preselectSlot || '',
-  preselectQty || '',
-  preselectOpenDrawer || '',
-  attractionsState.items || [],
-  combosState.items || [],
-]);
+    if (Object.keys(newSelection).length > 0) {
+      setSel((s) => ({ ...s, ...newSelection }));
+    }
+  }, [
+    preselectType || '',
+    preselectAttrId || '',
+    preselectComboId || '',
+    preselectDate || '',
+    preselectSlot || '',
+    preselectQty || '',
+    preselectOpenDrawer || '',
+    attractionsState.items || [],
+    combosState.items || [],
+  ]);
 
-const fetchSlots = useCallback(async ({ itemType, attractionId, comboId, date }) => {
-  if (!date) return;
-  const key = itemType === 'combo' ? comboId : attractionId;
-  if (!key) return;
+  const fetchSlots = useCallback(async ({ itemType, attractionId, comboId, date }) => {
+    if (!date) return;
+    const key = itemType === 'combo' ? comboId : attractionId;
+    if (!key) return;
 
     setSlots({ status: 'loading', items: [], error: null });
     try {
@@ -1330,23 +1338,8 @@ const fetchSlots = useCallback(async ({ itemType, attractionId, comboId, date })
     const activeTab = sel.itemType;
     const data = useMemo(() => {
       if (activeTab !== 'attraction') return combos;
-      const list = Array.isArray(attractions) ? [...attractions] : [];
-      const score = (item) => {
-        const name = String(item?.name ?? item?.title ?? '').toLowerCase();
-        const normalized = name.replace(/\s+/g, '');
-        if (name.includes('snow city') || normalized.includes('snowcity')) return 0;
-        if (name.includes('mad lab') || normalized.includes('madlab')) return 1;
-        return 2;
-      };
-      list.sort((a, b) => {
-        const sa = score(a);
-        const sb = score(b);
-
-        if (sa !== sb) return sa - sb;
-        return 0;
-      });
-      return list;
-    }, [activeTab, attractions, combos]);
+      return prioritizedAttractions;
+    }, [activeTab, prioritizedAttractions, combos]);
 
     return (
       <div className="space-y-4">

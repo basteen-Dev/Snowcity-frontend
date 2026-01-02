@@ -9,6 +9,7 @@ export default function ImageUploader({
   label = 'Image',
   value,
   onChange,
+  onUploadComplete,
   fieldName = 'file',
   extra = {},
   accept = 'image/*,video/*,.pdf',
@@ -93,6 +94,7 @@ export default function ImageUploader({
       if (!url) throw new Error(res?.message || 'Upload response missing URL');
 
       onChange?.(url);
+      onUploadComplete?.(url);
       setStatus('done');
       clearSelected();
     } catch (err) {

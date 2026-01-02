@@ -6,6 +6,7 @@ import RawEditor from '../../components/common/RawEditor';
 import RichText from '../../components/common/RichText';
 import GalleryField from '../../components/common/GalleryField';
 import BulkImageUploader from '../../components/common/BulkImageUploader';
+import SaveOverlay from '../../components/common/SaveOverlay';
 
 export default function BlogForm() {
   const nav = useNavigate();
@@ -90,7 +91,8 @@ ${form.raw_html || ''}
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-neutral-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-neutral-900 relative">
+      <SaveOverlay visible={saving} label={isEdit ? 'Updating blog…' : 'Saving blog…'} />
       <div className="max-w-7xl mx-auto px-4 py-6">
         {/* Header */}
         <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-neutral-700 p-6 mb-6">
@@ -120,6 +122,7 @@ ${form.raw_html || ''}
               </button>
               <button
                 type="submit"
+                form="blog-form"
                 disabled={saving}
                 className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
@@ -129,7 +132,7 @@ ${form.raw_html || ''}
           </div>
         </div>
 
-        <form onSubmit={save} className="space-y-6">
+        <form id="blog-form" onSubmit={save} className="space-y-6">
           {/* Basic Info */}
           <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-neutral-700 p-6">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-neutral-100 mb-4">Basic Information</h2>

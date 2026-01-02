@@ -6,6 +6,7 @@ import api from "../../services/apiClient";
 import endpoints from "../../services/endpoints";
 import { getAttrId } from "../../utils/ids";
 import Logo from "../../assets/images/Logo.webp";
+import { prioritizeSnowcityFirst } from "../../utils/attractions";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const COUNTRY_CODES = [
@@ -97,7 +98,7 @@ export default function FloatingNavBar() {
 
   const toggleMenu = (key) => setMenuOpen((cur) => (cur === key ? null : key));
 
-  const topAttractions = attractions.slice(0, 12);
+  const topAttractions = prioritizeSnowcityFirst(attractions).slice(0, 12);
   const guidePages = pages.slice(0, 10);
 
   // Prevent background scroll when mobile menu or auth modal is open
@@ -450,7 +451,7 @@ export default function FloatingNavBar() {
       <nav
         ref={navRef}
         data-floating-nav
-        className={`fixed top-0 left-0 right-0 z-30 transition-all duration-300 w-full bg-white border-b border-gray-200`}
+        className={`fixed top-0 left-0 right-0 z-[150] transition-all duration-300 w-full bg-white border-b border-gray-200`}
       >
         {/* ------------------- DESKTOP NAV -------------------- */}
         <div
