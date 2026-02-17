@@ -80,11 +80,11 @@ const endpoints = {
   users: {
     me: () => '/api/users/me',            // GET/PATCH (Auth)
     updateMe: () => '/api/users/me',      // PATCH (Auth)
-    
+
     // My Bookings / Orders
-    myBookings: () => '/api/bookings', // GET (Auth) - Lists Orders
-    myBookingById: (id) => `/api/bookings/${encodeSeg(id)}`, // GET (Auth) - Single Order Details
-    
+    myBookings: () => '/api/user/bookings', // GET (Auth) - Lists Orders
+    myBookingById: (id) => `/api/user/bookings/${encodeSeg(id)}`, // GET (Auth) - Single Order Details
+
     notifications: () => '/api/users/me/notifications' // GET (Auth)
   },
 
@@ -145,20 +145,26 @@ const endpoints = {
 
   // Bookings & Orders (Unified)
   bookings: {
-    list: () => '/api/bookings',                 // GET
-    create: () => '/api/bookings',               // POST (Accepts array)
-    byId: (id) => `/api/bookings/${encodeSeg(id)}`, // GET (Order Receipt)
-    cancel: (id) => `/api/bookings/${encodeSeg(id)}/cancel`, // POST
-    
+    list: () => '/api/user/bookings',                 // GET
+    create: () => '/api/user/bookings',               // POST (Accepts array)
+    byId: (id) => `/api/user/bookings/${encodeSeg(id)}`, // GET (Order Receipt)
+    cancel: (id) => `/api/user/bookings/${encodeSeg(id)}/cancel`, // POST
+
     // Payments specific to an Order
     payphi: {
       initiate: (orderId) =>
-        `/api/bookings/${encodeSeg(orderId)}/pay/payphi/initiate`, // POST
+        `/api/user/bookings/${encodeSeg(orderId)}/pay/payphi/initiate`, // POST
       status: (orderId) =>
-        `/api/bookings/${encodeSeg(orderId)}/pay/payphi/status`    // GET
+        `/api/user/bookings/${encodeSeg(orderId)}/pay/payphi/status`    // GET
+    },
+    phonepe: {
+      initiate: (orderId) =>
+        `/api/user/bookings/${encodeSeg(orderId)}/pay/phonepe/initiate`, // POST
+      status: (orderId) =>
+        `/api/user/bookings/${encodeSeg(orderId)}/pay/phonepe/status`    // GET
     }
   },
-  
+
   // Legacy/Global Payments (if needed, otherwise use bookings.payphi)
   payments: {
     payphi: {

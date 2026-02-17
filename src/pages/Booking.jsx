@@ -11,13 +11,13 @@ import { getPrice, getBasePrice, getSlotUnitPrice, getSlotBasePrice } from '../u
 import { formatCurrency } from '../utils/formatters';
 import {
   X, Clock, ShoppingBag, Check, ChevronRight, Ticket,
-  User, Mail, Phone, ArrowRight, Plus, Minus, Trash2, Edit2, UserPlus, Globe, AlertCircle, ArrowLeft,
+  User, Mail, Phone, ArrowRight, Plus, Minus, Trash2, Edit2, UserPlus, Globe, AlertCircle, ArrowLeft, CreditCard,
 } from 'lucide-react';
 
 import {
   setStep, setContact, setCouponCode,
   sendAuthOtp, verifyAuthOtp, applyCoupon,
-  createBooking, initiatePayPhi,
+  createBooking, initiatePayPhi, initiatePhonePe,
   addCartItem, removeCartItem, resetCart,
   setActiveCartItem,
 } from '../features/bookings/bookingsSlice';
@@ -253,7 +253,7 @@ const isSlotAvailable = (slot, selectedDate) => {
   if (!slot) return true;
   const now = dayjs();
   const selectedDay = dayjs(selectedDate);
-  
+
   // Today: slot must be at least 1 hour from now
   if (selectedDay.format('YYYY-MM-DD') === now.format('YYYY-MM-DD')) {
     const slotTime = slot.start_time || slot.time || slot.startTime;
@@ -295,8 +295,8 @@ const computeOfferDiscount = (offer, totalAmount) => {
   const percentFromOffer =
     Number(
       offer.discount_percent ??
-        offer.discountPercent ??
-        (discountType === 'percent' ? offer.discount_value ?? offer.discountValue : 0),
+      offer.discountPercent ??
+      (discountType === 'percent' ? offer.discount_value ?? offer.discountValue : 0),
     ) || 0;
   const flatValue =
     Number(offer.discount_value ?? offer.discountValue ?? offer.flat_discount ?? 0) || 0;
@@ -320,8 +320,8 @@ const getOfferDisplayDetails = (offer) => {
   const discountText = offer.discount_type === 'percent'
     ? `${offer.discount_percent}% discount`
     : offer.discount_type === 'amount'
-    ? `Save ${formatCurrency(offer.discount_value)}`
-    : 'Special offer';
+      ? `Save ${formatCurrency(offer.discount_value)}`
+      : 'Special offer';
 
   return {
     title: offer.title,
@@ -486,6 +486,7 @@ export default function Booking() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerMode, setDrawerMode] = useState('booking');
   const [detailsMainImage, setDetailsMainImage] = useState(null);
+  const [paymentGateway, setPaymentGateway] = useState('payphi'); // 'payphi' or 'phonepe'
 
   const [state, setState] = useState({
     status: 'idle',
@@ -510,6 +511,10 @@ export default function Booking() {
   const [cartAddons, setCartAddons] = useState(new Map());
   const [availablePromos, setAvailablePromos] = useState([]);
   const [promosLoading, setPromosLoading] = useState(false);
+  const [paymentLoading, setPaymentLoading] = useState(false);
+  const [paymentStartTime, setPaymentStartTime] = useState(null);
+  const [phonepeIframeVisible, setPhonepeIframeVisible] = useState(false);
+  const [phonepeIframeUrl, setPhonepeIframeUrl] = useState('');
 
   const attractions = attractionsState.items || [];
   const prioritizedAttractions = useMemo(
@@ -518,6 +523,16 @@ export default function Booking() {
   );
 
   const combos = combosState.items || [];
+
+  const handlePhoneChange = (e) => {
+    const val = e.target.value.replace(/\D/g, '');
+    if (val.length <= 10) {
+      setPhoneLocal(val);
+      if (contactErrors.phone) {
+        setContactErrors(prev => ({ ...prev, phone: null }));
+      }
+    }
+  };
 
   const computeBestOffer = useCallback(() => {
     if (!Array.isArray(state.offers) || !checkoutItem) return null;
@@ -680,15 +695,27 @@ export default function Booking() {
     if (step === 3 && hasToken) dispatch(setStep(4));
   }, [step, hasToken, dispatch]);
 
-  // Hide global footer while on booking page (restore on unmount)
   useEffect(() => {
-    const footer = typeof document !== 'undefined' && document.querySelector('footer');
-    const prevDisplay = footer ? footer.style.display : null;
-    if (footer) footer.style.display = 'none';
-    return () => {
-      if (footer) footer.style.display = prevDisplay || '';
-    };
-  }, []);
+    const pendingOrderData = localStorage.getItem('pendingOrderData');
+    if (pendingOrderData) {
+      try {
+        const data = JSON.parse(pendingOrderData);
+        console.log(' Found pending order data:', data);
+
+        if (data.email && !contact.email) {
+          dispatch(setContact({ email: data.email }));
+        }
+        if (data.mobile && !contact.phone) {
+          dispatch(setContact({ phone: data.mobile }));
+        }
+
+        localStorage.removeItem('pendingOrderData');
+      } catch (err) {
+        console.error('Error parsing pending order data:', err);
+        localStorage.removeItem('pendingOrderData');
+      }
+    }
+  }, [dispatch, contact.email, contact.phone]);
 
   useEffect(() => {
     if (!preselectAttrId && !preselectComboId) dispatch(resetCart());
@@ -857,10 +884,10 @@ export default function Booking() {
     if (sel.itemType === 'attraction' && selectedAttraction) {
       const fallbackPrice = toAmount(
         getPrice(selectedAttraction) ||
-          selectedAttraction?.price ||
-          selectedAttraction?.base_price ||
-          selectedAttraction?.amount ||
-          0,
+        selectedAttraction?.price ||
+        selectedAttraction?.base_price ||
+        selectedAttraction?.amount ||
+        0,
       );
       const fallbackBasePrice = toAmount(getBasePrice(selectedAttraction) || fallbackPrice);
       const slotPricing = selectedSlot?.pricing || {};
@@ -1033,7 +1060,7 @@ export default function Booking() {
       alert('Please select a date, a time slot, and quantity first.');
       return;
     }
-    
+
     // Check if already in cart (avoid duplicates)
     const item_type = sel.itemType === 'combo' ? 'Combo' : 'Attraction';
     const fingerprint = [
@@ -1042,13 +1069,13 @@ export default function Booking() {
       sel.itemType === 'attraction' ? sel.slotKey || 'na' : sel.slotKey || 'na',
       sel.date || 'na'
     ].join(':');
-    
+
     const alreadyInCart = cartItems.some((item) => item.fingerprint === fingerprint);
-    
+
     if (!alreadyInCart) {
       addSelectionToCart();
     }
-    
+
     // Navigate directly to add-ons/checkout without repeating
     dispatch(setStep(2));
   }, [selectionReady, sel, cartItems, addSelectionToCart, dispatch, hasToken]);
@@ -1078,158 +1105,6 @@ export default function Booking() {
     if (step === 2) dispatch(setStep(1));
     else if (step === 3) dispatch(setStep(2));
     else if (step === 4) dispatch(setStep(hasToken ? 2 : 3));
-  };
-
-  const handleAddonQuantityChange = (addonId, quantity, addon) => {
-    setCartAddons((prev) => {
-      const next = new Map(prev);
-      const itemAddons = next.get(activeItemKey) || new Map();
-
-      if (quantity <= 0) {
-        itemAddons.delete(addonId);
-      } else {
-        itemAddons.set(addonId, {
-          addon_id: addonId,
-          name: getAddonName(addon),
-          price: getAddonPrice(addon),
-          quantity,
-        });
-      }
-
-      next.set(activeItemKey, itemAddons);
-      return next;
-    });
-  };
-
-  const onPlaceOrderAndPay = async () => {
-    if (creating?.status === 'loading') return; // prevent duplicate submits while processing
-    if (!hasToken) {
-      setShowTokenExpiredModal(true);
-      return;
-    }
-    if (!hasCartItems) return;
-
-    try {
-      const couponCode = (coupon?.code || '').trim() || undefined;
-      const offerId = selectedOfferId ? Number(selectedOfferId) : undefined;
-
-      const bookingPayloads = cartItems.map((item) => {
-        const isCombo = item.item_type === 'Combo';
-        const itemAddonsMap = cartAddons.get(item.key) || new Map();
-        const addonsPayload = itemAddonsMap
-          ? Array.from(itemAddonsMap.values())
-              .filter((a) => Number(a.quantity) > 0)
-              .map((a) => ({ addon_id: a.addon_id, quantity: Number(a.quantity) }))
-          : [];
-
-        return {
-          item_type: isCombo ? 'Combo' : 'Attraction',
-          combo_id: isCombo ? item.combo_id : undefined,
-          combo_slot_id: isCombo ? item.combo_slot_id : undefined,
-          attraction_id: !isCombo ? item.attraction_id : undefined,
-          slot_id: !isCombo ? item.slot_id : undefined,
-          booking_date: item.booking_date,
-          quantity: item.quantity,
-          addons: addonsPayload,
-          coupon_code: couponCode,
-          offer_id: offerId,
-        };
-      });
-
-      const created = await dispatch(createBooking(bookingPayloads)).unwrap();
-      const orderId = created?.data?.order_id || created?.order_id;
-      if (!orderId) throw new Error('Order ID missing');
-
-      const email = (contact.email || auth?.user?.email || '').trim();
-      const mobile = normalizePayphiMobile(contact.phone || auth?.user?.phone || '');
-
-      const init = await dispatch(
-        initiatePayPhi({ bookingId: orderId, email, mobile, amount: finalTotal }),
-      ).unwrap();
-      if (init?.redirectUrl) {
-        window.location.assign(init.redirectUrl);
-      } else {
-        alert('Payment initiation failed.');
-      }
-    } catch (err) {
-      console.error('Booking creation error:', err);
-      
-      // Enhanced error handling for authentication issues
-      if (err?.status === 401 || err?.response?.status === 401) {
-        const errorMessage = err?.message || err?.response?.data?.message || '';
-        const requestUrl = err?.config?.url || '';
-        
-        // Check if this is a payment-related endpoint - if so, don't auto-logout
-        const isPaymentEndpoint = /\/(booking-flow|payment|cart|bookings)\//.test(requestUrl);
-        
-        if (!isPaymentEndpoint && (errorMessage.toLowerCase().includes('token revoked') || 
-            errorMessage.toLowerCase().includes('token expired'))) {
-          // Clear any stored auth data and trigger navbar sign-in modal
-          localStorage.removeItem('authToken');
-          localStorage.removeItem('user');
-          dispatch(logout());
-          
-          // Dispatch custom event to open navbar auth modal
-          window.dispatchEvent(new CustomEvent('openAuthModal'));
-          
-          alert('Your session has expired. Please sign in using the navbar to continue booking.');
-        } else {
-          // For payment-related 401 errors or other auth issues, show a gentler message
-          if (isPaymentEndpoint) {
-            console.warn('Payment endpoint returned 401 - not auto-logging out to preserve session');
-            alert('Payment verification is processing. Please check your email for ticket confirmation.');
-          } else {
-            // For other 401 errors, show the token expired modal
-            setShowTokenExpiredModal(true);
-            alert('Authentication failed. Please sign in again.');
-          }
-        }
-      } else {
-        // Show more specific error messages for other failures
-        const errorMsg = err?.message || err?.response?.data?.message || 'Payment failed';
-        alert(`Booking failed: ${errorMsg}`);
-      }
-    }
-  };
-
-  const onRemoveCartItem = (key) => {
-    dispatch(removeCartItem(key));
-    setCartAddons((prev) => {
-      const next = new Map(prev);
-      next.delete(key);
-      return next;
-    });
-    if (editingKey === key) {
-      setEditingKey(null);
-      setSel(createDefaultSelection());
-    }
-  };
-
-  const onEditCartItem = (item) => {
-    const itemType = item.item_type === 'Combo' ? 'combo' : 'attraction';
-    setSel({
-      itemType,
-      attractionId: item.attraction_id ? String(item.attraction_id) : '',
-      comboId: item.combo_id ? String(item.combo_id) : '',
-      date: item.booking_date || todayYMD(),
-      slotKey: '',
-      qty: Number(item.quantity || 1),
-    });
-    setEditingKey(item.key);
-    dispatch(setActiveCartItem(item.key));
-    dispatch(setStep(1));
-    setDrawerOpen(true);
-  };
-
-  /* AUTH handlers */
-  const handlePhoneChange = (e) => {
-    const raw = e.target.value;
-    const digits = raw.replace(/\D/g, '').slice(0, 10);
-    setPhoneLocal(digits);
-    if (digits.length === 10) {
-      setContactErrors((prev) => ({ ...prev, phone: undefined }));
-      dispatch(setContact({ phone: `${countryCode}${digits}` }));
-    }
   };
 
   const sendOTP = async () => {
@@ -1276,11 +1151,11 @@ export default function Booking() {
     )
       .unwrap()
       .then(() => dispatch(setCouponCode(promoInput)))
-      .catch(() => {});
+      .catch(() => { });
   };
 
   const ProgressBar = () => (
-    <div className="flex items-center justify-between mb-0.5 px-4">
+    <div className="flex items-center justify-between mb-0.5 px-3 sm:px-6 w-full sm:w-1/2 mx-auto">
       {[
         { n: 1, l: 'Select', icon: ShoppingBag },
         { n: 2, l: 'Extras', icon: Ticket },
@@ -1296,13 +1171,12 @@ export default function Booking() {
         return (
           <div key={s.n} className="flex flex-col items-center relative z-10 group">
             <div
-              className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 border-2 shadow-sm ${
-                isCurrent
-                  ? 'bg-gradient-to-br from-sky-600 to-sky-700 border-sky-600 text-white scale-110 ring-4 ring-sky-100'
-                  : showCheck
+              className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 border-2 shadow-sm ${isCurrent
+                ? 'bg-gradient-to-br from-sky-600 to-sky-700 border-sky-600 text-white scale-110 ring-4 ring-sky-100'
+                : showCheck
                   ? 'bg-gradient-to-br from-emerald-600 to-emerald-700 border-emerald-600 text-white shadow-md'
                   : 'bg-white border-gray-200 text-gray-300 shadow-sm'
-              }`}
+                }`}
             >
               {showCheck && !isCurrent ? (
                 <Check size={16} strokeWidth={3} />
@@ -1311,13 +1185,12 @@ export default function Booking() {
               )}
             </div>
             <span
-              className={`text-[10px] mt-2 font-bold uppercase tracking-widest ${
-                isCurrent
-                  ? 'text-sky-600'
-                  : showCheck
+              className={`text-[10px] mt-2 font-bold uppercase tracking-widest ${isCurrent
+                ? 'text-sky-600'
+                : showCheck
                   ? 'text-emerald-600'
                   : 'text-gray-400'
-              }`}
+                }`}
             >
               {s.l}
             </span>
@@ -1358,11 +1231,10 @@ export default function Booking() {
                     slotKey: '',
                   }));
                 }}
-                className={`px-6 py-2 text-sm font-semibold rounded-lg capitalize transition-all duration-200 ${
-                  sel.itemType === t
-                    ? 'bg-white text-sky-700 shadow-sm ring-1 ring-black/5'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
+                className={`px-6 py-2 text-sm font-semibold rounded-lg capitalize transition-all duration-200 ${sel.itemType === t
+                  ? 'bg-white text-sky-700 shadow-sm ring-1 ring-black/5'
+                  : 'text-gray-600 hover:text-gray-900'
+                  }`}
               >
                 {t === 'attraction' ? 'Attractions' : 'Combos'}
               </button>
@@ -1386,12 +1258,12 @@ export default function Booking() {
               sel.itemType === 'combo'
                 ? Number(getComboDisplayPrice(item) || 0)
                 : Number(
-                    getPrice(item) ||
-                      item.price ||
-                      item.base_price ||
-                      item.amount ||
-                      0,
-                  );
+                  getPrice(item) ||
+                  item.price ||
+                  item.base_price ||
+                  item.amount ||
+                  0,
+                );
 
             const title =
               sel.itemType === 'attraction'
@@ -1427,11 +1299,10 @@ export default function Booking() {
             return (
               <div
                 key={id}
-                className={`bg-white rounded-3xl shadow-sm border px-4 sm:px-6 py-4 sm:py-5 flex items-center justify-between gap-4 transition-all ${
-                  isSelected
-                    ? 'border-sky-400 shadow-md'
-                    : 'border-gray-100 hover:border-sky-200'
-                }`}
+                className={`bg-white rounded-3xl shadow-sm border px-4 sm:px-6 py-4 sm:py-5 flex items-center justify-between gap-4 transition-all ${isSelected
+                  ? 'border-sky-400 shadow-md'
+                  : 'border-gray-100 hover:border-sky-200'
+                  }`}
               >
                 <div className="flex items-center gap-4 min-w-0 flex-1">
                   <div className="w-28 h-28 rounded-2xl overflow-hidden border border-gray-100 bg-sky-50 shrink-0">
@@ -1450,20 +1321,20 @@ export default function Booking() {
                     <p className="text-xs text-gray-500">
                       Great for families • Flexible slots • Instant confirmation
                     </p>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setSel((prev) => ({
-                                  ...prev,
-                                  itemType: sel.itemType,
-                                  attractionId: sel.itemType === 'attraction' ? String(id) : '',
-                                  comboId: sel.itemType === 'combo' ? String(id) : '',
-                                  slotKey: '',
-                                }));
-                                setDetailsMainImage(image || null);
-                                setDrawerMode('details');
-                                setDrawerOpen(true);
-                              }}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSel((prev) => ({
+                          ...prev,
+                          itemType: sel.itemType,
+                          attractionId: sel.itemType === 'attraction' ? String(id) : '',
+                          comboId: sel.itemType === 'combo' ? String(id) : '',
+                          slotKey: '',
+                        }));
+                        setDetailsMainImage(image || null);
+                        setDrawerMode('details');
+                        setDrawerOpen(true);
+                      }}
                       className="inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-sky-700 hover:text-sky-900 mt-2"
                     >
                       View details
@@ -1484,11 +1355,10 @@ export default function Booking() {
                   <button
                     type="button"
                     onClick={onSelect}
-                    className={`px-6 py-2 rounded-full text-white text-sm font-semibold shadow-md active:scale-[0.98] transition-all ${
-                      isSelected
-                        ? 'bg-sky-700'
-                        : 'bg-sky-600 hover:bg-sky-700'
-                    }`}
+                    className={`px-6 py-2 rounded-full text-white text-sm font-semibold shadow-md active:scale-[0.98] transition-all ${isSelected
+                      ? 'bg-sky-700'
+                      : 'bg-sky-600 hover:bg-sky-700'
+                      }`}
                   >
                     {isSelected ? 'Selected' : 'Select'}
                   </button>
@@ -1527,11 +1397,10 @@ export default function Booking() {
             return (
               <label
                 key={`offer-${id}`}
-                className={`flex items-start gap-3 rounded-2xl border px-3 py-3 cursor-pointer transition-all duration-200 ${
-                  String(selectedOfferId) === id
-                    ? 'border-sky-500 bg-sky-50 shadow-sm'
-                    : 'hover:border-gray-300'
-                }`}
+                className={`flex items-start gap-3 rounded-2xl border px-3 py-3 cursor-pointer transition-all duration-200 ${String(selectedOfferId) === id
+                  ? 'border-sky-500 bg-sky-50 shadow-sm'
+                  : 'hover:border-gray-300'
+                  }`}
               >
                 <input
                   type="radio"
@@ -1614,6 +1483,152 @@ export default function Booking() {
     setDrawerOpen(true);
   };
 
+  const onPlaceOrderAndPay = async () => {
+    if (creating?.status === 'loading' || paymentLoading) return; // prevent duplicate submits while processing
+    if (!hasToken) {
+      setShowTokenExpiredModal(true);
+      return;
+    }
+    if (!hasCartItems) return;
+
+    // Start payment loading with minimum 15 seconds
+    setPaymentLoading(true);
+    setPaymentStartTime(Date.now());
+
+    // Resolve email & mobile: prefer contact form values, fall back to auth user
+    const paymentEmail = (contact?.email || auth?.user?.email || '').trim();
+    const paymentMobile = (contact?.phone || auth?.user?.phone || '').trim();
+
+    if (!paymentEmail || !paymentMobile) {
+      setPaymentLoading(false);
+      setPaymentStartTime(null);
+      alert('Email and mobile number are required for payment. Please complete your contact details.');
+      return;
+    }
+
+
+    try {
+      // Step 1: Create order with proper payload format
+      // Transform cart items to booking payload format
+      const bookingPayloads = cartItems.map((item) => {
+        const bookingItem = {
+          item_type: item.item_type,
+          attraction_id: item.attraction_id,
+          combo_id: item.combo_id,
+          slot_id: item.slot_id,
+          combo_slot_id: item.combo_slot_id,
+          booking_date: item.booking_date,
+          quantity: item.quantity,
+          slot_label: item.slotLabel,
+          slot_start_time: item.slot?.start_time,
+          slot_end_time: item.slot?.end_time,
+        };
+
+        // Add addons if any
+        const itemAddonsMap = cartAddons.get(item.key) || new Map();
+        const addons = Array.from(itemAddonsMap.values())
+          .filter((a) => Number(a.quantity) > 0)
+          .map((a) => ({
+            addon_id: a.addon_id,
+            quantity: Number(a.quantity)
+          }));
+
+        if (addons.length > 0) {
+          bookingItem.addons = addons;
+        }
+
+        return bookingItem;
+      });
+
+      console.log('📦 Creating booking with payload:', bookingPayloads);
+
+      const createResult = await dispatch(createBooking(bookingPayloads)).unwrap();
+      console.log('✅ Booking creation result:', createResult);
+
+      const orderId = createResult?.order_id || createResult?.orderId;
+      console.log('🔢 Order ID extracted:', orderId);
+
+      if (!orderId) {
+        console.error('❌ No order ID in response:', createResult);
+        throw new Error('Failed to create order - no order ID returned');
+      }
+
+      // Step 2: Initiate payment based on selected gateway
+      if (paymentGateway === 'phonepe') {
+        // PhonePe iframe payment
+        const phonepeResult = await dispatch(
+          initiatePhonePe({
+            orderId,
+            email: paymentEmail,
+            mobile: paymentMobile,
+            amount: finalTotal,
+          })
+        ).unwrap();
+
+        console.log('✅ PhonePe payment initiated:', phonepeResult);
+
+        if (phonepeResult.ok && phonepeResult.redirectUrl) {
+          // Show PhonePe iframe
+          setPhonepeIframeUrl(phonepeResult.redirectUrl);
+          setPhonepeIframeVisible(true);
+
+          // Start PhonePe iframe transaction
+          if (window.PhonePeCheckout && window.PhonePeCheckout.transact) {
+            window.PhonePeCheckout.transact({
+              tokenUrl: phonepeResult.redirectUrl,
+              callback: (response) => {
+                console.log('📡 PhonePe iframe callback:', response);
+                setPhonepeIframeVisible(false);
+                setPhonepeIframeUrl('');
+
+                if (response === 'USER_CANCEL') {
+                  // User cancelled payment
+                  alert('Payment was cancelled. You can try again or continue with a different payment method.');
+                } else if (response === 'CONCLUDED') {
+                  // Payment completed - redirect to success page
+                  navigate(`/payment/success?orderId=${orderId}&gateway=phonepe`);
+                } else {
+                  // Unknown response
+                  console.warn('Unknown PhonePe callback response:', response);
+                  alert('Payment status unclear. Please check your email for confirmation.');
+                }
+              },
+              type: 'IFRAME'
+            });
+          } else {
+            console.error('❌ PhonePe checkout script not loaded');
+            alert('Payment system not ready. Please refresh and try again.');
+          }
+        } else {
+          throw new Error(phonepeResult.responseMessage || 'Failed to initiate PhonePe payment');
+        }
+      } else {
+        // PayPhi redirect payment
+        const payphiResult = await dispatch(
+          initiatePayPhi({
+            orderId,
+            email: paymentEmail,
+            mobile: paymentMobile,
+            amount: finalTotal,
+          })
+        ).unwrap();
+
+        if (payphiResult.ok && payphiResult.redirectUrl) {
+          console.log('✅ PayPhi payment initiated, redirecting to:', payphiResult.redirectUrl);
+          window.location.href = payphiResult.redirectUrl;
+        } else {
+          throw new Error(payphiResult.responseMessage || 'Failed to initiate PayPhi payment');
+        }
+      }
+    } catch (err) {
+      console.error('❌ Payment initiation failed:', err);
+      alert(`Payment failed: ${err?.message || err}`);
+    } finally {
+      setPaymentLoading(false);
+      setPaymentStartTime(null);
+    }
+  };
+
   return (
     <>
       {/* Page wrapper: make sure everything sits under navbar; ensure Inter font */}
@@ -1621,16 +1636,16 @@ export default function Booking() {
         {/* steps / body */}
         <div className="max-w-6xl mx-auto px-3 lg:px-0 pb-24 lg:pb-20 pt-20 md:pt-24">
           {/* header + steps - STICKY */}
-          <div className="sticky top-[calc(64px+1px)] z-40 mt-px bg-white/80 backdrop-blur rounded-2xl shadow-sm border border-sky-100">
-            <div className="px-4 md:px-6 pt-3 md:pt-4 pb-2 md:pb-3 border-b border-gray-100 flex items-center justify-between">
+          <div className="sticky top-[calc(64px+1px)] z-40 mt-px bg-white/80 backdrop-blur rounded-2xl shadow-sm border border-sky-100 w-1/2 mx-auto">
+            <div className="px-2 md:px-2 pt-1 md:pt-1 pb-0 md:pb-0 border-b border-gray-100 flex items-center justify-between">
               <h2 className="text-lg md:text-xl font-bold text-gray-900">
                 {step === 1
                   ? 'Select tickets'
                   : step === 2
-                  ? 'Customize Add-ons'
-                  : step === 3
-                  ? 'Verify OTP'
-                  : 'Checkout'}
+                    ? 'Customize Add-ons'
+                    : step === 3
+                      ? 'Verify OTP'
+                      : 'Checkout'}
               </h2>
               <button
                 onClick={handleCloseBooking}
@@ -1656,22 +1671,20 @@ export default function Booking() {
                     <button
                       type="button"
                       onClick={handleToday}
-                      className={`px-4 py-2 rounded-full text-xs sm:text-sm font-medium border transition-colors ${
-                        sel.date === todayYMD()
-                          ? 'bg-sky-600 text-white border-sky-600'
-                          : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
-                      }`}
+                      className={`px-4 py-2 rounded-full text-xs sm:text-sm font-medium border transition-colors ${sel.date === todayYMD()
+                        ? 'bg-sky-600 text-white border-sky-600'
+                        : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
+                        }`}
                     >
                       Today
                     </button>
                     <button
                       type="button"
                       onClick={handleTomorrow}
-                      className={`px-4 py-2 rounded-full text-xs sm:text-sm font-medium border transition-colors ${
-                        sel.date === dayjs().add(1, 'day').format('YYYY-MM-DD')
-                          ? 'bg-sky-600 text-white border-sky-600'
-                          : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
-                      }`}
+                      className={`px-4 py-2 rounded-full text-xs sm:text-sm font-medium border transition-colors ${sel.date === dayjs().add(1, 'day').format('YYYY-MM-DD')
+                        ? 'bg-sky-600 text-white border-sky-600'
+                        : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
+                        }`}
                     >
                       Tomorrow
                     </button>
@@ -1679,11 +1692,10 @@ export default function Booking() {
                       type="button"
                       onClick={onCalendarButtonClick}
                       ref={setCalendarAnchor}
-                      className={`px-4 py-2 rounded-full text-xs sm:text-sm font-medium border transition-colors ${
-                        sel.date && sel.date !== '' && sel.date !== todayYMD() && sel.date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
-                          ? 'bg-sky-600 text-white border-sky-600'
-                          : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
-                      }`}
+                      className={`px-4 py-2 rounded-full text-xs sm:text-sm font-medium border transition-colors ${sel.date && sel.date !== '' && sel.date !== todayYMD() && sel.date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
+                        ? 'bg-sky-600 text-white border-sky-600'
+                        : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
+                        }`}
                     >
                       {sel.date && sel.date !== todayYMD() && sel.date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
                         ? formatDateDisplay(sel.date)
@@ -1729,12 +1741,12 @@ export default function Booking() {
                                   item.meta?.title ||
                                   (item.item_type === 'combo'
                                     ? item.combo?.title ||
-                                      item.combo?.name ||
-                                      item.combo?.combo_name ||
-                                      `Combo #${item.combo_id}`
+                                    item.combo?.name ||
+                                    item.combo?.combo_name ||
+                                    `Combo #${item.combo_id}`
                                     : item.attraction?.title ||
-                                      item.attraction?.name ||
-                                      `Attraction #${item.attraction_id}`)}
+                                    item.attraction?.name ||
+                                    `Attraction #${item.attraction_id}`)}
                               </div>
                               <div className="text-xs text-gray-500 mt-1">
                                 {item.quantity} ticket(s) •{' '}
@@ -1781,11 +1793,10 @@ export default function Booking() {
                         type="button"
                         disabled={!hasCartItems}
                         onClick={handleNext}
-                        className={`w-full flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all active:scale-[0.98] ${
-                          !hasCartItems
-                            ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                            : 'bg-sky-600 text-white shadow-md hover:bg-sky-700 active:scale-[0.98]'
-                        }`}
+                        className={`w-full flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all active:scale-[0.98] ${!hasCartItems
+                          ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                          : 'bg-sky-600 text-white shadow-md hover:bg-sky-700 active:scale-[0.98]'
+                          }`}
                       >
                         <span>Continue</span>
                         <ArrowRight size={18} />
@@ -1806,22 +1817,21 @@ export default function Booking() {
                         <button
                           key={item.key}
                           onClick={() => dispatch(setActiveCartItem(item.key))}
-                          className={`px-4 py-2 rounded-full border text-sm font-medium transition-all ${
-                            item.key === activeItemKey
-                              ? 'bg-sky-600 text-white border-sky-600 shadow-sm'
-                              : 'bg-white text-gray-600 border-gray-200 hover:border-sky-200'
-                          }`}
+                          className={`px-4 py-2 rounded-full border text-sm font-medium transition-all ${item.key === activeItemKey
+                            ? 'bg-sky-600 text-white border-sky-600 shadow-sm'
+                            : 'bg-white text-gray-600 border-gray-200 hover:border-sky-200'
+                            }`}
                         >
                           {item.title ||
                             item.meta?.title ||
                             (item.item_type === 'combo'
                               ? item.combo?.title ||
-                                item.combo?.name ||
-                                item.combo?.combo_name ||
-                                `Combo #${item.combo_id}`
+                              item.combo?.name ||
+                              item.combo?.combo_name ||
+                              `Combo #${item.combo_id}`
                               : item.attraction?.title ||
-                                item.attraction?.name ||
-                                `Attraction #${item.attraction_id}`) ||
+                              item.attraction?.name ||
+                              `Attraction #${item.attraction_id}`) ||
                             'Item'}
                         </button>
                       ))}
@@ -1947,12 +1957,12 @@ export default function Booking() {
                                     item.meta?.title ||
                                     (item.item_type === 'combo'
                                       ? item.combo?.title ||
-                                        item.combo?.name ||
-                                        item.combo?.combo_name ||
-                                        `Combo #${item.combo_id}`
+                                      item.combo?.name ||
+                                      item.combo?.combo_name ||
+                                      `Combo #${item.combo_id}`
                                       : item.attraction?.title ||
-                                        item.attraction?.name ||
-                                        `Attraction #${item.attraction_id}`)}
+                                      item.attraction?.name ||
+                                      `Attraction #${item.attraction_id}`)}
                                 </div>
                                 <div className="text-xs text-gray-500 mt-1">
                                   {item.quantity} ticket(s) • {item.dateLabel || dayjs(item.booking_date).format('D MMMM YYYY') || item.booking_date}{item.slotLabel ? ` • ${item.slotLabel}` : ''}
@@ -1997,11 +2007,10 @@ export default function Booking() {
                         type="button"
                         disabled={!hasCartItems}
                         onClick={handleNext}
-                        className={`w-full flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all active:scale-[0.98] ${
-                          !hasCartItems
-                            ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                            : 'bg-sky-600 text-white shadow-md hover:bg-sky-700 active:scale-[0.98]'
-                        }`}
+                        className={`w-full flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all active:scale-[0.98] ${!hasCartItems
+                          ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                          : 'bg-sky-600 text-white shadow-md hover:bg-sky-700 active:scale-[0.98]'
+                          }`}
                       >
                         <span>Continue</span>
                         <ArrowRight size={18} />
@@ -2056,11 +2065,10 @@ export default function Booking() {
                       <input
                         placeholder="name@example.com"
                         type="email"
-                        className={`w-full pl-11 p-3.5 bg-gray-50 border rounded-xl focus:ring-2 focus:bg-white outline-none transition-all font-medium ${
-                          contactErrors.email
-                            ? 'border-red-300 focus:ring-red-200'
-                            : 'border-gray-200 focus:ring-sky-500'
-                        }`}
+                        className={`w-full pl-11 p-3.5 bg-gray-50 border rounded-xl focus:ring-2 focus:bg-white outline-none transition-all font-medium ${contactErrors.email
+                          ? 'border-red-300 focus:ring-red-200'
+                          : 'border-gray-200 focus:ring-sky-500'
+                          }`}
                         value={contact.email}
                         onChange={(e) => {
                           dispatch(setContact({ email: e.target.value }));
@@ -2111,11 +2119,10 @@ export default function Booking() {
                           placeholder="98765 43210"
                           type="tel"
                           maxLength={10}
-                          className={`w-full pl-11 p-3.5 bg-gray-50 border rounded-xl focus:ring-2 focus:bg-white outline-none transition-all font-medium tracking-wide ${
-                            contactErrors.phone
-                              ? 'border-red-300 focus:ring-red-200'
-                              : 'border-gray-200 focus:ring-sky-500'
-                          }`}
+                          className={`w-full pl-11 p-3.5 bg-gray-50 border rounded-xl focus:ring-2 focus:bg-white outline-none transition-all font-medium tracking-wide ${contactErrors.phone
+                            ? 'border-red-300 focus:ring-red-200'
+                            : 'border-gray-200 focus:ring-sky-500'
+                            }`}
                           value={phoneLocal}
                           onChange={handlePhoneChange}
                         />
@@ -2212,6 +2219,122 @@ export default function Booking() {
             {step === 4 && (
               <div className="space-y-6 max-w-lg mx-auto animate-in fade-in slide-in-from-right-8 duration-300 pb-20">
                 <OfferSelector />
+
+                {/* Payment Gateway Selection */}
+                <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-bold text-gray-900 text-lg flex items-center gap-2">
+                      <CreditCard className="text-sky-600" size={20} />
+                      Select Payment Method
+                    </h3>
+                    <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">Secure Payment</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* PayPhi Option */}
+                    <label
+                      className={`relative flex flex-col p-5 rounded-xl border-2 cursor-pointer transition-all duration-200 ${paymentGateway === 'payphi'
+                        ? 'border-sky-600 bg-gradient-to-br from-sky-50 to-blue-50 shadow-md ring-2 ring-sky-200'
+                        : 'border-gray-200 bg-white hover:border-sky-300 hover:shadow-sm'
+                        }`}
+                    >
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${paymentGateway === 'payphi'
+                            ? 'border-sky-600 bg-sky-600'
+                            : 'border-gray-300 bg-white'
+                            }`}>
+                            {paymentGateway === 'payphi' && (
+                              <Check size={12} className="text-white" strokeWidth={3} />
+                            )}
+                          </div>
+                          <input
+                            type="radio"
+                            name="paymentGateway"
+                            value="payphi"
+                            checked={paymentGateway === 'payphi'}
+                            onChange={() => setPaymentGateway('payphi')}
+                            className="sr-only"
+                          />
+                          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-sm">
+                            <CreditCard size={20} className="text-white" />
+                          </div>
+                        </div>
+                        {paymentGateway === 'payphi' && (
+                          <span className="text-xs font-semibold text-sky-700 bg-sky-100 px-2 py-1 rounded-full">
+                            Selected
+                          </span>
+                        )}
+                      </div>
+                      <div className="ml-8">
+                        <p className="font-bold text-gray-900 text-base mb-1">PayPhi</p>
+                        <p className="text-xs text-gray-600 mb-2">All payment methods accepted</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-medium">Cards</span>
+                          <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-medium">UPI</span>
+                          <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-medium">Netbanking</span>
+                        </div>
+                      </div>
+                    </label>
+
+                    {/* PhonePe Option */}
+                    <label
+                      className={`relative flex flex-col p-5 rounded-xl border-2 cursor-pointer transition-all duration-200 ${paymentGateway === 'phonepe'
+                        ? 'border-purple-600 bg-gradient-to-br from-purple-50 to-indigo-50 shadow-md ring-2 ring-purple-200'
+                        : 'border-gray-200 bg-white hover:border-purple-300 hover:shadow-sm'
+                        }`}
+                    >
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${paymentGateway === 'phonepe'
+                            ? 'border-purple-600 bg-purple-600'
+                            : 'border-gray-300 bg-white'
+                            }`}>
+                            {paymentGateway === 'phonepe' && (
+                              <Check size={12} className="text-white" strokeWidth={3} />
+                            )}
+                          </div>
+                          <input
+                            type="radio"
+                            name="paymentGateway"
+                            value="phonepe"
+                            checked={paymentGateway === 'phonepe'}
+                            onChange={() => setPaymentGateway('phonepe')}
+                            className="sr-only"
+                          />
+                          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center shadow-sm">
+                            <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5zm0 18c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z" />
+                            </svg>
+                          </div>
+                        </div>
+                        {paymentGateway === 'phonepe' && (
+                          <span className="text-xs font-semibold text-purple-700 bg-purple-100 px-2 py-1 rounded-full">
+                            Selected
+                          </span>
+                        )}
+                      </div>
+                      <div className="ml-8">
+                        <p className="font-bold text-gray-900 text-base mb-1">PhonePe</p>
+                        <p className="text-xs text-gray-600 mb-2">Fast & secure payments</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-medium">UPI</span>
+                          <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-medium">Wallet</span>
+                          <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-medium">Cards</span>
+                        </div>
+                      </div>
+                    </label>
+                  </div>
+
+                  {/* Security Badge */}
+                  <div className="flex items-center justify-center gap-2 pt-2 border-t border-gray-100">
+                    <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    <span className="text-xs text-gray-600 font-medium">256-bit SSL Encrypted Payment</span>
+                  </div>
+                </div>
+
                 <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
                   <h3 className="font-bold text-gray-900 mb-4 text-lg flex items-center gap-2">
                     <ShoppingBag className="text-sky-600" size={20} />
@@ -2245,7 +2368,7 @@ export default function Booking() {
                           {getOfferSummary(selectedOffer)}
                           {selectedOffer.rule_type === 'buy_x_get_y' && selectedOffer.buy_qty && selectedOffer.get_qty && (
                             <div className="mt-1">
-                              Buy {selectedOffer.buy_qty} Get {selectedOffer.get_qty} 
+                              Buy {selectedOffer.buy_qty} Get {selectedOffer.get_qty}
                               {selectedOffer.get_discount_type === 'percent' && selectedOffer.get_discount_value && (
                                 <span> ({selectedOffer.get_discount_value}% off)</span>
                               )}
@@ -2276,12 +2399,12 @@ export default function Booking() {
                                 item.meta?.title ||
                                 (item.item_type === 'combo'
                                   ? item.combo?.title ||
-                                    item.combo?.name ||
-                                    item.combo?.combo_name ||
-                                    `Combo #${item.combo_id}`
+                                  item.combo?.name ||
+                                  item.combo?.combo_name ||
+                                  `Combo #${item.combo_id}`
                                   : item.attraction?.title ||
-                                    item.attraction?.name ||
-                                    `Attraction #${item.attraction_id}`)}
+                                  item.attraction?.name ||
+                                  `Attraction #${item.attraction_id}`)}
                               <div className="text-xs text-gray-400 mt-0.5">
                                 {(item.dateLabel ||
                                   dayjs(item.booking_date).format('D MMMM YYYY') ||
@@ -2416,33 +2539,37 @@ export default function Booking() {
                   onClick={step === 4 ? onPlaceOrderAndPay : handleNext}
                   disabled={
                     step === 4
-                      ? creating?.status === 'loading' || !hasCartItems
+                      ? creating?.status === 'loading' || paymentLoading || !hasCartItems
                       : step === 3
-                      ? !otp.verified
-                      : step === 2
-                      ? !hasCartItems
-                      : !hasCartItems && !selectionReady
+                        ? !otp.verified
+                        : step === 2
+                          ? !hasCartItems
+                          : !hasCartItems && !selectionReady
                   }
-                  className={`ml-auto inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all active:scale-[0.98] ${
-                    (step === 4
-                      ? creating?.status === 'loading' || !hasCartItems
-                      : step === 3
+                  className={`ml-auto inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all active:scale-[0.98] ${(step === 4
+                    ? creating?.status === 'loading' || paymentLoading || !hasCartItems
+                    : step === 3
                       ? !otp.verified
                       : step === 2
-                      ? !hasCartItems
-                      : !hasCartItems && !selectionReady)
-                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                      : 'bg-sky-600 text-white shadow-md hover:bg-sky-700'
-                  }`}
+                        ? !hasCartItems
+                        : !hasCartItems && !selectionReady)
+                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    : 'bg-sky-600 text-white shadow-md hover:bg-sky-700'
+                    }`}
                 >
                   <span>
                     {step === 4
-                      ? `Pay ₹${finalTotal}`
+                      ? paymentLoading
+                        ? 'Processing Payment...'
+                        : `Pay ₹${finalTotal}`
                       : step === 3
-                      ? 'Continue'
-                      : 'Next'}
+                        ? 'Continue'
+                        : 'Next'}
                   </span>
-                  <ArrowRight size={16} />
+                  {step === 4 && paymentLoading && (
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                  )}
+                  {step !== 4 || !paymentLoading ? <ArrowRight size={16} /> : null}
                 </button>
               </div>
             </div>
@@ -2450,7 +2577,7 @@ export default function Booking() {
 
           {/* Details drawer: mobile bottom-sheet & desktop right-side drawer */}
           {drawerOpen && selectedMeta.title && (
-            <div className="fixed inset-0 z-50 flex justify-end items-end md:items-stretch bg-black/40 backdrop-blur-[2px] md:bg-black/20">
+            <div className="fixed inset-0 z-[160] flex justify-end items-end md:items-stretch bg-black/40 backdrop-blur-[2px] md:bg-black/20">
               <div className="flex-1 hidden md:block" onClick={() => setDrawerOpen(false)} />
               <div className="w-full md:w-1/3 bg-white rounded-t-3xl md:rounded-l-3xl shadow-2xl flex flex-col transform translate-y-0 transition-all h-[66vh] md:h-screen max-h-[66vh] md:max-h-screen md:mt-0">
                 <div className="md:hidden flex justify-center pt-2 pb-1">
@@ -2499,14 +2626,14 @@ export default function Booking() {
                           const desc =
                             sel.itemType === 'combo'
                               ? selectedCombo?.description ||
-                                selectedCombo?.short_description ||
-                                selectedCombo?.summary ||
-                                ''
+                              selectedCombo?.short_description ||
+                              selectedCombo?.summary ||
+                              ''
                               : selectedAttraction?.description ||
-                                selectedAttraction?.short_description ||
-                                selectedAttraction?.summary ||
-                                selectedAttraction?.about ||
-                                '';
+                              selectedAttraction?.short_description ||
+                              selectedAttraction?.summary ||
+                              selectedAttraction?.about ||
+                              '';
                           return (desc || '').split('\n').map((line, i) => (
                             <p key={i} className="mb-2">
                               {line}
@@ -2535,36 +2662,33 @@ export default function Booking() {
                           <button
                             type="button"
                             onClick={handleToday}
-                            className={`px-4 py-2 rounded-full text-xs font-medium border transition-colors ${
-                              sel.date === todayYMD()
-                                ? 'bg-sky-600 text-white border-sky-600'
-                                : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
-                            }`}
+                            className={`px-4 py-2 rounded-full text-xs font-medium border transition-colors ${sel.date === todayYMD()
+                              ? 'bg-sky-600 text-white border-sky-600'
+                              : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
+                              }`}
                           >
                             Today
                           </button>
                           <button
                             type="button"
                             onClick={handleTomorrow}
-                            className={`px-4 py-2 rounded-full text-xs font-medium border transition-colors ${
-                              sel.date === dayjs().add(1, 'day').format('YYYY-MM-DD')
-                                ? 'bg-sky-600 text-white border-sky-600'
-                                : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
-                            }`}
+                            className={`px-4 py-2 rounded-full text-xs font-medium border transition-colors ${sel.date === dayjs().add(1, 'day').format('YYYY-MM-DD')
+                              ? 'bg-sky-600 text-white border-sky-600'
+                              : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
+                              }`}
                           >
                             Tomorrow
                           </button>
                           <button
                             type="button"
                             onClick={onCalendarButtonClick}
-                            className={`px-4 py-2 rounded-full text-xs font-medium border transition-colors ${
-                              sel.date &&
+                            className={`px-4 py-2 rounded-full text-xs font-medium border transition-colors ${sel.date &&
                               sel.date !== '' &&
                               sel.date !== todayYMD() &&
                               sel.date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
-                                ? 'bg-sky-600 text-white border-sky-600'
-                                : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
-                            }`}
+                              ? 'bg-sky-600 text-white border-sky-600'
+                              : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
+                              }`}
                           >
                             {formatDateDisplay(sel.date)}
                           </button>
@@ -2617,8 +2741,8 @@ export default function Booking() {
                                       {!hasCapacity
                                         ? '(Full)'
                                         : !isAvailable
-                                        ? '(Not Available)'
-                                        : ''}
+                                          ? '(Not Available)'
+                                          : ''}
                                     </option>
                                   );
                                 })}
@@ -2690,30 +2814,89 @@ export default function Booking() {
             </div>
           )}
 
-      {/* Token Expired Modal */}
+          {/* Token Expired Modal */}
 
-      {showTokenExpiredModal && (
-        <TokenExpiredModal
-          onClose={() => setShowTokenExpiredModal(false)}
-          onSignIn={() => {
-            setShowTokenExpiredModal(false);
-            dispatch(setStep(3));
-          }}
-          onContinueAsGuest={() => {
-            setShowTokenExpiredModal(false);
-            dispatch(setStep(3));
-          }}
-        />
-      )}
+          {showTokenExpiredModal && (
+            <TokenExpiredModal
+              onClose={() => setShowTokenExpiredModal(false)}
+              onSignIn={() => {
+                setShowTokenExpiredModal(false);
+                dispatch(setStep(3));
+              }}
+              onContinueAsGuest={() => {
+                setShowTokenExpiredModal(false);
+                dispatch(setStep(3));
+              }}
+            />
+          )}
+
+          {/* PhonePe Iframe Overlay */}
+          {phonepeIframeVisible && (
+            <div className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl h-[80vh] max-h-[600px] flex flex-col">
+                <div className="flex items-center justify-between p-4 border-b border-gray-200">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                      <svg className="w-5 h-5 text-purple-600" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 11 5.16-1.26 9-6.45 9-12V7l-10-5zm0 18c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-900">Complete Payment</h3>
+                      <p className="text-sm text-gray-600">Secure payment powered by PhonePe</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setPhonepeIframeVisible(false);
+                      setPhonepeIframeUrl('');
+                      if (window.PhonePeCheckout && window.PhonePeCheckout.closePage) {
+                        window.PhonePeCheckout.closePage();
+                      }
+                    }}
+                    className="p-2 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+                <div className="flex-1 p-4">
+                  {phonepeIframeUrl ? (
+                    <iframe
+                      src={phonepeIframeUrl}
+                      className="w-full h-full rounded-xl border border-gray-200"
+                      title="PhonePe Payment"
+                      allow="payment"
+                      sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation"
+                    />
+                  ) : (
+                    <div className="w-full h-full rounded-xl bg-gray-50 border border-gray-200 flex items-center justify-center">
+                      <div className="text-center">
+                        <div className="animate-spin rounded-full h-8 w-8 border-2 border-purple-600 border-t-transparent mx-auto mb-4" />
+                        <p className="text-gray-600">Loading payment page...</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <div className="p-4 border-t border-gray-200 bg-gray-50 rounded-b-2xl">
+                  <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
+                    <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    <span>Secure payment processing • 256-bit SSL encryption</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Custom Calendar Popup */}
           {showCalendar && (
-            <div 
+            <div
               className="fixed inset-0 z-[150] flex"
               onClick={() => setShowCalendar(false)}
             >
               <div className="flex-1" />
-              <div 
+              <div
                 className="absolute bg-white rounded-2xl shadow-2xl border border-gray-200 p-4 w-80 max-h-[70vh] overflow-y-auto"
                 style={{
                   top: calendarAnchorRect ? `${calendarAnchorRect.top}px` : '50%',
@@ -2731,7 +2914,7 @@ export default function Booking() {
                     <X size={18} />
                   </button>
                 </div>
-                
+
                 <div className="space-y-3">
                   {/* Generate calendar for next 3 months */}
                   {[0, 1, 2].map((monthOffset) => {
@@ -2741,7 +2924,7 @@ export default function Booking() {
                     const startDay = monthStart.day();
                     const daysInMonth = monthEnd.date();
                     const today = dayjs();
-                    
+
                     return (
                       <div key={monthOffset} className="border border-gray-100 rounded-xl p-3 bg-white">
                         <h4 className="text-sm font-semibold text-gray-700 mb-3">
@@ -2764,7 +2947,7 @@ export default function Booking() {
                             const isPast = date.isBefore(today, 'day');
                             const isSelected = sel.date === dateStr;
                             const isToday = date.isSame(today, 'day');
-                            
+
                             return (
                               <button
                                 key={i}
@@ -2790,8 +2973,8 @@ export default function Booking() {
               </div>
             </div>
           )}
-    </div>
-  </div>
-</>
-);
+        </div>
+      </div>
+    </>
+  );
 }

@@ -5,6 +5,9 @@ import { useSelector } from 'react-redux';
 
 import AdminLayout from '../components/layout/AdminLayout';
 import Login from '../pages/Login';
+import ForgotPassword from '../pages/ForgotPassword';
+import ResetPassword from '../pages/ResetPassword';
+import AdminProfile from '../pages/account/AdminProfile';
 
 
 const AdminsList = lazy(() => import('../pages/admins/AdminsList.jsx'));
@@ -99,8 +102,10 @@ export default function AdminRouter() {
   // All paths here are relative to /admin.
   return (
     <Routes>
-      {/* Public admin auth route: /admin/login */}
+      {/* Public admin auth routes */}
       <Route path="login" element={<Login />} />
+      <Route path="forgot-password" element={<ForgotPassword />} />
+      <Route path="reset-password" element={<ResetPassword />} />
 
       {/* Protected admin area (everything under /admin/*) */}
       <Route
@@ -115,6 +120,9 @@ export default function AdminRouter() {
         <Route element={<SuspenseOutlet />}>
           {/* Dashboard (index) */}
           <Route index element={<Dashboard />} />
+
+          {/* Profile */}
+          <Route path="profile" element={<AdminProfile />} />
 
           {/* Analytics */}
           <Route path="analytics" element={<SuspenseOutlet />}>

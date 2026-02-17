@@ -76,6 +76,53 @@ const normalizePayphiInitiateResponse = (payload, bookingId) => {
   };
 };
 
+const normalizePhonePeInitiateResponse = (payload, bookingId) => {
+  const response = (payload && typeof payload === 'object' && payload.response) || payload?.raw || {};
+
+  const rawCode =
+    payload?.code ??
+    response?.code ??
+    payload?.responseCode ??
+    response?.responseCode ??
+    null;
+  const responseCode = rawCode ? String(rawCode).toUpperCase() : null;
+
+  const responseMessage =
+    payload?.message ??
+    response?.message ??
+    payload?.responseMessage ??
+    response?.responseMessage ??
+    null;
+
+  const merchantTransactionId =
+    payload?.merchantTransactionId ??
+    payload?.transactionId ??
+    response?.merchantTransactionId ??
+    response?.transactionId ??
+    null;
+
+  let redirectUrl =
+    payload?.redirectUrl ??
+    payload?.redirectURL ??
+    payload?.data?.instrumentResponse?.redirectInfo?.url ??
+    response?.redirectUrl ??
+    response?.redirectURL ??
+    null;
+
+  const ok = payload?.success === true || responseCode === 'PAYMENT_INITIATED';
+
+  return {
+    ...payload,
+    bookingId, // This is effectively the Order ID now
+    responseCode,
+    responseMessage,
+    merchantTransactionId,
+    redirectUrl,
+    ok
+  };
+};
+
+
 // --- HELPER: Extract ID from various casing possibilities ---
 const getVal = (obj, keys) => {
   for (const k of keys) {
@@ -87,7 +134,7 @@ const getVal = (obj, keys) => {
 // --- FIX: Strict Whitelisting to prevent DB Constraint Violations ---
 const normalizeBookingCreatePayload = (p = {}) => {
   console.log('🔍 DEBUG normalizeBookingCreatePayload input:', p);
-  
+
   // 1. Determine Type
   const rawType = p.item_type || p.itemType || '';
   const hasComboId = !!getVal(p, ['combo_id', 'comboId']);
@@ -109,7 +156,7 @@ const normalizeBookingCreatePayload = (p = {}) => {
     slot_start_time: getVal(p, ['slot'])?.start_time,
     slot_end_time: getVal(p, ['slot'])?.end_time,
   };
-  
+
   console.log('🔍 DEBUG extracted slot timing:', {
     slot_label: clean.slot_label,
     slot_start_time: clean.slot_start_time,
@@ -122,7 +169,7 @@ const normalizeBookingCreatePayload = (p = {}) => {
     // STRICTLY SET ATTRACTION FIELDS TO NULL
     clean.attraction_id = null;
     clean.slot_id = null;
-    
+
     // GET COMBO FIELDS
     clean.combo_id = getVal(p, ['combo_id', 'comboId']);
     clean.combo_slot_id = getVal(p, ['combo_slot_id', 'comboSlotId']);
@@ -178,6 +225,7 @@ const createInitialState = () => ({
   creating: { status: 'idle', booking: null, booking_id: null, order_id: null, booking_ref: null, error: null },
 
   payphi: { status: 'idle', redirectUrl: null, tranCtx: null, response: null, error: null },
+  phonepe: { status: 'idle', redirectUrl: null, merchantTransactionId: null, response: null, error: null },
 
   list: { status: 'idle', items: [], meta: null, error: null },
   statusCheck: { status: 'idle', success: false, response: null, error: null }
@@ -296,7 +344,7 @@ export const createBooking = createAsyncThunk(
   async (payload, { rejectWithValue }) => {
     try {
       console.log('🔍 DEBUG createBooking input payload:', payload);
-      
+
       let body;
       // Normalize: accepts array or single object
       if (Array.isArray(payload)) {
@@ -317,7 +365,7 @@ export const createBooking = createAsyncThunk(
 
       // Backend now returns { order_id, order, bookings: [...] }
       const res = await api.post(endpoints.bookings.create(), body);
-      
+
       // Fallback handling for different response shapes
       const bookings = res.bookings || (Array.isArray(res) ? res : [res]);
       const order_id = res.order_id || (bookings[0] && (bookings[0].order_id || bookings[0].booking_id)) || null;
@@ -331,26 +379,64 @@ export const createBooking = createAsyncThunk(
 
 export const initiatePayPhi = createAsyncThunk(
   'bookings/initiatePayPhi',
-  async ({ bookingId, email, mobile, amount }, { rejectWithValue }) => {
+  async ({ orderId, bookingId, email, mobile, amount }, { rejectWithValue }) => {
     try {
-      // NOTE: 'bookingId' parameter here essentially represents the Order ID now
-      const res = await api.post(endpoints.bookings.payphi.initiate(bookingId), {
+      const id = orderId || bookingId;
+      if (!id) {
+        return rejectWithValue({ message: 'Order ID is required to initiate PayPhi payment', status: 400, code: 'MISSING_ORDER_ID' });
+      }
+      const res = await api.post(endpoints.bookings.payphi.initiate(id), {
         email,
         mobile: normalizePhone(mobile),
-        amount // Pass the calculated final amount to the backend for verification
+        amount
       });
-      return normalizePayphiInitiateResponse(res, bookingId);
+      return normalizePayphiInitiateResponse(res, id);
     } catch (err) { return rejectWithValue(err); }
   }
 );
 
 export const checkPayPhiStatus = createAsyncThunk(
   'bookings/checkPayPhiStatus',
-  async ({ bookingId }, { rejectWithValue }) => {
+  async ({ orderId, bookingId }, { rejectWithValue }) => {
     try {
-      // NOTE: 'bookingId' parameter here essentially represents the Order ID now
-      const res = await api.get(endpoints.bookings.payphi.status(bookingId));
-      return { bookingId, success: !!res?.success, response: res?.response || res };
+      const id = orderId || bookingId;
+      if (!id) {
+        return rejectWithValue({ message: 'Order ID is required to check PayPhi status', status: 400, code: 'MISSING_ORDER_ID' });
+      }
+      const res = await api.get(endpoints.bookings.payphi.status(id));
+      return { bookingId: id, success: !!res?.success, response: res?.response || res };
+    } catch (err) { return rejectWithValue(err); }
+  }
+);
+
+export const initiatePhonePe = createAsyncThunk(
+  'bookings/initiatePhonePe',
+  async ({ orderId, bookingId, email, mobile, amount }, { rejectWithValue }) => {
+    try {
+      const id = orderId || bookingId;
+      if (!id) {
+        return rejectWithValue({ message: 'Order ID is required to initiate PhonePe payment', status: 400, code: 'MISSING_ORDER_ID' });
+      }
+      const res = await api.post(endpoints.bookings.phonepe.initiate(id), {
+        email,
+        mobile: normalizePhone(mobile),
+        amount
+      });
+      return normalizePhonePeInitiateResponse(res, id);
+    } catch (err) { return rejectWithValue(err); }
+  }
+);
+
+export const checkPhonePeStatus = createAsyncThunk(
+  'bookings/checkPhonePeStatus',
+  async ({ orderId, bookingId }, { rejectWithValue }) => {
+    try {
+      const id = orderId || bookingId;
+      if (!id) {
+        return rejectWithValue({ message: 'Order ID is required to check PhonePe status', status: 400, code: 'MISSING_ORDER_ID' });
+      }
+      const res = await api.get(endpoints.bookings.phonepe.status(id));
+      return { bookingId: id, success: !!res?.success, response: res?.response || res };
     } catch (err) { return rejectWithValue(err); }
   }
 );
@@ -394,7 +480,7 @@ const bookingsSlice = createSlice({
       const allowMerge = payload.merge === undefined ? true : !!payload.merge;
       const existing = allowMerge ? state.cart.items.find((it) => it.fingerprint === fingerprint) : null;
       let createdKey = null;
-      
+
       if (existing) {
         existing.quantity += qty;
         existing.unitPrice = unitPrice || existing.unitPrice || 0;
@@ -409,12 +495,12 @@ const bookingsSlice = createSlice({
           key: itemKey,
           fingerprint,
           item_type: payload.item_type || payload.itemType || 'Attraction',
-          
+
           attraction_id: getVal(payload, ['attraction_id', 'attractionId']),
           combo_id: getVal(payload, ['combo_id', 'comboId']),
           slot_id: getVal(payload, ['slot_id', 'slotId']),
           combo_slot_id: getVal(payload, ['combo_slot_id', 'comboSlotId']),
-          
+
           booking_date: payload.booking_date || payload.date || null,
           slot: payload.slot || null,
           attraction: payload.attraction || null,
@@ -543,14 +629,27 @@ const bookingsSlice = createSlice({
     });
     b.addCase(initiatePayPhi.rejected, (s, a) => { s.payphi.status = 'failed'; s.payphi.error = toErr(a.payload || a.error, 'Failed to initiate payment'); });
 
-    // PayPhi Status
-    b.addCase(checkPayPhiStatus.pending, (s) => { s.statusCheck.status = 'loading'; s.statusCheck.error = null; s.statusCheck.success = false; s.statusCheck.response = null; });
-    b.addCase(checkPayPhiStatus.fulfilled, (s, a) => {
+    b.addCase(checkPayPhiStatus.rejected, (s, a) => { s.statusCheck.status = 'failed'; s.statusCheck.error = toErr(a.payload || a.error, 'Failed to check payment status'); });
+
+    // PhonePe
+    b.addCase(initiatePhonePe.pending, (s) => { s.phonepe.status = 'loading'; s.phonepe.error = null; s.phonepe.redirectUrl = null; s.phonepe.merchantTransactionId = null; s.phonepe.response = null; });
+    b.addCase(initiatePhonePe.fulfilled, (s, a) => {
+      s.phonepe.status = 'succeeded';
+      s.phonepe.redirectUrl = a.payload?.redirectUrl || null;
+      s.phonepe.merchantTransactionId = a.payload?.merchantTransactionId || null;
+      s.phonepe.response = a.payload || null;
+      s.phonepe.error = null;
+    });
+    b.addCase(initiatePhonePe.rejected, (s, a) => { s.phonepe.status = 'failed'; s.phonepe.error = toErr(a.payload || a.error, 'Failed to initiate payment'); });
+
+    // PhonePe Status
+    b.addCase(checkPhonePeStatus.pending, (s) => { s.statusCheck.status = 'loading'; s.statusCheck.error = null; s.statusCheck.success = false; s.statusCheck.response = null; });
+    b.addCase(checkPhonePeStatus.fulfilled, (s, a) => {
       s.statusCheck.status = 'succeeded';
       s.statusCheck.success = !!a.payload?.success;
       s.statusCheck.response = a.payload?.response || null;
     });
-    b.addCase(checkPayPhiStatus.rejected, (s, a) => { s.statusCheck.status = 'failed'; s.statusCheck.error = toErr(a.payload || a.error, 'Failed to check payment status'); });
+    b.addCase(checkPhonePeStatus.rejected, (s, a) => { s.statusCheck.status = 'failed'; s.statusCheck.error = toErr(a.payload || a.error, 'Failed to check payment status'); });
 
     // List
     b.addCase(listMyBookings.pending, (s) => { s.list.status = 'loading'; s.list.error = null; });

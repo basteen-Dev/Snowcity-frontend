@@ -127,7 +127,7 @@ export default function BookingsList() {
   const [revenueFilters, setRevenueFilters] = React.useState(cloneRevenueFilters());
 
   React.useEffect(() => {
-    dispatch(listAdminBookings({ page: 1, limit: 20 }));
+    dispatch(listAdminBookings({ page: 1, limit: 20, payment_status: 'Pending' }));
     loadOverview();
     loadRevenueData('both');
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -724,8 +724,8 @@ export default function BookingsList() {
             <button
               className="rounded-lg border px-3 py-2"
               onClick={() => {
-                setFilters({ search: '', payment_status: '', booking_status: '', attraction_id: '', combo_id: '', offer_id: '', user_email: '', user_phone: '', item_type: '', date_from: '', date_to: '' });
-                dispatch(listAdminBookings({ page: 1, limit: 20 }));
+                setFilters({ search: '', payment_status: 'Pending', booking_status: '', attraction_id: '', combo_id: '', offer_id: '', user_email: '', user_phone: '', item_type: '', date_from: '', date_to: '' });
+                dispatch(listAdminBookings({ page: 1, limit: 20, payment_status: 'Pending' }));
                 setActiveRange('all');
               }}
             >

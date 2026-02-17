@@ -36,7 +36,7 @@ const ensureGuestSessionId = () => {
 export function setGuestSessionId(id) {
   guestSessionId = id || null;
   if (isBrowser && guestSessionId) {
-    try { window.localStorage.setItem(SESSION_STORAGE_KEY, guestSessionId); } catch {}
+    try { window.localStorage.setItem(SESSION_STORAGE_KEY, guestSessionId); } catch { }
   }
 }
 
@@ -79,8 +79,8 @@ const isTransientNetworkError = (err) => {
   const status = err?.response?.status;
   return (
     !status && (
-      code === 'ECONNABORTED' || 
-      code === 'ERR_NETWORK' ||  
+      code === 'ECONNABORTED' ||
+      code === 'ERR_NETWORK' ||
       code === 'ENETUNREACH' ||
       code === 'EAI_AGAIN'
     )
@@ -98,15 +98,15 @@ const normalizeApiError = (error) => {
       data: null
     };
   }
-  
+
   const response = error?.response;
   const data = response?.data;
-  
+
   // Try to find a human-readable message from backend
   const message =
-    data?.message || 
-    data?.error || 
-    error?.message || 
+    data?.message ||
+    data?.error ||
+    error?.message ||
     'An unexpected error occurred';
 
   const code =
@@ -183,7 +183,7 @@ http.interceptors.response.use(
 
     // Log actual backend error in console for easier debugging
     if (import.meta.env?.DEV && status >= 400) {
-        console.error('[API Error]', error.response?.data || error.message);
+      console.error('[API Error]', error.response?.data || error.message);
     }
 
     return Promise.reject(normalizeApiError(error));
