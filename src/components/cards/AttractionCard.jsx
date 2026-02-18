@@ -114,7 +114,7 @@ import { getAttrId } from '../../utils/ids';
 import { imgSrc } from '../../utils/media';
 import { getPrice, getBasePrice, getDiscountPercent } from '../../utils/pricing';
 
-export default function AttractionCard({ item }) {
+export default function AttractionCard({ item, featured = false }) {
   const title = item?.name || item?.title || 'Attraction';
   const desc = item?.short_description || item?.subtitle || '';
   const img = imgSrc(item, 'https://picsum.photos/seed/attr/640/400');
@@ -149,61 +149,30 @@ export default function AttractionCard({ item }) {
           goDetail();
         }
       }}
-      className="
-        group relative h-[420px] w-full overflow-hidden rounded-2xl
-        bg-white shadow-[0_20px_50px_rgba(0,0,0,0.18)]
-        transition-all duration-300 hover:-translate-y-1
-        focus:outline-none
-      "
+      className={`exp-card ${featured ? 'featured' : ''}`}
     >
-      {/* Image */}
-      <img
-        src={img}
-        alt={title}
-        className="
-          absolute inset-0 h-full w-full object-cover
-          transition-transform duration-700 group-hover:scale-110
-        "
-        loading="lazy"
-        decoding="async"
-      />
-
-      {/* Top Badge */}
-      {/* <div className="absolute top-4 left-4 z-10">
-        <span className="rounded-full bg-white/90 px-4 py-1 text-xs font-semibold text-slate-800 backdrop-blur">
-          Indoor Snow
-        </span>
-      </div> */}
-
-      {/* Price Badge */}
-      {displayPrice > 0 && (
-        <div className="absolute top-4 right-4 z-10 rounded-full bg-sky-400 px-4 py-1.5 text-xs font-semibold text-white">
-          ₹{Math.round(displayPrice)}
-          {hasDiscount && (
-            <span className="ml-1 text-sky-200">
-              -{discountPercent}%
-            </span>
-          )}
-        </div>
-      )}
-
-      {/* Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent" />
-
-      {/* Content */}
-      <div className="absolute bottom-0 z-10 w-full px-5 pb-5 text-white">
-        <h3 className="text-xl font-semibold leading-tight line-clamp-2">
-          {title}
-        </h3>
-
-        {desc && (
-          <p className="mt-1 text-sm text-white/80 line-clamp-2">
-            {desc}
-          </p>
+      <div className="exp-card-img">
+        {img && (
+          <img
+            src={img}
+            alt={title}
+            className="absolute inset-0 h-full w-full object-cover"
+            loading="lazy"
+            decoding="async"
+          />
         )}
-
-        {/* CTA */}
-        <div className="mt-4 flex items-center justify-center">
+        {featured && <div className="featured-tag">Most Populer</div>}
+        
+      </div>
+      <div className="exp-card-body">
+        <div className="exp-type">Attraction</div>
+        <div className="exp-name">{title}</div>
+        <div className="exp-desc">{desc}</div>
+        <div className="exp-footer">
+          <div>
+            <div className="exp-price-label">Per Person</div>
+            <div className="exp-price">₹{Math.round(displayPrice || 699)} <span>onwards</span></div>
+          </div>
           <Link
             to={
               attrId
@@ -211,12 +180,7 @@ export default function AttractionCard({ item }) {
                 : '/booking'
             }
             onClick={stop}
-            className="
-              rounded-full bg-sky-400 px-8 py-2.5
-              text-sm font-bold text-slate-900
-              shadow-lg transition-all
-              hover:bg-sky-300
-            "
+            className="btn-book-exp"
           >
             Book Now
           </Link>

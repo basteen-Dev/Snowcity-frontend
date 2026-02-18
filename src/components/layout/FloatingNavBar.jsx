@@ -308,7 +308,6 @@ export default function FloatingNavBar() {
         </div>
         <p className="text-sm text-gray-500 mb-4">
           Enter your details once. We&apos;ll create or find your profile and send an OTP
-          (testing code 123456).
         </p>
         <div className="space-y-3">
           {/* NAME OPTIONAL */}
@@ -468,14 +467,10 @@ export default function FloatingNavBar() {
 
           {/* MENU ITEMS */}
           <div className="flex items-center gap-3 text-sm font-medium">
-            <Link to="/" className={navLinkClass}>
-              Home
-            </Link>
-
             {/* Attractions */}
             <div className="relative">
               <button className={navLinkClass} onClick={() => toggleMenu("attr")}>
-                Attractions ▾
+                ATTRACTIONS ▾
               </button>
               {menuOpen === "attr" && (
                 <div className="absolute right-0 top-full mt-2 w-64 rounded-lg border border-gray-200 bg-white shadow-lg p-2 z-[110]" style={{ boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)' }}>
@@ -510,7 +505,7 @@ export default function FloatingNavBar() {
             {/* Offers */}
             <div className="relative">
               <button className={navLinkClass} onClick={() => toggleMenu("offers")}>
-                Offers ▾
+                OFFERS ▾
               </button>
               {menuOpen === "offers" && (
                 <div className="absolute right-0 top-full mt-2 w-56 rounded-lg border border-gray-200 bg-white shadow-lg p-2 z-[110]" style={{ boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)' }}>
@@ -535,7 +530,7 @@ export default function FloatingNavBar() {
             {/* Visitor Guide */}
             <div className="relative">
               <button className={navLinkClass} onClick={() => toggleMenu("guide")}>
-                Visitor Guide ▾
+               PLAN VISIT ▾
               </button>
               {menuOpen === "guide" && (
                 <div className="absolute right-0 top-full mt-2 w-64 rounded-lg border border-gray-200 bg-white shadow-lg p-2 z-[110]" style={{ boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)' }}>
@@ -556,20 +551,12 @@ export default function FloatingNavBar() {
             <Link to="/contact" className={navLinkClass}>
               Contact Us
             </Link>
-            <Link to="/blog" className={navLinkClass}>
-              Blogs
-            </Link>
-
-            {!token && (
-              <button className={signInButtonClass} onClick={openAuthModal}>
-                🔐 Sign In
-              </button>
-            )}
+            {!token}
             <button
               className={bookTicketButtonClass}
               onClick={() => navigate("/booking")}
             >
-              🎟️ Book Tickets
+              🎟️ BUY TICKETS
             </button>
 
             {token && (

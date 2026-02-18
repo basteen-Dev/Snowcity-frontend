@@ -45,7 +45,7 @@ export default function Attractions() {
         {aStatus === 'loading' && !attractions.length ? <Loader /> : null}
         {aStatus === 'failed' ? <ErrorState message={aError?.message || 'Failed to load attractions'} /> : null}
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-4 gap-4">
           {list.map((item, idx) => (
             <AttractionCard key={safeKey('attr', item, idx)} item={item} />
           ))}
@@ -55,7 +55,7 @@ export default function Attractions() {
         <div className="mt-10">
           <h2 className="text-xl md:text-2xl font-semibold mb-4">Combo Deals</h2>
           {cStatus === 'loading' && !combos.length ? <Loader /> : null}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             {combos.map((c, idx) => (
               <ComboCard key={safeKey('combo', c, idx)} item={c} />
             ))}

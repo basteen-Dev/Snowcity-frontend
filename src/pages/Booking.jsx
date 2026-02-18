@@ -18,7 +18,7 @@ import {
   setStep, setContact, setCouponCode,
   sendAuthOtp, verifyAuthOtp, applyCoupon,
   createBooking, initiatePayPhi, initiatePhonePe,
-  addCartItem, removeCartItem, resetCart,
+  addCartItem, removeCartItem, resetCart, resetBookingFlow,
   setActiveCartItem,
 } from '../features/bookings/bookingsSlice';
 
@@ -606,6 +606,13 @@ export default function Booking() {
     }));
   }, [state.activeOffer, state.activeRule, checkoutItem]);
 
+  // Cleanup on unmount - Clear booking flow data
+  useEffect(() => {
+    return () => {
+      dispatch(resetBookingFlow());
+    };
+  }, [dispatch]);
+
   useEffect(() => {
     if (contact?.phone && !phoneLocal) {
       const digits = String(contact.phone).replace(/\D/g, '');
@@ -1155,56 +1162,78 @@ export default function Booking() {
   };
 
   const ProgressBar = () => (
-    <div className="flex items-center justify-between mb-0.5 px-3 sm:px-6 w-full sm:w-1/2 mx-auto">
-      {[
-        { n: 1, l: 'Select', icon: ShoppingBag },
-        { n: 2, l: 'Extras', icon: Ticket },
-        { n: 3, l: 'Verify', icon: Clock },
-        { n: 4, l: 'Pay', icon: Check },
-      ].map((s) => {
-        if (hasToken && s.n === 3) return null;
-        const isCompleted = step > s.n || (hasToken && s.n === 3);
-        const isCurrent = step === s.n;
-        const showCheck = isCompleted || (hasToken && s.n === 3);
-        const IconComponent = s.icon;
+    <div className="w-full max-w-4xl mx-auto mb-8 px-4">
+      <div className="relative flex items-center justify-between">
+        {/* Background Line */}
+        <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-full h-1 bg-gray-100 rounded-full -z-10" />
 
-        return (
-          <div key={s.n} className="flex flex-col items-center relative z-10 group">
-            <div
-              className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 border-2 shadow-sm ${isCurrent
-                ? 'bg-gradient-to-br from-sky-600 to-sky-700 border-sky-600 text-white scale-110 ring-4 ring-sky-100'
-                : showCheck
-                  ? 'bg-gradient-to-br from-emerald-600 to-emerald-700 border-emerald-600 text-white shadow-md'
-                  : 'bg-white border-gray-200 text-gray-300 shadow-sm'
-                }`}
-            >
-              {showCheck && !isCurrent ? (
-                <Check size={16} strokeWidth={3} />
-              ) : (
-                <IconComponent size={16} />
-              )}
-            </div>
-            <span
-              className={`text-[10px] mt-2 font-bold uppercase tracking-widest ${isCurrent
-                ? 'text-sky-600'
-                : showCheck
-                  ? 'text-emerald-600'
-                  : 'text-gray-400'
-                }`}
-            >
-              {s.l}
-            </span>
-          </div>
-        );
-      })}
-      <div className="absolute left-8 right-8 top-[18px] h-0.5 bg-gradient-to-r from-sky-100 to-sky-200 -z-0 overflow-hidden rounded-full">
+        {/* Active Progress Line */}
         <div
-          className="h-full bg-gradient-to-r from-sky-600 to-sky-500 transition-all duration-500 ease-out shadow-sm"
+          className="absolute left-0 top-1/2 transform -translate-y-1/2 h-1 bg-sky-600 rounded-full -z-0 transition-all duration-500 ease-out shadow-sm"
           style={{ width: `${((step - 1) / (hasToken ? 2 : 3)) * 100}%` }}
         />
+
+        {[
+          { n: 1, l: 'Select' },
+          { n: 2, l: 'Add-ons' },
+          { n: 3, l: 'Verify' },
+          { n: 4, l: 'Payment' },
+        ].map((s) => {
+          if (hasToken && s.n === 3) return null;
+
+          const isCompleted = step > s.n || (hasToken && s.n === 3);
+          const isCurrent = step === s.n;
+
+          return (
+            <div key={s.n} className="flex flex-col items-center relative z-10 bg-white px-2">
+              <div
+                className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold border-2 transition-all duration-500 ${isCompleted
+                    ? 'bg-sky-600 border-sky-600 text-white shadow-md'
+                    : isCurrent
+                      ? 'bg-white border-sky-600 text-sky-600 ring-4 ring-sky-50 shadow-md scale-110'
+                      : 'bg-white border-gray-200 text-gray-300'
+                  }`}
+              >
+                {isCompleted ? <Check size={18} strokeWidth={3} /> : s.n}
+              </div>
+              <span
+                className={`text-[11px] mt-2 font-bold uppercase tracking-wider transition-colors duration-300 ${isCurrent ? 'text-sky-700' : isCompleted ? 'text-gray-900' : 'text-gray-400'
+                  }`}
+              >
+                {s.l}
+              </span>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
+
+  /* Product list with images */
+  const onRemoveCartItem = (key) => {
+    if (window.confirm('Are you sure you want to remove this item?')) {
+      dispatch(removeCartItem(key));
+    }
+  };
+
+  const onEditCartItem = (item) => {
+    // 1. Set selection state from item
+    setSel({
+      itemType: item.item_type === 'Combo' ? 'combo' : 'attraction',
+      attractionId: item.attraction_id ? String(item.attraction_id) : '',
+      comboId: item.combo_id ? String(item.combo_id) : '',
+      date: item.booking_date,
+      slotKey: item.slot ? getSlotKey(item.slot) : (item.slot_id || ''),
+      qty: item.quantity
+    });
+
+    // 2. Set editing key so we update instead of add
+    setEditingKey(item.key);
+
+    // 3. Open drawer
+    setDrawerMode('booking');
+    setDrawerOpen(true);
+  };
 
   /* Product list with images */
   const ProductList = () => {
@@ -1798,8 +1827,12 @@ export default function Booking() {
                           : 'bg-sky-600 text-white shadow-md hover:bg-sky-700 active:scale-[0.98]'
                           }`}
                       >
-                        <span>Continue</span>
-                        <ArrowRight size={18} />
+                        {step === 4
+                          ? paymentLoading
+                            ? 'Processing...'
+                            : `Pay ₹${finalTotal}`
+                          : 'Continue'}
+                        {step !== 4 && <ArrowRight size={16} />}
                       </button>
                     </div>
                   </div>

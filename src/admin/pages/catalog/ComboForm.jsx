@@ -23,7 +23,8 @@ export default function ComboForm() {
       desktop_image_url: '',
       discount_percent: 0,
       active: true,
-      meta_title: ''
+      meta_title: '',
+      short_description: ''
     }
   });
 
@@ -34,7 +35,7 @@ export default function ComboForm() {
         const res = await adminApi.get(A.attractions());
         const attractions = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
         setState((s) => ({ ...s, attractions }));
-      } catch {}
+      } catch { }
     })();
   }, []);
 
@@ -45,7 +46,7 @@ export default function ComboForm() {
       try {
         const res = await adminApi.get(A.comboById(id));
         const c = res?.combo || res || {};
-        
+
         // Handle both legacy and new format
         let formdata = {
           name: c.name || '',
@@ -57,9 +58,10 @@ export default function ComboForm() {
           desktop_image_url: c.desktop_image_url || '',
           discount_percent: c.discount_percent || 0,
           active: !!c.active,
-          meta_title: c.meta_title || ''
+          meta_title: c.meta_title || '',
+          short_description: c.short_description || ''
         };
-        
+
         // Check if it's legacy format (has attraction_1_id and attraction_2_id)
         if (c.attraction_1_id && c.attraction_2_id) {
           // Legacy format - convert to new format
@@ -75,7 +77,7 @@ export default function ComboForm() {
           formdata.attraction_prices = c.attraction_prices || {};
           formdata.total_price = Number(c.total_price || 0);
         }
-        
+
         setState((s) => ({ ...s, status: 'idle', form: formdata }));
       } catch (err) { setState((s) => ({ ...s, status: 'failed', error: err })); }
     })();
@@ -91,7 +93,7 @@ export default function ComboForm() {
       if (!f.attraction_ids || f.attraction_ids.length < 2) {
         alert('Select at least two attractions'); return;
       }
-      
+
       // Validate attraction prices
       for (const attractionId of f.attraction_ids) {
         if (!f.attraction_prices[attractionId] || f.attraction_prices[attractionId] <= 0) {
@@ -100,7 +102,7 @@ export default function ComboForm() {
           return;
         }
       }
-      
+
       const payload = {
         name: f.name.trim(),
         slug: f.slug?.trim() || null,
@@ -108,10 +110,13 @@ export default function ComboForm() {
         attraction_prices: f.attraction_prices,
         total_price: Number(f.total_price || 0),
         image_url: f.image_url?.trim() || null,
+        desktop_image_url: f.desktop_image_url?.trim() || null,
         discount_percent: Number(f.discount_percent || 0),
-        active: !!f.active
+        active: !!f.active,
+        meta_title: f.meta_title?.trim() || null,
+        short_description: f.short_description?.trim() || null
       };
-      
+
       if (isEdit) await adminApi.put(A.comboById(id), payload);
       else await adminApi.post(A.combos(), payload);
       navigate('/admin/catalog/combos');
@@ -126,7 +131,7 @@ export default function ComboForm() {
 
   if (state.status === 'loading') return <div>Loading…</div>;
   if (state.status === 'failed') return <div className="text-red-600">{state.error?.message || 'Failed to load'}</div>;
-  
+
   // Show save error if any
   if (state.error && state.error !== 'Failed to load') {
     return (
@@ -154,7 +159,7 @@ export default function ComboForm() {
               </ul>
             </div>
           )}
-          <button 
+          <button
             onClick={() => setState((s) => ({ ...s, error: null }))}
             className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
           >
@@ -174,11 +179,11 @@ export default function ComboForm() {
     const startHour = 10; // 10:00 AM
     const endHour = 20;   // 8:00 PM
     const slotDuration = attractionCount; // hours per slot
-    
+
     for (let hour = startHour; hour + slotDuration <= endHour; hour++) {
       const startTime = `${hour.toString().padStart(2, '0')}:00`;
       const endTime = `${(hour + slotDuration).toString().padStart(2, '0')}:00`;
-      
+
       slots.push({
         start_date: new Date().toISOString().split('T')[0], // Today's date in YYYY-MM-DD
         end_date: new Date().toISOString().split('T')[0], // Today's date in YYYY-MM-DD
@@ -188,7 +193,7 @@ export default function ComboForm() {
         available: true
       });
     }
-    
+
     return slots;
   };
 
@@ -200,13 +205,13 @@ export default function ComboForm() {
     const newIds = state.form.attraction_ids.filter((_, i) => i !== index);
     const newPrices = { ...state.form.attraction_prices };
     delete newPrices[state.form.attraction_ids[index]];
-    setState((s) => ({ 
-      ...s, 
-      form: { 
-        ...s.form, 
+    setState((s) => ({
+      ...s,
+      form: {
+        ...s.form,
         attraction_ids: newIds,
         attraction_prices: newPrices
-      } 
+      }
     }));
     calculateTotalPrice(newIds, newPrices);
   };
@@ -215,7 +220,7 @@ export default function ComboForm() {
     const oldId = state.form.attraction_ids[index];
     const newIds = [...state.form.attraction_ids];
     newIds[index] = value;
-    
+
     const newPrices = { ...state.form.attraction_prices };
     if (oldId && oldId !== value) {
       delete newPrices[oldId];
@@ -224,14 +229,14 @@ export default function ComboForm() {
       const attraction = state.attractions.find(a => a.attraction_id === value);
       newPrices[value] = attraction?.price || 0;
     }
-    
-    setState((s) => ({ 
-      ...s, 
-      form: { 
-        ...s.form, 
+
+    setState((s) => ({
+      ...s,
+      form: {
+        ...s.form,
         attraction_ids: newIds,
         attraction_prices: newPrices
-      } 
+      }
     }));
     calculateTotalPrice(newIds, newPrices);
   };
@@ -259,14 +264,14 @@ export default function ComboForm() {
   return (
     <form onSubmit={save} className="max-w-4xl bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl p-4">
       <h1 className="text-xl font-semibold mb-4">{isEdit ? 'Edit' : 'New'} Combo</h1>
-      
+
       {/* Combo Name */}
       <div className="mb-4">
         <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Combo Name *</label>
-        <input 
-          type="text" 
-          className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" 
-          value={f.name} 
+        <input
+          type="text"
+          className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200"
+          value={f.name}
           onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, name: e.target.value } }))}
           placeholder="Enter combo name"
           required
@@ -276,10 +281,10 @@ export default function ComboForm() {
       {/* Combo Slug */}
       <div className="mb-4">
         <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Slug (URL-friendly identifier)</label>
-        <input 
-          type="text" 
-          className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" 
-          value={f.slug} 
+        <input
+          type="text"
+          className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200"
+          value={f.slug}
           onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, slug: e.target.value } }))}
           placeholder="auto-generated-from-name"
         />
@@ -288,13 +293,25 @@ export default function ComboForm() {
         </div>
       </div>
 
+      {/* Short Description */}
+      <div className="mb-4">
+        <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Short Description (for lists/previews)</label>
+        <textarea
+          className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200"
+          rows={2}
+          value={f.short_description}
+          onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, short_description: e.target.value } }))}
+          placeholder="Brief summary of the combo"
+        />
+      </div>
+
       {/* Meta Title */}
       <div className="mb-4">
         <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Meta Title (SEO title)</label>
-        <input 
-          type="text" 
-          className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" 
-          value={f.meta_title} 
+        <input
+          type="text"
+          className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200"
+          value={f.meta_title}
           onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, meta_title: e.target.value } }))}
           placeholder="Custom page title for SEO (leave empty to use default)"
         />
@@ -307,30 +324,30 @@ export default function ComboForm() {
       <div className="mb-4">
         <div className="flex items-center justify-between mb-2">
           <label className="block text-sm text-gray-600 dark:text-neutral-300">Attractions *</label>
-          <button 
-            type="button" 
+          <button
+            type="button"
             onClick={addAttraction}
             className="text-sm bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700"
           >
             + Add Attraction
           </button>
         </div>
-        
+
         {f.attraction_ids.length === 0 && (
           <div className="text-gray-500 text-sm mb-2">No attractions selected. Add at least 2 attractions.</div>
         )}
-        
+
         {f.attraction_ids.map((attractionId, index) => (
           <div key={index} className="flex gap-2 mb-2">
-            <select 
-              className="flex-1 rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" 
-              value={attractionId} 
+            <select
+              className="flex-1 rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200"
+              value={attractionId}
               onChange={(e) => updateAttraction(index, e.target.value)}
             >
               <option value="">— Select attraction —</option>
               {list.map((a) => (
-                <option 
-                  key={a.attraction_id} 
+                <option
+                  key={a.attraction_id}
                   value={a.attraction_id}
                   disabled={f.attraction_ids.includes(String(a.attraction_id)) && String(a.attraction_id) !== attractionId}
                 >
@@ -338,11 +355,11 @@ export default function ComboForm() {
                 </option>
               ))}
             </select>
-            
+
             {attractionId && (
-              <input 
-                type="number" 
-                className="w-32 rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" 
+              <input
+                type="number"
+                className="w-32 rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200"
                 value={f.attraction_prices[attractionId] || ''}
                 onChange={(e) => updateAttractionPrice(attractionId, e.target.value)}
                 placeholder="Price"
@@ -350,10 +367,10 @@ export default function ComboForm() {
                 step="0.01"
               />
             )}
-            
+
             {f.attraction_ids.length > 2 && (
-              <button 
-                type="button" 
+              <button
+                type="button"
                 onClick={() => removeAttraction(index)}
                 className="px-2 py-1 text-red-600 border border-red-300 rounded-md hover:bg-red-50"
               >
@@ -362,7 +379,7 @@ export default function ComboForm() {
             )}
           </div>
         ))}
-        
+
         {f.attraction_ids.length > 0 && f.attraction_ids.length < 2 && (
           <div className="text-orange-600 text-sm mt-1">Please select at least 2 attractions</div>
         )}
@@ -401,22 +418,22 @@ export default function ComboForm() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
         <div>
           <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Discount %</label>
-          <input 
-            type="number" 
-            className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" 
-            value={f.discount_percent} 
+          <input
+            type="number"
+            className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200"
+            value={f.discount_percent}
             onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, discount_percent: Number(e.target.value || 0) } }))}
             min="0"
             max="100"
           />
         </div>
-        
+
         <div className="flex items-center gap-2">
-          <input 
-            id="active" 
-            type="checkbox" 
-            checked={!!f.active} 
-            onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, active: e.target.checked } }))} 
+          <input
+            id="active"
+            type="checkbox"
+            checked={!!f.active}
+            onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, active: e.target.checked } }))}
           />
           <label htmlFor="active" className="text-sm text-gray-700 dark:text-neutral-200">Active</label>
         </div>
@@ -436,21 +453,21 @@ export default function ComboForm() {
         <p className="text-xs text-gray-500 dark:text-neutral-400 mt-1">Automatically sums attraction prices; adjust if needed.</p>
       </div>
 
-    <div className="mt-4 flex gap-2">
-      <button type="submit" className="rounded-md bg-gray-900 text-white px-4 py-2 text-sm">Save</button>
-      {isEdit && (
-        <button 
-          type="button" 
-          className="rounded-md bg-blue-600 text-white px-4 py-2 text-sm hover:bg-blue-700"
-          onClick={() => navigate(`/admin/catalog/combo-slots?combo_id=${id}`)}
-        >
-          View Slots
-        </button>
-      )}
-      <button type="button" className="rounded-md border px-4 py-2 text-sm" onClick={() => navigate(-1)}>Cancel</button>
-    </div>
+      <div className="mt-4 flex gap-2">
+        <button type="submit" className="rounded-md bg-gray-900 text-white px-4 py-2 text-sm">Save</button>
+        {isEdit && (
+          <button
+            type="button"
+            className="rounded-md bg-blue-600 text-white px-4 py-2 text-sm hover:bg-blue-700"
+            onClick={() => navigate(`/admin/catalog/combo-slots?combo_id=${id}`)}
+          >
+            View Slots
+          </button>
+        )}
+        <button type="button" className="rounded-md border px-4 py-2 text-sm" onClick={() => navigate(-1)}>Cancel</button>
+      </div>
 
-    {state.error ? <div className="mt-2 text-sm text-red-600">{state.error?.message || 'Error'}</div> : null}
-  </form>
+      {state.error ? <div className="mt-2 text-sm text-red-600">{state.error?.message || 'Error'}</div> : null}
+    </form>
   );
 }

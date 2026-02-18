@@ -22,6 +22,7 @@ import Testimonials from '../components/common/Testimonials';
 import VideoBlock from '../components/common/VideoBlock';
 import InstagramFeed from '../components/common/InstagramFeed';
 import BlogCard from '../components/cards/BlogCard';
+import AttractionCard from '../components/cards/AttractionCard';
 import Loader from '../components/common/Loader';
 import ErrorState from '../components/common/ErrorState';
 import LazyVisible from '../components/common/LazyVisible';
@@ -126,7 +127,10 @@ export default function Home() {
 
   // resolve “display” items (store first, else cached)
   const bannerItems = banners.items?.length ? banners.items : cacheRef.current.banners || [];
-  const attractionItems = attractions.items?.length ? attractions.items : cacheRef.current.attractions || [];
+  const attractionItems = React.useMemo(() => {
+    const items = attractions.items?.length ? attractions.items : cacheRef.current.attractions || [];
+    return [...items].sort((a, b) => (a.id || a.attraction_id || 0) - (b.id || b.attraction_id || 0));
+  }, [attractions.items, cacheRef.current.attractions]);
   const comboItems = combos.items?.length ? combos.items : cacheRef.current.combos || [];
   const offerItems = offers.items?.length ? offers.items : cacheRef.current.offers || [];
   const couponItems = coupons.items?.length ? coupons.items : cacheRef.current.coupons || [];
@@ -222,7 +226,31 @@ export default function Home() {
           {attractions.status === 'failed' ? (
             <ErrorState message={attractions.error?.message || 'Failed to load attractions'} />
           ) : attractionItems.length ? (
-            <AttractionsCarousel items={attractionItems} />
+            <section className="py-16 px-4 bg-gradient-to-b from-[#e0f2fe] via-[#bae6fd] to-white">
+              <div className="max-w-6xl mx-auto">
+                <div className="text-center mb-12">
+                  <p className="text-xs font-semibold tracking-[0.4em] text-slate-400">DISCOVER</p>
+                  <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mt-3">Attractions</h2>
+                  <p className="mt-3 text-sm text-slate-500">Discover our amazing collection of thrilling experiences</p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {attractionItems.slice(0, 4).map((item, idx) => (
+                    <AttractionCard key={`home-attr-${idx}`} item={item} featured={idx === 0} />
+                  ))}
+                </div>
+                {attractionItems.length > 4 && (
+                  <div className="mt-12 text-center">
+                    <Link
+                      to="/attractions"
+                      className="inline-flex items-center gap-2 rounded-full bg-sky-400 px-10 py-4 text-base font-bold text-slate-900 shadow-lg hover:bg-sky-300 transition"
+                    >
+                      View All Attractions
+                      <span aria-hidden="true">→</span>
+                    </Link>
+                  </div>
+                )}
+              </div>
+            </section>
           ) : (
             <SkeletonCarousel items={3} />
           )}

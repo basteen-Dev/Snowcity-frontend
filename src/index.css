@@ -276,3 +276,121 @@ section [class*="border"], section[class*="border"] {
 section .shadow-2xl, section .shadow-xl, section .shadow-lg {
   box-shadow: none !important;
 }
+
+/* Custom CSS Variables for exp-card styles */
+:root {
+  --accent: #00d4ff; /* 0,212,255 */
+  --deep: #0d2538; /* Assuming dark blue/black */
+  --gold: #ffd700; /* Gold color */
+}
+
+/* Experience Card Styles */
+.exp-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 24px;
+  overflow: hidden;
+  position: relative;
+  transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  cursor: pointer;
+}
+.exp-card:hover {
+  transform: translateY(-8px);
+  border-color: rgba(0,212,255,0.3);
+  box-shadow: 0 30px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(0,212,255,0.2);
+}
+.exp-card.featured {
+  border-color: rgba(0,212,255,0.25);
+  background: rgba(0,212,255,0.03);
+}
+.exp-card-img {
+  height: 200px;
+  background: linear-gradient(135deg, #1a4a7a, #0d3056);
+  position: relative;
+  overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+.exp-icon {
+  font-size: 72px;
+  filter: drop-shadow(0 0 20px rgba(0,212,255,0.5));
+  animation: float 4s ease-in-out infinite;
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+.exp-card-img::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(10,22,40,0.8) 0%, transparent 60%);
+}
+.featured-tag {
+  position: absolute; top: 16px; right: 16px;
+  background: var(--gold);
+  color: var(--deep);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  border-radius: 50px;
+  z-index: 2;
+}
+.exp-card-body {
+  padding: 28px;
+}
+.exp-type {
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+.exp-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  line-height: 1.2;
+}
+.exp-desc {
+  font-size: 14px;
+  color: rgba(255,255,255,0.5);
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+.exp-footer {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+.exp-price-label { font-size: 11px; color: rgba(255,255,255,0.4); margin-bottom: 2px; }
+.exp-price {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: #fff;
+}
+.exp-price span { font-size: 14px; font-family: 'DM Sans', sans-serif; color: rgba(255,255,255,0.4); font-weight: 300; }
+.btn-book-exp {
+  background: rgba(0,212,255,0.1);
+  border: 1px solid rgba(0,212,255,0.3);
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-family: 'DM Sans', sans-serif;
+}
+.btn-book-exp:hover {
+  background: var(--accent);
+  color: var(--deep);
+  box-shadow: 0 0 20px rgba(0,212,255,0.4);
+}
+.exp-card.featured .btn-book-exp {
+  background: var(--accent);
+  color: var(--deep);
+}
