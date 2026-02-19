@@ -11,22 +11,22 @@ import { imgSrc } from "../../utils/media";
 const getWebImage = (b, fallback) =>
   imgSrc(
     b?.web_image ||
-      b?.image_web ||
-      b?.webImage ||
-      b?.desktop_image ||
-      b?.image_url ||
-      b?.image ||
-      fallback
+    b?.image_web ||
+    b?.webImage ||
+    b?.desktop_image ||
+    b?.image_url ||
+    b?.image ||
+    fallback
   );
 
 const getMobileImage = (b, fallback) =>
   imgSrc(
     b?.mobile_image ||
-      b?.image_mobile ||
-      b?.mobileImage ||
-      b?.mobile ||
-      b?.image_url_mobile ||
-      fallback
+    b?.image_mobile ||
+    b?.mobileImage ||
+    b?.mobile ||
+    b?.image_url_mobile ||
+    fallback
   );
 
 function deriveHref(b) {
@@ -64,7 +64,7 @@ export default function HeroCarousel({ banners = [], waveColor = "#0b1a33" }) {
   });
 
   return (
-    <section id="hero" className="relative w-full overflow-hidden h-[80vh] min-h-[600px] pt-14 md:pt-0">
+    <section id="hero" className="relative w-full overflow-hidden h-[85vh] min-h-[600px] md:h-[80vh]">
       <span id="hero-sentinel" className="pointer-events-none absolute bottom-0 left-0 h-px w-px" />
 
       <Swiper
@@ -76,10 +76,7 @@ export default function HeroCarousel({ banners = [], waveColor = "#0b1a33" }) {
         parallax
         speed={900}
         pagination={{
-          clickable: true,
-          bulletClass:
-            "swiper-pagination-bullet !bg-sky-400/70 !opacity-100 !w-2 !h-2 rounded-full",
-          bulletActiveClass: "!bg-sky-600 !w-8 transition-all",
+          clickable: true
         }}
         className="h-full"
       >
@@ -89,7 +86,7 @@ export default function HeroCarousel({ banners = [], waveColor = "#0b1a33" }) {
           const title = b?.title || b?.name || "";
           const subtitle = b?.subtitle || b?.description || b?.caption || "";
           const href = deriveHref(b);
-          const highlight = b?.tagline || b?.label || b?.category || "Everlasting Winter";
+          const highlight = b?.tagline || b?.label || b?.category || "";
           const ctaText = b?.cta_text || "Book Your Snow Day";
           const uniqueKey = b?.banner_id ?? b?.id ?? b?.uuid ?? b?.slug ?? idx;
           const ticketButton = {
@@ -109,7 +106,7 @@ export default function HeroCarousel({ banners = [], waveColor = "#0b1a33" }) {
                     <img
                       src={desktopImg}
                       alt={title || "Banner"}
-                      className="w-full h-full object-cover object-[center_35%] md:object-center will-change-transform animate-kenburns brightness-[1.12] contrast-[1.18] saturate-125"
+                      className="w-full h-full object-cover object-top md:object-center will-change-transform animate-kenburns brightness-[0.95] contrast-[1.05] saturate-110"
                       style={{
                         objectPosition: 'center',
                         objectFit: 'cover'
@@ -122,8 +119,9 @@ export default function HeroCarousel({ banners = [], waveColor = "#0b1a33" }) {
                   </picture>
                 </div>
 
-                <div className="absolute inset-0 bg-gradient-to-br from-[#020617]/85 via-[#0f172a]/45 to-transparent mix-blend-screen" />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0f172a]/80 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-br from-[#020617]/90 via-[#0f172a]/40 to-transparent mix-blend-multiply" />
+                <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-black/60 via-black/20 to-transparent z-10" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0f172a]/90 via-transparent to-transparent" />
 
                 <div
                   className="absolute inset-0 flex flex-col justify-between px-4 sm:px-10 z-10 text-left pb-8"
@@ -133,11 +131,11 @@ export default function HeroCarousel({ banners = [], waveColor = "#0b1a33" }) {
                     <span className="text-xs sm:text-sm font-semibold tracking-[0.35em] uppercase text-white/75">
                       {highlight}
                     </span>
-                    {title ? (
+                    {/* {title ? (
                       <h2 className="text-white text-3xl sm:text-5xl font-black leading-tight drop-shadow-[0_15px_35px_rgba(0,0,0,0.6)]">
                         {title}
                       </h2>
-                    ) : null}
+                    ) : null} */}
                     {subtitle ? (
                       <p className="text-white/80 text-base md:text-xl max-w-2xl">
                         {subtitle}

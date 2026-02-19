@@ -56,10 +56,10 @@ export default function OffersMarquee({ items }) {
 
   return (
     <section className="relative bg-gradient-to-r from-white via-sky-50 to-cyan-50 py-3 overflow-hidden">
-    
+
       <div className="relative flex overflow-hidden">
         <div className="flex whitespace-nowrap animate-offers-marquee">
-          {promos.map((promo, idx) => (
+          {[...promos, ...promos, ...promos].map((promo, idx) => (
             <div
               key={`${promo.id}-${idx}`}
               className="inline-flex items-center mx-6 px-4 py-2  backdrop-blur-sm border border-sky-200 rounded-2xl shadow-lg text-sky-900"
@@ -88,10 +88,10 @@ export default function OffersMarquee({ items }) {
       <style>{`
         @keyframes offersMarquee {
           0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
+          100% { transform: translateX(-33.33%); }
         }
         .animate-offers-marquee {
-          animation: offersMarquee 30s linear infinite;
+          animation: offersMarquee 25s linear infinite;
         }
       `}</style>
     </section>

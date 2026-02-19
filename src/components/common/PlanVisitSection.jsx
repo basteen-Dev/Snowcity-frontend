@@ -32,8 +32,10 @@ const planItems = [
 
 export default function PlanVisitSection() {
   return (
-    <section id="plan-visit" className="relative overflow-hidden bg-white py-16 px-4">
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-blue-50/60 to-transparent" />
+    <section id="plan-visit" className="relative overflow-hidden bg-[#003de6] py-16 px-4">
+      {/* Background SVG Pattern */}
+      <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 86c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zm66-3c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zm-46-43c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zm20-27c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1zm58 48c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1zM79 61c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1zM54 80c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1zM66 58c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1z' fill='%23ffffff' fill-opacity='1' fill-rule='evenodd'/%3E%3C/svg%3E")` }} />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#003de6]/60 to-transparent" />
 
       <div className="relative z-10 mx-auto max-w-6xl">
         <motion.div
@@ -43,9 +45,9 @@ export default function PlanVisitSection() {
           transition={{ duration: 0.6 }}
           className="text-center mb-12"
         >
-          <p className="text-xs font-semibold tracking-[0.4em] text-blue-400/70">VISITOR GUIDE</p>
-          <h2 className="mt-3 text-3xl font-bold text-slate-900">Plan your visit</h2>
-          <p className="mt-3 text-gray-600 max-w-2xl mx-auto">
+          <p className="text-xs font-semibold tracking-[0.4em] text-white/50">VISITOR GUIDE</p>
+          <h2 className="mt-3 text-3xl font-bold text-white">Plan your visit</h2>
+          <p className="mt-3 text-white/70 max-w-2xl mx-auto">
             Everything you need to know before stepping into the SnowCity experience.
           </p>
         </motion.div>

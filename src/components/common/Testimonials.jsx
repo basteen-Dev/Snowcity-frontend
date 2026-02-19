@@ -88,8 +88,8 @@ export default function Testimonials() {
   const currentTestimonial = testimonials[mobileIndex];
 
   return (
-    <section className="bg-gradient-to-b from-white to-purple-50 py-16 px-4">
-      <div className="mx-auto max-w-6xl">
+    <section className="bg-white py-16 px-6 md:px-8">
+      <div className="mx-auto max-w-[1400px]">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -142,9 +142,8 @@ export default function Testimonials() {
             {testimonials.map((_, idx) => (
               <span
                 key={idx}
-                className={`h-2.5 w-2.5 rounded-full ${
-                  idx === mobileIndex ? 'bg-purple-500' : 'bg-gray-300'
-                }`}
+                className={`h-2.5 w-2.5 rounded-full ${idx === mobileIndex ? 'bg-purple-500' : 'bg-gray-300'
+                  }`}
               />
             ))}
           </div>

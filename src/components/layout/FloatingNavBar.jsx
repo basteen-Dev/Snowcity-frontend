@@ -6,6 +6,7 @@ import api from "../../services/apiClient";
 import endpoints from "../../services/endpoints";
 import { getAttrId } from "../../utils/ids";
 import Logo from "../../assets/images/Logo.webp";
+import { Menu, X, Ticket, ChevronDown, User, LogOut, ClipboardList, Home, Mountain, Gift, BookOpen, Phone, Newspaper, Lock } from "lucide-react";
 import { prioritizeSnowcityFirst } from "../../utils/attractions";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -51,6 +52,7 @@ export default function FloatingNavBar() {
   const location = useLocation();
   const dispatch = useDispatch();
   const isBookingPage = location.pathname.startsWith("/booking");
+  const isHome = location.pathname === "/";
 
   const attractions = useSelector((s) => s.attractions.items || []);
   const offers = useSelector((s) => s.offers.items || []);
@@ -65,6 +67,16 @@ export default function FloatingNavBar() {
   const [menuOpen, setMenuOpen] = React.useState(null);
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [profileOpen, setProfileOpen] = React.useState(false);
+  const [scrolled, setScrolled] = React.useState(false);
+
+  React.useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   const [authModalOpen, setAuthModalOpen] = React.useState(false);
   const [authForm, setAuthForm] = React.useState({ name: "", email: "", phone: "" });
   const [authCountryCode, setAuthCountryCode] = React.useState("+91");
@@ -104,18 +116,22 @@ export default function FloatingNavBar() {
   // Prevent background scroll when mobile menu or auth modal is open
   useLockBodyScroll(mobileOpen || authModalOpen);
 
-  // Premium white navbar styling
+  // Premium navbar styling
+  const isWhite = scrolled || mobileOpen || !isHome;
+
   const navLinkBase =
-    "px-3 py-2 rounded-lg text-sm font-semibold tracking-wide transition-all duration-300 relative group";
-  const navLinkTone =
-    "text-gray-800 hover:text-sky-600 hover:bg-sky-50";
+    "px-3 py-2 rounded-lg text-sm font-bold tracking-wide transition-all duration-300 relative group";
+  const navLinkTone = isWhite
+    ? "text-gray-800 hover:text-sky-600 hover:bg-sky-50"
+    : "text-white hover:text-white/80 drop-shadow-md";
   const navLinkClass = `${navLinkBase} ${navLinkTone}`;
 
-  const signInButtonClass =
-    "inline-flex items-center rounded-full border border-sky-400 px-5 py-2 text-sky-600 font-semibold bg-white hover:bg-sky-50 transition-all duration-300 shadow-sm";
+  const signInButtonClass = isWhite
+    ? "inline-flex items-center rounded-full border border-sky-400 px-5 py-2 text-sky-600 font-semibold bg-white hover:bg-sky-50 transition-all duration-300 shadow-sm"
+    : "inline-flex items-center rounded-full border border-white/40 px-5 py-2 text-white font-semibold bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-all duration-300 shadow-sm";
 
   const bookTicketButtonClass =
-    "inline-flex items-center rounded-full px-5 py-2 text-sm font-semibold bg-sky-600 text-white hover:bg-sky-700 shadow-md transition-all duration-300 hover:shadow-lg";
+    "inline-flex items-center rounded-full px-6 py-2.5 text-sm font-bold bg-[#003de6] text-white hover:bg-[#002db3] shadow-md transition-all duration-300 hover:shadow-lg hover:scale-105 active:scale-95";
 
   const resetAuthState = React.useCallback(() => {
     setAuthForm({ name: "", email: "", phone: "" });
@@ -323,9 +339,8 @@ export default function FloatingNavBar() {
 
           {/* EMAIL REQUIRED */}
           <input
-            className={`w-full p-3 rounded-xl border focus:border-blue-500 outline-none ${
-              authErrors?.email ? "border-red-300" : "border-gray-200"
-            }`}
+            className={`w-full p-3 rounded-xl border focus:border-blue-500 outline-none ${authErrors?.email ? "border-red-300" : "border-gray-200"
+              }`}
             placeholder="Email"
             type="email"
             required
@@ -360,9 +375,8 @@ export default function FloatingNavBar() {
               </span>
             </div>
             <input
-              className={`flex-1 p-3 rounded-xl border focus:border-blue-500 outline-none tracking-wide ${
-                authErrors?.phone ? "border-red-300" : "border-gray-200"
-              }`}
+              className={`flex-1 p-3 rounded-xl border focus:border-blue-500 outline-none tracking-wide ${authErrors?.phone ? "border-red-300" : "border-gray-200"
+                }`}
               placeholder="98765 43210"
               type="tel"
               maxLength={10}
@@ -402,8 +416,8 @@ export default function FloatingNavBar() {
             {authOtp.status === "sending"
               ? "Sending..."
               : authOtp.sent
-              ? "Resend OTP"
-              : "Send OTP"}
+                ? "Resend OTP"
+                : "Send OTP"}
           </button>
 
           {authOtp.sent && (
@@ -419,7 +433,7 @@ export default function FloatingNavBar() {
                 }
               />
               <button
-                className="px-5 py-3 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700"
+                className="w-full inline-flex items-center justify-center rounded-xl bg-[#003de6] text-white px-6 py-3 text-sm font-bold shadow-md hover:bg-[#002db3] transition-all"
                 onClick={verifyNavOtp}
                 disabled={authOtp.status === "verifying"}
               >
@@ -450,207 +464,219 @@ export default function FloatingNavBar() {
       <nav
         ref={navRef}
         data-floating-nav
-        className={`fixed top-0 left-0 right-0 z-[150] transition-all duration-300 w-full bg-white border-b border-gray-200`}
+        className={`fixed top-4 left-4 right-4 z-[150] transition-[background-color,box-shadow,padding] duration-300  rounded-full transform-gpu ${isWhite
+          ? "bg-white/95 backdrop-blur-md py-1 shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1),0_0_0_1px_rgba(229,231,235,1)]"
+          : "bg-transparent py-1 shadow-[0_0_0_1px_rgba(255,255,255,0)]"
+          }`}
+        style={{ backfaceVisibility: 'hidden' }}
       >
+
         {/* ------------------- DESKTOP NAV -------------------- */}
-        <div
-          className="hidden md:flex items-center justify-between gap-4 px-6 py-3 bg-white text-gray-900"
-        >
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
-            <img
-              src={Logo}
-              alt="SnowCity Logo"
-              className="h-8 w-auto object-contain brightness-800"
-            />
-          </Link>
-
-          {/* MENU ITEMS */}
-          <div className="flex items-center gap-3 text-sm font-medium">
-            {/* Attractions */}
-            <div className="relative">
-              <button className={navLinkClass} onClick={() => toggleMenu("attr")}>
-                ATTRACTIONS ▾
-              </button>
-              {menuOpen === "attr" && (
-                <div className="absolute right-0 top-full mt-2 w-64 rounded-lg border border-gray-200 bg-white shadow-lg p-2 z-[110]" style={{ boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)' }}>
-                  <div className="max-h-72 overflow-y-auto">
-                    {topAttractions.map((a, idx) => {
-                      const attrId = getAttrId(a);
-                      const label = a?.name || a?.title || "Attraction";
-                      const href = a?.slug ? `/${a.slug}` : (attrId ? `/attractions/${attrId}` : '/attractions');
-                      return (
-                        <Link
-                          key={idx}
-                          to={href}
-                          className="block px-4 py-2.5 text-sm text-gray-800 hover:bg-sky-100 rounded-lg transition-all duration-200 font-medium"
-                          onClick={() => setMenuOpen(null)}
-                        >
-                          {label}
-                        </Link>
-                      );
-                    })}
-                    <Link
-                      to="/attractions"
-                      className="block px-4 py-2.5 text-sky-600 text-sm hover:bg-sky-100 rounded-lg transition-all duration-200 font-semibold border-t border-gray-200 mt-2 pt-3"
-                      onClick={() => setMenuOpen(null)}
-                    >
-                      View All →
-                    </Link>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Offers */}
-            <div className="relative">
-              <button className={navLinkClass} onClick={() => toggleMenu("offers")}>
-                OFFERS ▾
-              </button>
-              {menuOpen === "offers" && (
-                <div className="absolute right-0 top-full mt-2 w-56 rounded-lg border border-gray-200 bg-white shadow-lg p-2 z-[110]" style={{ boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)' }}>
-                  <Link
-                    to="/offers"
-                    className="block px-4 py-2.5 text-sm text-gray-800 hover:bg-sky-100 rounded-lg transition-all duration-200 font-medium"
-                    onClick={() => setMenuOpen(null)}
-                  >
-                    All Offers
-                  </Link>
-                  <Link
-                    to="/combos"
-                    className="block px-4 py-2.5 text-sm text-gray-800 hover:bg-sky-100 rounded-lg transition-all duration-200 font-medium"
-                    onClick={() => setMenuOpen(null)}
-                  >
-                    Combo Deals
-                  </Link>
-                </div>
-              )}
-            </div>
-
-            {/* Visitor Guide */}
-            <div className="relative">
-              <button className={navLinkClass} onClick={() => toggleMenu("guide")}>
-               PLAN VISIT ▾
-              </button>
-              {menuOpen === "guide" && (
-                <div className="absolute right-0 top-full mt-2 w-64 rounded-lg border border-gray-200 bg-white shadow-lg p-2 z-[110]" style={{ boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)' }}>
-                  {guidePages.map((p, idx) => (
-                    <Link
-                      key={idx}
-                      to={`/page/${p.slug || p.id}`}
-                      className="block px-4 py-2.5 text-sm text-gray-800 hover:bg-sky-100 rounded-lg transition-all duration-200 font-medium"
-                      onClick={() => setMenuOpen(null)}
-                    >
-                      {p.title || p.name}
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <Link to="/contact" className={navLinkClass}>
-              Contact Us
+        <div className="hidden md:block px-10 md:px-12">
+          <div className={`max-w-[1400px] mx-auto py-1 flex items-center justify-between gap-4 transition-colors duration-500`}>
+            {/* Logo */}
+            <Link to="/" className="flex items-center gap-2">
+              <img
+                src={Logo}
+                alt="SnowCity Logo"
+                className="h-9 w-auto object-contain"
+              />
             </Link>
-            {!token}
-            <button
-              className={bookTicketButtonClass}
-              onClick={() => navigate("/booking")}
-            >
-              🎟️ BUY TICKETS
-            </button>
 
-            {token && (
+            {/* MENU ITEMS */}
+            <div className="flex items-center gap-3 text-sm font-medium">
+              {/* Attractions */}
               <div className="relative">
-                <button
-                  className="h-10 w-10 rounded-full flex items-center justify-center text-sm font-bold bg-gradient-to-br from-sky-400 to-cyan-500 text-white hover:from-sky-500 hover:to-cyan-600 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-110"
-                  onClick={() => setProfileOpen((v) => !v)}
-                  title={userName}
-                >
-                  {initial}
+                <button className={navLinkClass} onClick={() => toggleMenu("attr")}>
+                  EXPERIENCES <ChevronDown className={`inline w-4 h-4 transition-transform duration-300 ${menuOpen === 'attr' ? 'rotate-180' : ''}`} />
                 </button>
-
-                {profileOpen && (
-                  <div className="absolute right-0 top-full mt-3 w-56 rounded-lg border border-gray-200 bg-white shadow-lg p-3 z-[110]" style={{ boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)' }}>
-                    <Link
-                      to="/my-bookings"
-                      className="block px-3 py-2 text-gray-800 hover:bg-gray-100 rounded-lg text-sm font-medium transition-all duration-200"
-                      onClick={() => setProfileOpen(false)}
-                    >
-                      📋 My Bookings
-                    </Link>
-                    <div className="px-3 py-2.5 mt-2 rounded-lg bg-gray-50 border border-gray-200 text-xs text-gray-700">
-                      <p className="font-semibold text-gray-900 text-sm mb-1.5">Account Details</p>
-                      <p className="leading-relaxed mb-1">
-                        <span className="font-semibold text-gray-800">Name:</span> {userName || "Guest"}
-                      </p>
-                      <p className="leading-relaxed mb-1">
-                        <span className="font-semibold text-gray-800">Phone:</span> {userPhone}
-                      </p>
-                      <p className="leading-relaxed">
-                        <span className="font-semibold text-gray-800">Email:</span> {userEmail}
-                      </p>
+                {menuOpen === "attr" && (
+                  <div className="absolute right-0 top-full mt-2 w-64 rounded-lg border border-gray-200 bg-white shadow-lg p-2 z-[110]" style={{ boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)' }}>
+                    <div className="max-h-72 overflow-y-auto">
+                      {topAttractions.map((a, idx) => {
+                        const attrId = getAttrId(a);
+                        const label = a?.name || a?.title || "Attraction";
+                        const href = a?.slug ? `/${a.slug}` : (attrId ? `/attractions/${attrId}` : '/attractions');
+                        return (
+                          <Link
+                            key={idx}
+                            to={href}
+                            className="block px-4 py-2.5 text-sm text-gray-800 hover:bg-sky-100 rounded-lg transition-all duration-200 font-medium"
+                            onClick={() => setMenuOpen(null)}
+                          >
+                            {label}
+                          </Link>
+                        );
+                      })}
+                      <Link
+                        to="/attractions"
+                        className="block px-4 py-2.5 text-sky-600 text-sm hover:bg-sky-100 rounded-lg transition-all duration-200 font-semibold border-t border-gray-200 mt-2 pt-3"
+                        onClick={() => setMenuOpen(null)}
+                      >
+                        View All →
+                      </Link>
                     </div>
-
-                    <button
-                      className="w-full px-3 py-2 mt-2 text-red-600 hover:bg-red-50 rounded-lg text-sm font-semibold transition-all duration-200"
-                      onClick={() => {
-                        dispatch(logout());
-                        setProfileOpen(false);
-                      }}
-                    >
-                      🚪 Logout
-                    </button>
                   </div>
                 )}
               </div>
-            )}
+
+              {/* Offers */}
+              <div className="relative">
+                <button className={navLinkClass} onClick={() => toggleMenu("offers")}>
+                  OFFERS <ChevronDown className={`inline w-4 h-4 transition-transform duration-300 ${menuOpen === 'offers' ? 'rotate-180' : ''}`} />
+                </button>
+                {menuOpen === "offers" && (
+                  <div className="absolute right-0 top-full mt-2 w-56 rounded-lg border border-gray-200 bg-white shadow-lg p-2 z-[110]" style={{ boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)' }}>
+                    <Link
+                      to="/offers"
+                      className="block px-4 py-2.5 text-sm text-gray-800 hover:bg-sky-100 rounded-lg transition-all duration-200 font-medium"
+                      onClick={() => setMenuOpen(null)}
+                    >
+                      All Offers
+                    </Link>
+                    <Link
+                      to="/combos"
+                      className="block px-4 py-2.5 text-sm text-gray-800 hover:bg-sky-100 rounded-lg transition-all duration-200 font-medium"
+                      onClick={() => setMenuOpen(null)}
+                    >
+                      Combo Deals
+                    </Link>
+                  </div>
+                )}
+              </div>
+
+              {/* Visitor Guide */}
+              <div className="relative">
+                <button className={navLinkClass} onClick={() => toggleMenu("guide")}>
+                  PLAN VISIT <ChevronDown className={`inline w-4 h-4 transition-transform duration-300 ${menuOpen === 'guide' ? 'rotate-180' : ''}`} />
+                </button>
+                {menuOpen === "guide" && (
+                  <div className="absolute right-0 top-full mt-2 w-64 rounded-lg border border-gray-200 bg-white shadow-lg p-2 z-[110]" style={{ boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)' }}>
+                    {guidePages.map((p, idx) => (
+                      <Link
+                        key={idx}
+                        to={`/page/${p.slug || p.id}`}
+                        className="block px-4 py-2.5 text-sm text-gray-800 hover:bg-sky-100 rounded-lg transition-all duration-200 font-medium"
+                        onClick={() => setMenuOpen(null)}
+                      >
+                        {p.title || p.name}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <Link to="/contact" className={navLinkClass}>
+                Contact Us
+              </Link>
+              {!token}
+              <button
+                className={bookTicketButtonClass}
+                onClick={() => navigate("/booking")}
+              >
+                <Ticket className="w-5 h-5 mr-2" /> BUY TICKETS
+              </button>
+
+              {token && (
+                <div className="relative">
+                  <button
+                    className="h-10 w-10 rounded-full flex items-center justify-center bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-blue-600 shadow-sm transition-all duration-300 hover:scale-105 ml-2"
+                    onClick={() => setProfileOpen((v) => !v)}
+                    title={userName}
+                  >
+                    <User className="w-5 h-5" />
+                  </button>
+
+                  {profileOpen && (
+                    <div className="absolute right-0 top-full mt-3 w-56 rounded-lg border border-gray-200 bg-white shadow-lg p-3 z-[110]" style={{ boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)' }}>
+                      <Link
+                        to="/my-bookings"
+                        className="block px-3 py-2 text-gray-800 hover:bg-gray-100 rounded-lg text-sm font-medium transition-all duration-200"
+                        onClick={() => setProfileOpen(false)}
+                      >
+                        <ClipboardList className="w-4 h-4 inline mr-2 text-blue-600" /> My Bookings
+                      </Link>
+                      <div className="px-3 py-2.5 mt-2 rounded-lg bg-gray-50 border border-gray-200 text-xs text-gray-700">
+                        <p className="font-semibold text-gray-900 text-sm mb-1.5">Account Details</p>
+                        <p className="leading-relaxed mb-1">
+                          <span className="font-semibold text-gray-800">Name:</span> {userName || "Guest"}
+                        </p>
+                        <p className="leading-relaxed mb-1">
+                          <span className="font-semibold text-gray-800">Phone:</span> {userPhone}
+                        </p>
+                        <p className="leading-relaxed">
+                          <span className="font-semibold text-gray-800">Email:</span> {userEmail}
+                        </p>
+                      </div>
+
+                      <button
+                        className="w-full px-3 py-2 mt-2 text-red-600 hover:bg-red-50 rounded-lg text-sm font-semibold transition-all duration-200 text-left"
+                        onClick={() => {
+                          dispatch(logout());
+                          setProfileOpen(false);
+                        }}
+                      >
+                        <LogOut className="w-4 h-4 inline mr-2" /> Logout
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* ------------------- MOBILE NAV BAR -------------------- */}
         <div
-          className="md:hidden px-3 py-2.5 flex items-center justify-between bg-white text-gray-900 border-b border-gray-200"
+          className={`md:hidden px-4 py-2 grid grid-cols-3 items-center transition-colors duration-300 ${isWhite
+            ? "text-gray-900"
+            : "text-white"
+            }`}
         >
-          <button
-            className="p-0 rounded-lg text-black font-bold  hover:scale-105"
-            onClick={() => setMobileOpen((v) => !v)}
-            aria-expanded={mobileOpen}
-            aria-label="Open menu"
-          >
-            {mobileOpen ? (
-              "✕"
-            ) : (
-              <div className="flex flex-col space-y-1">
-                <span className="block w-4 h-0.5 bg-black"></span>
-                <span className="block w-4 h-0.5 bg-black"></span>
-                <span className="block w-4 h-0.5 bg-black"></span>
-              </div>
-            )}
-          </button>
+          {/* LEFT: Menu Button */}
+          <div className="flex items-center justify-start">
+            <button
+              className="p-2 transition-transform duration-300 hover:scale-110 active:scale-95"
+              onClick={() => setMobileOpen((v) => !v)}
+              aria-expanded={mobileOpen}
+              aria-label="Open menu"
+            >
+              {mobileOpen ? (
+                <X className="w-6 h-6" />
+              ) : (
+                <Menu className="w-6 h-6" />
+              )}
+            </button>
+          </div>
 
-          <Link to="/" aria-label="Home">
-            <img
-              src={Logo}
-              alt="SnowCity Logo"
-              className="h-8 w-auto object-contain brightness-800"
-            />
-          </Link>
+          {/* MIDDLE: Logo (Absolutely Centered via Grid) */}
+          <div className="flex justify-center">
+            <Link to="/" aria-label="Home" className="flex items-center">
+              <img
+                src={Logo}
+                alt="SnowCity Logo"
+                className="h-8 w-auto object-contain pointer-events-none"
+                style={{ transition: 'none' }}
+              />
+            </Link>
+          </div>
 
-          <div className="relative">
+          {/* RIGHT: Profile / Placeholder */}
+          <div className="flex items-center justify-end">
             {token ? (
-              <>
+              <div className="relative">
                 <button
-                  className="h-10 w-10 rounded-full flex items-center justify-center text-sm font-bold bg-gradient-to-br from-sky-400 via-blue-500 to-cyan-500 text-white hover:from-sky-300 hover:via-blue-400 hover:to-cyan-400 transition-all duration-300 shadow-lg shadow-sky-500/40 hover:shadow-xl hover:scale-110 border border-sky-300/40"
+                  className="h-9 w-9 rounded-full flex items-center justify-center bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-blue-600 shadow-sm transition-all duration-300 hover:scale-110"
                   onClick={() => setProfileOpen((v) => !v)}
                   aria-expanded={profileOpen}
                   aria-label="Account menu"
                   title={userName}
                 >
-                  {initial}
+                  <User className="w-5 h-5" />
                 </button>
 
                 {profileOpen && (
                   <div className="absolute right-0 top-full mt-3 w-56 rounded-lg border border-gray-200 bg-white shadow-lg p-3 z-[110]" style={{ boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)' }}>
+                    {/* ... (profile menu content) */}
                     <Link
                       to="/my-bookings"
                       className="block px-3 py-2 text-gray-800 text-sm hover:bg-gray-100 rounded-lg font-medium transition-all duration-200"
@@ -659,7 +685,7 @@ export default function FloatingNavBar() {
                         setMobileOpen(false);
                       }}
                     >
-                      📋 My Bookings
+                      <ClipboardList className="w-4 h-4 inline mr-2 text-blue-600" /> My Bookings
                     </Link>
                     <div className="px-3 py-2.5 mt-2 rounded-lg bg-gray-50 border border-gray-200 text-xs text-gray-700">
                       <p className="font-semibold text-gray-900 text-sm mb-1.5">Account Details</p>
@@ -675,20 +701,20 @@ export default function FloatingNavBar() {
                     </div>
 
                     <button
-                      className="w-full px-3 py-2 mt-2 text-red-600 hover:bg-red-50 rounded-lg text-sm font-semibold transition-all duration-200"
+                      className="w-full px-3 py-2 mt-2 text-red-600 hover:bg-red-50 rounded-lg text-sm font-semibold transition-all duration-200 text-left"
                       onClick={() => {
                         dispatch(logout());
                         setProfileOpen(false);
                         setMobileOpen(false);
                       }}
                     >
-                      🚪 Logout
+                      <LogOut className="w-4 h-4 inline mr-2" /> Logout
                     </button>
                   </div>
                 )}
-              </>
+              </div>
             ) : (
-              <div className="h-10 w-10" />
+              <div className="w-9 h-9" />
             )}
           </div>
         </div>
@@ -696,19 +722,19 @@ export default function FloatingNavBar() {
         {/* ------------------- MOBILE MENU PANEL -------------------- */}
         {mobileOpen && (
           <div
-            className="md:hidden fixed left-0 right-0 top-[3.5rem] z-[120] bg-white border-b border-gray-200 shadow-lg px-4 py-4 space-y-2 max-h-[calc(100vh-6rem)] overflow-y-auto"
+            className="md:hidden fixed left-4 right-4 top-[5.5rem] z-[120] bg-white border border-gray-200 rounded-2xl shadow-2xl px-4 py-4 space-y-2 max-h-[calc(100vh-8rem)] overflow-y-auto"
           >
             <Link
               to="/"
               className="block py-3 px-4 text-black hover:text-gray-800 font-semibold transition-all duration-200 rounded-lg hover:bg-gray-100"
               onClick={() => setMobileOpen(false)}
             >
-              🏠 Home
+              <Home className="w-5 h-5 inline mr-3 text-blue-600" /> Home
             </Link>
 
             <details className="group">
               <summary className="cursor-pointer py-3 px-4 text-black hover:text-gray-800 font-semibold transition-all duration-200 rounded-lg hover:bg-gray-100 list-none">
-                🎢 Attractions
+                <Mountain className="w-5 h-5 inline mr-3 text-blue-600" /> Experiences
               </summary>
               <div className="pl-4 space-y-1 mt-2 pb-3 border-t border-sky-400/20 pt-3">
                 {topAttractions.slice(0, 8).map((a, idx) => (
@@ -733,7 +759,7 @@ export default function FloatingNavBar() {
 
             <details className="group">
               <summary className="cursor-pointer py-3 px-4 text-black hover:text-gray-800 font-semibold transition-all duration-200 rounded-lg hover:bg-gray-100 list-none">
-                🎁 Offers
+                <Gift className="w-5 h-5 inline mr-3 text-blue-600" /> Offers
               </summary>
               <div className="pl-4 space-y-1 mt-2 pb-3 border-t border-sky-400/20 pt-3">
                 <Link
@@ -755,7 +781,7 @@ export default function FloatingNavBar() {
 
             <details className="group">
               <summary className="cursor-pointer py-3 px-4 text-black hover:text-gray-800 font-semibold transition-all duration-200 rounded-lg hover:bg-gray-100 list-none">
-                📖 Visitor Guide
+                <BookOpen className="w-5 h-5 inline mr-3 text-blue-600" /> Visitor Guide
               </summary>
               <div className="pl-4 space-y-1 mt-2 pb-3 border-t border-sky-400/20 pt-3">
                 {guidePages.map((p, idx) => (
@@ -776,36 +802,26 @@ export default function FloatingNavBar() {
               className="block py-3 px-4 text-black hover:text-gray-800 font-semibold transition-all duration-200 rounded-lg hover:bg-gray-100 border-t border-sky-400/20 mt-3 pt-4"
               onClick={() => setMobileOpen(false)}
             >
-              📞 Contact Us
+              <Phone className="w-5 h-5 inline mr-3 text-blue-600" /> Contact Us
             </Link>
             <Link
               to="/blog"
               className="block py-3 px-4 text-black hover:text-gray-800 font-semibold transition-all duration-200 rounded-lg hover:bg-gray-100"
               onClick={() => setMobileOpen(false)}
             >
-              📰 Blogs
+              <Newspaper className="w-5 h-5 inline mr-3 text-blue-600" /> Blogs
             </Link>
 
             <div className="space-y-2 border-t border-sky-400/20 mt-4 pt-4">
-              {!token && (
-                <button
-                  className="w-full py-3 border-2 border-sky-400 text-black font-bold rounded-full hover:bg-gray-100 transition-all duration-300 hover:text-gray-800"
-                  onClick={() => {
-                    setMobileOpen(false);
-                    openAuthModal();
-                  }}
-                >
-                  🔐 Sign In
-                </button>
-              )}
+              {!token}
               <button
-                className="w-full py-3 bg-gradient-to-r from-sky-500 via-blue-500 to-cyan-500 text-white font-bold rounded-full hover:from-sky-600 hover:via-blue-600 hover:to-cyan-600 shadow-lg shadow-sky-500/30 transition-all duration-300 hover:scale-105"
+                className="w-full py-3 bg-[#003de6] text-white font-bold rounded-full hover:bg-[#002db3] shadow-lg shadow-blue-500/30 transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2"
                 onClick={() => {
                   setMobileOpen(false);
                   navigate("/booking");
                 }}
               >
-                🎟️ Book Tickets
+                <Ticket className="w-5 h-5" /> Book Tickets
               </button>
             </div>
           </div>

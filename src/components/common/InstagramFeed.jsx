@@ -149,7 +149,7 @@ export default function InstagramFeed() {
   );
 
   return (
-    <section className="bg-gradient-to-b from-white to-pink-50 py-16 px-4">
+    <section className="bg-white py-16 px-4">
       <div className="max-w-6xl mx-auto">
         {heading}
 

@@ -349,10 +349,10 @@ const buildSlotKey = (slot) => {
   if (!slot) return '';
   return String(
     slot.combo_slot_id ??
-      slot.id ??
-      slot._id ??
-      slot.slot_id ??
-      `${slot.start_time || ''}-${slot.end_time || ''}`,
+    slot.id ??
+    slot._id ??
+    slot.slot_id ??
+    `${slot.start_time || ''}-${slot.end_time || ''}`,
   );
 };
 
@@ -564,8 +564,8 @@ export default function ComboDetails() {
       const list = Array.isArray(out)
         ? out
         : Array.isArray(out?.data)
-        ? out.data
-        : [];
+          ? out.data
+          : [];
       setSlots(list);
 
       // auto-select first bookable slot for the date
@@ -588,7 +588,7 @@ export default function ComboDetails() {
   React.useEffect(() => {
     if (!state.data?.combo_id) {
       setOffers({ status: 'idle', items: [], error: null });
-      return () => {};
+      return () => { };
     }
     let cancelled = false;
     setOffers((s) => ({ ...s, status: 'loading', error: null }));
@@ -601,8 +601,8 @@ export default function ComboDetails() {
         const list = Array.isArray(res?.data)
           ? res.data
           : Array.isArray(res)
-          ? res
-          : [];
+            ? res
+            : [];
         setOffers({ status: 'succeeded', items: list, error: null });
       } catch (err) {
         if (cancelled) return;
@@ -761,11 +761,11 @@ export default function ComboDetails() {
   const heroTiles = (normalizedAttractions.length
     ? normalizedAttractions
     : [
-        {
-          title,
-          image_url: HERO_PLACEHOLDER,
-        },
-      ]
+      {
+        title,
+        image_url: HERO_PLACEHOLDER,
+      },
+    ]
   ).slice(0, Math.max(2, Math.min(3, normalizedAttractions.length || 2)));
 
   const heroCaption = heroTiles.map((a) => a.title).join(' + ');
@@ -788,12 +788,12 @@ export default function ComboDetails() {
   const discountPercent =
     hasBasePricing && comboPrice > 0 && comboPrice < baseSum
       ? Math.max(
-          0,
-          Math.round(
-            getDiscountPercent(combo) ||
-              ((baseSum - comboPrice) / baseSum) * 100,
-          ),
-        )
+        0,
+        Math.round(
+          getDiscountPercent(combo) ||
+          ((baseSum - comboPrice) / baseSum) * 100,
+        ),
+      )
       : Number(combo?.discount_percent || 0);
 
   const getSlotPricing = React.useCallback(
@@ -805,12 +805,12 @@ export default function ComboDetails() {
       const basePrice = unitBeforeOffer || originalPrice || 0;
       const bestOffer = comboId
         ? findBestOfferForSelection(offers.items, {
-            targetType: 'combo',
-            targetId: comboId,
-            date,
-            slot,
-            basePrice,
-          })
+          targetType: 'combo',
+          targetId: comboId,
+          date,
+          slot,
+          basePrice,
+        })
         : null;
       const finalPrice = bestOffer ? bestOffer.price : unitBeforeOffer;
       const localSavings =
@@ -965,16 +965,17 @@ export default function ComboDetails() {
                   <img
                     src={carouselImages[carouselIndex].src}
                     alt={carouselImages[carouselIndex].alt}
-                    className="w-full h-full object-cover transition-opacity duration-500"
+                    className="w-full h-full object-cover transition-opacity duration-500 brightness-[0.95]"
                     loading="lazy"
                     draggable="false"
                   />
-                  
+                  <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/50 via-black/10 to-transparent pointer-events-none" />
+
                   {/* Combo Title Overlay */}
                   <div className="absolute inset-0 flex items-start justify-start p-6">
-                    <h2 
+                    <h2
                       className="text-2xl md:text-3xl font-bold text-white drop-shadow-lg"
-                      style={{ 
+                      style={{
                         fontFamily: 'Inter, sans-serif',
                         color: '#87CEEB',
                         textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
@@ -1019,9 +1020,8 @@ export default function ComboDetails() {
                         key={idx}
                         type="button"
                         onClick={() => setCarouselIndex(idx)}
-                        className={`w-2 h-2 rounded-full transition-colors ${
-                          idx === carouselIndex ? 'bg-white' : 'bg-white/50'
-                        }`}
+                        className={`w-2 h-2 rounded-full transition-colors ${idx === carouselIndex ? 'bg-white' : 'bg-white/50'
+                          }`}
                         aria-label={`Go to image ${idx + 1}`}
                       />
                     ))}
@@ -1036,7 +1036,7 @@ export default function ComboDetails() {
             )}
           </div>
         </div>
-        
+
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
         <div className="absolute bottom-6 left-0 right-0 px-4">
           <div className="max-w-6xl mx-auto">
@@ -1096,7 +1096,7 @@ export default function ComboDetails() {
                     const mediaUrl = isVideo
                       ? imgSrc(item.media_url || item.url || item)
                       : imgSrc(item.image_url || item.url || item);
-                    
+
                     return (
                       <div key={item.gallery_item_id || item.id || index} className="relative group">
                         {isVideo ? (
@@ -1179,369 +1179,364 @@ export default function ComboDetails() {
 
 
 
-          {/* Detailed availability list (all slots) */}
-          <div
-            id="availability"
-            className="rounded-2xl border shadow-sm p-4 md:p-5 bg-white"
-          >
-            <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
-              <h2 className="text-lg md:text-xl font-semibold text-gray-900">
-                All time slots
-              </h2>
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <span>
-                  {dayjs(date).format('DD MMM YYYY')} • {qty} ticket
-                  {qty > 1 ? 's' : ''}
-                </span>
+            {/* Detailed availability list (all slots) */}
+            <div
+              id="availability"
+              className="rounded-2xl border shadow-sm p-4 md:p-5 bg-white"
+            >
+              <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+                <h2 className="text-lg md:text-xl font-semibold text-gray-900">
+                  All time slots
+                </h2>
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <span>
+                    {dayjs(date).format('DD MMM YYYY')} • {qty} ticket
+                    {qty > 1 ? 's' : ''}
+                  </span>
+                </div>
               </div>
-            </div>
 
-            {slotState.status === 'loading' ? (
-              <div className="py-3">
-                <Loader size="sm" />
-              </div>
-            ) : null}
-            {slotState.status === 'failed' ? (
-              <div className="py-3">
-                <ErrorState message={slotErr || 'Failed to load slots'} />
-              </div>
-            ) : null}
-            {slotState.status === 'loaded' && (
-              <>
-                {!slots.length ? (
-                  <div className="text-sm text-gray-500">
-                    No slots available for{' '}
-                    {dayjs(date).format('DD MMM YYYY')}.
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    {slots
-                      .filter((slot) => isSlotBookableForDate(slot, date))
-                      .map((slot) => {
-                        const timeText = labelTime(slot);
-                        const pricingInfo = getSlotPricing(slot);
-                        const price = pricingInfo.finalPrice;
-                        const slotBase = pricingInfo.originalPrice;
-                        const slotHasDiscount =
-                          slotBase > 0 && price >= 0 && price < slotBase;
-                        const slotDiscountPercent =
-                          slotHasDiscount && slotBase
-                            ? Math.max(
+              {slotState.status === 'loading' ? (
+                <div className="py-3">
+                  <Loader size="sm" />
+                </div>
+              ) : null}
+              {slotState.status === 'failed' ? (
+                <div className="py-3">
+                  <ErrorState message={slotErr || 'Failed to load slots'} />
+                </div>
+              ) : null}
+              {slotState.status === 'loaded' && (
+                <>
+                  {!slots.length ? (
+                    <div className="text-sm text-gray-500">
+                      No slots available for{' '}
+                      {dayjs(date).format('DD MMM YYYY')}.
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {slots
+                        .filter((slot) => isSlotBookableForDate(slot, date))
+                        .map((slot) => {
+                          const timeText = labelTime(slot);
+                          const pricingInfo = getSlotPricing(slot);
+                          const price = pricingInfo.finalPrice;
+                          const slotBase = pricingInfo.originalPrice;
+                          const slotHasDiscount =
+                            slotBase > 0 && price >= 0 && price < slotBase;
+                          const slotDiscountPercent =
+                            slotHasDiscount && slotBase
+                              ? Math.max(
                                 0,
                                 Math.round(((slotBase - price) / slotBase) * 100),
                               )
-                            : null;
-                        const disabled =
-                          slot?.available === 0 || slot?.capacity === 0;
-                        return (
-                          <div
-                            key={
-                              slot.combo_slot_id ||
-                              `${slot.combo_id}-${slot.start_time}-${slot.end_time}`
-                            }
-                            className={`flex items-center justify-between rounded-xl border px-4 py-3 shadow-sm ${
-                              disabled
+                              : null;
+                          const disabled =
+                            slot?.available === 0 || slot?.capacity === 0;
+                          return (
+                            <div
+                              key={
+                                slot.combo_slot_id ||
+                                `${slot.combo_id}-${slot.start_time}-${slot.end_time}`
+                              }
+                              className={`flex items-center justify-between rounded-xl border px-4 py-3 shadow-sm ${disabled
                                 ? 'opacity-50 bg-gray-100 border-gray-200'
                                 : 'bg-white border-gray-200 hover:border-blue-300 hover:shadow-md transition-all'
-                            }`}
-                          >
-                            <div className="flex flex-col gap-0.5">
-                              <span className="font-semibold text-base text-gray-900">
-                                {timeText || 'Time slot'}
-                              </span>
-                              <span className="text-xs text-gray-500">
-                                Capacity: {slot.capacity} •{' '}
-                                {slot.available ? 'Available' : 'Unavailable'}
-                              </span>
-                              {slotHasDiscount ? (
-                                <span className="text-sm text-emerald-600 font-medium mt-1">
-                                  {formatCurrency(price)}{' '}
-                                  <span className="line-through text-gray-400 ml-1">
-                                    {formatCurrency(slotBase)}
-                                  </span>
-                                </span>
-                              ) : (
-                                <span className="text-sm text-gray-700 mt-1">
-                                  {formatCurrency(price)}
-                                </span>
-                              )}
-                              {slotHasDiscount && (
-                                <span className="text-[11px] font-semibold text-emerald-600 mt-0.5">
-                                  Save {slotDiscountPercent}%
-                                </span>
-                              )}
-                            </div>
-                            <button
-                              type="button"
-                              disabled={disabled}
-                              onClick={() => onBook(slot, pricingInfo)}
-                              className={`px-4 py-2 rounded-full border text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                                disabled
-                                  ? 'opacity-50 cursor-not-allowed bg-gray-100 border-gray-200 text-gray-400'
-                                  : 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700'
-                              }`}
+                                }`}
                             >
-                              Book this slot
-                            </button>
-                          </div>
-                        );
-                      })}
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* RIGHT SIDEBAR */}
-        <aside className="lg:col-span-1">
-          <div className="rounded-3xl border shadow-lg bg-white p-6 sticky top-24 space-y-6">
-            <div>
-              <p className="text-[11px] uppercase tracking-wide text-gray-500">
-                Combo price
-              </p>
-              <div className="flex items-baseline gap-2 mt-1">
-                <span className="text-3xl font-semibold text-gray-900">
-                  {formatCurrency(comboPrice)}
-                </span>
-                <span className="text-sm text-gray-500">per combo</span>
-              </div>
-              {hasBasePricing && (
-                <div className="mt-2 text-sm text-gray-600">
-                  <span className="line-through mr-2">
-                    {formatCurrency(baseSum)}
-                  </span>
-                  {discountPercent > 0 ? (
-                    <span className="text-emerald-600 font-medium">
-                      Save {discountPercent}% ({formatCurrency(savings)})
-                    </span>
-                  ) : (
-                    <span>
-                      Special pricing across{' '}
-                      {normalizedAttractions.length || 2} experiences
-                    </span>
+                              <div className="flex flex-col gap-0.5">
+                                <span className="font-semibold text-base text-gray-900">
+                                  {timeText || 'Time slot'}
+                                </span>
+                                <span className="text-xs text-gray-500">
+                                  Capacity: {slot.capacity} •{' '}
+                                  {slot.available ? 'Available' : 'Unavailable'}
+                                </span>
+                                {slotHasDiscount ? (
+                                  <span className="text-sm text-emerald-600 font-medium mt-1">
+                                    {formatCurrency(price)}{' '}
+                                    <span className="line-through text-gray-400 ml-1">
+                                      {formatCurrency(slotBase)}
+                                    </span>
+                                  </span>
+                                ) : (
+                                  <span className="text-sm text-gray-700 mt-1">
+                                    {formatCurrency(price)}
+                                  </span>
+                                )}
+                                {slotHasDiscount && (
+                                  <span className="text-[11px] font-semibold text-emerald-600 mt-0.5">
+                                    Save {slotDiscountPercent}%
+                                  </span>
+                                )}
+                              </div>
+                              <button
+                                type="button"
+                                disabled={disabled}
+                                onClick={() => onBook(slot, pricingInfo)}
+                                className={`px-4 py-2 rounded-full border text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${disabled
+                                  ? 'opacity-50 cursor-not-allowed bg-gray-100 border-gray-200 text-gray-400'
+                                  : 'bg-[#003de6] text-white border-[#003de6] hover:bg-[#002db3]'
+                                  }`}
+                              >
+                                Book this slot
+                              </button>
+                            </div>
+                          );
+                        })}
+                    </div>
                   )}
-                </div>
+                </>
               )}
             </div>
+          </div>
 
-            {/* Booking controls (desktop) */}
-            <div className="space-y-5">
-              {/* Date */}
-              <div className="space-y-2">
-                <label
-                  className="text-sm font-medium text-gray-700"
-                  style={{ fontFamily: 'Inter, sans-serif' }}
-                >
-                  Select Date
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  
-                  <button
-                    type="button"
-                    onClick={handleToday}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                      date === dayjs().format('YYYY-MM-DD')
-                        ? 'bg-sky-600 text-white border-sky-600'
-                        : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
-                    }`}
-                    style={{ fontFamily: 'Inter, sans-serif' }}
-                  >
-                    Today
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleTomorrow}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                      date === dayjs().add(1, 'day').format('YYYY-MM-DD')
-                        ? 'bg-sky-600 text-white border-sky-600'
-                        : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
-                    }`}
-                    style={{ fontFamily: 'Inter, sans-serif' }}
-                  >
-                    Tomorrow
-                  </button>
-                  <button
-                    type="button"
-                    onClick={onCalendarButtonClick}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                      date && date !== '' && date !== dayjs().format('YYYY-MM-DD') && date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
-                        ? 'bg-sky-600 text-white border-sky-600'
-                        : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
-                    }`}
-                    style={{ fontFamily: 'Inter, sans-serif' }}
-                  >
-                    {date && date !== '' && date !== dayjs().format('YYYY-MM-DD') && date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
-                      ? dayjs(date).format('D MMM')
-                      : 'All Days'}
-                  </button>
+          {/* RIGHT SIDEBAR */}
+          <aside className="lg:col-span-1">
+            <div className="rounded-3xl border shadow-lg bg-white p-6 sticky top-24 space-y-6">
+              <div>
+                <p className="text-[11px] uppercase tracking-wide text-gray-500">
+                  Combo price
+                </p>
+                <div className="flex items-baseline gap-2 mt-1">
+                  <span className="text-3xl font-semibold text-gray-900">
+                    {formatCurrency(comboPrice)}
+                  </span>
+                  <span className="text-sm text-gray-500">per combo</span>
                 </div>
-              </div>
-
-              {/* Slot */}
-              <div className="space-y-2">
-                <label
-                  className="text-sm font-medium text-gray-700"
-                  style={{ fontFamily: 'Inter, sans-serif' }}
-                >
-                  Select Time Slot
-                </label>
-
-                {slotState.status === 'loading' ? (
-                  <div className="py-2">
-                    <Loader size="sm" />
-                  </div>
-                ) : slotState.status === 'failed' ? (
-                  <ErrorState
-                    message={slotErr || 'Failed to load slots'}
-                  />
-                ) : (
-                  <select
-                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-900 outline-none"
-                    value={slotState.selectedKey}
-                    onChange={(e) =>
-                      setSlotState((s) => ({
-                        ...s,
-                        selectedKey: e.target.value,
-                      }))
-                    }
-                    disabled={!slots.length}
-                    style={{ fontFamily: 'Inter, sans-serif' }}
-                  >
-                    {!slots.length ? (
-                      <option>No slots</option>
+                {hasBasePricing && (
+                  <div className="mt-2 text-sm text-gray-600">
+                    <span className="line-through mr-2">
+                      {formatCurrency(baseSum)}
+                    </span>
+                    {discountPercent > 0 ? (
+                      <span className="text-emerald-600 font-medium">
+                        Save {discountPercent}% ({formatCurrency(savings)})
+                      </span>
                     ) : (
-                      <>
-                        {!slotState.selectedKey && <option value="">Select slot</option>}
-                        {slots
-                          .filter((slot) => isSlotBookableForDate(slot, date))
-                          .map((slot) => {
-                            const key = buildSlotKey(slot);
-                            const pricing = getSlotPricing(slot);
-                            const label = labelTime(slot) || 'Slot';
-                            const priceText =
-                              pricing?.finalPrice != null
-                                ? ` • ${formatCurrency(pricing.finalPrice)}`
-                                : '';
-                            return (
-                              <option key={key} value={key}>
-                                {label}
-                                {priceText}
-                              </option>
-                            );
-                          })}
-                      </>
+                      <span>
+                        Special pricing across{' '}
+                        {normalizedAttractions.length || 2} experiences
+                      </span>
                     )}
-                  </select>
+                  </div>
                 )}
               </div>
 
-              {/* Qty */}
-              <div className="space-y-2">
-                <label
-                  className="text-sm font-medium text-gray-700"
+              {/* Booking controls (desktop) */}
+              <div className="space-y-5">
+                {/* Date */}
+                <div className="space-y-2">
+                  <label
+                    className="text-sm font-medium text-gray-700"
+                    style={{ fontFamily: 'Inter, sans-serif' }}
+                  >
+                    Select Date
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+
+                    <button
+                      type="button"
+                      onClick={handleToday}
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${date === dayjs().format('YYYY-MM-DD')
+                        ? 'bg-[#003de6] text-white border-[#003de6]'
+                        : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
+                        }`}
+                      style={{ fontFamily: 'Inter, sans-serif' }}
+                    >
+                      Today
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleTomorrow}
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${date === dayjs().add(1, 'day').format('YYYY-MM-DD')
+                        ? 'bg-[#003de6] text-white border-[#003de6]'
+                        : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
+                        }`}
+                      style={{ fontFamily: 'Inter, sans-serif' }}
+                    >
+                      Tomorrow
+                    </button>
+                    <button
+                      type="button"
+                      onClick={onCalendarButtonClick}
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${date && date !== '' && date !== dayjs().format('YYYY-MM-DD') && date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
+                        ? 'bg-[#003de6] text-white border-[#003de6]'
+                        : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
+                        }`}
+                      style={{ fontFamily: 'Inter, sans-serif' }}
+                    >
+                      {date && date !== '' && date !== dayjs().format('YYYY-MM-DD') && date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
+                        ? dayjs(date).format('D MMM')
+                        : 'All Days'}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Slot */}
+                <div className="space-y-2">
+                  <label
+                    className="text-sm font-medium text-gray-700"
+                    style={{ fontFamily: 'Inter, sans-serif' }}
+                  >
+                    Select Time Slot
+                  </label>
+
+                  {slotState.status === 'loading' ? (
+                    <div className="py-2">
+                      <Loader size="sm" />
+                    </div>
+                  ) : slotState.status === 'failed' ? (
+                    <ErrorState
+                      message={slotErr || 'Failed to load slots'}
+                    />
+                  ) : (
+                    <select
+                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-900 outline-none"
+                      value={slotState.selectedKey}
+                      onChange={(e) =>
+                        setSlotState((s) => ({
+                          ...s,
+                          selectedKey: e.target.value,
+                        }))
+                      }
+                      disabled={!slots.length}
+                      style={{ fontFamily: 'Inter, sans-serif' }}
+                    >
+                      {!slots.length ? (
+                        <option>No slots</option>
+                      ) : (
+                        <>
+                          {!slotState.selectedKey && <option value="">Select slot</option>}
+                          {slots
+                            .filter((slot) => isSlotBookableForDate(slot, date))
+                            .map((slot) => {
+                              const key = buildSlotKey(slot);
+                              const pricing = getSlotPricing(slot);
+                              const label = labelTime(slot) || 'Slot';
+                              const priceText =
+                                pricing?.finalPrice != null
+                                  ? ` • ${formatCurrency(pricing.finalPrice)}`
+                                  : '';
+                              return (
+                                <option key={key} value={key}>
+                                  {label}
+                                  {priceText}
+                                </option>
+                              );
+                            })}
+                        </>
+                      )}
+                    </select>
+                  )}
+                </div>
+
+                {/* Qty */}
+                <div className="space-y-2">
+                  <label
+                    className="text-sm font-medium text-gray-700"
+                    style={{ fontFamily: 'Inter, sans-serif' }}
+                  >
+                    Number of Tickets
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      className="w-8 h-8 text-sm rounded-full border border-gray-300 flex items-center justify-center"
+                      onClick={() =>
+                        setQty((prev) => Math.max(1, Number(prev || 1) - 1))
+                      }
+                    >
+                      -
+                    </button>
+
+                    <input
+                      type="number"
+                      min={1}
+                      value={qty}
+                      onChange={(e) =>
+                        setQty(Math.max(1, Number(e.target.value) || 1))
+                      }
+                      className="w-16 text-center border border-gray-300 rounded-lg px-2 py-1 text-sm"
+                      style={{ fontFamily: 'Inter, sans-serif' }}
+                    />
+
+                    <button
+                      type="button"
+                      className="w-8 h-8 text-sm rounded-full border border-gray-300 flex items-center justify-center"
+                      onClick={() =>
+                        setQty((prev) => Math.max(1, Number(prev || 1) + 1))
+                      }
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                {/* Subtotal / total */}
+                <div className="mt-3 rounded-2xl border bg-gray-50 px-3 py-2 text-sm">
+                  <div className="flex items-center justify-between text-gray-600">
+                    <span>Subtotal</span>
+                    <span className="rupee">
+                      {qty} × {formatCurrency(selectedSlotPricing?.finalPrice || comboPrice || 0)}
+                    </span>
+                  </div>
+                  <div className="mt-1 flex items-center justify-between text-gray-900 font-semibold">
+                    <span>Total</span>
+                    <span className="rupee">
+                      {formatCurrency((selectedSlotPricing?.finalPrice || comboPrice || 0) * qty)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Book button */}
+                <button
+                  type="button"
+                  className="w-full inline-flex items-center justify-center rounded-xl bg-[#003de6] text-white px-6 py-2.5 text-sm font-semibold shadow-md hover:bg-[#002db3] disabled:opacity-60 disabled:cursor-not-allowed"
+                  disabled={!selectedSlot || slotState.status === 'loading'}
+                  onClick={() => {
+                    if (!selectedSlot) return;
+                    onBook(selectedSlot, selectedSlotPricing);
+                  }}
                   style={{ fontFamily: 'Inter, sans-serif' }}
                 >
-                  Number of Tickets
-                </label>
-                <div className="flex items-center gap-3">
-                  <button
-                    type="button"
-                    className="w-8 h-8 text-sm rounded-full border border-gray-300 flex items-center justify-center"
-                    onClick={() =>
-                      setQty((prev) => Math.max(1, Number(prev || 1) - 1))
-                    }
-                  >
-                    -
-                  </button>
-
-                  <input
-                    type="number"
-                    min={1}
-                    value={qty}
-                    onChange={(e) =>
-                      setQty(Math.max(1, Number(e.target.value) || 1))
-                    }
-                    className="w-16 text-center border border-gray-300 rounded-lg px-2 py-1 text-sm"
-                    style={{ fontFamily: 'Inter, sans-serif' }}
-                  />
-
-                  <button
-                    type="button"
-                    className="w-8 h-8 text-sm rounded-full border border-gray-300 flex items-center justify-center"
-                    onClick={() =>
-                      setQty((prev) => Math.max(1, Number(prev || 1) + 1))
-                    }
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-
-              {/* Subtotal / total */}
-              <div className="mt-3 rounded-2xl border bg-gray-50 px-3 py-2 text-sm">
-                <div className="flex items-center justify-between text-gray-600">
-                  <span>Subtotal</span>
-                  <span className="rupee">
-                    {qty} × {formatCurrency(selectedSlotPricing?.finalPrice || comboPrice || 0)}
-                  </span>
-                </div>
-                <div className="mt-1 flex items-center justify-between text-gray-900 font-semibold">
-                  <span>Total</span>
-                  <span className="rupee">
-                    {formatCurrency((selectedSlotPricing?.finalPrice || comboPrice || 0) * qty)}
-                  </span>
-                </div>
-              </div>
-
-              {/* Book button */}
-              <button
-                type="button"
-                className="w-full inline-flex items-center justify-center rounded-xl bg-blue-600 text-white px-6 py-2.5 text-sm font-semibold shadow-md hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed"
-                disabled={!selectedSlot || slotState.status === 'loading'}
-                onClick={() => {
-                  if (!selectedSlot) return;
-                  onBook(selectedSlot, selectedSlotPricing);
-                }}
-                style={{ fontFamily: 'Inter, sans-serif' }}
-              >
-                {selectedSlotPricing?.finalPrice
-                  ? `Book Now • ${formatCurrency(
+                  {selectedSlotPricing?.finalPrice
+                    ? `Book Now • ${formatCurrency(
                       selectedSlotPricing.finalPrice * qty,
                     )}`
-                  : 'Book Now'}
-              </button>
-            </div>
+                    : 'Book Now'}
+                </button>
+              </div>
 
-            <div className="space-y-2 text-sm text-gray-600">
-              <p>
-                Includes admission for{' '}
-                {normalizedAttractions.length || 2} attraction(s). Book together
-                to lock in bundled savings.
-              </p>
-              <ul className="list-disc list-inside space-y-1">
-                {normalizedAttractions.map((attr, idx) => (
-                  <li key={`sidebar-attr-${idx}`}>{attr.title}</li>
-                ))}
-              </ul>
-            </div>
+              <div className="space-y-2 text-sm text-gray-600">
+                <p>
+                  Includes admission for{' '}
+                  {normalizedAttractions.length || 2} attraction(s). Book together
+                  to lock in bundled savings.
+                </p>
+                <ul className="list-disc list-inside space-y-1">
+                  {normalizedAttractions.map((attr, idx) => (
+                    <li key={`sidebar-attr-${idx}`}>{attr.title}</li>
+                  ))}
+                </ul>
+              </div>
 
-            <div className="flex flex-col gap-3">
-              <a
-                href="#availability"
-                className="inline-flex items-center justify-center rounded-full bg-blue-600 text-white px-6 py-3 text-sm font-medium hover:bg-blue-700"
-              >
-                View all time slots
-              </a>
-              <Link
-                to="/combos"
-                className="inline-flex items-center justify-center rounded-full border border-blue-100 text-blue-600 px-6 py-3 text-sm font-medium hover:bg-blue-50"
-              >
-                Explore other combos
-              </Link>
+              <div className="flex flex-col gap-3">
+                <a
+                  href="#availability"
+                  className="inline-flex items-center justify-center rounded-full bg-[#003de6] text-white px-6 py-3 text-sm font-medium hover:bg-[#002db3]"
+                >
+                  View all time slots
+                </a>
+                <Link
+                  to="/combos"
+                  className="inline-flex items-center justify-center rounded-full border border-blue-100 text-blue-600 px-6 py-3 text-sm font-medium hover:bg-blue-50"
+                >
+                  Explore other combos
+                </Link>
+              </div>
             </div>
-          </div>
-        </aside>
+          </aside>
         </div>
       </section>
 
@@ -1586,7 +1581,7 @@ export default function ComboDetails() {
 
             <button
               type="button"
-              className="inline-flex items-center justify-center rounded-xl bg-blue-600 text-white px-6 py-2.5 text-sm font-semibold shadow-md hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed"
+              className="inline-flex items-center justify-center rounded-xl bg-[#003de6] text-white px-6 py-2.5 text-sm font-semibold shadow-md hover:bg-[#002db3] disabled:opacity-60 disabled:cursor-not-allowed"
               disabled={!selectedSlot || slotState.status === 'loading'}
               onClick={() => {
                 if (!selectedSlot) return;
@@ -1677,13 +1672,12 @@ export default function ComboDetails() {
                               handleDateSelect(dayVal);
                             }}
                             disabled={disabled}
-                            className={`w-full h-8 rounded-lg flex items-center justify-center transition-colors ${
-                              disabled
-                                ? 'text-gray-300'
-                                : isToday
+                            className={`w-full h-8 rounded-lg flex items-center justify-center transition-colors ${disabled
+                              ? 'text-gray-300'
+                              : isToday
                                 ? 'bg-sky-100 text-sky-700 font-semibold'
                                 : 'hover:bg-gray-100'
-                            }`}
+                              }`}
                           >
                             {dayNum}
                           </button>

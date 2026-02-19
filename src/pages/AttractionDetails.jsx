@@ -28,9 +28,9 @@ const todayYMD = () => dayjs().format('YYYY-MM-DD');
 const getSlotKey = (s, idx) =>
   String(
     s?.id ??
-      s?._id ??
-      s?.slot_id ??
-      `${s?.start_time || ''}-${s?.end_time || ''}-${idx}`,
+    s?._id ??
+    s?.slot_id ??
+    `${s?.start_time || ''}-${s?.end_time || ''}-${idx}`,
   );
 
 const formatTime12Hour = (time24) => {
@@ -367,7 +367,7 @@ export default function AttractionDetails() {
   }, [details.data]);
 
   const loadLinkedGallery = React.useCallback((targetId) => {
-    if (!targetId) return () => {};
+    if (!targetId) return () => { };
     let canceled = false;
     setLinkedGallery({ status: 'loading', items: [], error: null });
     console.log('Debug - Loading gallery for attraction ID:', targetId);
@@ -382,7 +382,7 @@ export default function AttractionDetails() {
           },
         });
         if (canceled) return;
-        
+
         // Handle both { data, meta } format and direct array format
         const items = res?.data?.data || (Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : []);
 
@@ -394,14 +394,14 @@ export default function AttractionDetails() {
         const validItems = items.filter(item => {
           const itemTargetType = String(item?.target_type || '').toLowerCase();
           const itemTargetId = item?.target_ref_id;
-          
+
           const typeMatches = itemTargetType === 'attraction';
           const idMatches = itemTargetId && (
             itemTargetId === targetId ||
             String(itemTargetId) === String(targetId) ||
             Number(itemTargetId) === Number(targetId)
           );
-          
+
           if (!typeMatches || !idMatches) {
             console.warn('Debug - Filtering out invalid gallery item:', {
               item,
@@ -412,7 +412,7 @@ export default function AttractionDetails() {
               idMatches
             });
           }
-          
+
           return typeMatches && idMatches;
         });
 
@@ -455,22 +455,22 @@ export default function AttractionDetails() {
 
   React.useEffect(() => {
     console.log('Debug - Gallery loading effect triggered. numericAttrId:', numericAttrId);
-    
+
     // Reset gallery state when attraction changes
     setLinkedGallery({ status: 'loading', items: [], error: null });
-    
+
     if (!numericAttrId) {
       console.log('Debug - No numericAttrId, setting gallery to idle');
       setLinkedGallery({ status: 'idle', items: [], error: null });
-      return () => {};
+      return () => { };
     }
-    
+
     // Add a small delay to ensure state reset
     const timeoutId = setTimeout(() => {
       const cancel = loadLinkedGallery(numericAttrId);
       return cancel;
     }, 100);
-    
+
     return () => {
       clearTimeout(timeoutId);
     };
@@ -491,13 +491,13 @@ export default function AttractionDetails() {
         document.title = data?.meta_title || data?.title || data?.name || 'Attraction Details';
       } catch (err) {
         if (err?.canceled) return;
-        
+
         // If attraction not found (404), redirect to 404 page
         if (err?.status === 404 || err?.response?.status === 404) {
           navigate('/404', { replace: true });
           return;
         }
-        
+
         setDetails({
           status: 'failed',
           data: null,
@@ -520,8 +520,8 @@ export default function AttractionDetails() {
       const list = Array.isArray(res?.data)
         ? res.data
         : Array.isArray(res)
-        ? res
-        : [];
+          ? res
+          : [];
       setSlots({ status: 'succeeded', items: list, error: null });
 
       // auto select first available slot
@@ -565,8 +565,8 @@ export default function AttractionDetails() {
         const list = Array.isArray(res?.data)
           ? res.data
           : Array.isArray(res)
-          ? res
-          : [];
+            ? res
+            : [];
         setOffers({ status: 'succeeded', items: list, error: null });
       } catch (err) {
         if (cancelled) return;
@@ -601,18 +601,18 @@ export default function AttractionDetails() {
 
   const coverDesktop = imgSrc(
     a?.desktop_image_url ||
-      a?.hero_image ||
-      a?.banner_image ||
-      a?.image_web ||
-      a?.image_url ||
-      a,
+    a?.hero_image ||
+    a?.banner_image ||
+    a?.image_web ||
+    a?.image_url ||
+    a,
     placeholderDesktop,
   );
   const coverMobile = imgSrc(
     a?.mobile_image ||
-      a?.image_mobile ||
-      a?.image_url ||
-      a,
+    a?.image_mobile ||
+    a?.image_url ||
+    a,
     placeholderMobile,
   );
   const cover = isDesktop ? coverDesktop : coverMobile;
@@ -624,12 +624,12 @@ export default function AttractionDetails() {
       ...item,
       image_url: getGalleryMediaUrl(item) || imgSrc(item.image_url || item.url || item, '')
     }));
-    
+
     // For hero display: use cover as primary, then gallery images
     if (cover) {
       return [{ image_url: cover, isCover: true }, ...galleryImages];
     }
-    
+
     // If no cover, use gallery images only
     return galleryImages;
   }, [linkedGallery.items, cover]);
@@ -721,8 +721,8 @@ export default function AttractionDetails() {
   const effectiveUnitPrice = hasBackendOffer
     ? unitBeforeOffer || baseUnitPrice
     : bestOffer
-    ? bestOffer.price
-    : unitBeforeOffer;
+      ? bestOffer.price
+      : unitBeforeOffer;
 
   const appliedOffer = hasBackendOffer ? slotOffer : bestOffer?.offer || null;
   const offerDescription = appliedOffer?.description || '';
@@ -730,8 +730,8 @@ export default function AttractionDetails() {
   const discountPercent = hasBackendOffer
     ? backendDiscountPercent
     : bestOffer && baseUnitPrice > 0
-    ? Math.round(((baseUnitPrice - effectiveUnitPrice) / baseUnitPrice) * 100)
-    : getDiscountPercent(a) || 0;
+      ? Math.round(((baseUnitPrice - effectiveUnitPrice) / baseUnitPrice) * 100)
+      : getDiscountPercent(a) || 0;
 
   const hasDiscount =
     baseUnitPrice > 0 &&
@@ -870,12 +870,12 @@ export default function AttractionDetails() {
                         loading="lazy"
                         draggable="false"
                       />
-                      
+
                       {/* Attraction Title Overlay */}
                       <div className="absolute inset-0 flex items-start justify-start p-6">
-                        <h2 
+                        <h2
                           className="text-2xl md:text-3xl font-bold text-white drop-shadow-lg"
-                          style={{ 
+                          style={{
                             fontFamily: 'Inter, sans-serif',
                             color: '#87CEEB',
                             textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
@@ -901,10 +901,11 @@ export default function AttractionDetails() {
                         <img
                           src={galleryViewerItems[0]?.image_url || ''}
                           alt={title}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover brightness-[0.95]"
                           loading="lazy"
                           draggable="false"
                         />
+                        <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/50 via-black/10 to-transparent pointer-events-none" />
                       </div>
                     </button>
 
@@ -951,12 +952,12 @@ export default function AttractionDetails() {
                       loading="lazy"
                       draggable="false"
                     />
-                    
+
                     {/* Attraction Title Overlay */}
                     <div className="absolute inset-0 flex items-start justify-start p-6">
-                      <h2 
+                      <h2
                         className="text-2xl md:text-3xl font-bold text-white drop-shadow-lg"
-                        style={{ 
+                        style={{
                           fontFamily: 'Inter, sans-serif',
                           color: '#87CEEB',
                           textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
@@ -1051,11 +1052,10 @@ export default function AttractionDetails() {
                 <button
                   type="button"
                   onClick={handleToday}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                    date === todayYMD()
-                      ? 'bg-sky-600 text-white border-sky-600'
-                      : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
-                  }`}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${date === todayYMD()
+                    ? 'bg-[#003de6] text-white border-[#003de6]'
+                    : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
+                    }`}
                   style={{ fontFamily: 'Inter, sans-serif' }}
                 >
                   Today
@@ -1063,11 +1063,10 @@ export default function AttractionDetails() {
                 <button
                   type="button"
                   onClick={handleTomorrow}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                    date === dayjs().add(1, 'day').format('YYYY-MM-DD')
-                      ? 'bg-sky-600 text-white border-sky-600'
-                      : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
-                  }`}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${date === dayjs().add(1, 'day').format('YYYY-MM-DD')
+                    ? 'bg-[#003de6] text-white border-[#003de6]'
+                    : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
+                    }`}
                   style={{ fontFamily: 'Inter, sans-serif' }}
                 >
                   Tomorrow
@@ -1077,18 +1076,17 @@ export default function AttractionDetails() {
                 <button
                   type="button"
                   onClick={onCalendarButtonClick}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                    date &&
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${date &&
                     date !== todayYMD() &&
                     date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
-                      ? 'bg-sky-600 text-white border-sky-600'
-                      : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
-                  }`}
+                    ? 'bg-[#003de6] text-white border-[#003de6]'
+                    : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
+                    }`}
                   style={{ fontFamily: 'Inter, sans-serif' }}
                 >
                   {date &&
-                  date !== todayYMD() &&
-                  date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
+                    date !== todayYMD() &&
+                    date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
                     ? dayjs(date).format('D MMM')
                     : 'All Days'}
                 </button>
@@ -1206,7 +1204,7 @@ export default function AttractionDetails() {
             {/* Book button */}
             <button
               type="button"
-              className="w-full inline-flex items-center justify-center rounded-xl bg-blue-600 text-white px-6 py-2.5 text-sm font-semibold shadow-md hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed"
+              className="w-full inline-flex items-center justify-center rounded-xl bg-[#003de6] text-white px-6 py-2.5 text-sm font-semibold shadow-md hover:bg-[#002db3] disabled:opacity-60 disabled:cursor-not-allowed"
               disabled={!selectedSlotForBar || !effectiveUnitPrice}
               onClick={onBookNow}
               style={{ fontFamily: 'Inter, sans-serif' }}
@@ -1368,11 +1366,10 @@ export default function AttractionDetails() {
                       <button
                         type="button"
                         onClick={handleToday}
-                        className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                          date === todayYMD()
-                            ? 'bg-sky-600 text-white border-sky-600'
-                            : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
-                        }`}
+                        className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${date === todayYMD()
+                          ? 'bg-[#003de6] text-white border-[#003de6]'
+                          : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
+                          }`}
                         style={{ fontFamily: 'Inter, sans-serif' }}
                       >
                         Today
@@ -1380,11 +1377,10 @@ export default function AttractionDetails() {
                       <button
                         type="button"
                         onClick={handleTomorrow}
-                        className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                          date === dayjs().add(1, 'day').format('YYYY-MM-DD')
-                            ? 'bg-sky-600 text-white border-sky-600'
-                            : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
-                        }`}
+                        className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${date === dayjs().add(1, 'day').format('YYYY-MM-DD')
+                          ? 'bg-[#003de6] text-white border-[#003de6]'
+                          : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
+                          }`}
                         style={{ fontFamily: 'Inter, sans-serif' }}
                       >
                         Tomorrow
@@ -1392,18 +1388,17 @@ export default function AttractionDetails() {
                       <button
                         type="button"
                         onClick={onCalendarButtonClick}
-                        className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                          date &&
+                        className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${date &&
                           date !== todayYMD() &&
                           date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
-                            ? 'bg-sky-600 text-white border-sky-600'
-                            : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
-                        }`}
+                          ? 'bg-[#003de6] text-white border-[#003de6]'
+                          : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
+                          }`}
                         style={{ fontFamily: 'Inter, sans-serif' }}
                       >
                         {date &&
-                        date !== todayYMD() &&
-                        date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
+                          date !== todayYMD() &&
+                          date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
                           ? dayjs(date).format('D MMM')
                           : 'All Days'}
                       </button>
@@ -1528,7 +1523,7 @@ export default function AttractionDetails() {
                   {/* Book button */}
                   <button
                     type="button"
-                    className="w-full inline-flex items-center justify-center rounded-xl bg-blue-600 text-white px-6 py-2.5 text-sm font-semibold shadow-md hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed"
+                    className="w-full inline-flex items-center justify-center rounded-xl bg-[#003de6] text-white px-6 py-2.5 text-sm font-semibold shadow-md hover:bg-[#002db3] disabled:opacity-60 disabled:cursor-not-allowed"
                     disabled={!selectedSlotForBar || !effectiveUnitPrice}
                     onClick={onBookNow}
                     style={{ fontFamily: 'Inter, sans-serif' }}
@@ -1614,7 +1609,7 @@ export default function AttractionDetails() {
 
               <button
                 type="button"
-                className="shrink-0 inline-flex items-center justify-center rounded-xl bg-blue-600 text-white px-5 py-2.5 text-sm font-semibold shadow-md hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed"
+                className="shrink-0 inline-flex items-center justify-center rounded-xl bg-[#003de6] text-white px-5 py-2.5 text-sm font-semibold shadow-md hover:bg-[#002db3] disabled:opacity-60 disabled:cursor-not-allowed"
                 disabled={!selectedSlotForBar || !effectiveUnitPrice}
                 onClick={onBookNow}
                 style={{ fontFamily: 'Inter, sans-serif' }}
@@ -1704,25 +1699,21 @@ export default function AttractionDetails() {
                             disabled={isPast}
                             className={`
                               p-2 rounded-lg text-sm font-medium transition-all duration-200
-                              ${
-                                isPast
-                                  ? 'text-gray-300 cursor-not-allowed bg-gray-50'
-                                  : ''
+                              ${isPast
+                                ? 'text-gray-300 cursor-not-allowed bg-gray-50'
+                                : ''
                               }
-                              ${
-                                isSelected
-                                  ? 'bg-sky-600 text-white shadow-sm scale-105'
-                                  : ''
+                              ${isSelected
+                                ? 'bg-sky-600 text-white shadow-sm scale-105'
+                                : ''
                               }
-                              ${
-                                !isPast && !isSelected
-                                  ? 'hover:bg-sky-50 text-gray-700 hover:text-sky-700'
-                                  : ''
+                              ${!isPast && !isSelected
+                                ? 'hover:bg-sky-50 text-gray-700 hover:text-sky-700'
+                                : ''
                               }
-                              ${
-                                isToday && !isSelected
-                                  ? 'bg-sky-100 text-sky-700 font-semibold border border-sky-200'
-                                  : ''
+                              ${isToday && !isSelected
+                                ? 'bg-sky-100 text-sky-700 font-semibold border border-sky-200'
+                                : ''
                               }
                             `}
                           >

@@ -1,8 +1,9 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { formatCurrency } from '../../utils/formatters';
 import { getPrice } from '../../utils/pricing';
 import { imgSrc } from '../../utils/media';
+import { Info } from 'lucide-react';
 
 const IMAGE_PLACEHOLDER = (seed = 'combo') => `https://picsum.photos/seed/${seed}/640/400`;
 
@@ -47,64 +48,6 @@ const getComboPrimaryImage = (combo) => {
     if (src) return src;
   }
   return '';
-};
-
-const getComboPreviewImages = (combo, fallbacks = []) => {
-  const images = [];
-  const seen = new Set();
-  const push = (candidate) => {
-    const src = resolveImageSource(candidate);
-    if (src && !seen.has(src)) {
-      seen.add(src);
-      images.push(src);
-    }
-  };
-
-  if (combo) {
-    const explicit = [
-      combo.attraction_1?.image_url,
-      combo.attraction_1_image,
-      combo.attraction_1?.cover_image,
-      combo.attraction_2?.image_url,
-      combo.attraction_2_image,
-      combo.attraction_2?.cover_image,
-      combo.attraction_1?.media?.[0],
-      combo.attraction_2?.media?.[0]
-    ];
-    explicit.forEach(push);
-
-    if (Array.isArray(combo.media)) combo.media.forEach(push);
-    if (Array.isArray(combo.gallery)) combo.gallery.forEach(push);
-  }
-
-  fallbacks.forEach(push);
-
-  return images.slice(0, 2);
-};
-
-const normalizeAttraction = (raw, fallbackTitle = 'Attraction', seed = 'combo-attraction') => {
-  if (!raw || typeof raw !== 'object') {
-    return {
-      title: fallbackTitle,
-      image_url: IMAGE_PLACEHOLDER(seed),
-      slug: null,
-      price: 0,
-      href: null,
-    };
-  }
-
-  const title = raw.title || raw.name || fallbackTitle;
-  const slug = raw.slug || raw.id || raw.attraction_id || null;
-  const price = Number(raw.base_price || raw.price || raw.amount || 0);
-  const image = pickImage(raw.image_url || raw.cover_image || raw.image, seed);
-
-  return {
-    title,
-    image_url: image,
-    slug,
-    price,
-    href: slug ? `/${slug}` : null,
-  };
 };
 
 const toAmount = (value) => {
@@ -157,57 +100,23 @@ export default function ComboCard({ item }) {
   const desc = item?.short_description || item?.subtitle || '';
   const comboId = item?.combo_id || item?.id || item?.slug || null;
 
-  const leftSeed = comboId
-    ? `combo-${comboId}-left`
-    : `combo-left-${title.replace(/\s+/g, '-').toLowerCase()}`;
-  const rightSeed = comboId
-    ? `combo-${comboId}-right`
-    : `combo-right-${title.replace(/\s+/g, '-').toLowerCase()}`;
-
-  const left = normalizeAttraction(
-    item?.attraction_1 || {
-      title: item?.attraction_1_title,
-      image_url: item?.attraction_1_image,
-      slug: item?.attraction_1_slug,
-      base_price: item?.attraction_1_price,
-    },
-    'Experience A',
-    leftSeed
-  );
-
-  const right = normalizeAttraction(
-    item?.attraction_2 || {
-      title: item?.attraction_2_title,
-      image_url: item?.attraction_2_image,
-      slug: item?.attraction_2_slug,
-      base_price: item?.attraction_2_price,
-    },
-    'Experience B',
-    rightSeed
-  );
-
   const heroImage = getComboPrimaryImage(item);
-  const splitImages = getComboPreviewImages(item, [left.image_url, right.image_url]);
-
   const price = getPrice(item, { includeOffers: false });
   const baseSum = computeBaseSum(item);
   const comboDisplayPrice = price > 0 ? price : (toAmount(item?.combo_price) || toAmount(item?.total_price) || baseSum);
-  const hasBase = baseSum > 0;
-  const discountPercent =
-    hasBase && comboDisplayPrice > 0 ? Math.max(0, Math.round((1 - comboDisplayPrice / baseSum) * 100))
-      : Number(item?.discount_percent || 0);
 
   const comboSlug = generateComboSlug(item);
   const comboHref = comboSlug ? `/combo-${comboSlug}` : (comboId ? `/combos/${comboId}` : '/combos');
   const numericComboId = item?.combo_id || item?.id || null;
   const bookHref = numericComboId ? `/booking?combo_id=${numericComboId}&openDrawer=true` : '/booking?openDrawer=true';
 
+  const navigate = useNavigate();
   const stop = (e) => e.stopPropagation();
 
   return (
-    <div
-      className="exp-card"
-      onClick={() => window.location.href = comboHref}
+    <Link
+      to={comboHref}
+      className="exp-card block no-underline"
     >
       <div className="exp-card-img">
         {heroImage && (
@@ -219,26 +128,35 @@ export default function ComboCard({ item }) {
             decoding="async"
           />
         )}
-        <div className="exp-icon">❄️</div>
       </div>
       <div className="exp-card-body">
-        <div className="exp-type">Combo Deal</div>
+        <div className="exp-type">Exclusive Combo</div>
         <div className="exp-name">{title}</div>
-        <div className="exp-desc">{desc}</div>
-        <div className="exp-footer">
-          <div>
-            <div className="exp-price-label">Per Person</div>
-            <div className="exp-price">{formatCurrency(comboDisplayPrice || 1299)} <span>onwards</span></div>
+    
+
+        <div className="flex gap-3 mb-6">
+          <div className="flex-shrink-0 mt-1">
+           
           </div>
-          <Link
-            to={bookHref}
-            onClick={stop}
-            className="btn-book-exp"
+          <div className="exp-desc">{desc}</div>
+        </div>
+
+        <div className="flex items-center justify-between mt-auto pt-4 border-t border-slate-100">
+          <div>
+            <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Per Person</p>
+            <p className="text-xl font-extrabold text-[#1e3a8a]">{formatCurrency(comboDisplayPrice || 1299)}</p>
+          </div>
+          <div
+            onClick={(e) => {
+              stop(e);
+              navigate(bookHref);
+            }}
+            className="btn-book-exp !py-2.5 !px-6 !text-xs cursor-pointer"
           >
             Book Now
-          </Link>
+          </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }

@@ -253,177 +253,113 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Autoplay, Pagination } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/pagination";
 import AttractionCard from "../cards/AttractionCard";
 
-function getKey(item, index) {
-  return (
-    item?.attraction_id ??
-    item?.id ??
-    item?.slug ??
-    item?.uuid ??
-    `attr-${index}`
-  ).toString();
-}
 
 export default function AttractionsCarousel({ items = [] }) {
-  const [active, setActive] = React.useState(0);
-  
-  // Sort items: Snow City first, then second, then third, then remaining
+  // Sort items to ensure a consistent experience
   const sortedItems = React.useMemo(() => {
-    // Find Snow City attraction (case-insensitive search)
-    const snowCityItem = items.find(item => 
-      (item.title || item.name || '').toLowerCase().includes('snow city')
-    );
-    
-    // Get remaining items excluding Snow City
-    const remainingItems = items.filter(item => 
-      !(item.title || item.name || '').toLowerCase().includes('snow city')
-    );
-    
-    // Sort remaining items by ID
-    const sortedRemaining = [...remainingItems].sort((a, b) => {
+    return [...items].sort((a, b) => {
       const idA = a?.attraction_id ?? a?.id ?? 0;
       const idB = b?.attraction_id ?? b?.id ?? 0;
       return idA - idB;
     });
-    
-    // Combine: Snow City first, then first item from remaining, then second item from remaining, then rest
-    const result = [];
-    if (snowCityItem) result.push(snowCityItem);
-    if (sortedRemaining[0]) result.push(sortedRemaining[0]);
-    if (sortedRemaining[1]) result.push(sortedRemaining[1]);
-    result.push(...sortedRemaining.slice(2));
-    
-    return result;
   }, [items]);
-  
-  const total = sortedItems.length;
 
-  // Mobile auto slide
-  React.useEffect(() => {
-    if (window.innerWidth >= 768 || total <= 1) return;
-    const t = setInterval(() => {
-      setActive((p) => (p + 1) % total);
-    }, 3000);
-    return () => clearInterval(t);
-  }, [total]);
+  const [activeIndex, setActiveIndex] = React.useState(0);
+
+  // For smooth loop behavior when item count is low relative to slidesPerView
+  const displayItems = React.useMemo(() => {
+    if (sortedItems.length > 0) {
+      // Triplicate to ensure Swiper always has enough slides for a perfect loop/peek
+      return [...sortedItems, ...sortedItems, ...sortedItems];
+    }
+    return sortedItems;
+  }, [sortedItems]);
+
+  if (!sortedItems.length) return null;
+
+  const realIndex = activeIndex % sortedItems.length;
 
   return (
-    <section
-      className="
-        relative w-full overflow-hidden py-16
-        bg-gradient-to-b
-        from-[#e0f2fe] via-[#bae6fd] to-white
-      "
-    >
-      {/* HEADER – UNCHANGED */}
-      <div className="relative z-10 max-w-6xl mx-auto px-4 text-center mb-10">
-        <p className="text-xs font-semibold tracking-[0.4em] text-slate-400">
-          DISCOVER
+    <section className="relative w-full overflow-hidden pt-12 pb-24 px-6 md:px-8 bg-gradient-to-t from-sky-100 to-white">
+      {/* HEADER - Corporate Grade Alignment */}
+      <div className="relative z-10 max-w-[1400px] mx-auto text-center mb-12">
+        <p className="text-xs font-bold tracking-[0.5em] text-sky-600/70 uppercase mb-4">
+          Discover
         </p>
-        <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mt-3">
-          Attractions
+        <h2 className="text-4xl md:text-4xl font-black text-slate-900 tracking-tight uppercase leading-none">
+          Experiences
         </h2>
-        <p className="mt-3 text-sm text-slate-500">
-          Discover our amazing collection of thrilling experiences
+        <div className="w-20 h-1.5 bg-[#003de6] mx-auto mt-6 mb-8 rounded-full" />
+        <p className="text-gray-600 text-lg md:text-xl max-w-2xl mx-auto font-medium leading-relaxed">
+          Discover our amazing collection of thrilling experiences and winter wonders.
         </p>
       </div>
 
-      {/* ================= DESKTOP ================= */}
-      <div className="hidden md:block relative z-10">
-        <div
-          className="
-            flex gap-6 px-10
-            overflow-x-auto scrollbar-hide
-            snap-x snap-mandatory
-          "
-        >
-          {sortedItems.map((item, i) => (
-            <div
-              key={getKey(item, i)}
-              className="snap-start min-w-[340px] max-w-[340px]"
-            >
-              <AttractionCard item={item} />
-            </div>
-          ))}
-        </div>
+      {/* DESKTOP GRID (4 Columns) */}
+      <div className="hidden md:grid grid-cols-2 lg:grid-cols-4 gap-8 max-w-[1400px] mx-auto mb-16">
+        {sortedItems.slice(0, 4).map((item) => (
+          <div key={item?.id}>
+            <AttractionCard item={item} />
+          </div>
+        ))}
       </div>
 
-      {/* ================= MOBILE ================= */}
-      <div className="md:hidden relative z-10 px-4">
-        <div className="flex justify-center">
-          {sortedItems[active] && (
-            <div className="w-[85%] transition-all duration-500">
-              <AttractionCard item={sortedItems[active]} />
-            </div>
-          )}
-        </div>
+      {/* MOBILE SLIDER */}
+      <div className="md:hidden relative z-10 premium-carousel mb-8">
+        <Swiper
+          modules={[Autoplay]}
+          spaceBetween={16}
+          slidesPerView={1.3}
+          centeredSlides={true}
+          loop={true}
+          loopedSlides={sortedItems.length}
+          loopPreventsSliding={false}
+          grabCursor={true}
+          watchSlidesProgress={true}
+          onSlideChange={(swiper) => setActiveIndex(swiper.realIndex)}
+          autoplay={{
+            delay: 3000,
+            disableOnInteraction: false,
+          }}
+          className="pt-10 pb-10 !overflow-visible"
+        >
+          {displayItems.map((item, idx) => (
+            <SwiperSlide key={`${item?.id ?? idx}-${idx}`} className="h-auto">
+              <AttractionCard item={item} />
+            </SwiperSlide>
+          ))}
+        </Swiper>
 
-        {/* DOTS */}
-        <div className="flex justify-center gap-2 mt-4">
-          {sortedItems.map((_, i) => (
-            <span
-              key={i}
-              className={`
-                h-2 rounded-full transition-all
-                ${i === active
-                  ? "w-6 bg-sky-400"
-                  : "w-2 bg-slate-400/40"}
-              `}
+        {/* CUSTOM PAGINATION DOTS - Fixed count per user request */}
+        <div className="flex justify-center items-center gap-2 mt-8">
+          {sortedItems.map((_, idx) => (
+            <div
+              key={idx}
+              className={`h-2 transition-all duration-300 rounded-full ${realIndex === idx
+                ? "w-8 bg-[#003de6]"
+                : "w-2 bg-gray-300"
+                }`}
             />
           ))}
         </div>
       </div>
 
-      {/* CTA – UNCHANGED */}
-      <div className="flex justify-center mt-12">
+      {/* VIEW ALL BUTTON */}
+      <div className="relative z-10 flex justify-center mt-8">
         <Link
           to="/attractions"
-          className="
-            rounded-full bg-sky-400
-            px-10 py-4 text-base font-bold
-            text-slate-900 shadow-lg
-            hover:bg-sky-300 transition
-          "
+          className="inline-flex items-center gap-3 rounded-xl bg-[#003de6] text-white px-12 py-5 text-lg font-extrabold shadow-2xl hover:bg-[#002db3] hover:scale-105 transition-all duration-300 uppercase tracking-wider"
         >
-          Explore All Attractions
+          View All Experiences
+          <span className="text-xl" aria-hidden="true">→</span>
         </Link>
       </div>
-      <style>{`
-        @keyframes liquidWave {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-        .animate-liquidWave {
-          animation: liquidWave 12s linear infinite;
-        }
-
-        @keyframes floatSlow {
-          0% { transform: translateY(0) rotate(0deg); }
-          50% { transform: translateY(-14px) rotate(6deg); }
-          100% { transform: translateY(0) rotate(0deg); }
-        }
-        .animate-floatSlow {
-          animation: floatSlow 7s ease-in-out infinite;
-        }
-
-        @keyframes floatFast {
-          0% { transform: translateY(0) rotate(0deg); }
-          50% { transform: translateY(16px) rotate(-6deg); }
-          100% { transform: translateY(0) rotate(0deg); }
-        }
-        .animate-floatFast {
-          animation: floatFast 5s ease-in-out infinite;
-        }
-
-        @keyframes cardIn {
-          0% { opacity: 0; transform: translate(var(--x, 0), var(--y, 12px)) scale(0.98); }
-          100% { opacity: 1; transform: translate(0, 0) scale(1); }
-        }
-        .animate-card {
-          animation: cardIn .55s ease-out both;
-        }
-      `}</style>
     </section>
   );
 }

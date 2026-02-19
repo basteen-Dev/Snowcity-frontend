@@ -83,10 +83,10 @@ export default function OfferCard({ item }) {
             to={bookHref || '/offers'}
             onClick={stop}
             className="
-              rounded-full bg-sky-400 px-8 py-2.5
-              text-sm font-bold text-slate-900
+              rounded-full bg-[#003de6] px-8 py-2.5
+              text-sm font-bold text-white
               shadow-lg transition-all
-              hover:bg-sky-300
+              hover:bg-[#002db3]
             "
           >
             {bookHref ? 'Book Now' : 'View Offers'}
