@@ -170,6 +170,12 @@ const endpoints = {
     payphi: {
       hashPreview: () => '/api/payments/payphi/hash-preview' // POST (Debug/Admin)
     }
+  },
+
+  // Conversion Tracking (Public)
+  tracking: {
+    visit: () => '/api/track/visit',        // POST
+    booking: () => '/api/track/booking',     // POST
   }
 };
 

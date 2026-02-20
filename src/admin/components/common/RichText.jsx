@@ -39,7 +39,7 @@ export default function RichText({ value, onChange, placeholder = 'Type here…'
       try {
         // Prefer 'react-quill-new' (present in deps)
         const mod2 = await import('react-quill-new');
-        try { await import('react-quill-new/dist/quill.snow.css'); } catch {}
+        try { await import('react-quill-new/dist/quill.snow.css'); } catch { }
         if (mounted) {
           const EditorComponent = mod2.default || mod2;
           const QuillCtor = mod2.Quill || window.Quill;
@@ -74,12 +74,12 @@ export default function RichText({ value, onChange, placeholder = 'Type here…'
     try {
       setUploading(true);
       setUploadErr('');
-      const url = await uploadAdminMedia(file);
+      const url = await uploadAdminMedia(file, { folder: 'editor' });
       const quill = quillRef.current?.getEditor?.();
       if (!quill) return;
       const range = quill.getSelection(true);
       const insertAt = range ? range.index : quill.getLength();
-      
+
       const imageUrl = resolveAssetUrl(url);
       quill.insertEmbed(insertAt, 'image', imageUrl, 'user');
       quill.setSelection(insertAt + 1);
@@ -329,9 +329,9 @@ export default function RichText({ value, onChange, placeholder = 'Type here…'
               className="w-20 h-12 shrink-0 rounded-md overflow-hidden border hover:ring-2 hover:ring-blue-500"
               title="Insert image into editor"
             >
-              <img 
-                src={url} 
-                alt={`img-${i}`} 
+              <img
+                src={url}
+                alt={`img-${i}`}
                 className="w-full h-full object-cover"
                 onError={(e) => {
                   e.target.onerror = null;

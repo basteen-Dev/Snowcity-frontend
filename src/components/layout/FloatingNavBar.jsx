@@ -464,22 +464,22 @@ export default function FloatingNavBar() {
       <nav
         ref={navRef}
         data-floating-nav
-        className={`fixed top-4 left-4 right-4 z-[150] transition-[background-color,box-shadow,padding] duration-300  rounded-full transform-gpu ${isWhite
-          ? "bg-white/95 backdrop-blur-md py-1 shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1),0_0_0_1px_rgba(229,231,235,1)]"
-          : "bg-transparent py-1 shadow-[0_0_0_1px_rgba(255,255,255,0)]"
+        className={`fixed top-4 left-4 right-4 z-[150] rounded-full ${isWhite
+          ? "bg-white/95 backdrop-blur-md py-2 shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1),0_0_0_1px_rgba(229,231,235,1)]"
+          : "bg-transparent py-2 shadow-[0_0_0_1px_rgba(255,255,255,0)]"
           }`}
         style={{ backfaceVisibility: 'hidden' }}
       >
 
         {/* ------------------- DESKTOP NAV -------------------- */}
         <div className="hidden md:block px-10 md:px-12">
-          <div className={`max-w-[1400px] mx-auto py-1 flex items-center justify-between gap-4 transition-colors duration-500`}>
+          <div className={`max-w-[1400px] mx-auto py-1 flex items-center justify-between gap-4`}>
             {/* Logo */}
             <Link to="/" className="flex items-center gap-2">
               <img
                 src={Logo}
                 alt="SnowCity Logo"
-                className="h-9 w-auto object-contain"
+                className="h-11 w-auto object-contain"
               />
             </Link>
 
@@ -572,7 +572,7 @@ export default function FloatingNavBar() {
               {!token}
               <button
                 className={bookTicketButtonClass}
-                onClick={() => navigate("/booking")}
+                onClick={() => { sessionStorage.removeItem('snowcity_booking_state'); navigate('/booking'); }}
               >
                 <Ticket className="w-5 h-5 mr-2" /> BUY TICKETS
               </button>
@@ -580,7 +580,7 @@ export default function FloatingNavBar() {
               {token && (
                 <div className="relative">
                   <button
-                    className="h-10 w-10 rounded-full flex items-center justify-center bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-blue-600 shadow-sm transition-all duration-300 hover:scale-105 ml-2"
+                    className="h-10 w-10 rounded-full flex items-center justify-center bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-blue-600 shadow-sm"
                     onClick={() => setProfileOpen((v) => !v)}
                     title={userName}
                   >
@@ -627,15 +627,15 @@ export default function FloatingNavBar() {
         </div>
 
         <div
-          className={`md:hidden px-4 py-2 grid grid-cols-3 items-center transition-colors duration-300 ${isWhite
+          className={`md:hidden h-14 relative flex items-center px-4 ${isWhite
             ? "text-gray-900"
             : "text-white"
             }`}
         >
           {/* LEFT: Menu Button */}
-          <div className="flex items-center justify-start">
+          <div className="absolute left-2 top-1/2 -translate-y-1/2 z-20">
             <button
-              className="p-2 transition-transform duration-300 hover:scale-110 active:scale-95"
+              className="p-2 active:scale-95"
               onClick={() => setMobileOpen((v) => !v)}
               aria-expanded={mobileOpen}
               aria-label="Open menu"
@@ -648,24 +648,24 @@ export default function FloatingNavBar() {
             </button>
           </div>
 
-          {/* MIDDLE: Logo (Absolutely Centered via Grid) */}
-          <div className="flex justify-center">
+          {/* MIDDLE: Logo (Absolutely Centered) */}
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
             <Link to="/" aria-label="Home" className="flex items-center">
               <img
                 src={Logo}
                 alt="SnowCity Logo"
-                className="h-8 w-auto object-contain pointer-events-none"
+                className="h-9 w-auto object-contain pointer-events-none"
                 style={{ transition: 'none' }}
               />
             </Link>
           </div>
 
-          {/* RIGHT: Profile / Placeholder */}
-          <div className="flex items-center justify-end">
+          {/* RIGHT: Profile Button */}
+          <div className="absolute right-4 top-1/2 -translate-y-1/2 z-20">
             {token ? (
               <div className="relative">
                 <button
-                  className="h-9 w-9 rounded-full flex items-center justify-center bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-blue-600 shadow-sm transition-all duration-300 hover:scale-110"
+                  className="h-9 w-9 rounded-full flex items-center justify-center bg-white border border-gray-200 text-gray-700 shadow-sm"
                   onClick={() => setProfileOpen((v) => !v)}
                   aria-expanded={profileOpen}
                   aria-label="Account menu"
@@ -676,7 +676,6 @@ export default function FloatingNavBar() {
 
                 {profileOpen && (
                   <div className="absolute right-0 top-full mt-3 w-56 rounded-lg border border-gray-200 bg-white shadow-lg p-3 z-[110]" style={{ boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)' }}>
-                    {/* ... (profile menu content) */}
                     <Link
                       to="/my-bookings"
                       className="block px-3 py-2 text-gray-800 text-sm hover:bg-gray-100 rounded-lg font-medium transition-all duration-200"
@@ -818,6 +817,7 @@ export default function FloatingNavBar() {
                 className="w-full py-3 bg-[#003de6] text-white font-bold rounded-full hover:bg-[#002db3] shadow-lg shadow-blue-500/30 transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2"
                 onClick={() => {
                   setMobileOpen(false);
+                  sessionStorage.removeItem('snowcity_booking_state');
                   navigate("/booking");
                 }}
               >

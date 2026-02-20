@@ -22,7 +22,7 @@ const A = {
 
 
 
-  
+
   attractions: () => '/api/admin/attractions',
   attractionById: (id) => `/api/admin/attractions/${encodeSeg(id)}`,
 
@@ -88,7 +88,12 @@ const A = {
   analyticsAttractionRevenue: () => '/api/admin/analytics/attraction-revenue',
   analyticsComboRevenue: () => '/api/admin/analytics/combo-revenue',
   analyticsReport: (format = 'csv') => `/api/admin/analytics/report.${format}`,
-  analytics: () => '/api/admin/analytics'
+  analytics: () => '/api/admin/analytics',
+
+  // Conversion tracking
+  conversionSummary: () => '/api/admin/conversion/summary',
+  conversionAdSpend: () => '/api/admin/conversion/ad-spend',
+  conversionAdSpendById: (id) => `/api/admin/conversion/ad-spend/${encodeSeg(id)}`,
 };
 
 export const ANALYTICS_ENDPOINTS = {

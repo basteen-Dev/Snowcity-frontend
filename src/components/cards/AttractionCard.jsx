@@ -287,12 +287,17 @@ export default function AttractionCard({ item, featured = false }) {
 
   return (
     <StyledWrapper>
-      <Link to={detailHref} className="card block no-underline">
+      <div
+        onClick={(e) => goDetail(e)}
+        className="card block no-underline cursor-pointer"
+        role="button"
+        tabIndex={0}
+      >
         <div className="image-box">
           {img && (
             <img
               src={img}
-              alt={title}
+              alt={item?.image_alt || title}
               loading="lazy"
               decoding="async"
             />
@@ -316,7 +321,9 @@ export default function AttractionCard({ item, featured = false }) {
             <div
               onClick={(e) => {
                 stop(e);
-                navigate(attrId ? `/booking?attraction_id=${attrId}&openDrawer=true` : '/booking');
+                e.preventDefault();
+                sessionStorage.removeItem('snowcity_booking_state');
+                navigate(attrId ? `/booking?attraction_id=${attrId}&type=attraction&openDrawer=true` : '/booking');
               }}
               className="action"
             >
@@ -325,7 +332,7 @@ export default function AttractionCard({ item, featured = false }) {
             </div>
           </div>
         </div>
-      </Link>
+      </div>
     </StyledWrapper>
   );
 }

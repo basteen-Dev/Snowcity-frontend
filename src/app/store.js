@@ -101,7 +101,7 @@ export const store = configureStore({
   preloadedState,
   middleware: (getDefault) =>
     getDefault({
-      serializableCheck: { warnAfter: 64 },
+      serializableCheck: false,
       immutableCheck: isDev
     }).prepend(listenerMiddleware.middleware),
   devTools: isDev

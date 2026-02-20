@@ -151,10 +151,13 @@ const normalizeBookingCreatePayload = (p = {}) => {
     // Pass through context
     coupon_code: getVal(p, ['coupon_code', 'couponCode', 'code']),
     offer_id: getVal(p, ['offer_id', 'offerId']),
-    // Add slot timing information
+    offer_rule_id: getVal(p, ['offer_rule_id', 'offerRuleId']),
+    // Add slot timing information — check both top-level and nested slot object
     slot_label: getVal(p, ['slotLabel', 'slot_label']),
-    slot_start_time: getVal(p, ['slot'])?.start_time,
-    slot_end_time: getVal(p, ['slot'])?.end_time,
+    slot_start_time: getVal(p, ['slot_start_time', 'slotStartTime']) || getVal(p, ['slot'])?.start_time || null,
+    slot_end_time: getVal(p, ['slot_end_time', 'slotEndTime']) || getVal(p, ['slot'])?.end_time || null,
+    // Carry booking_time for backward compat with offer-matching
+    booking_time: getVal(p, ['booking_time', 'bookingTime', 'slot_start_time', 'slotStartTime']) || getVal(p, ['slot'])?.start_time || null,
   };
 
   console.log('🔍 DEBUG extracted slot timing:', {
@@ -511,6 +514,9 @@ const bookingsSlice = createSlice({
           title: payload.title || payload.meta?.title || '',
           slotLabel: payload.slotLabel || '',
           dateLabel: payload.dateLabel || payload.booking_date || payload.date || null,
+          offer_id: payload.offer_id,
+          offer_rule_id: payload.offer_rule_id,
+          offerDescription: payload.offerDescription || '',
         });
         createdKey = itemKey;
       }

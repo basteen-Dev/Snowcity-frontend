@@ -66,13 +66,13 @@ export default function GalleryGrid({ items = [], className = "" }) {
                 ) : (
                   <img
                     src={mediaUrl}
-                    alt={item.title || 'Gallery item'}
+                    alt={item.image_alt || item.title || 'Gallery item'}
                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                     loading="lazy"
                     decoding="async"
                   />
                 )}
-                
+
                 {/* Number overlay */}
                 <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/50 text-white text-xs flex items-center justify-center font-medium">
                   {index + 1}

@@ -1703,7 +1703,7 @@ const getOfferEligibleAmount = (offer, items) => {
     disabled={!selectionReady}
     className="w-full md:w-auto px-8 py-3.5 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 hover:shadow-xl disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed transition-all active:scale-95 flex items-center justify-center gap-2"
   >
-    {editingKey ? 'Update Selection' : 'Add to Order'}
+    {editingKey ? 'Update Selection' : 'A'}
   </button>
 </div>
               </div>

@@ -2,8 +2,6 @@ import React, { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation, useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import Loader from '../components/common/Loader';
-import api from '../services/apiClient';
-import endpoints from '../services/endpoints';
 const AdminApp = lazy(() => import('../admin/AdminApp.jsx'));
 
 function safeLazy(factory, FallbackComp) {
@@ -14,7 +12,7 @@ function safeLazy(factory, FallbackComp) {
   );
 }
 
-const Placeholder = ()=><Loader />;
+const Placeholder = () => <Loader />;
 
 
 const FallbackPage = () => <Placeholder title="Loading…" />;
@@ -43,40 +41,26 @@ const Footer = safeLazy(() => import('../components/layout/Footer.jsx'), Fallbac
 
 const SlugRouter = () => {
   const { slug } = useParams();
-  const [contentType, setContentType] = React.useState(null);
-  const [loading, setLoading] = React.useState(true);
+  const attractions = useSelector((s) => s.attractions?.items || []);
+  const combos = useSelector((s) => s.combos?.items || []);
 
-  React.useEffect(() => {
-    const checkSlug = async () => {
-      // Try blog first
-      try {
-        const res = await api.get(endpoints.blogs.bySlug(slug));
-        if (res) {
-          setContentType('blog');
-          setLoading(false);
-          return;
-        }
-      } catch {}
+  // 1. Check if slug matches a combo (by prefix or by slug/id match)
+  if (slug.startsWith('combo-') || combos.some((c) => c.slug === slug || String(c.id) === slug)) {
+    return <ComboDetails />;
+  }
 
-      // Try combo
-      if (slug.startsWith('combo-')) {
-        setContentType('combo');
-        setLoading(false);
-        return;
-      }
+  // 2. Check if slug matches an attraction from Redux store
+  if (attractions.some((a) => a.slug === slug || String(a.id) === slug)) {
+    return <AttractionDetails />;
+  }
 
-      // Default to attraction
-      setContentType('attraction');
-      setLoading(false);
-    };
+  // 3. If attractions are loaded and slug doesn't match anything, render as blog
+  const attractionsLoaded = attractions.length > 0;
+  if (attractionsLoaded) {
+    return <BlogDetails />;
+  }
 
-    checkSlug();
-  }, [slug]);
-
-  if (loading) return <Placeholder title="Loading…" />;
-
-  if (contentType === 'blog') return <BlogDetails />;
-  if (contentType === 'combo') return <ComboDetails />;
+  // Default: treat as attraction (component will fetch by slug and handle 404)
   return <AttractionDetails />;
 };
 
@@ -142,10 +126,10 @@ export default function AppRouter() {
 
             <Route path="/home" element={<Navigate to="/" replace />} />
             <Route path="/404" element={<NotFound />} />
-            
+
             {/* 👇 Catch-all routes for slugs - combos first, then attractions */}
             <Route path="/:slug" element={<SlugRouter />} />
-            
+
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>

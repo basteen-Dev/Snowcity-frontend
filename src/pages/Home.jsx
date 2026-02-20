@@ -222,7 +222,7 @@ export default function Home() {
         {/* BLOGS */}
         <LazyVisible minHeight={420} placeholder={<div className="py-6"><SkeletonSectionHeader /></div>}>
           <section id="blogs" className="bg-white py-20 px-6 md:px-8">
-            <div className="max-w-[1400px] mx-auto">
+            <div className="max-w-6xl mx-auto">
               <div className="text-center mb-16">
                 <p className="text-sm font-bold tracking-[0.3em] text-sky-500/70 uppercase">LATEST FROM OUR BLOG</p>
                 <h2 className="mt-4 text-4xl md:text-5xl font-extrabold text-slate-900">Tips, guides & stories</h2>

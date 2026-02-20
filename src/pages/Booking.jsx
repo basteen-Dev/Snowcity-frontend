@@ -10,7 +10,7 @@ import { prioritizeSnowcityFirst } from '../utils/attractions';
 import { getPrice, getBasePrice, getSlotUnitPrice, getSlotBasePrice } from '../utils/pricing';
 import { formatCurrency } from '../utils/formatters';
 import {
-  X, Clock, ShoppingBag, Check, ChevronRight, Ticket,
+  X, Clock, ShoppingBag, ShoppingCart, Check, ChevronRight, Ticket,
   User, Mail, Phone, ArrowRight, Plus, Minus, Trash2, Edit2, UserPlus, Globe, AlertCircle, ArrowLeft, CreditCard,
 } from 'lucide-react';
 
@@ -29,6 +29,11 @@ import { logout } from '../features/auth/authSlice';
 import Loader from '../components/common/Loader';
 import ErrorState from '../components/common/ErrorState';
 import TokenExpiredModal from '../components/modals/TokenExpiredModal';
+
+import SelectTickets from './booking/SelectTickets';
+import Addons from './booking/Addons';
+import YourDetails from './booking/YourDetails';
+import Payment from './booking/Payment';
 
 /* ================= Helpers ================= */
 const toYMD = (d) => dayjs(d).format('YYYY-MM-DD');
@@ -606,11 +611,113 @@ export default function Booking() {
     }));
   }, [state.activeOffer, state.activeRule, checkoutItem]);
 
-  // Cleanup on unmount - Clear booking flow data
+  // ---- Session Persistence: save booking state to sessionStorage ----
+  const BOOKING_SESSION_KEY = 'snowcity_booking_state';
+
+  // Save to sessionStorage whenever key state changes
   useEffect(() => {
-    return () => {
-      dispatch(resetBookingFlow());
+    if (!hasCartItems && step === 1) return; // Don't save empty state
+    try {
+      // Serialize cartAddons Map<string, Map<id, addon>> to plain object
+      const serializedAddons = {};
+      cartAddons.forEach((itemMap, key) => {
+        if (itemMap instanceof Map) {
+          serializedAddons[key] = Array.from(itemMap.entries());
+        }
+      });
+      const state = {
+        step,
+        cartItems,
+        cartAddons: serializedAddons,
+        sel,
+        countryCode,
+        phoneLocal,
+        paymentGateway,
+        selectedOfferId,
+        timestamp: Date.now(),
+      };
+      sessionStorage.setItem(BOOKING_SESSION_KEY, JSON.stringify(state));
+    } catch (e) {
+      console.warn('Failed to save booking state:', e);
+    }
+  }, [step, cartItems, cartAddons, sel, countryCode, phoneLocal, paymentGateway, selectedOfferId, hasCartItems]);
+
+  // Restore from sessionStorage on mount
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem(BOOKING_SESSION_KEY);
+      if (!saved) return;
+      const data = JSON.parse(saved);
+      // Only restore if recent (within 30 minutes)
+      if (Date.now() - (data.timestamp || 0) > 30 * 60 * 1000) {
+        sessionStorage.removeItem(BOOKING_SESSION_KEY);
+        return;
+      }
+      // Restore cart items (reset first to prevent doubling on refresh)
+      if (data.cartItems?.length) {
+        dispatch(resetCart());
+        data.cartItems.forEach(item => dispatch(addCartItem(item)));
+      }
+      // Restore addons
+      if (data.cartAddons) {
+        const restored = new Map();
+        Object.entries(data.cartAddons).forEach(([key, entries]) => {
+          restored.set(key, new Map(entries));
+        });
+        setCartAddons(restored);
+      }
+      // Restore step
+      if (data.step && data.step > 1) {
+        dispatch(setStep(data.step));
+        // Ensure drawer stays closed on steps 2-4
+        setDrawerOpen(false);
+      }
+      // Restore selection
+      if (data.sel) setSel(s => ({ ...s, ...data.sel }));
+      if (data.countryCode) setCountryCode(data.countryCode);
+      if (data.phoneLocal) setPhoneLocal(data.phoneLocal);
+      if (data.paymentGateway) setPaymentGateway(data.paymentGateway);
+      if (data.selectedOfferId) setSelectedOfferId(data.selectedOfferId);
+    } catch (e) {
+      console.warn('Failed to restore booking state:', e);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Clear session on unmount only if user navigates away (not refresh)
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      // Keep state for refresh — do nothing
     };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      // Only clear if navigating to a different page (not refresh)
+      // Session will auto-expire via the 30-min timeout above
+    };
+  }, []);
+
+  // ---- Browser History: push state on step changes ----
+  const stepChangeIsFromPopState = useRef(false);
+
+  useEffect(() => {
+    if (stepChangeIsFromPopState.current) {
+      stepChangeIsFromPopState.current = false;
+      return;
+    }
+    // Push a history entry for each step so browser back works
+    if (step > 1) {
+      window.history.pushState({ bookingStep: step }, '', `#step-${step}`);
+    }
+  }, [step]);
+
+  useEffect(() => {
+    const onPopState = (event) => {
+      const targetStep = event.state?.bookingStep || 1;
+      stepChangeIsFromPopState.current = true;
+      dispatch(setStep(targetStep));
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
   }, [dispatch]);
 
   useEffect(() => {
@@ -681,6 +788,28 @@ export default function Booking() {
   const handleCloseBooking = useCallback(() => {
     navigate('/');
   }, [navigate]);
+
+  const handleAddonQuantityChange = (addonId, newQty, addonObj) => {
+    // Addons.jsx calls: handleAddonQuantityChange(addonId, newQuantity, addonObject)
+    const key = activeItemKey;
+    if (!key) return;
+    setCartAddons((prev) => {
+      const newMap = new Map(prev);
+      const itemMap = new Map(newMap.get(key) || []);
+      if (newQty <= 0) {
+        itemMap.delete(addonId);
+      } else {
+        itemMap.set(addonId, {
+          addon_id: addonId,
+          name: addonObj?.name ?? addonObj?.title ?? addonObj?.label ?? 'Addon',
+          price: Number(addonObj?.price ?? addonObj?.amount ?? 0),
+          quantity: newQty,
+        });
+      }
+      newMap.set(key, itemMap);
+      return newMap;
+    });
+  };
 
   const [search] = useSearchParams();
   const preselectType = search.get('type');
@@ -954,11 +1083,11 @@ export default function Booking() {
   ]);
 
   useEffect(() => {
-    if (preselectOpenDrawer === 'true' && (sel.itemType === 'attraction' || sel.itemType === 'combo') && selectedMeta.title && !drawerOpenedRef.current) {
+    if (step === 1 && preselectOpenDrawer === 'true' && (sel.itemType === 'attraction' || sel.itemType === 'combo') && selectedMeta.title && !drawerOpenedRef.current) {
       drawerOpenedRef.current = true;
       setDrawerOpen(true);
     }
-  }, [preselectOpenDrawer, sel.itemType, selectedMeta.title]);
+  }, [step, preselectOpenDrawer, sel.itemType, selectedMeta.title]);
 
   const qty = Math.max(1, Number(sel.qty) || 1);
   const ticketsSubtotal = Number(selectedMeta.price || 0) * qty;
@@ -988,8 +1117,19 @@ export default function Booking() {
 
   const grossTotal = cartTicketsTotal + totalAddonsCost;
   const couponDiscount = Number(coupon.discount || 0);
+
+  const selectedOffer = useMemo(() => {
+    if (!selectedOfferId) return null;
+    return state.offers.find((o) => String(getOfferId(o)) === String(selectedOfferId));
+  }, [state.offers, selectedOfferId]);
+
+  const selectedOfferDiscount = useMemo(() => {
+    if (!selectedOffer) return 0;
+    return computeOfferDiscount(selectedOffer, grossTotal);
+  }, [selectedOffer, grossTotal]);
+
   const couponApplied = couponDiscount > 0 && (coupon.code || coupon.data?.code);
-  const finalTotal = Math.max(0, grossTotal - couponDiscount);
+  const finalTotal = Math.max(0, grossTotal - couponDiscount - selectedOfferDiscount);
 
   const heroImage =
     selectedMeta.image ||
@@ -999,7 +1139,10 @@ export default function Booking() {
 
   const currentItemAddons = useMemo(() => {
     if (!activeItemKey) return new Map();
-    return cartAddons.get(activeItemKey) || new Map();
+    const val = cartAddons.get(activeItemKey);
+    // Ensure it's always a Map (Addons.jsx calls .get() on it)
+    if (val instanceof Map) return val;
+    return new Map();
   }, [cartAddons, activeItemKey]);
 
   const addSelectionToCart = useCallback(() => {
@@ -1109,9 +1252,8 @@ export default function Booking() {
 
   const handleBack = () => {
     if (step === 1) return;
-    if (step === 2) dispatch(setStep(1));
-    else if (step === 3) dispatch(setStep(2));
-    else if (step === 4) dispatch(setStep(hasToken ? 2 : 3));
+    // Use browser history back to keep history stack consistent
+    window.history.back();
   };
 
   const sendOTP = async () => {
@@ -1546,8 +1688,13 @@ export default function Booking() {
           booking_date: item.booking_date,
           quantity: item.quantity,
           slot_label: item.slotLabel,
-          slot_start_time: item.slot?.start_time,
-          slot_end_time: item.slot?.end_time,
+          slot_start_time: item.slot?.start_time || item.booking_time || null,
+          slot_end_time: item.slot?.end_time || null,
+          // Ensure booking_time is sent for happy hour offer matching
+          booking_time: item.slot?.start_time || item.booking_time || null,
+          // Pass offer information if a happy hour or other offer was applied
+          offer_id: item.offer?.offer_id || item.offer_id || null,
+          offer_rule_id: item.offer?.rule_id || item.offer_rule_id || null,
         };
 
         // Add addons if any
@@ -1659,9 +1806,34 @@ export default function Booking() {
     <>
       {/* Page wrapper: make sure everything sits under navbar; ensure Inter font */}
       <div className="min-h-screen bg-gradient-to-b from-sky-50 to-white font-inter pt-20">
-        {/* header + steps - STICKY FULL WIDTH */}
-        <div className="sticky top-[calc(64px+20px)] z-40 bg-white/95 backdrop-blur-sm border-b border-gray-100 w-full">
-          <ProgressBar />
+
+        {/* Progress Bar */}
+        <div className="sticky top-[7rem] z-10 bg-gradient-to-b from-sky-50 to-white mb-8">
+          <div className="flex justify-center items-center">
+            {/* Step 1 */}
+            <div className="flex flex-col items-center">
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${step >= 1 ? 'bg-sky-600 text-white' : 'bg-gray-300 text-gray-600'}`}>1</div>
+              <span className="text-xs mt-2 text-center">Experience</span>
+            </div>
+            <div className={`h-0.5 w-12 ${step >= 2 ? 'bg-sky-600' : 'bg-gray-300'}`}></div>
+            {/* Step 2 */}
+            <div className="flex flex-col items-center">
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${step >= 2 ? 'bg-sky-600 text-white' : 'bg-gray-300 text-gray-600'}`}>2</div>
+              <span className="text-xs mt-2 text-center">Add-ons</span>
+            </div>
+            <div className={`h-0.5 w-12 ${step >= 3 ? 'bg-sky-600' : 'bg-gray-300'}`}></div>
+            {/* Step 3 */}
+            <div className="flex flex-col items-center">
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${step >= 3 ? 'bg-sky-600 text-white' : 'bg-gray-300 text-gray-600'}`}>3</div>
+              <span className="text-xs mt-2 text-center">Your Details</span>
+            </div>
+            <div className={`h-0.5 w-12 ${step >= 4 ? 'bg-sky-600' : 'bg-gray-300'}`}></div>
+            {/* Step 4 */}
+            <div className="flex flex-col items-center">
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${step >= 4 ? 'bg-sky-600 text-white' : 'bg-gray-300 text-gray-600'}`}>4</div>
+              <span className="text-xs mt-2 text-center">Payment</span>
+            </div>
+          </div>
         </div>
 
         {/* main content - Centered */}
@@ -1669,910 +1841,122 @@ export default function Booking() {
           <div className="mt-2 md:mt-4">
             {/* STEP 1: product list + order summary */}
             {step === 1 && (
-              <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2.1fr)_minmax(320px,1fr)] gap-6 items-start">
-                {/* left: product list */}
-                <div className="space-y-4">
-                  {/* quick date row */}
-                  <div className="flex flex-wrap gap-2 items-center mb-1">
-                    <button
-                      type="button"
-                      onClick={handleToday}
-                      className={`px-4 py-2 rounded-full text-xs sm:text-sm font-medium border transition-colors ${sel.date === todayYMD()
-                        ? 'bg-sky-600 text-white border-sky-600'
-                        : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
-                        }`}
-                    >
-                      Today
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleTomorrow}
-                      className={`px-4 py-2 rounded-full text-xs sm:text-sm font-medium border transition-colors ${sel.date === dayjs().add(1, 'day').format('YYYY-MM-DD')
-                        ? 'bg-sky-600 text-white border-sky-600'
-                        : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
-                        }`}
-                    >
-                      Tomorrow
-                    </button>
-                    <button
-                      type="button"
-                      onClick={onCalendarButtonClick}
-                      ref={setCalendarAnchor}
-                      className={`px-4 py-2 rounded-full text-xs sm:text-sm font-medium border transition-colors ${sel.date && sel.date !== '' && sel.date !== todayYMD() && sel.date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
-                        ? 'bg-sky-600 text-white border-sky-600'
-                        : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
-                        }`}
-                    >
-                      {sel.date && sel.date !== todayYMD() && sel.date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
-                        ? formatDateDisplay(sel.date)
-                        : 'All Days'}
-                    </button>
-                    <span className="text-xs sm:text-sm text-gray-500 ml-1">
-                      Change date/time in details panel
-                    </span>
-                  </div>
-
-                  <ProductList />
-                </div>
-
-                {/* right: order details */}
-                <div className="lg:sticky lg:top-[140px]">
-                  <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-5 sm:p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                      Order details
-                    </h3>
-
-                    {!hasCartItems ? (
-                      <div className="flex flex-col items-center justify-center text-center py-8">
-                        <div className="w-14 h-14 rounded-full bg-sky-50 flex items-center justify-center mb-3">
-                          <ShoppingBag className="text-sky-600" />
-                        </div>
-                        <p className="text-sm text-gray-600 mb-1">
-                          The product you choose will be displayed here
-                        </p>
-                        <p className="text-xs text-gray-400">
-                          Select a ticket and add to your order
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="space-y-3 mb-4 max-h-72 overflow-y-auto custom-scrollbar pr-1">
-                        {cartItems.map((item) => (
-                          <div
-                            key={item.key}
-                            className="flex justify-between gap-3 text-sm border-b border-gray-100 pb-3 last:border-0 last:pb-0"
-                          >
-                            <div className="min-w-0">
-                              <div className="font-semibold text-gray-900 line-clamp-2">
-                                {item.title ||
-                                  item.meta?.title ||
-                                  (item.item_type === 'combo'
-                                    ? item.combo?.title ||
-                                    item.combo?.name ||
-                                    item.combo?.combo_name ||
-                                    `Combo #${item.combo_id}`
-                                    : item.attraction?.title ||
-                                    item.attraction?.name ||
-                                    `Attraction #${item.attraction_id}`)}
-                              </div>
-                              <div className="text-xs text-gray-500 mt-1">
-                                {item.quantity} ticket(s) •{' '}
-                                {item.dateLabel ||
-                                  dayjs(item.booking_date).format('D MMMM YYYY') ||
-                                  item.booking_date}
-                                {item.slotLabel ? ` • ${item.slotLabel}` : ''}
-                              </div>
-                              <div className="flex gap-3 mt-1">
-                                <button
-                                  type="button"
-                                  onClick={() => onEditCartItem(item)}
-                                  className="text-[11px] text-sky-700 hover:underline"
-                                >
-                                  Edit
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => onRemoveCartItem(item.key)}
-                                  className="text-[11px] text-red-500 hover:underline"
-                                >
-                                  Remove
-                                </button>
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <div className="font-semibold text-gray-900 tabular-nums">
-                                ₹{(item.unitPrice * item.quantity).toFixed(0)}
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    <div className="pt-3 border-t border-gray-100 mt-2">
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="text-sm text-gray-500">Total amount</span>
-                        <span className="text-lg font-semibold text-sky-700 tabular-nums">
-                          ₹{finalTotal.toFixed(0)}
-                        </span>
-                      </div>
-                      <button
-                        type="button"
-                        disabled={!hasCartItems}
-                        onClick={handleNext}
-                        className={`w-full flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all active:scale-[0.98] ${!hasCartItems
-                          ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                          : 'bg-sky-600 text-white shadow-md hover:bg-sky-700 active:scale-[0.98]'
-                          }`}
-                      >
-                        {step === 4
-                          ? paymentLoading
-                            ? 'Processing...'
-                            : `Pay ₹${finalTotal}`
-                          : 'Continue'}
-                        {step !== 4 && <ArrowRight size={16} />}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <SelectTickets
+                sel={sel}
+                setSel={setSel}
+                combos={combos}
+                prioritizedAttractions={prioritizedAttractions}
+                cartItems={cartItems}
+                hasCartItems={hasCartItems}
+                finalTotal={finalTotal}
+                todayYMD={todayYMD}
+                handleToday={handleToday}
+                handleTomorrow={handleTomorrow}
+                onCalendarButtonClick={onCalendarButtonClick}
+                setCalendarAnchor={setCalendarAnchor}
+                formatDateDisplay={formatDateDisplay}
+                getAttrId={getAttrId}
+                getComboId={getComboId}
+                getComboDisplayPrice={getComboDisplayPrice}
+                getPrice={getPrice}
+                getComboLabel={getComboLabel}
+                getComboPrimaryImage={getComboPrimaryImage}
+                getAttractionImage={getAttractionImage}
+                idsMatch={idsMatch}
+                onEditCartItem={onEditCartItem}
+                setDetailsMainImage={setDetailsMainImage}
+                setDrawerMode={setDrawerMode}
+                setDrawerOpen={setDrawerOpen}
+                onRemoveCartItem={onRemoveCartItem}
+                handleNext={handleNext}
+                step={step}
+                paymentLoading={paymentLoading}
+              />
             )}
 
             {/* STEP 2: Add-ons */}
             {step === 2 && (
-              <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2.1fr)_minmax(320px,1fr)] gap-6 items-start mt-4">
-                <div className="space-y-6">
-                  {cartItems.length > 1 && (
-                    <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
-                      {cartItems.map((item) => (
-                        <button
-                          key={item.key}
-                          onClick={() => dispatch(setActiveCartItem(item.key))}
-                          className={`px-4 py-2 rounded-full border text-sm font-medium transition-all ${item.key === activeItemKey
-                            ? 'bg-sky-600 text-white border-sky-600 shadow-sm'
-                            : 'bg-white text-gray-600 border-gray-200 hover:border-sky-200'
-                            }`}
-                        >
-                          {item.title ||
-                            item.meta?.title ||
-                            (item.item_type === 'combo'
-                              ? item.combo?.title ||
-                              item.combo?.name ||
-                              item.combo?.combo_name ||
-                              `Combo #${item.combo_id}`
-                              : item.attraction?.title ||
-                              item.attraction?.name ||
-                              `Attraction #${item.attraction_id}`) ||
-                            'Item'}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-
-                  <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
-                    <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                          Add-ons
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          Enhance your experience with optional extras
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => dispatch(fetchAddons({ active: true, limit: 100 }))}
-                        className="text-xs font-semibold text-sky-700 hover:underline"
-                      >
-                        Refresh
-                      </button>
-                    </div>
-
-                    {addonsState.status === 'loading' ? (
-                      <div className="text-center py-10 text-gray-500 text-sm">
-                        Loading add-ons...
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        {(addonsState.items || []).map((addon) => {
-                          const addonId = getAddonId(addon);
-                          const price = getAddonPrice(addon);
-                          const name = getAddonName(addon);
-                          const image = getAddonImage(addon);
-                          const quantity = Number(currentItemAddons.get(addonId)?.quantity || 0);
-
-                          return (
-                            <div
-                              key={addonId}
-                              className="flex gap-4 items-center border border-gray-200 rounded-2xl p-4 hover:border-sky-200 transition-all"
-                            >
-                              {image ? (
-                                <img
-                                  src={image}
-                                  alt={name}
-                                  className="w-16 h-16 rounded-xl object-cover border border-gray-100"
-                                />
-                              ) : (
-                                <div className="w-16 h-16 rounded-xl bg-gray-100 flex items-center justify-center text-gray-400">
-                                  <ShoppingBag />
-                                </div>
-                              )}
-
-                              <div className="flex-1 min-w-0">
-                                <div className="font-semibold text-gray-900 truncate">
-                                  {name}
-                                </div>
-                                <div className="text-sm text-gray-500 tabular-nums">
-                                  {formatCurrency(price)}
-                                </div>
-                              </div>
-
-                              <div className="flex items-center gap-3">
-                                <button
-                                  onClick={() =>
-                                    handleAddonQuantityChange(
-                                      addonId,
-                                      Math.max(0, quantity - 1),
-                                      addon,
-                                    )
-                                  }
-                                  className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center hover:border-sky-200 active:scale-95 transition"
-                                >
-                                  <Minus size={16} />
-                                </button>
-                                <span className="w-6 text-center font-semibold text-gray-800 tabular-nums">
-                                  {quantity}
-                                </span>
-                                <button
-                                  onClick={() =>
-                                    handleAddonQuantityChange(addonId, quantity + 1, addon)
-                                  }
-                                  className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center hover:border-sky-200 active:scale-95 bg-sky-600 text-white shadow"
-                                >
-                                  <Plus size={16} />
-                                </button>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Right: order details (same as STEP 1) */}
-                <div className="lg:sticky lg:top-[140px]">
-                  <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-5 sm:p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-1">Order details</h3>
-
-                    {!hasCartItems ? (
-                      <div className="flex flex-col items-center justify-center text-center py-8">
-                        <div className="w-14 h-14 rounded-full bg-sky-50 flex items-center justify-center mb-3">
-                          <ShoppingBag className="text-sky-600" />
-                        </div>
-                        <p className="text-sm text-gray-600 mb-1">The product you choose will be displayed here</p>
-                        <p className="text-xs text-gray-400">Select a ticket and add to your order</p>
-                      </div>
-                    ) : (
-                      <div className="space-y-3 mb-4 max-h-72 overflow-y-auto custom-scrollbar pr-1">
-                        {cartItems.map((item) => {
-                          const itemAddonsMap = cartAddons.get(item.key) || new Map();
-                          const itemAddons = Array.from(itemAddonsMap.values()).filter((a) => Number(a.quantity) > 0);
-                          return (
-                            <div
-                              key={item.key}
-                              className="flex justify-between gap-3 text-sm border-b border-gray-100 pb-3 last:border-0 last:pb-0"
-                            >
-                              <div className="min-w-0">
-                                <div className="font-semibold text-gray-900 line-clamp-2">
-                                  {item.title ||
-                                    item.meta?.title ||
-                                    (item.item_type === 'combo'
-                                      ? item.combo?.title ||
-                                      item.combo?.name ||
-                                      item.combo?.combo_name ||
-                                      `Combo #${item.combo_id}`
-                                      : item.attraction?.title ||
-                                      item.attraction?.name ||
-                                      `Attraction #${item.attraction_id}`)}
-                                </div>
-                                <div className="text-xs text-gray-500 mt-1">
-                                  {item.quantity} ticket(s) • {item.dateLabel || dayjs(item.booking_date).format('D MMMM YYYY') || item.booking_date}{item.slotLabel ? ` • ${item.slotLabel}` : ''}
-                                </div>
-
-                                <div className="flex gap-3 mt-1">
-                                  <button type="button" onClick={() => onEditCartItem(item)} className="text-[11px] text-sky-700 hover:underline">Edit</button>
-                                  <button type="button" onClick={() => onRemoveCartItem(item.key)} className="text-[11px] text-red-500 hover:underline">Remove</button>
-                                </div>
-
-                                {itemAddons.length > 0 && (
-                                  <div className="mt-2 text-xs text-gray-600">
-                                    <div className="font-medium text-gray-700 mb-1">Extras</div>
-                                    <div className="space-y-1">
-                                      {itemAddons.map((a) => (
-                                        <div key={a.addon_id} className="flex items-center justify-between text-sm text-gray-600">
-                                          <div className="truncate">
-                                            {a.name} <span className="text-xs text-gray-400">x{a.quantity}</span>
-                                          </div>
-                                          <div className="tabular-nums">₹{(Number(a.price || 0) * Number(a.quantity || 0)).toFixed(0)}</div>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                              <div className="text-right">
-                                <div className="font-semibold text-gray-900 tabular-nums">₹{(item.unitPrice * item.quantity).toFixed(0)}</div>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-
-                    <div className="pt-3 border-t border-gray-100 mt-2">
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="text-sm text-gray-500">Total amount</span>
-                        <span className="text-lg font-semibold text-sky-700 tabular-nums">₹{finalTotal.toFixed(0)}</span>
-                      </div>
-                      <div className="flex flex-col gap-2">
-                        <button
-                          type="button"
-                          disabled={!hasCartItems}
-                          onClick={handleNext}
-                          className={`w-full flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all active:scale-[0.98] ${!hasCartItems
-                            ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                            : 'bg-sky-600 text-white shadow-md hover:bg-sky-700 active:scale-[0.98]'
-                            }`}
-                        >
-                          <span>Continue</span>
-                          <ArrowRight size={18} />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={handleBack}
-                          className="hidden lg:flex items-center justify-center gap-2 w-full rounded-xl px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-all border border-gray-100"
-                        >
-                          <ArrowLeft size={16} />
-                          Back
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <Addons
+                cartItems={cartItems}
+                activeItemKey={activeItemKey}
+                setActiveCartItem={setActiveCartItem}
+                dispatch={dispatch}
+                addonsState={addonsState}
+                getAddonId={getAddonId}
+                getAddonPrice={getAddonPrice}
+                getAddonName={getAddonName}
+                getAddonImage={getAddonImage}
+                currentItemAddons={currentItemAddons}
+                handleAddonQuantityChange={handleAddonQuantityChange}
+                cartAddons={cartAddons}
+                onEditCartItem={onEditCartItem}
+                onRemoveCartItem={onRemoveCartItem}
+                finalTotal={finalTotal}
+                handleNext={handleNext}
+                handleBack={handleBack}
+                hasCartItems={hasCartItems}
+              />
             )}
 
             {/* STEP 3: OTP */}
-            {step === 3 && !hasToken && (
-              <div className="space-y-6 max-w-md mx-auto animate-in fade-in slide-in-from-right-8 duration-300 mt-4">
-                <div className="text-center mb-4">
-                  <div className="w-16 h-16 bg-sky-50 text-sky-700 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <UserPlus size={32} />
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900">Guest Details</h3>
-                  <p className="text-gray-500 text-sm mt-1">
-                    Enter your details to receive tickets via Email & SMS.
-                  </p>
-                </div>
-
-                <div className="space-y-5">
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-gray-500 uppercase ml-1">
-                      Full Name
-                    </label>
-                    <div className="relative group">
-                      <User
-                        className="absolute left-4 top-3.5 text-gray-400 group-focus-within:text-sky-600 transition-colors"
-                        size={18}
-                      />
-                      <input
-                        placeholder="John Doe"
-                        className="w-full pl-11 p-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-sky-500 focus:bg-white outline-none transition-all font-medium"
-                        value={contact.name}
-                        onChange={(e) => dispatch(setContact({ name: e.target.value }))}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-gray-500 uppercase ml-1">
-                      Email Address
-                    </label>
-                    <div className="relative group">
-                      <Mail
-                        className="absolute left-4 top-3.5 text-gray-400 group-focus-within:text-sky-600 transition-colors"
-                        size={18}
-                      />
-                      <input
-                        placeholder="name@example.com"
-                        type="email"
-                        className={`w-full pl-11 p-3.5 bg-gray-50 border rounded-xl focus:ring-2 focus:bg-white outline-none transition-all font-medium ${contactErrors.email
-                          ? 'border-red-300 focus:ring-red-200'
-                          : 'border-gray-200 focus:ring-sky-500'
-                          }`}
-                        value={contact.email}
-                        onChange={(e) => {
-                          dispatch(setContact({ email: e.target.value }));
-                          if (contactErrors.email)
-                            setContactErrors((p) => ({ ...p, email: undefined }));
-                        }}
-                      />
-                    </div>
-                    {contactErrors.email && (
-                      <p className="text-xs text-red-500 ml-1 flex items-center gap-1">
-                        <AlertCircle size={12} /> {contactErrors.email}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-gray-500 uppercase ml-1">
-                      Mobile Number
-                    </label>
-                    <div className="flex gap-3">
-                      <div className="relative w-32">
-                        <div className="absolute left-3 top-3.5 z-10 pointer-events-none">
-                          <Globe size={18} className="text-gray-400" />
-                        </div>
-                        <select
-                          className="w-full pl-10 pr-8 p-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-sky-500 outline-none appearance-none font-medium text-sm"
-                          value={countryCode}
-                          onChange={(e) => setCountryCode(e.target.value)}
-                        >
-                          {COUNTRY_CODES.map((c) => (
-                            <option key={c.code} value={c.code}>
-                              {c.code}
-                            </option>
-                          ))}
-                        </select>
-                        <ChevronRight
-                          size={14}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 rotate-90 pointer-events-none"
-                        />
-                      </div>
-
-                      <div className="relative flex-1 group">
-                        <Phone
-                          className="absolute left-4 top-3.5 text-gray-400 group-focus-within:text-sky-600 transition-colors"
-                          size={18}
-                        />
-                        <input
-                          placeholder="98765 43210"
-                          type="tel"
-                          maxLength={10}
-                          className={`w-full pl-11 p-3.5 bg-gray-50 border rounded-xl focus:ring-2 focus:bg-white outline-none transition-all font-medium tracking-wide ${contactErrors.phone
-                            ? 'border-red-300 focus:ring-red-200'
-                            : 'border-gray-200 focus:ring-sky-500'
-                            }`}
-                          value={phoneLocal}
-                          onChange={handlePhoneChange}
-                        />
-                      </div>
-                    </div>
-                    {contactErrors.phone && (
-                      <p className="text-xs text-red-500 ml-1 flex items-center gap-1">
-                        <AlertCircle size={12} /> {contactErrors.phone}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        required
-                        checked={contact.whatsapp_consent || false}
-                        onChange={(e) => dispatch(setContact({ whatsapp_consent: e.target.checked }))}
-                        className="w-4 h-4 text-sky-600 bg-gray-100 border-gray-300 rounded focus:ring-sky-500 focus:ring-2"
-                      />
-                      <span className="text-sm text-gray-700 font-medium">
-                        I agree to receive WhatsApp notifications *
-                      </span>
-                    </label>
-                    <p className="text-xs text-gray-500 ml-6">
-                      We'll send booking confirmations and updates via WhatsApp
-                    </p>
-                  </div>
-
-                  {!otp.sent ? (
-                    <button
-                      onClick={sendOTP}
-                      disabled={otp.status === 'loading'}
-                      className="w-full bg-sky-700 text-white py-3 rounded-xl font-bold text-base shadow-lg hover:bg-sky-800 transition-all disabled:opacity-70 flex items-center justify-center gap-2 mt-4"
-                    >
-                      {otp.status === 'loading' ? (
-                        <>
-                          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                          <span>Sending...</span>
-                        </>
-                      ) : (
-                        'Send OTP Verification'
-                      )}
-                    </button>
-                  ) : (
-                    <div className="mt-6 bg-sky-50 border border-sky-100 p-5 rounded-2xl animate-in fade-in slide-in-from-bottom-2">
-                      <p className="text-sm text-sky-800 mb-3 font-medium">
-                        Enter OTP sent to {countryCode} {phoneLocal}
-                      </p>
-                      <div className="flex gap-3 flex-col sm:flex-row">
-                        <input
-                          placeholder="XXXXXX"
-                          className="flex-1 p-3.5 text-center tracking-[0.5em] font-bold text-xl border-2 border-sky-200 rounded-xl focus:border-sky-600 focus:ring-4 focus:ring-sky-100 outline-none bg-white transition-all"
-                          maxLength={6}
-                          value={otpCode}
-                          onChange={(e) => setOtpCode(e.target.value)}
-                        />
-                        <button
-                          onClick={verifyOTP}
-                          disabled={otp.status === 'loading'}
-                          className="bg-sky-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:bg-sky-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 w-full sm:w-auto text-sm sm:text-base"
-                        >
-                          {otp.status === 'loading' ? (
-                            <>
-                              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                              <span>Verifying...</span>
-                            </>
-                          ) : otp.verified ? (
-                            <>
-                              <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                              </svg>
-                              Verified
-                            </>
-                          ) : (
-                            'Verify'
-                          )}
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* desktop next/back buttons for Step 3 */}
-                  <div className="hidden md:flex items-center gap-4 mt-8 pt-6 border-t border-gray-100">
-                    <button
-                      type="button"
-                      onClick={handleBack}
-                      className="px-8 py-3 rounded-xl border border-gray-200 text-gray-700 font-bold hover:bg-gray-50 transition-all"
-                    >
-                      Back
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleNext}
-                      disabled={!otp.verified}
-                      className={`flex-1 flex items-center justify-center gap-2 rounded-xl px-8 py-3 text-base font-bold transition-all ${!otp.verified
-                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                        : 'bg-sky-600 text-white shadow-lg hover:bg-sky-700 active:scale-[0.98]'
-                        }`}
-                    >
-                      Continue
-                      <ArrowRight size={20} />
-                    </button>
-                  </div>
-                </div>
-              </div>
+            {step === 3 && (
+              <YourDetails
+                hasToken={hasToken}
+                contact={contact}
+                dispatch={dispatch}
+                setContact={setContact}
+                contactErrors={contactErrors}
+                setContactErrors={setContactErrors}
+                countryCode={countryCode}
+                setCountryCode={setCountryCode}
+                COUNTRY_CODES={COUNTRY_CODES}
+                phoneLocal={phoneLocal}
+                handlePhoneChange={handlePhoneChange}
+                otp={otp}
+                sendOTP={sendOTP}
+                otpCode={otpCode}
+                setOtpCode={setOtpCode}
+                verifyOTP={verifyOTP}
+                handleBack={handleBack}
+                handleNext={handleNext}
+              />
             )}
 
             {/* STEP 4: Summary */}
             {step === 4 && (
-              <div className="space-y-6 max-w-lg mx-auto animate-in fade-in slide-in-from-right-8 duration-300 pb-20">
-                <OfferSelector />
-
-                {/* Payment Gateway Selection */}
-                <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-bold text-gray-900 text-lg flex items-center gap-2">
-                      <CreditCard className="text-sky-600" size={20} />
-                      Select Payment Method
-                    </h3>
-                    <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">Secure Payment</span>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {/* PayPhi Option */}
-                    <label
-                      className={`relative flex flex-col p-5 rounded-xl border-2 cursor-pointer transition-all duration-200 ${paymentGateway === 'payphi'
-                        ? 'border-sky-600 bg-gradient-to-br from-sky-50 to-blue-50 shadow-md ring-2 ring-sky-200'
-                        : 'border-gray-200 bg-white hover:border-sky-300 hover:shadow-sm'
-                        }`}
-                    >
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center gap-3">
-                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${paymentGateway === 'payphi'
-                            ? 'border-sky-600 bg-sky-600'
-                            : 'border-gray-300 bg-white'
-                            }`}>
-                            {paymentGateway === 'payphi' && (
-                              <Check size={12} className="text-white" strokeWidth={3} />
-                            )}
-                          </div>
-                          <input
-                            type="radio"
-                            name="paymentGateway"
-                            value="payphi"
-                            checked={paymentGateway === 'payphi'}
-                            onChange={() => setPaymentGateway('payphi')}
-                            className="sr-only"
-                          />
-                          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-sm">
-                            <CreditCard size={20} className="text-white" />
-                          </div>
-                        </div>
-                        {paymentGateway === 'payphi' && (
-                          <span className="text-xs font-semibold text-sky-700 bg-sky-100 px-2 py-1 rounded-full">
-                            Selected
-                          </span>
-                        )}
-                      </div>
-                      <div className="ml-8">
-                        <p className="font-bold text-gray-900 text-base mb-1">PayPhi</p>
-                        <p className="text-xs text-gray-600 mb-2">All payment methods accepted</p>
-                        <div className="flex flex-wrap gap-1.5">
-                          <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-medium">Cards</span>
-                          <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-medium">UPI</span>
-                          <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-medium">Netbanking</span>
-                        </div>
-                      </div>
-                    </label>
-
-                    {/* PhonePe Option */}
-                    <label
-                      className={`relative flex flex-col p-5 rounded-xl border-2 cursor-pointer transition-all duration-200 ${paymentGateway === 'phonepe'
-                        ? 'border-purple-600 bg-gradient-to-br from-purple-50 to-indigo-50 shadow-md ring-2 ring-purple-200'
-                        : 'border-gray-200 bg-white hover:border-purple-300 hover:shadow-sm'
-                        }`}
-                    >
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center gap-3">
-                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${paymentGateway === 'phonepe'
-                            ? 'border-purple-600 bg-purple-600'
-                            : 'border-gray-300 bg-white'
-                            }`}>
-                            {paymentGateway === 'phonepe' && (
-                              <Check size={12} className="text-white" strokeWidth={3} />
-                            )}
-                          </div>
-                          <input
-                            type="radio"
-                            name="paymentGateway"
-                            value="phonepe"
-                            checked={paymentGateway === 'phonepe'}
-                            onChange={() => setPaymentGateway('phonepe')}
-                            className="sr-only"
-                          />
-                          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center shadow-sm">
-                            <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
-                              <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5zm0 18c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z" />
-                            </svg>
-                          </div>
-                        </div>
-                        {paymentGateway === 'phonepe' && (
-                          <span className="text-xs font-semibold text-purple-700 bg-purple-100 px-2 py-1 rounded-full">
-                            Selected
-                          </span>
-                        )}
-                      </div>
-                      <div className="ml-8">
-                        <p className="font-bold text-gray-900 text-base mb-1">PhonePe</p>
-                        <p className="text-xs text-gray-600 mb-2">Fast & secure payments</p>
-                        <div className="flex flex-wrap gap-1.5">
-                          <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-medium">UPI</span>
-                          <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-medium">Wallet</span>
-                          <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-medium">Cards</span>
-                        </div>
-                      </div>
-                    </label>
-                  </div>
-
-                  {/* Security Badge */}
-                  <div className="flex items-center justify-center gap-2 pt-2 border-t border-gray-100">
-                    <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    <span className="text-xs text-gray-600 font-medium">256-bit SSL Encrypted Payment</span>
-                  </div>
-                </div>
-
-                <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
-                  <h3 className="font-bold text-gray-900 mb-4 text-lg flex items-center gap-2">
-                    <ShoppingBag className="text-sky-600" size={20} />
-                    Booking Summary
-                  </h3>
-                  {couponApplied && (
-                    <div className="mb-4 rounded-xl bg-emerald-50 border border-emerald-100 p-3 text-sm text-emerald-700">
-                      <div className="font-semibold text-emerald-800">
-                        Coupon {String(coupon.code || coupon.data?.code).toUpperCase()} applied
-                      </div>
-                      <div className="flex items-center justify-between mt-1 text-emerald-700">
-                        <span>
-                          {coupon.data?.description || 'Discount applied successfully'}
-                        </span>
-                        <span className="font-bold tabular-nums">
-                          -₹{couponDiscount.toFixed(0)}
-                        </span>
-                      </div>
-                    </div>
-                  )}
-
-                  {selectedOfferId && (() => {
-                    const selectedOffer = state.offers.find(o => String(getOfferId(o)) === String(selectedOfferId));
-                    if (!selectedOffer) return null;
-                    return (
-                      <div className="mb-4 rounded-xl bg-green-50 border border-green-100 p-3 text-sm text-green-700">
-                        <div className="font-semibold text-green-800">
-                          Offer Applied: {getOfferTitle(selectedOffer)}
-                        </div>
-                        <div className="mt-1 text-green-600">
-                          {getOfferSummary(selectedOffer)}
-                          {selectedOffer.rule_type === 'buy_x_get_y' && selectedOffer.buy_qty && selectedOffer.get_qty && (
-                            <div className="mt-1">
-                              Buy {selectedOffer.buy_qty} Get {selectedOffer.get_qty}
-                              {selectedOffer.get_discount_type === 'percent' && selectedOffer.get_discount_value && (
-                                <span> ({selectedOffer.get_discount_value}% off)</span>
-                              )}
-                              {selectedOffer.get_discount_type === 'amount' && selectedOffer.get_discount_value && (
-                                <span> ({formatCurrency(selectedOffer.get_discount_value)} off)</span>
-                              )}
-                              {!selectedOffer.get_discount_value && <span> Free</span>}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })()}
-
-                  <div className="mb-4 space-y-2 max-h-40 overflow-y-auto custom-scrollbar pr-2">
-                    {cartItems.map((item) => {
-                      const itemAddonsMap = cartAddons.get(item.key) || new Map();
-                      const itemAddons = Array.from(itemAddonsMap.values()).filter((a) => Number(a.quantity) > 0);
-                      return (
-                        <div
-                          key={item.key}
-                          className="text-sm py-2 border-b border-dashed border-gray-100 last:border-0"
-                        >
-                          <div className="flex justify-between mb-1">
-                            <div className="text-gray-700">
-                              <span className="font-bold text-gray-900">{item.quantity}x</span>{' '}
-                              {item.title ||
-                                item.meta?.title ||
-                                (item.item_type === 'combo'
-                                  ? item.combo?.title ||
-                                  item.combo?.name ||
-                                  item.combo?.combo_name ||
-                                  `Combo #${item.combo_id}`
-                                  : item.attraction?.title ||
-                                  item.attraction?.name ||
-                                  `Attraction #${item.attraction_id}`)}
-                              <div className="text-xs text-gray-400 mt-0.5">
-                                {(item.dateLabel ||
-                                  dayjs(item.booking_date).format('D MMMM YYYY') ||
-                                  item.booking_date)}
-                                {item.slotLabel ? ` • ${item.slotLabel}` : ''}
-                              </div>
-                            </div>
-                            <div className="font-medium text-gray-900 tabular-nums">
-                              ₹{item.unitPrice * item.quantity}
-                            </div>
-                          </div>
-                          {itemAddons.length > 0 && (
-                            <div className="ml-1 mt-1.5 pl-2 border-l-2 border-sky-200 space-y-1">
-                              {itemAddons.map((a) => (
-                                <div key={a.addon_id} className="flex justify-between text-xs text-gray-600">
-                                  <span className="text-gray-600">• {a.name} <span className="text-gray-400">x{a.quantity}</span></span>
-                                  <span className="font-medium text-gray-700 tabular-nums">₹{(Number(a.price || 0) * Number(a.quantity || 0)).toFixed(0)}</span>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                    {totalAddonsCost > 0 && (
-                      <div className="flex justify-between text-sm py-2 border-t border-gray-100 pt-3">
-                        <div className="text-gray-600 font-medium">Extras / Add-ons</div>
-                        <div className="font-medium text-gray-900 tabular-nums">₹{totalAddonsCost}</div>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="bg-gray-50 p-4 rounded-xl space-y-2 text-sm mt-2">
-                    <div className="flex justify-between text-gray-500">
-                      <span>Subtotal (with offers)</span> <span className="tabular-nums">₹{grossTotal}</span>
-                    </div>
-                    {couponDiscount > 0 && (
-                      <div className="flex justify-between text-green-600 font-medium">
-                        <span>
-                          Coupon (
-                          {String(coupon.code || coupon.data?.code).toUpperCase()})
-                        </span>
-                        <span className="tabular-nums">-₹{couponDiscount.toFixed(0)}</span>
-                      </div>
-                    )}
-                    <div className="border-t border-gray-200 pt-3 flex justify-between items-center mt-2">
-                      <span className="font-bold text-gray-800 text-lg">Total Payable</span>
-                      <span className="font-bold text-2xl text-sky-700 tabular-nums">₹{finalTotal}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Swiggy-like coupon apply row */}
-                <div className="space-y-3 border-t border-gray-200 pt-4">
-                  {couponApplied ? (
-                    <div className="space-y-2">
-                      <p className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Current Promo Code</p>
-                      <div className="flex gap-2 items-center">
-                        <div className="flex-1 px-4 py-3 border border-green-200 rounded-xl bg-green-50 text-sm font-bold text-green-700 uppercase tracking-wider">
-                          ✓ {String(coupon.code || coupon.data?.code).toUpperCase()} Applied
-                        </div>
-                        <button
-                          onClick={() => {
-                            setPromoInput('');
-                            dispatch(setCouponCode(''));
-                          }}
-                          className="px-4 py-3 rounded-xl border border-red-200 bg-red-50 text-red-600 text-sm font-semibold hover:bg-red-100 transition-colors"
-                          title="Remove promo code"
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      <p className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Apply Promo Code</p>
-                      <div className="flex gap-2">
-                        <div className="relative flex-1">
-                          <Ticket size={18} className="absolute left-3 top-3 text-gray-400 pointer-events-none" />
-                          <select
-                            className="w-full pl-10 pr-20 p-3 border border-gray-200 rounded-xl text-sm uppercase focus:ring-2 focus:ring-sky-500 outline-none font-bold tracking-wider appearance-none bg-white cursor-pointer disabled:bg-gray-50 disabled:text-gray-400 transition-all hover:border-gray-300"
-                            value={promoInput}
-                            onChange={(e) => setPromoInput(e.target.value)}
-                            disabled={promosLoading}
-                          >
-                            <option value="">
-                              {promosLoading ? 'Loading promos...' : 'Select a promo code'}
-                            </option>
-                            {availablePromos.map((promo) => (
-                              <option key={promo.id || promo.code} value={promo.code}>
-                                {promo.code} {promo.discount ? `(${promo.discount}% off)` : ''}
-                              </option>
-                            ))}
-                          </select>
-                          <button
-                            onClick={applyPromo}
-                            disabled={!promoInput || promosLoading}
-                            className="absolute right-1 top-1 bottom-1 px-4 rounded-lg bg-sky-600 text-white text-xs font-bold tracking-wide hover:bg-sky-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
-                          >
-                            APPLY
-                          </button>
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </div>
-
-                {/* desktop pay/back buttons for Step 4 */}
-                <div className="hidden md:flex items-center gap-4 mt-8 pt-6 border-t border-gray-100">
-                  <button
-                    type="button"
-                    onClick={handleBack}
-                    disabled={creating?.status === 'loading' || paymentLoading}
-                    className="px-8 py-3 rounded-xl border border-gray-200 text-gray-700 font-bold hover:bg-gray-50 transition-all disabled:opacity-50"
-                  >
-                    Back
-                  </button>
-                  <button
-                    type="button"
-                    onClick={onPlaceOrderAndPay}
-                    disabled={creating?.status === 'loading' || paymentLoading || !hasCartItems}
-                    className={`flex-1 flex items-center justify-center gap-2 rounded-xl px-8 py-3 text-base font-bold transition-all ${creating?.status === 'loading' || paymentLoading || !hasCartItems
-                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                      : 'bg-sky-600 text-white shadow-lg hover:bg-sky-700 active:scale-[0.98]'
-                      }`}
-                  >
-                    {paymentLoading ? 'Processing...' : `Pay ₹${finalTotal}`}
-                    <ArrowRight size={20} />
-                  </button>
-                </div>
-              </div>
+              <Payment
+                OfferSelector={OfferSelector}
+                paymentGateway={paymentGateway}
+                setPaymentGateway={setPaymentGateway}
+                couponApplied={couponApplied}
+                coupon={coupon}
+                couponDiscount={couponDiscount}
+                selectedOfferDiscount={selectedOfferDiscount}
+                finalTotal={finalTotal}
+                promoInput={promoInput}
+                setPromoInput={setPromoInput}
+                dispatch={dispatch}
+                setCouponCode={setCouponCode}
+                applyPromo={applyPromo}
+                promosLoading={promosLoading}
+                availablePromos={availablePromos}
+                handleBack={handleBack}
+                onPlaceOrderAndPay={onPlaceOrderAndPay}
+                creating={creating}
+                paymentLoading={paymentLoading}
+                hasCartItems={hasCartItems}
+                selectedOfferId={selectedOfferId}
+                state={state}
+                getOfferId={getOfferId}
+                getOfferTitle={getOfferTitle}
+                getOfferSummary={getOfferSummary}
+                cartItems={cartItems}
+                cartAddons={cartAddons}
+                totalAddonsCost={totalAddonsCost}
+                grossTotal={grossTotal}
+                formatCurrency={formatCurrency}
+                dayjs={dayjs}
+              />
             )}
 
             {/* floating bottom action bar (not a footer; mobile-friendly cart CTA) */}
@@ -2635,15 +2019,35 @@ export default function Booking() {
               </div>
             )}
 
+            {/* Floating Cart Button for Mobile */}
+            {!isDesktop && cart.totalQuantity > 0 && (
+              <div className="fixed bottom-8 right-4 z-50">
+                <button
+                  onClick={() => {
+                    const cartEl = document.getElementById('cart-section');
+                    if (cartEl) cartEl.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className="relative bg-sky-600 text-white rounded-full p-3 shadow-lg hover:bg-sky-700 transition-colors"
+                >
+                  <ShoppingCart size={20} />
+                  {cart.totalQuantity > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full min-w-[20px] h-5 flex items-center justify-center px-1 font-bold">
+                      {cart.totalQuantity}
+                    </span>
+                  )}
+                </button>
+              </div>
+            )}
+
             {/* Details drawer: mobile bottom-sheet & desktop right-side drawer */}
             {drawerOpen && selectedMeta.title && (
               <div className="fixed inset-0 z-[160] flex justify-end items-end md:items-stretch bg-black/40 backdrop-blur-[2px] md:bg-black/20">
                 <div className="flex-1 hidden md:block" onClick={() => setDrawerOpen(false)} />
-                <div className="w-full md:w-1/3 bg-white  md:rounded-l-3xl shadow-2xl flex flex-col transform translate-y-0 transition-all h-[66vh] md:h-screen max-h-[66vh] md:max-h-screen md:mt-0">
+                <div className="w-full md:w-1/3 bg-white rounded-2xl  md:rounded-l-3xl shadow-2xl flex flex-col transform translate-y-0 transition-all h-[66vh] md:h-screen max-h-[66vh] md:max-h-screen md:mt-0">
                   <div className="md:hidden flex justify-center pt-2 pb-1">
                     <div className="h-1.5 w-12 rounded-full bg-gray-300" />
                   </div>
-                  <div className="sticky top-0 z-10 flex items-center justify-between px-4 sm:px-6 pt-4 pb-2 border-b border-gray-100 bg-white  md:rounded-tl-3xl sm:rounded-tl-3xl">
+                  <div className="sticky top-0 z-10 flex items-center justify-between px-4 sm:px-6 pt-4 pb-2 border-b border-gray-100 bg-white rounded-tl-2xl  md:rounded-tl-3xl sm:rounded-tl-3xl">
                     <h2 className="text-base sm:text-lg font-semibold text-gray-900 pr-3 truncate">
                       {selectedMeta.title}
                     </h2>
@@ -2854,9 +2258,10 @@ export default function Booking() {
                           type="button"
                           onClick={addSelectionToCart}
                           disabled={!selectionReady}
-                          className="inline-flex items-center px-4 py-2 rounded-full border border-gray-200 text-xs font-semibold text-gray-700 hover:border-sky-300 disabled:opacity-40 disabled:cursor-not-allowed"
+                          className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 text-xs font-semibold text-gray-700 hover:border-sky-300 disabled:opacity-40 disabled:cursor-not-allowed"
                         >
-                          Add to order
+                          <ShoppingCart size={16} />
+                          <span>Add to Cart</span>
                         </button>
                         <button
                           type="button"

@@ -168,6 +168,7 @@ export default function OfferForm() {
       title: '',
       description: '',
       image_url: '',
+      image_alt: '',
       rule_type: '',
       discount_type: 'percent',
       discount_value: 0,
@@ -193,6 +194,7 @@ export default function OfferForm() {
             title: o.title || '',
             description: o.description || '',
             image_url: o.image_url || '',
+            image_alt: o.image_alt || '',
             rule_type: o.rule_type || '',
             discount_type: o.discount_type || 'percent',
             discount_value: Number(o.discount_value ?? o.discount_percent ?? 0),
@@ -202,30 +204,30 @@ export default function OfferForm() {
             active: !!o.active,
             rules: Array.isArray(o.rules)
               ? o.rules.map((r) =>
-                  createRule({
-                    target_type: r.target_type || 'attraction',
-                    target_id: r.target_id ?? '',
-                    applies_to_all: !!r.applies_to_all,
-                    date_from: r.date_from ? new Date(r.date_from).toISOString().split('T')[0] : '',
-                    date_to: r.date_to ? new Date(r.date_to).toISOString().split('T')[0] : '',
-                    time_from: r.time_from || '',
-                    time_to: r.time_to || '',
-                    slot_type: r.slot_type || '',
-                    slot_id: r.slot_id ?? '',
-                    rule_discount_type: r.rule_discount_type || '',
-                    rule_discount_value: r.rule_discount_value ?? '',
-                    priority: r.priority ?? 100,
-                    day_type: r.day_type || '',
-                    specific_days: r.specific_days || [],
-                    is_holiday: !!r.is_holiday,
-                    specific_date: r.specific_date ? new Date(r.specific_date).toISOString().split('T')[0] : '',
-                    specific_dates: r.specific_date
-                      ? [new Date(r.specific_date).toISOString().split('T')[0]]
-                      : [],
-                    specific_time: r.specific_time || '',
-                    next_specific_date: '',
-                  })
-                )
+                createRule({
+                  target_type: r.target_type || 'attraction',
+                  target_id: r.target_id ?? '',
+                  applies_to_all: !!r.applies_to_all,
+                  date_from: r.date_from ? new Date(r.date_from).toISOString().split('T')[0] : '',
+                  date_to: r.date_to ? new Date(r.date_to).toISOString().split('T')[0] : '',
+                  time_from: r.time_from || '',
+                  time_to: r.time_to || '',
+                  slot_type: r.slot_type || '',
+                  slot_id: r.slot_id ?? '',
+                  rule_discount_type: r.rule_discount_type || '',
+                  rule_discount_value: r.rule_discount_value ?? '',
+                  priority: r.priority ?? 100,
+                  day_type: r.day_type || '',
+                  specific_days: r.specific_days || [],
+                  is_holiday: !!r.is_holiday,
+                  specific_date: r.specific_date ? new Date(r.specific_date).toISOString().split('T')[0] : '',
+                  specific_dates: r.specific_date
+                    ? [new Date(r.specific_date).toISOString().split('T')[0]]
+                    : [],
+                  specific_time: r.specific_time || '',
+                  next_specific_date: '',
+                })
+              )
               : [],
           },
         }));
@@ -243,7 +245,7 @@ export default function OfferForm() {
       nextRules[idx] = { ...nextRules[idx], ...partial };
       // Clear target_id when switching target_type to prevent invalid selection
       if (partial.target_type && nextRules[idx].target_id) {
-        const isValidTarget = partial.target_type === 'attraction' 
+        const isValidTarget = partial.target_type === 'attraction'
           ? attractions.some(a => a.id === Number(nextRules[idx].target_id))
           : combos.some(c => c.id === Number(nextRules[idx].target_id));
         if (!isValidTarget) {
@@ -390,7 +392,7 @@ export default function OfferForm() {
           <textarea rows={4} className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" value={f.description} onChange={(e) => updateForm({ description: e.target.value })} />
         </div>
         <div className="md:col-span-2">
-          <ImageUploader label="Image" value={f.image_url} onChange={(url) => updateForm({ image_url: url })} folder="offers" requiredPerm="uploads:write" />
+          <ImageUploader label="Image" value={f.image_url} onChange={(url) => updateForm({ image_url: url })} altText={f.image_alt} onAltChange={(alt) => updateForm({ image_alt: alt })} folder="offers" requiredPerm="uploads:write" />
         </div>
         <div>
           <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Rule Type</label>
@@ -717,29 +719,29 @@ export default function OfferForm() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 border-t pt-3">
                   <div>
                     <label className="block text-xs text-gray-500 mb-1">Specific Date</label>
-                    <input 
-                      type="date" 
-                      className="w-full rounded-md border px-3 py-2" 
-                      value={rule.specific_date || ''} 
-                      onChange={(e) => updateRule(idx, { specific_date: e.target.value })} 
+                    <input
+                      type="date"
+                      className="w-full rounded-md border px-3 py-2"
+                      value={rule.specific_date || ''}
+                      onChange={(e) => updateRule(idx, { specific_date: e.target.value })}
                     />
                   </div>
                   <div>
                     <label className="block text-xs text-gray-500 mb-1">Specific Slot Time</label>
-                    <input 
-                      type="time" 
-                      className="w-full rounded-md border px-3 py-2" 
-                      value={rule.specific_time || ''} 
-                      onChange={(e) => updateRule(idx, { specific_time: e.target.value })} 
+                    <input
+                      type="time"
+                      className="w-full rounded-md border px-3 py-2"
+                      value={rule.specific_time || ''}
+                      onChange={(e) => updateRule(idx, { specific_time: e.target.value })}
                     />
                   </div>
                   <div className="md:col-span-2">
                     <label className="block text-xs text-gray-500 mb-1">Slot ID (Optional)</label>
-                    <input 
-                      type="number" 
-                      className="w-full rounded-md border px-3 py-2" 
-                      value={rule.slot_id ?? ''} 
-                      onChange={(e) => updateRule(idx, { slot_id: e.target.value })} 
+                    <input
+                      type="number"
+                      className="w-full rounded-md border px-3 py-2"
+                      value={rule.slot_id ?? ''}
+                      onChange={(e) => updateRule(idx, { slot_id: e.target.value })}
                       placeholder="Leave empty for all slots on this date/time"
                     />
                   </div>

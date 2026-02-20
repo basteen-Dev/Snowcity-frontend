@@ -20,7 +20,9 @@ export default function ComboForm() {
       attraction_prices: {},
       total_price: 0,
       image_url: '',
+      image_alt: '',
       desktop_image_url: '',
+      desktop_image_alt: '',
       discount_percent: 0,
       active: true,
       meta_title: '',
@@ -55,7 +57,9 @@ export default function ComboForm() {
           attraction_prices: {},
           total_price: 0,
           image_url: c.image_url || '',
+          image_alt: c.image_alt || '',
           desktop_image_url: c.desktop_image_url || '',
+          desktop_image_alt: c.desktop_image_alt || '',
           discount_percent: c.discount_percent || 0,
           active: !!c.active,
           meta_title: c.meta_title || '',
@@ -402,6 +406,8 @@ export default function ComboForm() {
           label="Combo Image"
           value={f.image_url}
           onChange={(url) => setState((s) => ({ ...s, form: { ...s.form, image_url: url } }))}
+          altText={f.image_alt}
+          onAltChange={(alt) => setState((s) => ({ ...s, form: { ...s.form, image_alt: alt } }))}
           folder="combos"
         />
       </div>
@@ -410,6 +416,8 @@ export default function ComboForm() {
           label="Desktop Image (optional)"
           value={f.desktop_image_url}
           onChange={(url) => setState((s) => ({ ...s, form: { ...s.form, desktop_image_url: url } }))}
+          altText={f.desktop_image_alt}
+          onAltChange={(alt) => setState((s) => ({ ...s, form: { ...s.form, desktop_image_alt: alt } }))}
           folder="combos"
         />
       </div>

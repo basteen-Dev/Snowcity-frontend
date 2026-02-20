@@ -19,6 +19,7 @@ export default function BlogForm() {
     author: '',
     active: true,
     image_url: '',
+    image_alt: '',
     editor_mode: 'rich',
     content: '',
     raw_html: '',
@@ -180,6 +181,8 @@ ${form.raw_html || ''}
                 <ImageUploader
                   value={form.image_url}
                   onChange={(url) => onChange({ image_url: url })}
+                  altText={form.image_alt}
+                  onAltChange={(alt) => onChange({ image_alt: alt })}
                   folder="blogs"
                 />
               </div>

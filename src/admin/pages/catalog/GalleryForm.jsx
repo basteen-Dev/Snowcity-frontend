@@ -16,6 +16,7 @@ export default function GalleryForm() {
     form: {
       media_type: 'image',
       url: '',
+      image_alt: '',
       title: '',
       description: '',
       active: true,
@@ -37,6 +38,7 @@ export default function GalleryForm() {
           form: {
             media_type: g.media_type || 'image',
             url: g.url || '',
+            image_alt: g.image_alt || '',
             title: g.title || '',
             description: g.description || '',
             active: g.active !== undefined ? !!g.active : true,
@@ -66,6 +68,7 @@ export default function GalleryForm() {
       const payload = {
         media_type,
         url,
+        image_alt: state.form.image_alt || '',
         title,
         description,
         active,
@@ -160,9 +163,9 @@ export default function GalleryForm() {
             <option value="combo">Combo Gallery</option>
           </select>
           <p className="text-xs text-gray-500 mt-1">
-            {f.target_type === 'none' ? 'Images will appear in general gallery' : 
-             f.target_type === 'attraction' ? 'Images will appear only on selected attraction page' :
-             'Images will appear only on selected combo page'}
+            {f.target_type === 'none' ? 'Images will appear in general gallery' :
+              f.target_type === 'attraction' ? 'Images will appear only on selected attraction page' :
+                'Images will appear only on selected combo page'}
           </p>
         </div>
 
@@ -185,6 +188,8 @@ export default function GalleryForm() {
                 label="Image"
                 value={f.url}
                 onChange={(url) => onChange({ url })}
+                altText={f.image_alt}
+                onAltChange={(alt) => onChange({ image_alt: alt })}
                 folder="gallery"
                 requiredPerm="uploads:write"
               />
@@ -270,7 +275,7 @@ export default function GalleryForm() {
             </select>
             <p className="text-xs text-gray-500 mt-1">
               {f.target_type === 'attraction' ? 'Images will appear only on selected attraction page' :
-               'Images will appear only on selected combo page'}
+                'Images will appear only on selected combo page'}
             </p>
           </div>
         ) : null}

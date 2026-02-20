@@ -10,6 +10,7 @@ import endpoints from '../services/endpoints';
 import { fetchCombos } from '../features/combos/combosSlice';
 import { fetchAttractions } from '../features/attractions/attractionsSlice';
 import { addCartItem, setStep } from '../features/bookings/bookingsSlice';
+import toast from 'react-hot-toast';
 import { formatCurrency } from '../utils/formatters';
 import {
   getPrice,
@@ -918,6 +919,7 @@ export default function ComboDetails() {
         offer_rule_id: pricing?.bestOffer?.rule?.rule_id,
       }),
     );
+    toast.success('Added to your booking!');
     dispatch(setStep(1));
     const params = new URLSearchParams({
       type: 'combo',
@@ -926,6 +928,7 @@ export default function ComboDetails() {
       slot: buildSlotKey(slot),
       qty: String(q),
     });
+    sessionStorage.removeItem('snowcity_booking_state');
     navigate(`/booking?${params.toString()}`);
   };
 
@@ -1474,20 +1477,36 @@ export default function ComboDetails() {
                 </div>
 
                 {/* Subtotal / total */}
-                <div className="mt-3 rounded-2xl border bg-gray-50 px-3 py-2 text-sm">
-                  <div className="flex items-center justify-between text-gray-600">
-                    <span>Subtotal</span>
-                    <span className="rupee">
-                      {qty} × {formatCurrency(selectedSlotPricing?.finalPrice || comboPrice || 0)}
-                    </span>
+                {date && selectedSlot && (
+                  <div className="mt-4 rounded-2xl border border-sky-100 bg-sky-50 px-4 py-3 text-sm flex flex-col gap-2">
+                    <div className="flex items-center justify-between text-gray-700">
+                      <span className="font-semibold" style={{ fontFamily: 'Inter, sans-serif' }}>
+                        Selection:
+                      </span>
+                      <span className="font-medium text-right">
+                        {dayjs(date).format('DD MMM YYYY')} <br /> {labelTime(selectedSlot)}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-gray-700 pt-2 border-t border-sky-200 border-dashed">
+                      <span>Subtotal</span>
+                      <span className="rupee">
+                        {qty} × {formatCurrency(selectedSlotPricing?.finalPrice || comboPrice || 0)}
+                      </span>
+                    </div>
+                    <div className="mt-1 flex items-center justify-between text-gray-900 font-bold text-lg">
+                      <span>Total</span>
+                      <span className="rupee">
+                        {formatCurrency((selectedSlotPricing?.finalPrice || comboPrice || 0) * qty)}
+                      </span>
+                    </div>
                   </div>
-                  <div className="mt-1 flex items-center justify-between text-gray-900 font-semibold">
-                    <span>Total</span>
-                    <span className="rupee">
-                      {formatCurrency((selectedSlotPricing?.finalPrice || comboPrice || 0) * qty)}
-                    </span>
+                )}
+
+                {!date || !selectedSlot ? (
+                  <div className="mt-4 rounded-2xl border bg-gray-50 px-3 py-2 text-sm text-center text-gray-500">
+                    Please select a date and time slot to book.
                   </div>
-                </div>
+                ) : null}
 
                 {/* Book button */}
                 <button

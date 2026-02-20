@@ -30,7 +30,7 @@ export default function BlogCard({ item }) {
       <div className="relative h-48 overflow-hidden">
         <img
           src={img}
-          alt={title}
+          alt={item?.image_alt || title}
           className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
           loading="lazy"
           decoding="async"

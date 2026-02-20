@@ -1,0 +1,6 @@
+import{c as y}from"./createLucideIcon-DlloiUI2.js";/**
+ * @license lucide-react v0.553.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */const i=[["path",{d:"M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2",key:"975kel"}],["circle",{cx:"12",cy:"7",r:"4",key:"17ys0d"}]],p=y("user",i),d=["key","sort_key","order","order_key","priority","sequence","display_order"],u=r=>{if(!r)return!1;const o=String((r==null?void 0:r.name)??(r==null?void 0:r.title)??"").toLowerCase(),n=String((r==null?void 0:r.slug)??"").toLowerCase(),s=o.replace(/\s+/g,""),e=n.replace(/\s+/g,"");return!s&&!e?!1:s.includes("snowcity")||s.includes("snowpark")||n.includes("snow city")||n.includes("snow park")||e.includes("snow-city")||e.includes("snow-park")},a=r=>{if(!r)return Number.MAX_SAFE_INTEGER;for(const o of d){if(r[o]==null||r[o]==="")continue;const n=Number(r[o]);if(Number.isFinite(n))return n}return Number.MAX_SAFE_INTEGER},l=r=>String((r==null?void 0:r.name)??(r==null?void 0:r.title)??"").toLowerCase(),w=r=>Array.isArray(r)?[...r].sort((o,n)=>{const s=u(o),e=u(n);if(s&&!e)return-1;if(!s&&e)return 1;const c=a(o),t=a(n);return c!==t?c-t:l(o).localeCompare(l(n))}):[];export{p as U,w as p};

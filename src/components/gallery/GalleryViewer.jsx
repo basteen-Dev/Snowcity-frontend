@@ -4,7 +4,7 @@ import { imgSrc } from '../../utils/media';
 export default function GalleryViewer({ items = [], initialIndex = 0, onClose = null }) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const touchStartXRef = useRef(null);
-  
+
   if (!items.length) return null;
 
   const currentItem = items[currentIndex];
@@ -44,7 +44,7 @@ export default function GalleryViewer({ items = [], initialIndex = 0, onClose = 
           aria-label="Close gallery"
         />
       )}
-      
+
       {/* Header */}
       <div className="flex items-center justify-between p-4 text-white">
         <div className="text-sm">
@@ -98,7 +98,7 @@ export default function GalleryViewer({ items = [], initialIndex = 0, onClose = 
           ) : (
             <img
               src={mediaUrl}
-              alt={currentItem.title || 'Gallery item'}
+              alt={currentItem.image_alt || currentItem.title || 'Gallery item'}
               className="max-w-full max-h-full object-contain"
             />
           )}
@@ -124,11 +124,10 @@ export default function GalleryViewer({ items = [], initialIndex = 0, onClose = 
             <button
               key={item.gallery_item_id || item.id || index}
               onClick={() => goToIndex(index)}
-              className={`w-8 h-8 rounded-full text-xs font-medium transition-all ${
-                index === currentIndex
+              className={`w-8 h-8 rounded-full text-xs font-medium transition-all ${index === currentIndex
                   ? 'bg-blue-600 text-white scale-110'
                   : 'bg-white/20 text-white hover:bg-white/30'
-              }`}
+                }`}
               aria-label={`Go to item ${index + 1}`}
             >
               {index + 1}
@@ -149,10 +148,10 @@ export default function GalleryViewer({ items = [], initialIndex = 0, onClose = 
             const touch = e.changedTouches[0];
             const touchEndX = touch.clientX;
             const touchStartX = touchStartXRef.current;
-            
+
             if (touchStartX !== null) {
               const diff = touchStartX - touchEndX;
-              
+
               if (Math.abs(diff) > 50) {
                 if (diff > 0) {
                   goToNext(); // Swipe left, go next

@@ -21,8 +21,9 @@ export default function PaymentReturn() {
   useEffect(() => {
     if (status === 'success') {
       setUiState('success');
-      // Clear any pending order data
+      // Clear any pending order data and booking session
       localStorage.removeItem('pendingOrderData');
+      sessionStorage.removeItem('snowcity_booking_state');
     } else if (status === 'failed' || status === 'error') {
       setUiState('failed');
     } else if (status === 'pending') {
@@ -38,7 +39,8 @@ export default function PaymentReturn() {
       // After 2 retries, suggest contacting support
       setShowDetails(true);
     } else {
-      navigate('/my-bookings');
+      // Navigate back to booking page — sessionStorage will restore the payment step with data
+      navigate('/booking#step-4');
     }
   };
 
@@ -51,7 +53,7 @@ export default function PaymentReturn() {
   return (
     <div className="min-h-[60vh] flex flex-col items-center justify-center p-4 bg-gradient-to-b from-[#e0f2fe] via-[#bae6fd] to-white">
       <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 max-w-md w-full text-center">
-        
+
         {/* --- SUCCESS STATE --- */}
         {uiState === 'success' && (
           <>
@@ -73,7 +75,7 @@ export default function PaymentReturn() {
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">Payment Failed</h1>
             <p className="text-gray-600 mb-6 text-sm">
-              We couldn't complete your transaction for order <span className="font-mono font-medium text-gray-800 bg-gray-100 px-1 rounded">#{orderRef}</span>. 
+              We couldn't complete your transaction for order <span className="font-mono font-medium text-gray-800 bg-gray-100 px-1 rounded">#{orderRef}</span>.
               {retryCount > 0 && <span className="text-red-600 font-medium">(Attempt {retryCount + 1})</span>}
             </p>
 
@@ -100,7 +102,7 @@ export default function PaymentReturn() {
                   <h4 className="font-semibold text-red-800">Multiple Failed Attempts</h4>
                 </div>
                 <p className="text-sm text-red-700 mb-3">
-                  You've tried {retryCount + 1} times without success. For your security and to protect your account, 
+                  You've tried {retryCount + 1} times without success. For your security and to protect your account,
                   we recommend contacting our support team for assistance.
                 </p>
                 <div className="bg-white rounded-lg p-3 space-y-2">
@@ -135,17 +137,17 @@ export default function PaymentReturn() {
 
         {/* --- ACTIONS --- */}
         <div className="space-y-3">
-          <Link 
-            to="/my-bookings" 
+          <Link
+            to="/my-bookings"
             className="block w-full bg-blue-600 text-white font-semibold py-3.5 rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-200"
           >
             View Ticket & Orders
           </Link>
-          
+
           {uiState === 'failed' && (
             <>
               {!showDetails && (
-                <button 
+                <button
                   onClick={handleRetry}
                   className="w-full bg-orange-600 text-white font-semibold py-3.5 rounded-xl hover:bg-orange-700 transition-all shadow-lg flex items-center justify-center gap-2"
                 >
@@ -153,8 +155,8 @@ export default function PaymentReturn() {
                   {retryCount > 0 ? `Try Again (${retryCount + 1}/3)` : 'Try Again'}
                 </button>
               )}
-              
-              <button 
+
+              <button
                 onClick={handleContactSupport}
                 className="w-full bg-white border border-gray-200 text-gray-700 font-medium py-3.5 rounded-xl hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
               >
@@ -164,8 +166,8 @@ export default function PaymentReturn() {
             </>
           )}
 
-          <Link 
-            to="/" 
+          <Link
+            to="/"
             className="block w-full text-gray-400 font-medium py-2 text-sm hover:text-gray-600 transition-colors"
           >
             Back to Home

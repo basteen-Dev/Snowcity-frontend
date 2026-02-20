@@ -5,6 +5,8 @@ import { CheckCircle, Loader2, FileDown, PhoneCall } from 'lucide-react';
 import api from '../services/apiClient';
 import endpoints from '../services/endpoints';
 import { absoluteUrl } from '../utils/media';
+import { trackBookingConversion } from '../hooks/useTracking';
+import { fireConversionEvent } from '../hooks/useConversionPixels';
 
 const statusCopy = {
   processing: {
@@ -52,6 +54,7 @@ export default function PaymentSuccess() {
   const [ticketUrl, setTicketUrl] = React.useState(initialTicketUrl);
 
   const pollIntervalRef = React.useRef(null);
+  const conversionFiredRef = React.useRef(false);
 
   React.useEffect(() => {
     if (initialTicketUrl) {
@@ -75,6 +78,17 @@ export default function PaymentSuccess() {
           setLoadingBooking(false);
           // Stop polling if we found the ticket
           if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+
+          // Fire conversion tracking (once)
+          if (!conversionFiredRef.current) {
+            conversionFiredRef.current = true;
+            const orderId = data?.order_id || (data?.items && data.items[0]?.order_id);
+            const totalAmount = Number(data?.total_amount || data?.final_amount || 0);
+            trackBookingConversion({ order_id: orderId, amount: totalAmount });
+            if (totalAmount > 0) {
+              fireConversionEvent({ value: totalAmount, currency: 'INR' });
+            }
+          }
         } else {
           // If ticket not found, try to force a status check
           // This handles cases where webhook/redirect failed to trigger the check

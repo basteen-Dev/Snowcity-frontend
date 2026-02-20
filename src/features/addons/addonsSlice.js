@@ -12,7 +12,13 @@ export const fetchAddons = createAsyncThunk(
   async (params = { active: true, limit: 100 }, { signal, rejectWithValue }) => {
     try {
       const res = await api.get(endpoints.addons.list(), { params, signal });
-      const items = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
+      const raw = res?.data;
+      // Handle both { data: [...] } wrapper and flat array responses
+      const items = Array.isArray(raw)
+        ? raw
+        : Array.isArray(raw?.data)
+          ? raw.data
+          : [];
       return items;
     } catch (err) {
       return rejectWithValue(err);

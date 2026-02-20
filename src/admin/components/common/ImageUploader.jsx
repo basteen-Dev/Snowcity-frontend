@@ -16,7 +16,9 @@ export default function ImageUploader({
   requiredPerm = null,
   folder = '',
   multiple = false,
-  onMultipleChange
+  onMultipleChange,
+  altText = '',
+  onAltChange,
 }) {
   const inputId = React.useId();
   const [files, setFiles] = React.useState([]);
@@ -118,6 +120,22 @@ export default function ImageUploader({
         />
       </div>
 
+      {/* Alt Text field */}
+      {onAltChange && (
+        <div className="mt-2">
+          <label className="block text-xs text-gray-500 dark:text-neutral-400 mb-1">
+            Image Alt Text <span className="text-gray-400">(SEO & Accessibility)</span>
+          </label>
+          <input
+            type="text"
+            className="w-full rounded-md border px-3 py-2 text-sm dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200"
+            placeholder="Describe the image for SEO and accessibility..."
+            value={altText || ''}
+            onChange={(e) => onAltChange?.(e.target.value)}
+          />
+        </div>
+      )}
+
       {/* Drop zone + Choose */}
       <div
         className="mt-2 rounded-md border border-dashed px-3 py-3 text-sm text-gray-600 dark:text-neutral-300 dark:border-neutral-700"
@@ -177,7 +195,7 @@ export default function ImageUploader({
                 PDF
               </div>
             ) : (
-              <img src={preview} alt="snowcity" loading="lazy" className="w-full h-full object-cover" />
+              <img src={preview} alt={altText || 'Preview'} loading="lazy" className="w-full h-full object-cover" />
             )}
           </div>
         ) : null}
@@ -192,7 +210,7 @@ export default function ImageUploader({
             ) : (
               <img
                 src={resolvedValue}
-                alt="Current media"
+                alt={altText || 'Current media'}
                 loading="lazy"
                 className="w-full h-full object-cover"
                 onError={(e) => {

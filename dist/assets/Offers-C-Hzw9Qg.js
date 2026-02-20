@@ -1,0 +1,16 @@
+import{j as a,L as p,h as g,u as b,R as j,v as m,z as v}from"./index-DpUnVvi7.js";import{f as N}from"./formatters-CmiLqhJj.js";import{g as w,a as y,d as k,e as O}from"./pricing-Df4qX4St.js";import{i as _}from"./media-CQLQFIy8.js";import{E as P}from"./ErrorState-maGIkZl4.js";function z({item:s}){var f;const l=(s==null?void 0:s.name)||(s==null?void 0:s.title)||"Offer",t=(s==null?void 0:s.short_description)||(s==null?void 0:s.subtitle)||"",n=_(s,"https://picsum.photos/seed/offer/640/400"),e=w(s),o=y(s),r=o>0&&e>0&&e<o,c=r?Math.round(k(s)||(o-e)/o*100):0,x=O(s),d=(s==null?void 0:s.attraction_id)||((f=s==null?void 0:s.attraction)==null?void 0:f.id)||null,i=d?`/booking?attraction_id=${d}`:null,u=h=>h.stopPropagation();return a.jsxs("div",{className:`
+        group relative h-[420px] w-full overflow-hidden rounded-2xl
+        bg-white shadow-[0_20px_50px_rgba(0,0,0,0.18)]
+        transition-all duration-300 hover:-translate-y-1
+      `,children:[a.jsx("img",{src:n,alt:(s==null?void 0:s.image_alt)||l,className:`
+          absolute inset-0 h-full w-full object-cover
+          transition-transform duration-700 group-hover:scale-110
+        `,loading:"lazy",decoding:"async"}),a.jsx("span",{className:`
+          absolute top-4 left-4 z-10 rounded-full bg-white/85 px-4 py-1
+          text-xs font-semibold text-slate-900 backdrop-blur
+        `,children:"Offer"}),e>0?a.jsxs("div",{className:"absolute top-4 right-4 z-10 rounded-full bg-sky-400 px-4 py-1.5 text-xs font-semibold text-white",children:[N(e),r?a.jsxs("span",{className:"ml-1 text-sky-200",children:["-",c,"%"]}):null]}):null,a.jsx("div",{className:"absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent"}),a.jsxs("div",{className:"absolute bottom-0 z-10 w-full px-5 pb-5 text-white",children:[a.jsx("h3",{className:"text-xl font-semibold leading-tight line-clamp-2",children:l}),t?a.jsx("p",{className:"mt-1 text-sm text-white/80 line-clamp-2",children:t}):null,e>0?a.jsx("div",{className:"mt-2 text-xs text-white/70",children:r?a.jsxs("span",{className:"font-semibold text-emerald-200",children:["Save ",c,"%"]}):a.jsx("span",{children:x})}):null,a.jsx("div",{className:"mt-4 flex items-center justify-center",children:a.jsx(p,{to:i||"/offers",onClick:u,className:`
+              rounded-full bg-[#003de6] px-8 py-2.5
+              text-sm font-bold text-white
+              shadow-lg transition-all
+              hover:bg-[#002db3]
+            `,children:i?"Book Now":"View Offers"})})]})]})}function B(){const s=g(),{items:l,status:t,error:n}=b(e=>e.offers);return j.useEffect(()=>{t==="idle"&&s(m({active:!0,page:1,limit:24}))},[t,s]),a.jsx("div",{className:"min-h-screen bg-gradient-to-b from-[#e0f2fe] via-[#bae6fd] to-white px-4 pt-20 pb-8",children:a.jsxs("div",{className:"max-w-6xl mx-auto px-4",children:[a.jsx("h1",{className:"text-2xl font-semibold mb-2",children:"Offers"}),a.jsx("p",{className:"text-gray-600 mb-6",children:"Grab the latest offers and save on your visit."}),t==="loading"&&!l.length?a.jsx(v,{}):null,t==="failed"?a.jsx(P,{message:(n==null?void 0:n.message)||"Failed to load offers"}):null,a.jsx("div",{className:"grid grid-cols-1 md:grid-cols-3 gap-4",children:l.map(e=>a.jsx(z,{item:e},e.id))})]})})}export{B as default};

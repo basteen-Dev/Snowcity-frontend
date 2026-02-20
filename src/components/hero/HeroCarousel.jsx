@@ -105,7 +105,7 @@ export default function HeroCarousel({ banners = [], waveColor = "#0b1a33" }) {
                     <source media="(max-width: 767px)" srcSet={mobileImg} />
                     <img
                       src={desktopImg}
-                      alt={title || "Banner"}
+                      alt={b?.web_image_alt || title || "Banner"}
                       className="w-full h-full object-cover object-top md:object-center will-change-transform animate-kenburns brightness-[0.95] contrast-[1.05] saturate-110"
                       style={{
                         objectPosition: 'center',

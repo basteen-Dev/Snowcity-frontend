@@ -9,6 +9,7 @@ import Loader from '../components/common/Loader';
 import ErrorState from '../components/common/ErrorState';
 import GalleryViewer from '../components/gallery/GalleryViewer';
 import { addCartItem, setStep } from '../features/bookings/bookingsSlice';
+import toast from 'react-hot-toast';
 import { getAttrId } from '../utils/ids';
 import { imgSrc } from '../utils/media';
 import {
@@ -779,9 +780,11 @@ export default function AttractionDetails() {
         },
         offer_id: appliedOffer?.offer_id,
         offer_rule_id: appliedOffer?.rule_id || bestOffer?.rule?.rule_id,
+        offerDescription: offerDescription || appliedOffer?.description || '',
       }),
     );
 
+    toast.success('Added to your booking!');
     dispatch(setStep(1));
 
     const params = new URLSearchParams({
@@ -791,6 +794,7 @@ export default function AttractionDetails() {
       slot: slotKey,
       qty: String(sanitizedQty),
     });
+    sessionStorage.removeItem('snowcity_booking_state');
     navigate(`/booking?${params.toString()}`);
   };
 
@@ -1188,18 +1192,36 @@ export default function AttractionDetails() {
             </div>
 
             {/* Subtotal / total */}
-            <div className="mt-3 rounded-2xl border bg-gray-50 px-3 py-2 text-sm">
-              <div className="flex items-center justify-between text-gray-600">
-                <span>Subtotal</span>
-                <span className="rupee">
-                  {qtyNumber} × {formatCurrency(effectiveUnitPrice || 0)}
-                </span>
+            {date && selectedSlotForBar && (
+              <div className="mt-4 rounded-2xl border border-sky-100 bg-sky-50 px-4 py-3 text-sm flex flex-col gap-2">
+                <div className="flex items-center justify-between text-gray-700">
+                  <span className="font-semibold" style={{ fontFamily: 'Inter, sans-serif' }}>
+                    Selection:
+                  </span>
+                  <span className="font-medium text-right">
+                    {dayjs(date).format('DD MMM YYYY')} <br /> {getSlotLabel(selectedSlotForBar)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-gray-700 pt-2 border-t border-sky-200 border-dashed">
+                  <span>Subtotal</span>
+                  <span className="rupee">
+                    {qtyNumber} × {formatCurrency(effectiveUnitPrice || 0)}
+                  </span>
+                </div>
+                <div className="mt-1 flex items-center justify-between text-gray-900 font-bold text-lg">
+                  <span>Total</span>
+                  <span className="rupee">
+                    {formatCurrency(totalPrice || 0)}
+                  </span>
+                </div>
               </div>
-              <div className="mt-1 flex items-center justify-between text-gray-900 font-semibold">
-                <span>Total</span>
-                <span className="rupee">{formatCurrency(totalPrice || 0)}</span>
+            )}
+
+            {!date || !selectedSlotForBar ? (
+              <div className="mt-4 rounded-2xl border bg-gray-50 px-3 py-2 text-sm text-center text-gray-500">
+                Please select a date and time slot.
               </div>
-            </div>
+            ) : null}
 
             {/* Book button */}
             <button
@@ -1505,20 +1527,36 @@ export default function AttractionDetails() {
                   </div>
 
                   {/* Subtotal / total */}
-                  <div className="mt-3 rounded-2xl border bg-gray-50 px-3 py-2 text-sm">
-                    <div className="flex items-center justify-between text-gray-600">
-                      <span>Subtotal</span>
-                      <span className="rupee">
-                        {qtyNumber} × {formatCurrency(effectiveUnitPrice || 0)}
-                      </span>
+                  {date && selectedSlotForBar && (
+                    <div className="mt-4 rounded-2xl border border-sky-100 bg-sky-50 px-4 py-3 text-sm flex flex-col gap-2">
+                      <div className="flex items-center justify-between text-gray-700">
+                        <span className="font-semibold" style={{ fontFamily: 'Inter, sans-serif' }}>
+                          Selection:
+                        </span>
+                        <span className="font-medium">
+                          {dayjs(date).format('DD MMM YYYY')} • {getSlotLabel(selectedSlotForBar)}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-gray-700 pt-2 border-t border-sky-200 border-dashed">
+                        <span>Subtotal</span>
+                        <span className="rupee">
+                          {qtyNumber} × {formatCurrency(effectiveUnitPrice || 0)}
+                        </span>
+                      </div>
+                      <div className="mt-1 flex items-center justify-between text-gray-900 font-bold text-lg">
+                        <span>Total</span>
+                        <span className="rupee">
+                          {formatCurrency(totalPrice || 0)}
+                        </span>
+                      </div>
                     </div>
-                    <div className="mt-1 flex items-center justify-between text-gray-900 font-semibold">
-                      <span>Total</span>
-                      <span className="rupee">
-                        {formatCurrency(totalPrice || 0)}
-                      </span>
+                  )}
+
+                  {!date || !selectedSlotForBar ? (
+                    <div className="mt-4 rounded-2xl border bg-gray-50 px-3 py-2 text-sm text-center text-gray-500">
+                      Please select a date and time slot to book.
                     </div>
-                  </div>
+                  ) : null}
 
                   {/* Book button */}
                   <button

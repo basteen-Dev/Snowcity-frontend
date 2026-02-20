@@ -11,7 +11,7 @@ const FooterHeader = ({ children }) => (
     <h4 className="text-slate-900 font-bold uppercase tracking-wider text-base">
       {children}
     </h4>
-    <div className="absolute -bottom-2 left-0 w-12 h-[2px] bg-blue-500" />
+    <div className="absolute -bottom-2 left-0 w-12 h-[2px] bg-blue-100" />
     <div className="absolute -bottom-2 left-0 w-full h-[1px] bg-gray-200/50" />
   </div>
 );
@@ -89,7 +89,7 @@ export default function Footer() {
   }, []);
 
   return (
-    <footer className="relative  bg-gradient-to-t from-[#e0f2fe] via-[#bae6fd] to-white mt-0 overflow-hidden border-t border-gray-100">
+    <footer className="relative  bg-gradient-to-t from-[#e0f2fe] via-[#bae6fd] to-white mt-0 overflow-hidden ">
 
       {/* Wave Top Border (Restored) */}
       <div className="absolute -top-[2px] left-0 right-0 z-10 pointer-events-none">
@@ -112,7 +112,7 @@ export default function Footer() {
       ></canvas>
 
       {/* FOOTER CONTENT (VinWonders Style + SnowCity Data) */}
-      <div className="relative z-30 max-w-7xl mx-auto px-6 py-16">
+      <div className="relative z-30 max-w-7xl mx-auto px-6 pt-16 pb-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
 
           {/* COLUMN 1: BRAND & CONTACT */}
@@ -204,11 +204,11 @@ export default function Footer() {
         </div>
 
         {/* BOTTOM BAR */}
-        <div className="mt-20 pt-8 border-t border-gray-300/30 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-xs text-gray-500 font-medium">
+        <div className="mt-6 pt-1 border-t border-gray-300/30 flex flex-col items-center gap-0">
+          <p className="text-xs text-gray-500 font-medium leading-none mb-0">
             © {new Date().getFullYear()} SnowCity Theme Park. All rights reserved.
           </p>
-          <div className="flex gap-6 text-xs text-gray-500 font-medium">
+          <div className="flex gap-4 text-xs text-gray-500 font-medium leading-none mt-0.5">
             <Link to="/page/privacy-policy" className="hover:text-gray-800">Privacy Policy</Link>
             <Link to="/page/terms-and-conditions" className="hover:text-gray-800">Terms & Conditions</Link>
           </div>

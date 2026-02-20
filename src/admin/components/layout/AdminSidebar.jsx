@@ -58,7 +58,7 @@ function usePersistedSections(defaults) {
     setOpenMap(next);
     try {
       localStorage.setItem(STORE_KEY, JSON.stringify(next));
-    } catch {}
+    } catch { }
   }, []);
 
   const setOne = React.useCallback(
@@ -158,6 +158,11 @@ export default function AdminSidebar({ collapsed, onClose }) {
             icon: Eye,
           },
           {
+            to: '/admin/analytics/conversion',
+            label: 'Conversion',
+            icon: TrendingUp,
+          },
+          {
             to: '/admin/revenue/attractions',
             label: 'Attraction Revenue',
             icon: DollarSign,
@@ -203,9 +208,9 @@ export default function AdminSidebar({ collapsed, onClose }) {
           { to: '/admin/roles', label: 'Admin Roles', icon: ShieldCheck },
           ...(canSeeAdminMgmt
             ? [
-                { to: '/admin/admins', label: 'Admin Team', icon: UserCog, permsAny: ['admin-management:read'] },
-                { to: '/admin/admins/access', label: 'Grant Access', icon: KeyRound, permsAny: ['admin-management:write', 'admin-management:manage'] },
-              ]
+              { to: '/admin/admins', label: 'Admin Team', icon: UserCog, permsAny: ['admin-management:read'] },
+              { to: '/admin/admins/access', label: 'Grant Access', icon: KeyRound, permsAny: ['admin-management:write', 'admin-management:manage'] },
+            ]
             : []),
         ],
       }]),

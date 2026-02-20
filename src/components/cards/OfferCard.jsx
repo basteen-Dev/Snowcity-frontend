@@ -31,7 +31,7 @@ export default function OfferCard({ item }) {
       {/* Image */}
       <img
         src={img}
-        alt={title}
+        alt={item?.image_alt || title}
         className="
           absolute inset-0 h-full w-full object-cover
           transition-transform duration-700 group-hover:scale-110

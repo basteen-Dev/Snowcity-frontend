@@ -13,7 +13,7 @@ export default function AttractionForm() {
   const [state, setState] = React.useState({
     status: isEdit ? 'loading' : 'idle',
     error: null,
-    form: { title: '', slug: '', image_url: '', desktop_image_url: '', base_price: 0, active: true, description: '', meta_title: '', short_description: '' }
+    form: { title: '', slug: '', image_url: '', image_alt: '', desktop_image_url: '', desktop_image_alt: '', base_price: 0, active: true, description: '', meta_title: '', short_description: '' }
   });
   const [saving, setSaving] = React.useState(false);
 
@@ -30,7 +30,9 @@ export default function AttractionForm() {
             title: a.title || '',
             slug: a.slug || '',
             image_url: a.image_url || '',
+            image_alt: a.image_alt || '',
             desktop_image_url: a.desktop_image_url || '',
+            desktop_image_alt: a.desktop_image_alt || '',
             base_price: a.base_price || 0,
             active: !!a.active,
             description: a.description || '',
@@ -88,10 +90,10 @@ export default function AttractionForm() {
             <input type="number" className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" value={f.base_price} onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, base_price: Number(e.target.value || 0) } }))} />
           </div>
           <div className="md:col-span-2">
-            <ImageUploader label="Image" value={f.image_url} onChange={(url) => setState((s) => ({ ...s, form: { ...s.form, image_url: url } }))} folder="attractions" requiredPerm="uploads:write" />
+            <ImageUploader label="Image" value={f.image_url} onChange={(url) => setState((s) => ({ ...s, form: { ...s.form, image_url: url } }))} altText={f.image_alt} onAltChange={(alt) => setState((s) => ({ ...s, form: { ...s.form, image_alt: alt } }))} folder="attractions" requiredPerm="uploads:write" />
           </div>
           <div className="md:col-span-2">
-            <ImageUploader label="Desktop Image (optional)" value={f.desktop_image_url} onChange={(url) => setState((s) => ({ ...s, form: { ...s.form, desktop_image_url: url } }))} folder="attractions" requiredPerm="uploads:write" />
+            <ImageUploader label="Desktop Image (optional)" value={f.desktop_image_url} onChange={(url) => setState((s) => ({ ...s, form: { ...s.form, desktop_image_url: url } }))} altText={f.desktop_image_alt} onAltChange={(alt) => setState((s) => ({ ...s, form: { ...s.form, desktop_image_alt: alt } }))} folder="attractions" requiredPerm="uploads:write" />
           </div>
           <div className="md:col-span-2">
             <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Long Description (HTML content)</label>

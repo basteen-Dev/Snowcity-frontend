@@ -108,21 +108,32 @@ export default function ComboCard({ item }) {
   const comboSlug = generateComboSlug(item);
   const comboHref = comboSlug ? `/combo-${comboSlug}` : (comboId ? `/combos/${comboId}` : '/combos');
   const numericComboId = item?.combo_id || item?.id || null;
-  const bookHref = numericComboId ? `/booking?combo_id=${numericComboId}&openDrawer=true` : '/booking?openDrawer=true';
+  const bookHref = numericComboId ? `/booking?combo_id=${numericComboId}&type=combo&openDrawer=true` : '/booking?type=combo&openDrawer=true';
 
   const navigate = useNavigate();
-  const stop = (e) => e.stopPropagation();
+  const stop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
 
   return (
-    <Link
-      to={comboHref}
-      className="exp-card block no-underline"
+    <div
+      onClick={() => navigate(comboHref)}
+      className="exp-card block no-underline cursor-pointer"
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          navigate(comboHref);
+        }
+      }}
     >
       <div className="exp-card-img">
         {heroImage && (
           <img
             src={heroImage}
-            alt={title}
+            alt={item?.image_alt || title}
             className="absolute inset-0 h-full w-full object-cover"
             loading="lazy"
             decoding="async"
@@ -132,11 +143,11 @@ export default function ComboCard({ item }) {
       <div className="exp-card-body">
         <div className="exp-type">Exclusive Combo</div>
         <div className="exp-name">{title}</div>
-    
+
 
         <div className="flex gap-3 mb-6">
           <div className="flex-shrink-0 mt-1">
-           
+
           </div>
           <div className="exp-desc">{desc}</div>
         </div>
@@ -149,6 +160,7 @@ export default function ComboCard({ item }) {
           <div
             onClick={(e) => {
               stop(e);
+              sessionStorage.removeItem('snowcity_booking_state');
               navigate(bookHref);
             }}
             className="btn-book-exp !py-2.5 !px-6 !text-xs cursor-pointer"
@@ -157,6 +169,6 @@ export default function ComboCard({ item }) {
           </div>
         </div>
       </div>
-    </Link>
+    </div>
   );
 }

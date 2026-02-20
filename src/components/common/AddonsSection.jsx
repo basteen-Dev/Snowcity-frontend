@@ -59,7 +59,7 @@ export default function AddonsSection({ items = [], onSelectAddon }) {
                   >
                     <div className="flex items-center justify-center w-12 h-12 md:w-14 md:h-14 bg-gray-50 rounded-lg overflow-hidden">
                       {img ? (
-                        <img src={img} alt={title} className="w-full h-full object-cover" />
+                        <img src={img} alt={addon?.image_alt || title} className="w-full h-full object-cover" />
                       ) : (
                         <div className="text-xl">🎁</div>
                       )}

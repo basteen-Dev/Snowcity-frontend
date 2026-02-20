@@ -78,6 +78,7 @@ const AnalyticsPeople = lazy(() => import('../pages/analytics/People.jsx'));
 const AnalyticsViews = lazy(() => import('../pages/analytics/Views.jsx'));
 const AnalyticsSplit = lazy(() => import('../pages/analytics/Split.jsx'));
 const AnalyticsTop = lazy(() => import('../pages/analytics/TopAttractions')); // optional/legacy
+const ConversionDashboard = lazy(() => import('../pages/analytics/ConversionDashboard'));
 
 // Revenue pages
 const AttractionsRevenue = lazy(() => import('../pages/revenue/AttractionRevenue'));
@@ -135,6 +136,7 @@ export default function AdminRouter() {
             <Route path="views" element={<AnalyticsViews />} />
             <Route path="split" element={<AnalyticsSplit />} />
             <Route path="top-attractions" element={<AnalyticsTop />} />
+            <Route path="conversion" element={<ConversionDashboard />} />
           </Route>
 
           {/* Bookings */}
@@ -166,11 +168,11 @@ export default function AdminRouter() {
           <Route path="catalog/coupons/:id" element={<CouponForm />} />
 
           <Route path="catalog/combo-slots" element={<ComboSlotList />} />
-<Route path="catalog/combo-slots/new" element={<ComboSlotForm />} />
-<Route path="catalog/combo-slots/:id" element={<ComboSlotForm />} />
-<Route path="catalog/combo-slots/bulk" element={<ComboSlotBulk />} />
+          <Route path="catalog/combo-slots/new" element={<ComboSlotForm />} />
+          <Route path="catalog/combo-slots/:id" element={<ComboSlotForm />} />
+          <Route path="catalog/combo-slots/bulk" element={<ComboSlotBulk />} />
 
-<Route path="catalog/attraction-slots" element={<AttractionSlotList />} />
+          <Route path="catalog/attraction-slots" element={<AttractionSlotList />} />
 
           <Route path="catalog/banners" element={<BannersList />} />
           <Route path="catalog/banners/new" element={<BannerForm />} />
