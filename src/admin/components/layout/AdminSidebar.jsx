@@ -27,6 +27,7 @@ import {
   Calendar,
   Building2,
   Eye,
+  Settings,
 } from 'lucide-react';
 import PermissionGate from '../common/PermissionGate.jsx';
 
@@ -214,6 +215,13 @@ export default function AdminSidebar({ collapsed, onClose }) {
             : []),
         ],
       }]),
+      {
+        key: 'Settings',
+        label: 'Settings',
+        items: [
+          { to: '/admin/site-settings', label: 'Site Settings (SEO)', icon: Settings }
+        ]
+      },
     ];
 
     if (navFilter.trim() === '') return baseSections;
@@ -235,6 +243,7 @@ export default function AdminSidebar({ collapsed, onClose }) {
       Catalog: true,
       AdminManagement: true,
       UsersRBAC: false,
+      Settings: false,
     }),
     []
   );

@@ -4,6 +4,7 @@ import adminApi from '../../services/adminApi';
 import A from '../../services/adminEndpoints';
 import ImageUploader from '../../components/common/ImageUploader';
 import SaveOverlay from '../../components/common/SaveOverlay';
+import toast from 'react-hot-toast';
 
 export default function AttractionForm() {
   const { id } = useParams();
@@ -13,7 +14,7 @@ export default function AttractionForm() {
   const [state, setState] = React.useState({
     status: isEdit ? 'loading' : 'idle',
     error: null,
-    form: { title: '', slug: '', image_url: '', image_alt: '', desktop_image_url: '', desktop_image_alt: '', base_price: 0, active: true, description: '', meta_title: '', short_description: '' }
+    form: { title: '', slug: '', image_url: '', image_alt: '', desktop_image_url: '', desktop_image_alt: '', base_price: 0, active: true, description: '', meta_title: '', short_description: '', faq_items: [], head_schema: '', body_schema: '', footer_schema: '' }
   });
   const [saving, setSaving] = React.useState(false);
 
@@ -37,7 +38,11 @@ export default function AttractionForm() {
             active: !!a.active,
             description: a.description || '',
             meta_title: a.meta_title || '',
-            short_description: a.short_description || ''
+            short_description: a.short_description || '',
+            faq_items: Array.isArray(a.faq_items) ? a.faq_items : [],
+            head_schema: a.head_schema || '',
+            body_schema: a.body_schema || '',
+            footer_schema: a.footer_schema || '',
           }
         }));
       } catch (err) { setState((s) => ({ ...s, status: 'failed', error: err })); }
@@ -48,11 +53,17 @@ export default function AttractionForm() {
     e.preventDefault();
     setSaving(true);
     setState((s) => ({ ...s, error: null }));
+    const loadingToast = toast.loading(isEdit ? 'Updating attraction...' : 'Creating attraction...');
     try {
       if (isEdit) await adminApi.put(A.attractionById(id), state.form);
       else await adminApi.post(A.attractions(), state.form);
+
+      toast.success(isEdit ? 'Attraction updated successfully' : 'Attraction created successfully (slots generating in background)', { id: loadingToast });
       navigate('/admin/catalog/attractions');
-    } catch (err) { setState((s) => ({ ...s, error: err })); }
+    } catch (err) {
+      toast.error(err.message || 'Save failed', { id: loadingToast });
+      setState((s) => ({ ...s, error: err }));
+    }
     finally {
       setSaving(false);
     }
@@ -102,6 +113,115 @@ export default function AttractionForm() {
           <div className="flex items-center gap-2">
             <input id="active" type="checkbox" checked={!!f.active} onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, active: e.target.checked } }))} />
             <label htmlFor="active" className="text-sm text-gray-700 dark:text-neutral-200">Active</label>
+          </div>
+        </div>
+
+        {/* FAQ Section */}
+        <div className="mt-8 pt-6 border-t border-gray-200 dark:border-neutral-800">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-neutral-100">FAQ Section</h2>
+              <p className="text-sm text-gray-500 dark:text-neutral-400 mt-1">Add questions and answers for FAQ structured data (helps SEO)</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                const currentItems = Array.isArray(f.faq_items) ? f.faq_items : [];
+                setState(s => ({ ...s, form: { ...s.form, faq_items: [...currentItems, { question: '', answer: '' }] } }));
+              }}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
+            >
+              + Add FAQ
+            </button>
+          </div>
+          {(f.faq_items || []).map((faq, idx) => (
+            <div key={idx} className="mb-4 p-4 border border-gray-200 dark:border-neutral-700 rounded-lg bg-gray-50 dark:bg-neutral-800">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-sm font-medium text-gray-700 dark:text-neutral-300">FAQ #{idx + 1}</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const items = [...f.faq_items];
+                    items.splice(idx, 1);
+                    setState(s => ({ ...s, form: { ...s.form, faq_items: items } }));
+                  }}
+                  className="text-red-500 hover:text-red-700 text-sm"
+                >
+                  Remove
+                </button>
+              </div>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 dark:text-neutral-400 mb-1">Question</label>
+                  <input
+                    type="text"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-neutral-900 dark:text-neutral-100 text-sm"
+                    value={faq.question || ''}
+                    onChange={(e) => {
+                      const items = [...f.faq_items];
+                      items[idx] = { ...items[idx], question: e.target.value };
+                      setState(s => ({ ...s, form: { ...s.form, faq_items: items } }));
+                    }}
+                    placeholder="What is the question?"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 dark:text-neutral-400 mb-1">Answer</label>
+                  <textarea
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-neutral-900 dark:text-neutral-100 text-sm"
+                    rows={3}
+                    value={faq.answer || ''}
+                    onChange={(e) => {
+                      const items = [...f.faq_items];
+                      items[idx] = { ...items[idx], answer: e.target.value };
+                      setState(s => ({ ...s, form: { ...s.form, faq_items: items } }));
+                    }}
+                    placeholder="Provide the answer..."
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+          {(!f.faq_items || !f.faq_items.length) && (
+            <p className="text-sm text-gray-400 dark:text-neutral-500 italic">No FAQ items yet. Click "+ Add FAQ" to get started.</p>
+          )}
+        </div>
+
+        {/* Schema Markup */}
+        <div className="mt-8 pt-6 border-t border-gray-200 dark:border-neutral-800">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-neutral-100 mb-2">Schema Markup</h2>
+          <p className="text-sm text-gray-500 dark:text-neutral-400 mb-4">Custom JSON-LD structured data for this attraction</p>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">Head Schema (JSON-LD)</label>
+              <textarea
+                className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-neutral-900 dark:text-neutral-100 font-mono text-sm"
+                rows={4}
+                value={f.head_schema || ''}
+                onChange={(e) => setState(s => ({ ...s, form: { ...s.form, head_schema: e.target.value } }))}
+                placeholder='{"@context":"https://schema.org", ...}'
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">Body Schema (JSON-LD)</label>
+              <textarea
+                className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-neutral-900 dark:text-neutral-100 font-mono text-sm"
+                rows={4}
+                value={f.body_schema || ''}
+                onChange={(e) => setState(s => ({ ...s, form: { ...s.form, body_schema: e.target.value } }))}
+                placeholder='{"@context":"https://schema.org", ...}'
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">Footer Schema (JSON-LD)</label>
+              <textarea
+                className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-neutral-900 dark:text-neutral-100 font-mono text-sm"
+                rows={4}
+                value={f.footer_schema || ''}
+                onChange={(e) => setState(s => ({ ...s, form: { ...s.form, footer_schema: e.target.value } }))}
+                placeholder='{"@context":"https://schema.org", ...}'
+              />
+            </div>
           </div>
         </div>
 

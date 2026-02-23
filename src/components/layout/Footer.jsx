@@ -131,27 +131,33 @@ export default function Footer() {
               <div className="flex items-center gap-3 text-gray-700">
                 <Mail className="w-5 h-5 text-blue-500 shrink-0" />
                 <a href="mailto:info@snowcity.com" className="text-sm hover:text-sky-600 transition-colors">
-                  info@snowcity.com
+                  info@snowcityblr.com
                 </a>
               </div>
               <div className="flex items-center gap-3 text-gray-700">
                 <Phone className="w-5 h-5 text-blue-500 shrink-0" />
                 <p className="text-sm font-semibold">
-                  Hotline: +91 99999 99999
+                  Hotline: +91 78295 50000
                 </p>
               </div>
             </div>
 
             {/* Social Icons - Original Brand Colors */}
             <div className="flex items-center gap-6 pt-4">
-              <a href="#" className="text-[#1877F2]" title="Facebook">
-                <Facebook className="w-5 h-5 fill-current" />
+              <a href="#" className="text-[#1877F2] hover:scale-110 transition-transform" title="Facebook">
+                <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current">
+                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                </svg>
               </a>
-              <a href="#" className="text-[#FF0000]" title="YouTube">
-                <Youtube className="w-5 h-5 fill-current" />
+              <a href="https://www.youtube.com/@SnowCityBengaluru" target="_blank" rel="noopener noreferrer" className="text-[#FF0000] hover:scale-110 transition-transform" title="YouTube">
+                <svg viewBox="0 0 24 24" className="w-6 h-6 fill-current">
+                  <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                </svg>
               </a>
-              <a href="#" className="text-[#E4405F]" title="Instagram">
-                <Instagram className="w-5 h-5" />
+              <a href="https://www.instagram.com/snowcity_blr/" target="_blank" rel="noopener noreferrer" className="text-[#E4405F] hover:scale-110 transition-transform" title="Instagram">
+                <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current">
+                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.981 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z" />
+                </svg>
               </a>
             </div>
           </div>
@@ -160,11 +166,11 @@ export default function Footer() {
           <div>
             <FooterHeader>Introduction</FooterHeader>
             <ul className="space-y-3 pt-2">
-              <li><Link to="/page/about-us" className="text-sm hover:text-blue-700 transition-colors font-medium">About Us</Link></li>
-              <li><Link to="/page/achievements" className="text-sm hover:text-blue-700 transition-colors font-medium">Achievement</Link></li>
+              <li><Link to="/about-us" className="text-sm hover:text-blue-700 transition-colors font-medium">About Us</Link></li>
+              <li><Link to="/achievements" className="text-sm hover:text-blue-700 transition-colors font-medium">Achievement</Link></li>
               <li><Link to="/contact" className="text-sm hover:text-blue-700 transition-colors font-medium">Contact</Link></li>
-              <li><Link to="/page/location" className="text-sm hover:text-blue-700 transition-colors font-medium">Maps</Link></li>
-              <li><Link to="/page/careers" className="text-sm hover:text-blue-700 transition-colors font-medium">Career Opportunities</Link></li>
+              <li><Link to="/location" className="text-sm hover:text-blue-700 transition-colors font-medium">Maps</Link></li>
+              <li><Link to="/careers" className="text-sm hover:text-blue-700 transition-colors font-medium">Career Opportunities</Link></li>
               <li><Link to="/admin" className="text-sm text-sky-800 hover:text-sky-900 transition-colors font-bold mt-4 inline-block">Admin Dashboard</Link></li>
             </ul>
           </div>
@@ -176,9 +182,9 @@ export default function Footer() {
               <li><Link to="/attractions" className="text-sm hover:text-blue-700 transition-colors font-medium">Attractions</Link></li>
               <li><Link to="/offers" className="text-sm hover:text-blue-700 transition-colors font-medium">Offers & Deals</Link></li>
               <li><Link to="/booking" className="text-sm hover:text-blue-700 transition-colors font-medium">Book Your Visit</Link></li>
-              <li><Link to="/page/faq" className="text-sm hover:text-blue-700 transition-colors font-medium">FAQs</Link></li>
-              <li><Link to="/visitor-blogs" className="text-sm hover:text-blue-700 transition-colors font-medium">Visitor Stories</Link></li>
-              <li><Link to="/page/safety" className="text-sm hover:text-blue-700 transition-colors font-medium">Safety Guidelines</Link></li>
+              <li><Link to="/faqs" className="text-sm hover:text-blue-700 transition-colors font-medium">FAQs</Link></li>
+              <li><Link to="/blog" className="text-sm hover:text-blue-700 transition-colors font-medium">Visitor Stories</Link></li>
+              <li><Link to="/safety" className="text-sm hover:text-blue-700 transition-colors font-medium">Safety Guidelines</Link></li>
             </ul>
           </div>
 
@@ -187,15 +193,15 @@ export default function Footer() {
             <div>
               <FooterHeader>Terms & Conditions</FooterHeader>
               <ul className="space-y-3 pt-2">
-                <li><Link to="/page/privacy-policy" className="text-sm hover:text-blue-700 transition-colors font-medium">Privacy Policy</Link></li>
-                <li><Link to="/page/terms-and-conditions" className="text-sm hover:text-blue-700 transition-colors font-medium">Terms & Conditions</Link></li>
+                <li><Link to="/privacy-policy" className="text-sm hover:text-blue-700 transition-colors font-medium">Privacy Policy</Link></li>
+                <li><Link to="/terms-and-conditions" className="text-sm hover:text-blue-700 transition-colors font-medium">Terms & Conditions</Link></li>
               </ul>
             </div>
 
             <div>
               <FooterHeader>Gallery</FooterHeader>
               <ul className="space-y-3 pt-2">
-                <li><Link to="/page/about-us#gallery" className="text-sm hover:text-blue-700 transition-colors font-medium">Photo Gallery</Link></li>
+                <li><Link to="/gallery" className="text-sm hover:text-blue-700 transition-colors font-medium">Photo Gallery</Link></li>
               </ul>
             </div>
 
@@ -206,12 +212,8 @@ export default function Footer() {
         {/* BOTTOM BAR */}
         <div className="mt-6 pt-1 border-t border-gray-300/30 flex flex-col items-center gap-0">
           <p className="text-xs text-gray-500 font-medium leading-none mb-0">
-            © {new Date().getFullYear()} SnowCity Theme Park. All rights reserved.
+            Copyright 2026 © Bengaluru Leisure Private Limited. All Rights Reserved.
           </p>
-          <div className="flex gap-4 text-xs text-gray-500 font-medium leading-none mt-0.5">
-            <Link to="/page/privacy-policy" className="hover:text-gray-800">Privacy Policy</Link>
-            <Link to="/page/terms-and-conditions" className="hover:text-gray-800">Terms & Conditions</Link>
-          </div>
         </div>
       </div>
 

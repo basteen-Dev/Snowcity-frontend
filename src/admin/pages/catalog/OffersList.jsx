@@ -3,6 +3,8 @@ import adminApi from '../../services/adminApi';
 import A from '../../services/adminEndpoints';
 import AdminTable from '../../components/common/AdminTable';
 import { useNavigate } from 'react-router-dom';
+import { imgSrc } from '../../../utils/media';
+
 
 export default function OffersList() {
   const navigate = useNavigate();
@@ -106,6 +108,18 @@ export default function OffersList() {
       <AdminTable
         keyField="offer_id"
         columns={[
+          {
+            key: 'image_url',
+            title: 'Image',
+            render: (row) => (
+              <img
+                src={imgSrc(row)}
+                alt={row.title || 'Offer'}
+                className="w-10 h-10 object-cover rounded shadow-sm border dark:border-neutral-700"
+                onError={(e) => { e.target.src = '/placeholder-image.png'; }}
+              />
+            )
+          },
           { key: 'title', title: 'Title' },
           {
             key: 'discount_summary',

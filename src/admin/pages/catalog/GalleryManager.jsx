@@ -43,7 +43,7 @@ export default function GalleryManager() {
         q: nextFilters.q || undefined,
         type: nextFilters.type || undefined,
       };
-      
+
       // Add category-specific filtering
       if (nextFilters.category === 'attraction' && nextFilters.target_ref_id) {
         params.target_type = 'attraction';
@@ -54,7 +54,7 @@ export default function GalleryManager() {
       } else if (nextFilters.category === 'common') {
         params.target_type = 'none';
       }
-      
+
       const res = await adminApi.get(A.gallery(), { params });
       const { items } = parseGalleryResponse(res);
       setState({ status: 'succeeded', items, error: null });
@@ -102,7 +102,7 @@ export default function GalleryManager() {
 
   const handleBulkDelete = async () => {
     if (selectedItems.length === 0) return;
-    
+
     const confirmDelete = window.confirm(`Are you sure you want to delete ${selectedItems.length} selected items?`);
     if (!confirmDelete) return;
 
@@ -122,7 +122,7 @@ export default function GalleryManager() {
       render: (row) => {
         const isVideo = row.media_type === 'video' || (row.url && row.url.match(/\.(mp4|webm|ogg)$/i));
         const isPdf = row.media_type === 'pdf' || (row.url && row.url.match(/\.pdf$/i));
-        
+
         return (
           <div className="w-20 h-14 rounded-md overflow-hidden bg-gray-100">
             {isVideo ? (
@@ -132,7 +132,13 @@ export default function GalleryManager() {
                 PDF
               </div>
             ) : (
-              <img src={imgSrc(row) || row.url} alt={row.title || 'Gallery media'} className="w-full h-full object-cover" loading="lazy" />
+              <img
+                src={imgSrc(row)}
+                alt={row.title || 'Gallery media'}
+                className="w-full h-full object-cover"
+                loading="lazy"
+                onError={(e) => { e.target.src = '/placeholder-image.png'; }}
+              />
             )}
           </div>
         );
@@ -140,8 +146,8 @@ export default function GalleryManager() {
     },
     { key: 'title', title: 'Title' },
     { key: 'media_type', title: 'Type' },
-    { 
-      key: 'target', 
+    {
+      key: 'target',
       title: 'Linked To',
       render: (row) => {
         if (!row.target_type || row.target_type === 'none') return 'Common Gallery';
@@ -177,8 +183,8 @@ export default function GalleryManager() {
             Add Media
           </button>
           {selectedItems.length > 0 && (
-            <button 
-              className="rounded-md bg-red-600 text-white px-3 py-2 text-sm disabled:opacity-50" 
+            <button
+              className="rounded-md bg-red-600 text-white px-3 py-2 text-sm disabled:opacity-50"
               onClick={handleBulkDelete}
               disabled={deleteStatus.loading}
             >

@@ -84,6 +84,9 @@ const ConversionDashboard = lazy(() => import('../pages/analytics/ConversionDash
 const AttractionsRevenue = lazy(() => import('../pages/revenue/AttractionRevenue'));
 const ComboRevenue = lazy(() => import('../pages/revenue/ComboRevenue'));
 
+// Site Settings
+const SiteSettings = lazy(() => import('../pages/settings/SiteSettings'));
+
 function RequireAdmin({ children }) {
   const token = useSelector((s) => s.adminAuth?.token);
   if (!token) return <Navigate to="login" replace />;
@@ -211,6 +214,9 @@ export default function AdminRouter() {
           {/* Revenue */}
           <Route path="revenue/attractions" element={<AttractionsRevenue />} />
           <Route path="revenue/combos" element={<ComboRevenue />} />
+
+          {/* Site Settings */}
+          <Route path="site-settings" element={<SiteSettings />} />
 
           {/* Fallback within /admin */}
           <Route path="*" element={<Navigate to="." replace />} />

@@ -2,9 +2,12 @@ import React from 'react';
 import DOMPurify from 'dompurify';
 import parse, { domToReact } from 'html-react-parser';
 
-const sanitizeCfg = { ADD_ATTR: ['target','rel','style'] };
+const sanitizeCfg = {
+  ADD_ATTR: ['target', 'rel', 'style', 'class', 'data-widthpct', 'data-alignmode'],
+  ADD_TAGS: ['iframe'],
+};
 
-export default function HtmlContent({ html, className = 'prose max-w-none' }) {
+export default function HtmlContent({ html, className = 'cms-content prose max-w-none' }) {
   const safe = React.useMemo(() => DOMPurify.sanitize(html || '', sanitizeCfg), [html]);
   const options = {
     replace: (node) => {

@@ -3,6 +3,8 @@ import adminApi from '../../services/adminApi';
 import A from '../../services/adminEndpoints';
 import AdminTable from '../../components/common/AdminTable';
 import { useNavigate } from 'react-router-dom';
+import { imgSrc } from '../../../utils/media';
+
 import { DndContext, closestCenter } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 
@@ -119,6 +121,18 @@ export default function AttractionsList() {
           <AdminTable
             keyField="attraction_id"
             columns={[
+              {
+                key: 'image_url',
+                title: 'Image',
+                render: (row) => (
+                  <img
+                    src={imgSrc(row)}
+                    alt={row.title}
+                    className="w-10 h-10 object-cover rounded shadow-sm border dark:border-neutral-700"
+                    onError={(e) => { e.target.src = '/placeholder-image.png'; }}
+                  />
+                )
+              },
               { key: 'title', title: 'Title' },
               { key: 'base_price', title: 'Base Price', render: (row) => `₹${row?.base_price ?? 0}` },
               {
@@ -126,16 +140,15 @@ export default function AttractionsList() {
                 title: 'Active',
                 render: (row) => (
                   <div className="flex items-center gap-2">
-                    <span className={`px-2 py-1 text-xs rounded ${
-                      row?.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                    }`}>
+                    <span className={`px-2 py-1 text-xs rounded ${row?.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      }`}>
                       {row?.active ? 'Active' : 'Inactive'}
                     </span>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         if (!window.confirm(`Are you sure you want to delete "${row.title}"? This will also delete all associated slots.`)) return;
-                        
+
                         adminApi.delete(`${A.attractions()}/${row.attraction_id || row.id}`)
                           .then(() => setState((s) => ({ ...s, items: s.items.filter((it) => (it.attraction_id || it.id) !== (row.attraction_id || row.id)) })))
                           .catch(error => alert(error.message || 'Failed to delete attraction'));

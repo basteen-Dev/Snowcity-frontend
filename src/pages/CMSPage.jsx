@@ -12,6 +12,7 @@ import { Link } from 'react-router-dom';
 import { imgSrc } from '../utils/media';
 import LazyVisible from '../components/common/LazyVisible';
 import { SkeletonSectionHeader } from '../components/common/SkeletonLoader';
+import usePageSeo from '../hooks/usePageSeo';
 
 export default function CMSPage() {
   const { slug } = useParams();
@@ -52,13 +53,27 @@ export default function CMSPage() {
     return () => ac.abort();
   }, [slug]);
 
-  if (state.status === 'loading') return <Loader />;
-  if (state.status === 'failed') return <ErrorState message={state.error} />;
-
   const p = state.page || {};
   const mode = (p.editor_mode || '').toLowerCase();
   const title = p.title || p.name || 'Page';
   const isRaw = mode === 'raw';
+  const faqItems = Array.isArray(p.faq_items) ? p.faq_items.filter(f => f && f.question && f.answer) : [];
+
+  // Inject SEO meta tags on the client-side (must be called before any early returns)
+  usePageSeo({
+    title: p.meta_title || title,
+    description: p.meta_description || '',
+    keywords: p.meta_keywords || '',
+    image: p.image_url || '',
+    imageAlt: p.image_alt || '',
+    canonical: window.location.href,
+    type: 'page',
+    faq_items: p.faq_items,
+    head_schema: p.head_schema,
+  });
+
+  if (state.status === 'loading') return <Loader />;
+  if (state.status === 'failed') return <ErrorState message={state.error} />;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#e0f2fe] via-[#bae6fd] to-white w-full px-4 pt-20 pb-10 md:pb-14">
@@ -73,9 +88,9 @@ export default function CMSPage() {
             className="w-full min-h-[70vh]"
           />
         ) : p.content_html ? (
-          <HtmlContent className="prose prose-lg max-w-none" html={p.content_html} />
+          <HtmlContent className="cms-content prose prose-lg max-w-none" html={p.content_html} />
         ) : p.content ? (
-          <HtmlContent className="prose prose-lg max-w-none" html={p.content} />
+          <HtmlContent className="cms-content prose prose-lg max-w-none" html={p.content} />
         ) : (
           <p className="text-gray-600">No content available.</p>
         )}
@@ -145,6 +160,28 @@ export default function CMSPage() {
               ) : null}
             </LazyVisible>
           </div>
+        )}
+
+        {/* FAQ Section */}
+        {faqItems.length > 0 && (
+          <section className="mt-16 pt-12 border-t border-sky-100">
+            <h2 className="text-3xl font-bold text-slate-900 mb-8">Frequently Asked Questions</h2>
+            <div className="space-y-4">
+              {faqItems.map((faq, idx) => (
+                <details key={idx} className="group bg-white border border-sky-100 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300">
+                  <summary className="flex items-center justify-between cursor-pointer px-6 py-5 text-slate-800 font-semibold list-none [&::-webkit-details-marker]:hidden">
+                    <span>{faq.question}</span>
+                    <span className="flex-shrink-0 ml-4 h-8 w-8 rounded-full bg-sky-50 flex items-center justify-center group-open:bg-sky-600 group-open:text-white transition-colors duration-300">
+                      <svg className="w-5 h-5 group-open:rotate-180 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </span>
+                  </summary>
+                  <div className="px-6 pb-6 text-slate-600 leading-relaxed prose prose-sky max-w-none" dangerouslySetInnerHTML={{ __html: faq.answer }} />
+                </details>
+              ))}
+            </div>
+          </section>
         )}
       </div>
     </div>

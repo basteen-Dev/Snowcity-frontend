@@ -20,11 +20,37 @@ export default function Attractions() {
   }, [aStatus, cStatus, dispatch]);
 
   const list = React.useMemo(() => {
-    if (!q) return attractions;
-    const s = q.toLowerCase();
-    return attractions.filter((x) =>
-      String(x.name || x.title || '').toLowerCase().includes(s)
-    );
+    let result = attractions;
+    if (q) {
+      const s = q.toLowerCase();
+      result = attractions.filter((x) =>
+        String(x.name || x.title || '').toLowerCase().includes(s)
+      );
+    }
+
+    // Sort to prioritize Snow Park and Mad Lab first
+    return [...result].sort((a, b) => {
+      const titleA = (a?.title || a?.name || '').toLowerCase();
+      const titleB = (b?.title || b?.name || '').toLowerCase();
+
+      const isSnowParkA = titleA.includes('snow park');
+      const isSnowParkB = titleB.includes('snow park');
+      const isMadLabA = titleA.includes('mad lab');
+      const isMadLabB = titleB.includes('mad lab');
+
+      // Rank 1: Snow Park
+      if (isSnowParkA && !isSnowParkB) return -1;
+      if (!isSnowParkA && isSnowParkB) return 1;
+
+      // Rank 2: Mad Lab
+      if (isMadLabA && !isMadLabB) return -1;
+      if (!isMadLabA && isMadLabB) return 1;
+
+      // Otherwise maintain ID order
+      const idA = a?.attraction_id ?? a?.id ?? 0;
+      const idB = b?.attraction_id ?? b?.id ?? 0;
+      return idA - idB;
+    });
   }, [attractions, q]);
 
   return (

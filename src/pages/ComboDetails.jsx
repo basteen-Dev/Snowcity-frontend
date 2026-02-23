@@ -21,7 +21,8 @@ import {
 } from '../utils/pricing';
 import { imgSrc } from '../utils/media';
 import dayjs from 'dayjs';
-import { X } from 'lucide-react';
+import { X, ChevronDown } from 'lucide-react';
+import usePageSeo from '../hooks/usePageSeo';
 
 /* ========= Small helpers / utilities ========= */
 
@@ -474,8 +475,6 @@ export default function ComboDetails() {
           const res = await api.get(url, { signal: controller.signal });
           if (!mounted) return;
           setState({ status: 'succeeded', data: res, error: null });
-          // Set page title
-          document.title = res?.meta_title || res?.title || res?.name || 'Combo Details';
         } catch (err) {
           if (err?.canceled || !mounted) return;
 
@@ -734,6 +733,20 @@ export default function ComboDetails() {
     isDesktop,
   );
 
+  // SEO Injection
+  usePageSeo({
+    title: combo?.meta_title || title || 'Combo Details',
+    description: combo?.meta_description || combo?.short_description || '',
+    keywords: combo?.meta_keywords || '',
+    image: heroImage,
+    imageAlt: combo?.image_alt || title,
+    type: 'website',
+    faq_items: combo?.faq_items,
+    head_schema: combo?.head_schema,
+    body_schema: combo?.body_schema,
+    footer_schema: combo?.footer_schema,
+  });
+
   const carouselImages = React.useMemo(() => {
     const images = [];
     if (heroImage) images.push({ src: heroImage, alt: 'Snow City Banner', isBanner: true });
@@ -936,108 +949,89 @@ export default function ComboDetails() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#e0f2fe] via-[#bae6fd] to-white font-sans">
-      {/* HERO BANNER + GALLERY (VinWonders-style) */}
       <section className="mt-0 bg-transparent">
-        <div className="max-w-6xl mx-auto px-4 pt-6 space-y-4">
-          {/* Title above banner */}
-          <h1
-            className="text-3xl md:text-4xl font-bold text-gray-900"
-            style={{ fontFamily: 'Inter, sans-serif' }}
-          >
-            {title}
-          </h1>
+        <div className="max-w-6xl mx-auto px-4 pt-16">
+          {/* Title removed from here */}
+        </div>
 
-          {/* Banner card */}
-          <div className="overflow-hidden shadow-lg bg-gray-100 relative">
-            {carouselImages.length > 0 ? (
-              <div className="relative h-[420px] w-full overflow-hidden">
-                {/* Carousel Image */}
-                <button
-                  type="button"
-                  className="relative w-full h-full group"
-                  onClick={() => {
-                    const current = carouselImages[carouselIndex];
-                    if (current.isBanner) {
-                      // Open gallery viewer if there are gallery items
-                      if (linkedGallery.items.length > 0) setViewerIndex(0);
-                    } else {
-                      setViewerIndex(current.index);
-                    }
-                  }}
-                >
-                  <img
-                    src={carouselImages[carouselIndex].src}
-                    alt={carouselImages[carouselIndex].alt}
-                    className="w-full h-full object-cover transition-opacity duration-500 brightness-[0.95]"
-                    loading="lazy"
-                    draggable="false"
-                  />
-                  <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/50 via-black/10 to-transparent pointer-events-none" />
+        {/* Banner card */}
+        <div className="overflow-hidden shadow-lg bg-gray-100 relative">
+          {carouselImages.length > 0 ? (
+            <div className="relative h-[420px] w-full overflow-hidden">
+              {/* Carousel Image */}
+              <button
+                type="button"
+                className="relative w-full h-full group"
+                onClick={() => {
+                  const current = carouselImages[carouselIndex];
+                  if (current.isBanner) {
+                    // Open gallery viewer if there are gallery items
+                    if (linkedGallery.items.length > 0) setViewerIndex(0);
+                  } else {
+                    setViewerIndex(current.index);
+                  }
+                }}
+              >
+                <img
+                  src={carouselImages[carouselIndex].src}
+                  alt={carouselImages[carouselIndex].alt}
+                  className="w-full h-full object-cover transition-opacity duration-500 brightness-[0.95]"
+                  loading="lazy"
+                  draggable="false"
+                />
+                <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/50 via-black/10 to-transparent pointer-events-none" />
 
-                  {/* Combo Title Overlay */}
-                  <div className="absolute inset-0 flex items-start justify-start p-6">
-                    <h2
-                      className="text-2xl md:text-3xl font-bold text-white drop-shadow-lg"
-                      style={{
-                        fontFamily: 'Inter, sans-serif',
-                        color: '#87CEEB',
-                        textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
-                      }}
-                    >
-                      {title}
-                    </h2>
-                  </div>
-                </button>
+                {/* Combo Title Overlay removed */}
+              </button>
 
-                {/* Navigation Buttons */}
-                {carouselImages.length > 1 && (
-                  <>
+              {/* Navigation Buttons */}
+              {carouselImages.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={prevCarousel}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-colors"
+                    aria-label="Previous image"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={nextCarousel}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-colors"
+                    aria-label="Next image"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                </>
+              )}
+
+              {/* Dots Indicator */}
+              {carouselImages.length > 1 && (
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
+                  {carouselImages.map((_, idx) => (
                     <button
+                      key={idx}
                       type="button"
-                      onClick={prevCarousel}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-colors"
-                      aria-label="Previous image"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                      </svg>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={nextCarousel}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-colors"
-                      aria-label="Next image"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </button>
-                  </>
-                )}
-
-                {/* Dots Indicator */}
-                {carouselImages.length > 1 && (
-                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
-                    {carouselImages.map((_, idx) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={() => setCarouselIndex(idx)}
-                        className={`w-2 h-2 rounded-full transition-colors ${idx === carouselIndex ? 'bg-white' : 'bg-white/50'
-                          }`}
-                        aria-label={`Go to image ${idx + 1}`}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-            ) : (
-              // Fallback if no images
-              <div className="h-[420px] w-full bg-gray-200 flex items-center justify-center">
-                <span className="text-gray-500">No images available</span>
-              </div>
-            )}
-          </div>
+                      onClick={() => setCarouselIndex(idx)}
+                      className={`w-2 h-2 rounded-full transition-colors ${idx === carouselIndex ? 'bg-white' : 'bg-white/50'
+                        }`}
+                      aria-label={`Go to image ${idx + 1}`}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            // Fallback if no images
+            <div className="h-[420px] w-full bg-gray-200 flex items-center justify-center">
+              <span className="text-gray-500">No images available</span>
+            </div>
+          )}
         </div>
 
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
@@ -1047,9 +1041,7 @@ export default function ComboDetails() {
               <span>Combo Deal</span>
               {discountPercent > 0 ? <span>Save {discountPercent}%</span> : null}
             </div>
-            <h1 className="text-3xl md:text-5xl font-bold text-white drop-shadow" style={{ fontFamily: 'Inter, sans-serif', color: '#87CEEB' }}>
-              {title}
-            </h1>
+            {/* Title moved below */}
             {subtitle ? (
               <p className="text-gray-200 text-sm md:text-base max-w-2xl mt-2" style={{ fontFamily: 'Inter, sans-serif' }}>
                 {subtitle}
@@ -1064,73 +1056,94 @@ export default function ComboDetails() {
         </div>
       </section>
 
-      {/* GALLERY BANNER SECTION */}
-      {linkedGallery.items.length > 0 ? (
-        <section className="max-w-6xl mx-auto px-4 py-8">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Banner - 2/3 */}
-            <div className="lg:col-span-2">
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 md:p-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-3" style={{ fontFamily: 'Inter, sans-serif', color: '#87CEEB' }}>
-                  Photo Gallery
-                </h2>
-                {linkedGallery.status === 'loading' ? (
-                  <div className="py-8 text-center">
-                    <Loader />
-                  </div>
-                ) : linkedGallery.status === 'failed' ? (
-                  <div className="py-8 text-center">
-                    <ErrorState message={linkedGallery.error} />
-                  </div>
-                ) : (
-                  <GalleryGrid items={linkedGallery.items} />
-                )}
-              </div>
-            </div>
-            {/* Gallery Preview - 1/3 */}
-            <div className="lg:col-span-1">
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 md:p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-3" style={{ fontFamily: 'Inter, sans-serif' }}>
-                  Gallery Preview
-                </h3>
-                <div className="space-y-3">
-                  {linkedGallery.items.slice(0, 3).map((item, index) => {
-                    const isVideo = String(item.media_type || '').toLowerCase() === 'video';
-                    const mediaUrl = isVideo
-                      ? imgSrc(item.media_url || item.url || item)
-                      : imgSrc(item.image_url || item.url || item);
+      {/* Mobile Title - Rendered here for mobile only */}
+      <div className="lg:hidden px-4 pt-6 pb-2">
+        <h1
+          className="text-3xl font-extrabold text-gray-900 tracking-tight"
+          style={{ fontFamily: 'Inter, sans-serif' }}
+        >
+          {title}
+        </h1>
+      </div>
 
-                    return (
-                      <div key={item.gallery_item_id || item.id || index} className="relative group">
-                        {isVideo ? (
-                          <video
-                            className="w-full h-32 object-cover rounded-lg"
-                            src={mediaUrl}
-                            muted
-                            preload="metadata"
-                          />
-                        ) : (
-                          <img
-                            src={mediaUrl}
-                            alt={item.title || 'Gallery item'}
-                            className="w-full h-32 object-cover rounded-lg transition-transform duration-300 group-hover:scale-105"
-                            loading="lazy"
-                          />
-                        )}
-                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
-                          <span className="text-white text-sm font-medium">+{linkedGallery.items.length - 3} more</span>
+      {/* GALLERY BANNER SECTION */}
+      {
+        linkedGallery.items.length > 0 ? (
+          <section className="max-w-6xl mx-auto px-4 py-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Banner - 2/3 */}
+              <div className="lg:col-span-2">
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 md:p-6">
+                  <h2 className="text-xl font-semibold text-gray-900 mb-3" style={{ fontFamily: 'Inter, sans-serif', color: '#87CEEB' }}>
+                    Photo Gallery
+                  </h2>
+                  {linkedGallery.status === 'loading' ? (
+                    <div className="py-8 text-center">
+                      <Loader />
+                    </div>
+                  ) : linkedGallery.status === 'failed' ? (
+                    <div className="py-8 text-center">
+                      <ErrorState message={linkedGallery.error} />
+                    </div>
+                  ) : (
+                    <GalleryGrid items={linkedGallery.items} />
+                  )}
+                </div>
+              </div>
+              {/* Gallery Preview - 1/3 */}
+              <div className="lg:col-span-1">
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 md:p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3" style={{ fontFamily: 'Inter, sans-serif' }}>
+                    Gallery Preview
+                  </h3>
+                  <div className="space-y-3">
+                    {linkedGallery.items.slice(0, 3).map((item, index) => {
+                      const isVideo = String(item.media_type || '').toLowerCase() === 'video';
+                      const mediaUrl = isVideo
+                        ? imgSrc(item.media_url || item.url || item)
+                        : imgSrc(item.image_url || item.url || item);
+
+                      return (
+                        <div key={item.gallery_item_id || item.id || index} className="relative group">
+                          {isVideo ? (
+                            <video
+                              className="w-full h-32 object-cover rounded-lg"
+                              src={mediaUrl}
+                              muted
+                              preload="metadata"
+                            />
+                          ) : (
+                            <img
+                              src={mediaUrl}
+                              alt={item.title || 'Gallery item'}
+                              className="w-full h-32 object-cover rounded-lg transition-transform duration-300 group-hover:scale-105"
+                              loading="lazy"
+                            />
+                          )}
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
+                            <span className="text-white text-sm font-medium">+{linkedGallery.items.length - 3} more</span>
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </section>
-      ) : null}
+          </section>
+        ) : null
+      }
 
-      <section className="max-w-6xl mx-auto px-4 py-8 md:py-12">
+      {/* MAIN CONTENT Area - with Title now below banner */}
+      <section className="max-w-7xl mx-auto px-4 py-8 md:py-12 mt-0">
+        <div className="mb-8 hidden lg:block">
+          <h1
+            className="text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight"
+            style={{ fontFamily: 'Inter, sans-serif' }}
+          >
+            {title}
+          </h1>
+        </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 md:gap-12">
           {/* LEFT CONTENT */}
           <div className="lg:col-span-2 space-y-8">
@@ -1180,7 +1193,30 @@ export default function ComboDetails() {
               </div>
             ) : null}
 
-
+            {/* FAQ Section */}
+            {combo?.faq_items && combo.faq_items.length > 0 ? (
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 md:p-6 mt-8">
+                <h2
+                  className="text-xl font-semibold text-gray-900 mb-4"
+                  style={{ fontFamily: 'Inter, sans-serif' }}
+                >
+                  Frequently Asked Questions
+                </h2>
+                <div className="space-y-4">
+                  {combo.faq_items.map((faq, idx) => (
+                    <details key={idx} className="group border-b border-gray-100 pb-4 last:border-0 last:pb-0">
+                      <summary className="flex cursor-pointer items-center justify-between text-lg font-medium text-gray-900 marker:content-none [&::-webkit-details-marker]:hidden">
+                        {faq.question}
+                        <ChevronDown className="h-5 w-5 text-gray-500 transition-transform group-open:rotate-180 flex-shrink-0 ml-4" />
+                      </summary>
+                      <p className="mt-3 text-gray-700 whitespace-pre-line text-sm md:text-base leading-relaxed" style={{ fontFamily: 'Inter, sans-serif' }}>
+                        {faq.answer}
+                      </p>
+                    </details>
+                  ))}
+                </div>
+              </div>
+            ) : null}
 
             {/* Detailed availability list (all slots) */}
             <div
@@ -1623,102 +1659,106 @@ export default function ComboDetails() {
       </div>
 
       {/* Calendar Modal */}
-      {showCalendar && (
-        <div
-          className="fixed inset-0 z-[80] flex"
-          onClick={() => setShowCalendar(false)}
-        >
-          <div className="flex-1" />
+      {
+        showCalendar && (
           <div
-            className="absolute bg-white rounded-2xl shadow-2xl border border-gray-200 p-4 w-80 max-h-[70vh] overflow-y-auto"
-            style={{
-              top: calendarAnchorRect ? `${calendarAnchorRect.top}px` : '50%',
-              left: calendarAnchorRect
-                ? `${calendarAnchorRect.left - 160}px`
-                : '50%',
-              transform: calendarAnchorRect ? 'none' : 'translate(-50%, -50%)',
-            }}
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 z-[80] flex"
+            onClick={() => setShowCalendar(false)}
           >
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-base font-semibold text-gray-900">Select Date</h3>
-              <button
-                type="button"
-                onClick={() => setShowCalendar(false)}
-                className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 transition-colors"
-              >
-                <X size={18} />
-              </button>
-            </div>
+            <div className="flex-1" />
+            <div
+              className="absolute bg-white rounded-2xl shadow-2xl border border-gray-200 p-4 w-80 max-h-[70vh] overflow-y-auto"
+              style={{
+                top: calendarAnchorRect ? `${calendarAnchorRect.top}px` : '50%',
+                left: calendarAnchorRect
+                  ? `${calendarAnchorRect.left - 160}px`
+                  : '50%',
+                transform: calendarAnchorRect ? 'none' : 'translate(-50%, -50%)',
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-base font-semibold text-gray-900">Select Date</h3>
+                <button
+                  type="button"
+                  onClick={() => setShowCalendar(false)}
+                  className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 transition-colors"
+                >
+                  <X size={18} />
+                </button>
+              </div>
 
-            <div className="space-y-3">
-              {[0, 1, 2].map((monthOffset) => {
-                const currentDate = dayjs().add(monthOffset, 'month');
-                const monthStart = currentDate.startOf('month');
-                const monthEnd = currentDate.endOf('month');
-                const startDay = monthStart.day();
-                const daysInMonth = monthEnd.date();
-                const today = dayjs();
+              <div className="space-y-3">
+                {[0, 1, 2].map((monthOffset) => {
+                  const currentDate = dayjs().add(monthOffset, 'month');
+                  const monthStart = currentDate.startOf('month');
+                  const monthEnd = currentDate.endOf('month');
+                  const startDay = monthStart.day();
+                  const daysInMonth = monthEnd.date();
+                  const today = dayjs();
 
-                return (
-                  <div key={monthOffset} className="border border-gray-100 rounded-xl p-3 bg-white">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="text-sm font-semibold text-gray-900">{currentDate.format('MMMM YYYY')}</div>
+                  return (
+                    <div key={monthOffset} className="border border-gray-100 rounded-xl p-3 bg-white">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="text-sm font-semibold text-gray-900">{currentDate.format('MMMM YYYY')}</div>
+                      </div>
+
+                      <div className="grid grid-cols-7 gap-1 text-center text-xs text-gray-500 mb-2">
+                        {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((d) => (
+                          <div key={d} className="py-1 font-medium">{d}</div>
+                        ))}
+                      </div>
+
+                      <div className="grid grid-cols-7 gap-1 text-sm">
+                        {Array.from({ length: startDay }).map((_, i) => (
+                          <div key={`pad-${i}`} />
+                        ))}
+
+                        {Array.from({ length: daysInMonth }).map((_, dIndex) => {
+                          const dayNum = dIndex + 1;
+                          const dayVal = monthStart.date(dayNum).format('YYYY-MM-DD');
+                          const disabled = false;
+                          const isToday = today.format('YYYY-MM-DD') === dayVal;
+
+                          return (
+                            <button
+                              key={dayVal}
+                              type="button"
+                              onClick={() => {
+                                handleDateSelect(dayVal);
+                              }}
+                              disabled={disabled}
+                              className={`w-full h-8 rounded-lg flex items-center justify-center transition-colors ${disabled
+                                ? 'text-gray-300'
+                                : isToday
+                                  ? 'bg-sky-100 text-sky-700 font-semibold'
+                                  : 'hover:bg-gray-100'
+                                }`}
+                            >
+                              {dayNum}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
-
-                    <div className="grid grid-cols-7 gap-1 text-center text-xs text-gray-500 mb-2">
-                      {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((d) => (
-                        <div key={d} className="py-1 font-medium">{d}</div>
-                      ))}
-                    </div>
-
-                    <div className="grid grid-cols-7 gap-1 text-sm">
-                      {Array.from({ length: startDay }).map((_, i) => (
-                        <div key={`pad-${i}`} />
-                      ))}
-
-                      {Array.from({ length: daysInMonth }).map((_, dIndex) => {
-                        const dayNum = dIndex + 1;
-                        const dayVal = monthStart.date(dayNum).format('YYYY-MM-DD');
-                        const disabled = false;
-                        const isToday = today.format('YYYY-MM-DD') === dayVal;
-
-                        return (
-                          <button
-                            key={dayVal}
-                            type="button"
-                            onClick={() => {
-                              handleDateSelect(dayVal);
-                            }}
-                            disabled={disabled}
-                            className={`w-full h-8 rounded-lg flex items-center justify-center transition-colors ${disabled
-                              ? 'text-gray-300'
-                              : isToday
-                                ? 'bg-sky-100 text-sky-700 font-semibold'
-                                : 'hover:bg-gray-100'
-                              }`}
-                          >
-                            {dayNum}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
       {/* GALLERY VIEWER MODAL */}
-      {viewerIndex !== null && linkedGallery.items.length > 0 ? (
-        <GalleryViewer
-          items={linkedGallery.items}
-          initialIndex={viewerIndex}
-          onClose={() => setViewerIndex(null)}
-        />
-      ) : null}
-    </div>
+      {
+        viewerIndex !== null && linkedGallery.items.length > 0 ? (
+          <GalleryViewer
+            items={linkedGallery.items}
+            initialIndex={viewerIndex}
+            onClose={() => setViewerIndex(null)}
+          />
+        ) : null
+      }
+    </div >
   );
 }

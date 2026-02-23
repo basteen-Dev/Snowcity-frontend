@@ -521,6 +521,16 @@ export default function Booking() {
   const [phonepeIframeVisible, setPhonepeIframeVisible] = useState(false);
   const [phonepeIframeUrl, setPhonepeIframeUrl] = useState('');
 
+  const totalAddonCount = useMemo(() => {
+    let count = 0;
+    cartAddons.forEach((itemAddonsMap) => {
+      itemAddonsMap.forEach((addon) => {
+        count += Number(addon.quantity || 0);
+      });
+    });
+    return count;
+  }, [cartAddons]);
+
   const attractions = attractionsState.items || [];
   const prioritizedAttractions = useMemo(
     () => prioritizeSnowcityFirst(attractions),
@@ -708,6 +718,8 @@ export default function Booking() {
     if (step > 1) {
       window.history.pushState({ bookingStep: step }, '', `#step-${step}`);
     }
+    // Scroll to top on step change
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [step]);
 
   useEffect(() => {
@@ -1808,36 +1820,62 @@ export default function Booking() {
       <div className="min-h-screen bg-gradient-to-b from-sky-50 to-white font-inter pt-20">
 
         {/* Progress Bar */}
-        <div className="sticky top-[7rem] z-10 bg-gradient-to-b from-sky-50 to-white mb-8">
-          <div className="flex justify-center items-center">
-            {/* Step 1 */}
-            <div className="flex flex-col items-center">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${step >= 1 ? 'bg-sky-600 text-white' : 'bg-gray-300 text-gray-600'}`}>1</div>
-              <span className="text-xs mt-2 text-center">Experience</span>
-            </div>
-            <div className={`h-0.5 w-12 ${step >= 2 ? 'bg-sky-600' : 'bg-gray-300'}`}></div>
-            {/* Step 2 */}
-            <div className="flex flex-col items-center">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${step >= 2 ? 'bg-sky-600 text-white' : 'bg-gray-300 text-gray-600'}`}>2</div>
-              <span className="text-xs mt-2 text-center">Add-ons</span>
-            </div>
-            <div className={`h-0.5 w-12 ${step >= 3 ? 'bg-sky-600' : 'bg-gray-300'}`}></div>
-            {/* Step 3 */}
-            <div className="flex flex-col items-center">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${step >= 3 ? 'bg-sky-600 text-white' : 'bg-gray-300 text-gray-600'}`}>3</div>
-              <span className="text-xs mt-2 text-center">Your Details</span>
-            </div>
-            <div className={`h-0.5 w-12 ${step >= 4 ? 'bg-sky-600' : 'bg-gray-300'}`}></div>
-            {/* Step 4 */}
-            <div className="flex flex-col items-center">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${step >= 4 ? 'bg-sky-600 text-white' : 'bg-gray-300 text-gray-600'}`}>4</div>
-              <span className="text-xs mt-2 text-center">Payment</span>
+        <div className="sticky top-[5.5rem] z-10 bg-white/80 pt-3 pb-3 border-b border-gray-100 mb-2">
+          <div className="max-w-4xl mx-auto px-4">
+            <div className="flex justify-between items-start relative px-2">
+              {/* Connector Lines */}
+              <div className="absolute top-5 left-10 right-10 h-[2px] bg-gray-200 -z-10">
+                <div
+                  className="h-full bg-emerald-600 transition-all duration-500"
+                  style={{ width: `${((step - 1) / 3) * 100}%` }}
+                />
+              </div>
+
+              {[
+                { s: 1, label: 'Experience' },
+                { s: 2, label: 'Add-ons' },
+                { s: 3, label: 'Your Details' },
+                { s: 4, label: 'Payment' },
+              ].map((item) => (
+                <div key={item.s} className="flex flex-col items-center flex-1">
+                  <div
+                    className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 shadow-sm ${step >= item.s ? 'bg-emerald-600 text-white scale-110' : 'bg-white border-2 border-gray-200 text-gray-400'
+                      }`}
+                  >
+                    {item.s}
+                  </div>
+                  <div className="mt-1 text-center">
+                    <span className={`block text-[11px] font-bold uppercase tracking-wider ${step >= item.s ? 'text-emerald-700' : 'text-gray-400'
+                      }`}>
+                      {item.label}
+                    </span>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
 
+        {/* Step Header Context */}
+        <div className="max-w-7xl mx-auto px-4 mb-2">
+          <div className="border-l-4 border-emerald-500 pl-4 py-1">
+            <h2 className="text-2xl font-bold text-gray-900">
+              {step === 1 && 'Select Experience'}
+              {step === 2 && 'Add-ons'}
+              {step === 3 && 'Your Details'}
+              {step === 4 && 'Payment'}
+            </h2>
+            <p className="text-gray-500 text-sm mt-1">
+              {step === 1 && 'Select your desired experience to begin your journey.'}
+              {step === 2 && 'Select your food package and extra services.'}
+              {step === 3 && 'Provide your contact details for booking confirmation.'}
+              {step === 4 && 'Complete your booking with a secure payment.'}
+            </p>
+          </div>
+        </div>
+
         {/* main content - Centered */}
-        <div className="max-w-7xl mx-auto px-3 lg:px-0 pb-24 lg:pb-20 pt-10">
+        <div className="max-w-7xl mx-auto px-3 lg:px-0 pb-24 lg:pb-20 pt-2">
           <div className="mt-2 md:mt-4">
             {/* STEP 1: product list + order summary */}
             {step === 1 && (
@@ -1895,6 +1933,7 @@ export default function Booking() {
                 handleNext={handleNext}
                 handleBack={handleBack}
                 hasCartItems={hasCartItems}
+                totalAddonCount={totalAddonCount}
               />
             )}
 
@@ -1974,6 +2013,16 @@ export default function Booking() {
                     </button>
                   )}
 
+                  {step === 2 && totalAddonCount === 0 && (
+                    <button
+                      type="button"
+                      onClick={handleNext}
+                      className="px-4 py-2.5 rounded-xl border border-sky-200 text-sky-700 bg-sky-50 text-sm font-semibold transition-all active:scale-[0.98]"
+                    >
+                      Skip
+                    </button>
+                  )}
+
                   <div className={`flex-1 ${isDesktop ? 'hidden' : ''}`}>
                     <div className="text-base font-semibold text-gray-900 tabular-nums">₹{finalTotal}</div>
                   </div>
@@ -1987,7 +2036,7 @@ export default function Booking() {
                         : step === 3
                           ? !otp.verified
                           : step === 2
-                            ? !hasCartItems
+                            ? totalAddonCount === 0 || !hasCartItems
                             : !hasCartItems && !selectionReady
                     }
                     className={`ml-auto inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all active:scale-[0.98] ${(step === 4
@@ -1995,10 +2044,10 @@ export default function Booking() {
                       : step === 3
                         ? !otp.verified
                         : step === 2
-                          ? !hasCartItems
+                          ? totalAddonCount === 0 || !hasCartItems
                           : !hasCartItems && !selectionReady)
                       ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                      : 'bg-sky-600 text-white shadow-md hover:bg-sky-700'
+                      : 'bg-[#003de6] text-white shadow-md hover:bg-[#002db3]'
                       }`}
                   >
                     <span>
@@ -2021,7 +2070,7 @@ export default function Booking() {
 
             {/* Floating Cart Button for Mobile */}
             {!isDesktop && cart.totalQuantity > 0 && (
-              <div className="fixed bottom-8 right-4 z-50">
+              <div className="fixed bottom-24 right-4 z-50">
                 <button
                   onClick={() => {
                     const cartEl = document.getElementById('cart-section');

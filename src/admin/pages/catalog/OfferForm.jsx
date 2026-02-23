@@ -4,6 +4,8 @@ import adminApi from '../../services/adminApi';
 import A from '../../services/adminEndpoints';
 import ImageUploader from '../../components/common/ImageUploader';
 import useCatalogTargets from '../../hooks/useCatalogTargets';
+import SaveOverlay from '../../components/common/SaveOverlay';
+import toast from 'react-hot-toast';
 
 const RULES = ['holiday', 'happy_hour', 'weekday_special', 'dynamic_pricing', 'date_slot_pricing', 'buy_x_get_y'];
 const DISCOUNT_TYPES = [
@@ -179,6 +181,7 @@ export default function OfferForm() {
       rules: [],
     }
   });
+  const [saving, setSaving] = React.useState(false);
 
   React.useEffect(() => {
     if (!isEdit) return;
@@ -302,6 +305,8 @@ export default function OfferForm() {
 
   const save = async (e) => {
     e.preventDefault();
+    setSaving(true);
+    const loadingToast = toast.loading(isEdit ? 'Updating offer...' : 'Creating offer...');
     try {
       const normalizeDate = (value) => {
         const v = (value ?? '').toString().trim();
@@ -322,7 +327,9 @@ export default function OfferForm() {
 
       const invalidRules = resolvedRules.filter((rule) => !rule.applies_to_all && (rule.target_id === null || rule.target_id === undefined || rule.target_id === ''));
       if (invalidRules.length > 0) {
+        toast.dismiss(loadingToast);
         setState((s) => ({ ...s, error: { message: 'Please select a target from the list or enable "Applies to all".' } }));
+        setSaving(false);
         return;
       }
 
@@ -370,8 +377,15 @@ export default function OfferForm() {
       };
       if (isEdit) await adminApi.put(`${A.offers()}/${id}`, payload);
       else await adminApi.post(A.offers(), payload);
+
+      toast.success(isEdit ? 'Offer updated successfully' : 'Offer created successfully', { id: loadingToast });
       navigate('/admin/catalog/offers');
-    } catch (err) { setState((s) => ({ ...s, error: err })); }
+    } catch (err) {
+      toast.error(err.message || 'Save failed', { id: loadingToast });
+      setState((s) => ({ ...s, error: err }));
+    } finally {
+      setSaving(false);
+    }
   };
 
   if (state.status === 'loading') return <div>Loading…</div>;
@@ -380,390 +394,393 @@ export default function OfferForm() {
   const f = state.form;
 
   return (
-    <form onSubmit={save} className="max-w-2xl bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl p-4">
-      <h1 className="text-xl font-semibold mb-4">{isEdit ? 'Edit' : 'New'} Offer</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div className="md:col-span-2">
-          <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Title</label>
-          <input className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" value={f.title} onChange={(e) => updateForm({ title: e.target.value })} />
-        </div>
-        <div className="md:col-span-2">
-          <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Description</label>
-          <textarea rows={4} className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" value={f.description} onChange={(e) => updateForm({ description: e.target.value })} />
-        </div>
-        <div className="md:col-span-2">
-          <ImageUploader label="Image" value={f.image_url} onChange={(url) => updateForm({ image_url: url })} altText={f.image_alt} onAltChange={(alt) => updateForm({ image_alt: alt })} folder="offers" requiredPerm="uploads:write" />
-        </div>
-        <div>
-          <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Rule Type</label>
-          <select className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" value={f.rule_type} onChange={(e) => updateForm({ rule_type: e.target.value })}>
-            <option key="__default-rule-type__" value="">—</option>
-            {RULES.map((r) => <option key={r} value={r}>{r}</option>)}
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Discount Type</label>
-          <select className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" value={f.discount_type} onChange={(e) => updateForm({ discount_type: e.target.value })}>
-            {DISCOUNT_TYPES.map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Discount Value</label>
-          <input type="number" className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" value={f.discount_value} onChange={(e) => updateForm({ discount_value: e.target.value })} />
-        </div>
-        <div>
-          <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Max Discount (optional)</label>
-          <input type="number" className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" value={f.max_discount ?? ''} onChange={(e) => updateForm({ max_discount: e.target.value })} />
-        </div>
-        <div>
-          <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Valid From</label>
-          <input type="date" className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" value={f.valid_from || ''} onChange={(e) => updateForm({ valid_from: e.target.value })} />
-        </div>
-        <div>
-          <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Valid To</label>
-          <input type="date" className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" value={f.valid_to || ''} onChange={(e) => updateForm({ valid_to: e.target.value })} />
-        </div>
-        <div className="flex items-center gap-2 md:col-span-2">
-          <input id="active" type="checkbox" checked={!!f.active} onChange={(e) => updateForm({ active: e.target.checked })} />
-          <label htmlFor="active" className="text-sm text-gray-700 dark:text-neutral-200">Active</label>
-        </div>
-      </div>
-
-      <div className="mt-6">
-        <div className="flex items-center justify-between mb-2">
-          <h2 className="text-lg font-semibold">Rules</h2>
-          <div className="flex items-center gap-2">
-            <button type="button" onClick={addRule} className="text-sm rounded-md border px-3 py-1">
-              Add Rule
-            </button>
+    <div className="relative">
+      <SaveOverlay visible={saving} label={isEdit ? 'Updating offer…' : 'Saving offer…'} />
+      <form onSubmit={save} className="max-w-2xl bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl p-4">
+        <h1 className="text-xl font-semibold mb-4">{isEdit ? 'Edit' : 'New'} Offer</h1>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="md:col-span-2">
+            <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Title</label>
+            <input className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" value={f.title} onChange={(e) => updateForm({ title: e.target.value })} />
+          </div>
+          <div className="md:col-span-2">
+            <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Description</label>
+            <textarea rows={4} className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" value={f.description} onChange={(e) => updateForm({ description: e.target.value })} />
+          </div>
+          <div className="md:col-span-2">
+            <ImageUploader label="Image" value={f.image_url} onChange={(url) => updateForm({ image_url: url })} altText={f.image_alt} onAltChange={(alt) => updateForm({ image_alt: alt })} folder="offers" requiredPerm="uploads:write" />
+          </div>
+          <div>
+            <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Rule Type</label>
+            <select className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" value={f.rule_type} onChange={(e) => updateForm({ rule_type: e.target.value })}>
+              <option key="__default-rule-type__" value="">—</option>
+              {RULES.map((r) => <option key={r} value={r}>{r}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Discount Type</label>
+            <select className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" value={f.discount_type} onChange={(e) => updateForm({ discount_type: e.target.value })}>
+              {DISCOUNT_TYPES.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Discount Value</label>
+            <input type="number" className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" value={f.discount_value} onChange={(e) => updateForm({ discount_value: e.target.value })} />
+          </div>
+          <div>
+            <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Max Discount (optional)</label>
+            <input type="number" className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" value={f.max_discount ?? ''} onChange={(e) => updateForm({ max_discount: e.target.value })} />
+          </div>
+          <div>
+            <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Valid From</label>
+            <input type="date" className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" value={f.valid_from || ''} onChange={(e) => updateForm({ valid_from: e.target.value })} />
+          </div>
+          <div>
+            <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Valid To</label>
+            <input type="date" className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" value={f.valid_to || ''} onChange={(e) => updateForm({ valid_to: e.target.value })} />
+          </div>
+          <div className="flex items-center gap-2 md:col-span-2">
+            <input id="active" type="checkbox" checked={!!f.active} onChange={(e) => updateForm({ active: e.target.checked })} />
+            <label htmlFor="active" className="text-sm text-gray-700 dark:text-neutral-200">Active</label>
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-          {RULE_TEMPLATES.map((tpl) => (
-            <button
-              key={tpl.key}
-              type="button"
-              onClick={() => applyTemplate(tpl)}
-              className="rounded-2xl border border-gray-200 hover:border-gray-400 text-left p-3 bg-white/70 dark:bg-neutral-900/60 shadow-sm"
-            >
-              <div className="flex items-center justify-between text-xs uppercase tracking-wide text-gray-500">
-                <span>{tpl.badge}</span>
-                <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">Template</span>
-              </div>
-              <div className="mt-1 text-sm font-semibold text-gray-900 dark:text-neutral-100">{tpl.label}</div>
-              <p className="mt-1 text-xs text-gray-500 min-h-[32px]">{tpl.description}</p>
-            </button>
-          ))}
-        </div>
-        {!(f.rules || []).length ? (
-          <div className="text-sm text-gray-500">No rules yet. Add one to target specific attractions or combos.</div>
-        ) : null}
-        <div className="space-y-4 mt-3">
-          {(f.rules || []).map((rule, idx) => (
-            <div key={`rule-${idx}`} className="border rounded-lg p-4 space-y-3">
-              <div className="flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
-                <div>
-                  <div className="text-sm font-semibold">Rule #{idx + 1}</div>
-                  <div className="text-xs text-gray-500">{formatRuleSummary(rule, resolveTargetLabel)}</div>
+
+        <div className="mt-6">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-lg font-semibold">Rules</h2>
+            <div className="flex items-center gap-2">
+              <button type="button" onClick={addRule} className="text-sm rounded-md border px-3 py-1">
+                Add Rule
+              </button>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+            {RULE_TEMPLATES.map((tpl) => (
+              <button
+                key={tpl.key}
+                type="button"
+                onClick={() => applyTemplate(tpl)}
+                className="rounded-2xl border border-gray-200 hover:border-gray-400 text-left p-3 bg-white/70 dark:bg-neutral-900/60 shadow-sm"
+              >
+                <div className="flex items-center justify-between text-xs uppercase tracking-wide text-gray-500">
+                  <span>{tpl.badge}</span>
+                  <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">Template</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] text-gray-600">
-                    {rule.target_type === 'combo' ? 'Combo' : 'Attraction'}
-                  </span>
-                  <button type="button" onClick={() => removeRule(idx)} className="text-xs text-red-600">
-                    Remove
-                  </button>
+                <div className="mt-1 text-sm font-semibold text-gray-900 dark:text-neutral-100">{tpl.label}</div>
+                <p className="mt-1 text-xs text-gray-500 min-h-[32px]">{tpl.description}</p>
+              </button>
+            ))}
+          </div>
+          {!(f.rules || []).length ? (
+            <div className="text-sm text-gray-500">No rules yet. Add one to target specific attractions or combos.</div>
+          ) : null}
+          <div className="space-y-4 mt-3">
+            {(f.rules || []).map((rule, idx) => (
+              <div key={`rule-${idx}`} className="border rounded-lg p-4 space-y-3">
+                <div className="flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <div className="text-sm font-semibold">Rule #{idx + 1}</div>
+                    <div className="text-xs text-gray-500">{formatRuleSummary(rule, resolveTargetLabel)}</div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] text-gray-600">
+                      {rule.target_type === 'combo' ? 'Combo' : 'Attraction'}
+                    </span>
+                    <button type="button" onClick={() => removeRule(idx)} className="text-xs text-red-600">
+                      Remove
+                    </button>
+                  </div>
                 </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1">Target Type</label>
-                  <select className="w-full rounded-md border px-3 py-2" value={rule.target_type} onChange={(e) => updateRule(idx, { target_type: e.target.value })}>
-                    {TARGET_TYPES.map((opt) => (
-                      <option key={opt.value} value={opt.value}>{opt.label}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1">Target</label>
-                  <select
-                    className="w-full rounded-md border px-3 py-2"
-                    value={rule.target_id ?? ''}
-                    disabled={rule.applies_to_all || targetsStatus === 'loading'}
-                    onChange={(e) => updateRule(idx, { target_id: e.target.value })}
-                  >
-                    <option key={`__default-target-${idx}__`} value="">Select {rule.target_type === 'combo' ? 'Combo' : 'Attraction'}</option>
-                    {(rule.target_type === 'attraction' ? attractions : combos).map((item) => (
-                      <option key={item.id} value={item.id}>
-                        {item.title || item.name}
-                      </option>
-                    ))}
-                  </select>
-                  {(!rule.applies_to_all && (!rule.target_id || rule.target_id === '')) ? (
-                    <div className="mt-1 text-xs text-red-600">Select a target or enable Applies to all</div>
-                  ) : null}
-                </div>
-                <div className="flex items-center gap-2">
-                  <input id={`applies-${idx}`} type="checkbox" checked={!!rule.applies_to_all} onChange={(e) => updateRule(idx, { applies_to_all: e.target.checked })} />
-                  <label htmlFor={`applies-${idx}`} className="text-xs text-gray-600">Applies to all of this type</label>
-                </div>
-              </div>
-              {/* Buy X Get Y specific UI */}
-              {f.rule_type === 'buy_x_get_y' ? (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <div>
-                    <label className="block text-xs text-gray-500 mb-1">Buy Quantity (X)</label>
-                    <input type="number" min={1} className="w-full rounded-md border px-3 py-2" value={rule.buy_qty ?? 1} onChange={(e) => updateRule(idx, { buy_qty: Number(e.target.value || 1) })} />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1">Get Quantity (Y)</label>
-                    <input type="number" min={1} className="w-full rounded-md border px-3 py-2" value={rule.get_qty ?? 1} onChange={(e) => updateRule(idx, { get_qty: Number(e.target.value || 1) })} />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1">Get Target Type</label>
-                    <select className="w-full rounded-md border px-3 py-2" value={rule.get_target_type || 'attraction'} onChange={(e) => updateRule(idx, { get_target_type: e.target.value, get_target_id: '' })}>
+                    <label className="block text-xs text-gray-500 mb-1">Target Type</label>
+                    <select className="w-full rounded-md border px-3 py-2" value={rule.target_type} onChange={(e) => updateRule(idx, { target_type: e.target.value })}>
                       {TARGET_TYPES.map((opt) => (
                         <option key={opt.value} value={opt.value}>{opt.label}</option>
                       ))}
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs text-gray-500 mb-1">Get Target</label>
-                    <select className="w-full rounded-md border px-3 py-2" value={rule.get_target_id ?? ''} disabled={rule.applies_to_all || targetsStatus === 'loading'} onChange={(e) => updateRule(idx, { get_target_id: e.target.value })}>
-                      <option value="">Select {rule.get_target_type === 'combo' ? 'Combo' : 'Attraction'}</option>
-                      {(rule.get_target_type === 'attraction' ? attractions : combos).map((item) => (
-                        <option key={`get-${item.id}`} value={item.id}>{item.title || item.name}</option>
+                    <label className="block text-xs text-gray-500 mb-1">Target</label>
+                    <select
+                      className="w-full rounded-md border px-3 py-2"
+                      value={rule.target_id ?? ''}
+                      disabled={rule.applies_to_all || targetsStatus === 'loading'}
+                      onChange={(e) => updateRule(idx, { target_id: e.target.value })}
+                    >
+                      <option key={`__default-target-${idx}__`} value="">Select {rule.target_type === 'combo' ? 'Combo' : 'Attraction'}</option>
+                      {(rule.target_type === 'attraction' ? attractions : combos).map((item) => (
+                        <option key={item.id} value={item.id}>
+                          {item.title || item.name}
+                        </option>
                       ))}
                     </select>
+                    {(!rule.applies_to_all && (!rule.target_id || rule.target_id === '')) ? (
+                      <div className="mt-1 text-xs text-red-600">Select a target or enable Applies to all</div>
+                    ) : null}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input id={`applies-${idx}`} type="checkbox" checked={!!rule.applies_to_all} onChange={(e) => updateRule(idx, { applies_to_all: e.target.checked })} />
+                    <label htmlFor={`applies-${idx}`} className="text-xs text-gray-600">Applies to all of this type</label>
+                  </div>
+                </div>
+                {/* Buy X Get Y specific UI */}
+                {f.rule_type === 'buy_x_get_y' ? (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Buy Quantity (X)</label>
+                      <input type="number" min={1} className="w-full rounded-md border px-3 py-2" value={rule.buy_qty ?? 1} onChange={(e) => updateRule(idx, { buy_qty: Number(e.target.value || 1) })} />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Get Quantity (Y)</label>
+                      <input type="number" min={1} className="w-full rounded-md border px-3 py-2" value={rule.get_qty ?? 1} onChange={(e) => updateRule(idx, { get_qty: Number(e.target.value || 1) })} />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Get Target Type</label>
+                      <select className="w-full rounded-md border px-3 py-2" value={rule.get_target_type || 'attraction'} onChange={(e) => updateRule(idx, { get_target_type: e.target.value, get_target_id: '' })}>
+                        {TARGET_TYPES.map((opt) => (
+                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Get Target</label>
+                      <select className="w-full rounded-md border px-3 py-2" value={rule.get_target_id ?? ''} disabled={rule.applies_to_all || targetsStatus === 'loading'} onChange={(e) => updateRule(idx, { get_target_id: e.target.value })}>
+                        <option value="">Select {rule.get_target_type === 'combo' ? 'Combo' : 'Attraction'}</option>
+                        {(rule.get_target_type === 'attraction' ? attractions : combos).map((item) => (
+                          <option key={`get-${item.id}`} value={item.id}>{item.title || item.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Get Discount Type</label>
+                      <select className="w-full rounded-md border px-3 py-2" value={rule.get_discount_type || ''} onChange={(e) => updateRule(idx, { get_discount_type: e.target.value })}>
+                        <option value="">None / Free</option>
+                        <option value="percent">Percentage (%)</option>
+                        <option value="amount">Flat Amount</option>
+                      </select>
+                    </div>
+                    {rule.get_discount_type ? (
+                      <div>
+                        <label className="block text-xs text-gray-500 mb-1">Get Discount Value</label>
+                        <input type="number" min={0} className="w-full rounded-md border px-3 py-2" value={rule.get_discount_value ?? ''} onChange={(e) => updateRule(idx, { get_discount_value: e.target.value })} />
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">Date From</label>
+                    <input type="date" className="w-full rounded-md border px-3 py-2" value={rule.date_from || ''} onChange={(e) => updateRule(idx, { date_from: e.target.value })} />
                   </div>
                   <div>
-                    <label className="block text-xs text-gray-500 mb-1">Get Discount Type</label>
-                    <select className="w-full rounded-md border px-3 py-2" value={rule.get_discount_type || ''} onChange={(e) => updateRule(idx, { get_discount_type: e.target.value })}>
-                      <option value="">None / Free</option>
-                      <option value="percent">Percentage (%)</option>
-                      <option value="amount">Flat Amount</option>
-                    </select>
+                    <label className="block text-xs text-gray-500 mb-1">Date To</label>
+                    <input type="date" className="w-full rounded-md border px-3 py-2" value={rule.date_to || ''} onChange={(e) => updateRule(idx, { date_to: e.target.value })} />
                   </div>
-                  {rule.get_discount_type ? (
-                    <div>
-                      <label className="block text-xs text-gray-500 mb-1">Get Discount Value</label>
-                      <input type="number" min={0} className="w-full rounded-md border px-3 py-2" value={rule.get_discount_value ?? ''} onChange={(e) => updateRule(idx, { get_discount_value: e.target.value })} />
-                    </div>
-                  ) : null}
-                </div>
-              ) : null}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1">Date From</label>
-                  <input type="date" className="w-full rounded-md border px-3 py-2" value={rule.date_from || ''} onChange={(e) => updateRule(idx, { date_from: e.target.value })} />
-                </div>
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1">Date To</label>
-                  <input type="date" className="w-full rounded-md border px-3 py-2" value={rule.date_to || ''} onChange={(e) => updateRule(idx, { date_to: e.target.value })} />
-                </div>
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1">Time From</label>
-                  <input type="time" className="w-full rounded-md border px-3 py-2" value={rule.time_from || ''} onChange={(e) => updateRule(idx, { time_from: e.target.value })} />
-                </div>
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1">Time To</label>
-                  <input type="time" className="w-full rounded-md border px-3 py-2" value={rule.time_to || ''} onChange={(e) => updateRule(idx, { time_to: e.target.value })} />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1">Slot Type</label>
-                  <select className="w-full rounded-md border px-3 py-2" value={rule.slot_type || ''} onChange={(e) => updateRule(idx, { slot_type: e.target.value })}>
-                    <option value="">—</option>
-                    <option value="attraction">Attraction</option>
-                    <option value="combo">Combo</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1">Slot ID</label>
-                  <input type="number" className="w-full rounded-md border px-3 py-2" value={rule.slot_id ?? ''} onChange={(e) => updateRule(idx, { slot_id: e.target.value })} />
-                </div>
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1">Priority</label>
-                  <input type="number" className="w-full rounded-md border px-3 py-2" value={rule.priority ?? 100} onChange={(e) => updateRule(idx, { priority: e.target.value })} />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1">Rule Discount Type</label>
-                  <select className="w-full rounded-md border px-3 py-2" value={rule.rule_discount_type || ''} onChange={(e) => updateRule(idx, { rule_discount_type: e.target.value })}>
-                    <option key={`__default-rule-discount-type-${idx}__`} value="">Use Offer Default</option>
-                    {DISCOUNT_TYPES.map((opt) => (
-                      <option key={opt.value} value={opt.value}>{opt.label}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1">Rule Discount Value <span className="text-xs text-blue-600">(negative for price increase)</span></label>
-                  <input type="number" className="w-full rounded-md border px-3 py-2" value={rule.rule_discount_value ?? ''} onChange={(e) => updateRule(idx, { rule_discount_value: e.target.value })} placeholder="Optional" />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1">Day Type</label>
-                  <select
-                    className="w-full rounded-md border px-3 py-2"
-                    value={rule.day_type || ''}
-                    onChange={(e) => updateRule(idx, {
-                      day_type: e.target.value,
-                      specific_days: e.target.value === 'custom' ? [] : [],
-                      specific_dates: e.target.value === 'holiday' ? [] : (rule.specific_dates || []),
-                    })}
-                  >
-                    <option value="">All Days</option>
-                    <option value="weekday">Weekdays (Mon-Fri)</option>
-                    <option value="weekend">Weekends (Sat-Sun)</option>
-                    <option value="holiday">Holidays Only</option>
-                    <option value="custom">Custom Days</option>
-                  </select>
-                </div>
-                {rule.day_type === 'custom' && (
-                  <div className="md:col-span-2">
-                    <label className="block text-xs text-gray-500 mb-1">Select Days</label>
-                    <div className="flex flex-wrap gap-2">
-                      {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, dayIdx) => (
-                        <label key={day} className="flex items-center gap-1 text-xs">
-                          <input
-                            type="checkbox"
-                            checked={(rule.specific_days || []).includes(dayIdx)}
-                            onChange={(e) => {
-                              const days = rule.specific_days || [];
-                              if (e.target.checked) {
-                                updateRule(idx, { specific_days: [...days, dayIdx] });
-                              } else {
-                                updateRule(idx, { specific_days: days.filter(d => d !== dayIdx) });
-                              }
-                            }}
-                          />
-                          {day}
-                        </label>
-                      ))}
-                    </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">Time From</label>
+                    <input type="time" className="w-full rounded-md border px-3 py-2" value={rule.time_from || ''} onChange={(e) => updateRule(idx, { time_from: e.target.value })} />
                   </div>
-                )}
-                {rule.day_type === 'holiday' && (
-                  <div className="md:col-span-2">
-                    <label className="block text-xs text-gray-500 mb-1">Holiday Pricing</label>
-                    <div className="text-xs text-gray-600">This rule will apply only to declared holidays</div>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">Time To</label>
+                    <input type="time" className="w-full rounded-md border px-3 py-2" value={rule.time_to || ''} onChange={(e) => updateRule(idx, { time_to: e.target.value })} />
                   </div>
-                )}
-              </div>
-              <div className="border-t pt-3 space-y-3">
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <div>
-                    <label className="block text-xs text-gray-500 mb-1">Add Specific Date</label>
-                    <input
-                      type="date"
-                      className="w-full rounded-md border px-3 py-2"
-                      value={rule.next_specific_date || ''}
-                      onChange={(e) => updateRule(idx, { next_specific_date: e.target.value })}
-                    />
+                    <label className="block text-xs text-gray-500 mb-1">Slot Type</label>
+                    <select className="w-full rounded-md border px-3 py-2" value={rule.slot_type || ''} onChange={(e) => updateRule(idx, { slot_type: e.target.value })}>
+                      <option value="">—</option>
+                      <option value="attraction">Attraction</option>
+                      <option value="combo">Combo</option>
+                    </select>
                   </div>
-                  <div className="flex items-end">
-                    <button
-                      type="button"
-                      className="px-3 py-2 text-xs rounded-md border"
-                      disabled={!rule.next_specific_date}
-                      onClick={() => {
-                        if (!rule.next_specific_date) return;
-                        const existing = Array.isArray(rule.specific_dates) ? rule.specific_dates : [];
-                        if (!existing.includes(rule.next_specific_date)) {
-                          updateRule(idx, {
-                            specific_dates: [...existing, rule.next_specific_date].sort(),
-                            next_specific_date: '',
-                          });
-                        } else {
-                          updateRule(idx, { next_specific_date: '' });
-                        }
-                      }}
-                    >
-                      Add Date
-                    </button>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">Slot ID</label>
+                    <input type="number" className="w-full rounded-md border px-3 py-2" value={rule.slot_id ?? ''} onChange={(e) => updateRule(idx, { slot_id: e.target.value })} />
                   </div>
-                  <div className="text-xs text-gray-500">
-                    Select one or more calendar dates. Rules targeting specific weekdays will still constrain these dates.
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">Priority</label>
+                    <input type="number" className="w-full rounded-md border px-3 py-2" value={rule.priority ?? 100} onChange={(e) => updateRule(idx, { priority: e.target.value })} />
                   </div>
                 </div>
-                {Array.isArray(rule.specific_dates) && rule.specific_dates.length > 0 && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs text-gray-500 mb-1">Selected Dates</label>
-                    <div className="flex flex-wrap gap-2">
-                      {rule.specific_dates.map((d) => (
-                        <span key={`${idx}-date-${d}`} className="inline-flex items-center gap-1 text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full">
-                          {new Date(d).toLocaleDateString()}
-                          <button
-                            type="button"
-                            className="text-red-500"
-                            onClick={() => {
-                              updateRule(idx, {
-                                specific_dates: rule.specific_dates.filter((date) => date !== d),
-                              });
-                            }}
-                          >
-                            ×
-                          </button>
-                        </span>
+                    <label className="block text-xs text-gray-500 mb-1">Rule Discount Type</label>
+                    <select className="w-full rounded-md border px-3 py-2" value={rule.rule_discount_type || ''} onChange={(e) => updateRule(idx, { rule_discount_type: e.target.value })}>
+                      <option key={`__default-rule-discount-type-${idx}__`} value="">Use Offer Default</option>
+                      {DISCOUNT_TYPES.map((opt) => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
                       ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">Rule Discount Value <span className="text-xs text-blue-600">(negative for price increase)</span></label>
+                    <input type="number" className="w-full rounded-md border px-3 py-2" value={rule.rule_discount_value ?? ''} onChange={(e) => updateRule(idx, { rule_discount_value: e.target.value })} placeholder="Optional" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">Day Type</label>
+                    <select
+                      className="w-full rounded-md border px-3 py-2"
+                      value={rule.day_type || ''}
+                      onChange={(e) => updateRule(idx, {
+                        day_type: e.target.value,
+                        specific_days: e.target.value === 'custom' ? [] : [],
+                        specific_dates: e.target.value === 'holiday' ? [] : (rule.specific_dates || []),
+                      })}
+                    >
+                      <option value="">All Days</option>
+                      <option value="weekday">Weekdays (Mon-Fri)</option>
+                      <option value="weekend">Weekends (Sat-Sun)</option>
+                      <option value="holiday">Holidays Only</option>
+                      <option value="custom">Custom Days</option>
+                    </select>
+                  </div>
+                  {rule.day_type === 'custom' && (
+                    <div className="md:col-span-2">
+                      <label className="block text-xs text-gray-500 mb-1">Select Days</label>
+                      <div className="flex flex-wrap gap-2">
+                        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, dayIdx) => (
+                          <label key={day} className="flex items-center gap-1 text-xs">
+                            <input
+                              type="checkbox"
+                              checked={(rule.specific_days || []).includes(dayIdx)}
+                              onChange={(e) => {
+                                const days = rule.specific_days || [];
+                                if (e.target.checked) {
+                                  updateRule(idx, { specific_days: [...days, dayIdx] });
+                                } else {
+                                  updateRule(idx, { specific_days: days.filter(d => d !== dayIdx) });
+                                }
+                              }}
+                            />
+                            {day}
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {rule.day_type === 'holiday' && (
+                    <div className="md:col-span-2">
+                      <label className="block text-xs text-gray-500 mb-1">Holiday Pricing</label>
+                      <div className="text-xs text-gray-600">This rule will apply only to declared holidays</div>
+                    </div>
+                  )}
+                </div>
+                <div className="border-t pt-3 space-y-3">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Add Specific Date</label>
+                      <input
+                        type="date"
+                        className="w-full rounded-md border px-3 py-2"
+                        value={rule.next_specific_date || ''}
+                        onChange={(e) => updateRule(idx, { next_specific_date: e.target.value })}
+                      />
+                    </div>
+                    <div className="flex items-end">
+                      <button
+                        type="button"
+                        className="px-3 py-2 text-xs rounded-md border"
+                        disabled={!rule.next_specific_date}
+                        onClick={() => {
+                          if (!rule.next_specific_date) return;
+                          const existing = Array.isArray(rule.specific_dates) ? rule.specific_dates : [];
+                          if (!existing.includes(rule.next_specific_date)) {
+                            updateRule(idx, {
+                              specific_dates: [...existing, rule.next_specific_date].sort(),
+                              next_specific_date: '',
+                            });
+                          } else {
+                            updateRule(idx, { next_specific_date: '' });
+                          }
+                        }}
+                      >
+                        Add Date
+                      </button>
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      Select one or more calendar dates. Rules targeting specific weekdays will still constrain these dates.
+                    </div>
+                  </div>
+                  {Array.isArray(rule.specific_dates) && rule.specific_dates.length > 0 && (
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Selected Dates</label>
+                      <div className="flex flex-wrap gap-2">
+                        {rule.specific_dates.map((d) => (
+                          <span key={`${idx}-date-${d}`} className="inline-flex items-center gap-1 text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full">
+                            {new Date(d).toLocaleDateString()}
+                            <button
+                              type="button"
+                              className="text-red-500"
+                              onClick={() => {
+                                updateRule(idx, {
+                                  specific_dates: rule.specific_dates.filter((date) => date !== d),
+                                });
+                              }}
+                            >
+                              ×
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+                {f.rule_type === 'date_slot_pricing' && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 border-t pt-3">
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Specific Date</label>
+                      <input
+                        type="date"
+                        className="w-full rounded-md border px-3 py-2"
+                        value={rule.specific_date || ''}
+                        onChange={(e) => updateRule(idx, { specific_date: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Specific Slot Time</label>
+                      <input
+                        type="time"
+                        className="w-full rounded-md border px-3 py-2"
+                        value={rule.specific_time || ''}
+                        onChange={(e) => updateRule(idx, { specific_time: e.target.value })}
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-xs text-gray-500 mb-1">Slot ID (Optional)</label>
+                      <input
+                        type="number"
+                        className="w-full rounded-md border px-3 py-2"
+                        value={rule.slot_id ?? ''}
+                        onChange={(e) => updateRule(idx, { slot_id: e.target.value })}
+                        placeholder="Leave empty for all slots on this date/time"
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <div className="text-xs text-gray-600">
+                        This rule will apply only to the specific date and time slot selected.
+                        If slot ID is provided, it will apply only to that specific slot.
+                      </div>
                     </div>
                   </div>
                 )}
               </div>
-              {f.rule_type === 'date_slot_pricing' && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 border-t pt-3">
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1">Specific Date</label>
-                    <input
-                      type="date"
-                      className="w-full rounded-md border px-3 py-2"
-                      value={rule.specific_date || ''}
-                      onChange={(e) => updateRule(idx, { specific_date: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1">Specific Slot Time</label>
-                    <input
-                      type="time"
-                      className="w-full rounded-md border px-3 py-2"
-                      value={rule.specific_time || ''}
-                      onChange={(e) => updateRule(idx, { specific_time: e.target.value })}
-                    />
-                  </div>
-                  <div className="md:col-span-2">
-                    <label className="block text-xs text-gray-500 mb-1">Slot ID (Optional)</label>
-                    <input
-                      type="number"
-                      className="w-full rounded-md border px-3 py-2"
-                      value={rule.slot_id ?? ''}
-                      onChange={(e) => updateRule(idx, { slot_id: e.target.value })}
-                      placeholder="Leave empty for all slots on this date/time"
-                    />
-                  </div>
-                  <div className="md:col-span-2">
-                    <div className="text-xs text-gray-600">
-                      This rule will apply only to the specific date and time slot selected.
-                      If slot ID is provided, it will apply only to that specific slot.
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
 
-      <div className="mt-4 flex gap-2">
-        <button type="submit" className="rounded-md bg-gray-900 text-white px-4 py-2 text-sm">Save</button>
-        <button type="button" className="rounded-md border px-4 py-2 text-sm" onClick={() => navigate(-1)}>Cancel</button>
-      </div>
+        <div className="mt-4 flex gap-2">
+          <button type="submit" disabled={saving} className="rounded-md bg-gray-900 text-white px-4 py-2 text-sm disabled:opacity-50">{saving ? 'Saving...' : 'Save'}</button>
+          <button type="button" className="rounded-md border px-4 py-2 text-sm" onClick={() => navigate(-1)}>Cancel</button>
+        </div>
 
-      {state.error ? <div className="mt-2 text-sm text-red-600">{state.error?.message || 'Error'}</div> : null}
-    </form>
+        {state.error ? <div className="mt-2 text-sm text-red-600">{state.error?.message || 'Error'}</div> : null}
+      </form>
+    </div>
   );
 }

@@ -51,7 +51,7 @@ httpAdmin.interceptors.response.use(
       try { return await httpAdmin(cfg); } catch (e) { error = e; }
     }
     if (status === 401 && typeof handlers.onUnauthorized === 'function') {
-      try { await handlers.onUnauthorized(); } catch {}
+      try { await handlers.onUnauthorized(); } catch { }
     }
     return Promise.reject(normalizeErr(error));
   }
@@ -84,9 +84,14 @@ const adminApi = {
     return fullResponse ? res : res.data;
   },
   async upload(url, file, extra = {}) {
+    const { fieldName = 'file', ...rest } = extra;
     const fd = new FormData();
-    fd.append('file', file);
-    Object.entries(extra).forEach(([k, v]) => fd.append(k, v));
+    fd.append(fieldName, file);
+    Object.entries(rest).forEach(([k, v]) => {
+      if (v !== undefined && v !== null) {
+        fd.append(k, v);
+      }
+    });
     const res = await httpAdmin.post(url, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
     return res.data;
   }

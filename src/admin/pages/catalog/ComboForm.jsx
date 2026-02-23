@@ -3,6 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import adminApi from '../../services/adminApi';
 import A from '../../services/adminEndpoints';
 import ImageUploader from '../../components/common/ImageUploader';
+import SaveOverlay from '../../components/common/SaveOverlay';
+import toast from 'react-hot-toast';
 
 export default function ComboForm() {
   const { id } = useParams();
@@ -26,9 +28,14 @@ export default function ComboForm() {
       discount_percent: 0,
       active: true,
       meta_title: '',
-      short_description: ''
+      short_description: '',
+      faq_items: [],
+      head_schema: '',
+      body_schema: '',
+      footer_schema: ''
     }
   });
+  const [saving, setSaving] = React.useState(false);
 
   // Load attractions for pickers
   React.useEffect(() => {
@@ -63,7 +70,11 @@ export default function ComboForm() {
           discount_percent: c.discount_percent || 0,
           active: !!c.active,
           meta_title: c.meta_title || '',
-          short_description: c.short_description || ''
+          short_description: c.short_description || '',
+          faq_items: Array.isArray(c.faq_items) ? c.faq_items : [],
+          head_schema: c.head_schema || '',
+          body_schema: c.body_schema || '',
+          footer_schema: c.footer_schema || ''
         };
 
         // Check if it's legacy format (has attraction_1_id and attraction_2_id)
@@ -89,20 +100,26 @@ export default function ComboForm() {
 
   const save = async (e) => {
     e.preventDefault();
+    setSaving(true);
+    const loadingToast = toast.loading(isEdit ? 'Updating combo...' : 'Creating combo...');
     try {
       const f = state.form;
       if (!f.name || f.name.trim() === '') {
-        alert('Please enter a combo name'); return;
+        toast.dismiss(loadingToast);
+        alert('Please enter a combo name'); setSaving(false); return;
       }
       if (!f.attraction_ids || f.attraction_ids.length < 2) {
-        alert('Select at least two attractions'); return;
+        toast.dismiss(loadingToast);
+        alert('Select at least two attractions'); setSaving(false); return;
       }
 
       // Validate attraction prices
       for (const attractionId of f.attraction_ids) {
         if (!f.attraction_prices[attractionId] || f.attraction_prices[attractionId] <= 0) {
           const attraction = state.attractions.find(a => a.attraction_id === attractionId);
+          toast.dismiss(loadingToast);
           alert(`Please set a valid price for ${attraction?.title || 'attraction'}`);
+          setSaving(false);
           return;
         }
       }
@@ -118,18 +135,24 @@ export default function ComboForm() {
         discount_percent: Number(f.discount_percent || 0),
         active: !!f.active,
         meta_title: f.meta_title?.trim() || null,
-        short_description: f.short_description?.trim() || null
+        short_description: f.short_description?.trim() || null,
+        faq_items: f.faq_items || [],
+        head_schema: f.head_schema?.trim() || null,
+        body_schema: f.body_schema?.trim() || null,
+        footer_schema: f.footer_schema?.trim() || null
       };
 
       if (isEdit) await adminApi.put(A.comboById(id), payload);
       else await adminApi.post(A.combos(), payload);
+
+      toast.success(isEdit ? 'Combo updated successfully' : 'Combo created successfully (slots generating in background)', { id: loadingToast });
       navigate('/admin/catalog/combos');
     } catch (err) {
+      toast.error(err.message || 'Save failed', { id: loadingToast });
       console.error('Combo save error:', err);
-      console.error('Error data:', err?.data);
-      console.error('Error status:', err?.status);
-      console.error('Error details:', err?.data?.details);
       setState((s) => ({ ...s, error: err }));
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -266,216 +289,328 @@ export default function ComboForm() {
   };
 
   return (
-    <form onSubmit={save} className="max-w-4xl bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl p-4">
-      <h1 className="text-xl font-semibold mb-4">{isEdit ? 'Edit' : 'New'} Combo</h1>
+    <div className="relative">
+      <SaveOverlay visible={saving} label={isEdit ? 'Updating combo…' : 'Saving combo…'} />
+      <form onSubmit={save} className="max-w-4xl bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl p-4">
+        <h1 className="text-xl font-semibold mb-4">{isEdit ? 'Edit' : 'New'} Combo</h1>
 
-      {/* Combo Name */}
-      <div className="mb-4">
-        <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Combo Name *</label>
-        <input
-          type="text"
-          className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200"
-          value={f.name}
-          onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, name: e.target.value } }))}
-          placeholder="Enter combo name"
-          required
-        />
-      </div>
-
-      {/* Combo Slug */}
-      <div className="mb-4">
-        <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Slug (URL-friendly identifier)</label>
-        <input
-          type="text"
-          className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200"
-          value={f.slug}
-          onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, slug: e.target.value } }))}
-          placeholder="auto-generated-from-name"
-        />
-        <div className="text-xs text-gray-500 dark:text-neutral-400 mt-1">
-          Leave empty to auto-generate from name. Used in URLs like /combo-your-slug-here
-        </div>
-      </div>
-
-      {/* Short Description */}
-      <div className="mb-4">
-        <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Short Description (for lists/previews)</label>
-        <textarea
-          className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200"
-          rows={2}
-          value={f.short_description}
-          onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, short_description: e.target.value } }))}
-          placeholder="Brief summary of the combo"
-        />
-      </div>
-
-      {/* Meta Title */}
-      <div className="mb-4">
-        <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Meta Title (SEO title)</label>
-        <input
-          type="text"
-          className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200"
-          value={f.meta_title}
-          onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, meta_title: e.target.value } }))}
-          placeholder="Custom page title for SEO (leave empty to use default)"
-        />
-        <div className="text-xs text-gray-500 dark:text-neutral-400 mt-1">
-          Optional custom title for search engines and browser tabs
-        </div>
-      </div>
-
-      {/* Attractions Selection */}
-      <div className="mb-4">
-        <div className="flex items-center justify-between mb-2">
-          <label className="block text-sm text-gray-600 dark:text-neutral-300">Attractions *</label>
-          <button
-            type="button"
-            onClick={addAttraction}
-            className="text-sm bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700"
-          >
-            + Add Attraction
-          </button>
+        {/* Combo Name */}
+        <div className="mb-4">
+          <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Combo Name *</label>
+          <input
+            type="text"
+            className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200"
+            value={f.name}
+            onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, name: e.target.value } }))}
+            placeholder="Enter combo name"
+            required
+          />
         </div>
 
-        {f.attraction_ids.length === 0 && (
-          <div className="text-gray-500 text-sm mb-2">No attractions selected. Add at least 2 attractions.</div>
-        )}
-
-        {f.attraction_ids.map((attractionId, index) => (
-          <div key={index} className="flex gap-2 mb-2">
-            <select
-              className="flex-1 rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200"
-              value={attractionId}
-              onChange={(e) => updateAttraction(index, e.target.value)}
-            >
-              <option value="">— Select attraction —</option>
-              {list.map((a) => (
-                <option
-                  key={a.attraction_id}
-                  value={a.attraction_id}
-                  disabled={f.attraction_ids.includes(String(a.attraction_id)) && String(a.attraction_id) !== attractionId}
-                >
-                  {a.title}
-                </option>
-              ))}
-            </select>
-
-            {attractionId && (
-              <input
-                type="number"
-                className="w-32 rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200"
-                value={f.attraction_prices[attractionId] || ''}
-                onChange={(e) => updateAttractionPrice(attractionId, e.target.value)}
-                placeholder="Price"
-                min="0"
-                step="0.01"
-              />
-            )}
-
-            {f.attraction_ids.length > 2 && (
-              <button
-                type="button"
-                onClick={() => removeAttraction(index)}
-                className="px-2 py-1 text-red-600 border border-red-300 rounded-md hover:bg-red-50"
-              >
-                Remove
-              </button>
-            )}
-          </div>
-        ))}
-
-        {f.attraction_ids.length > 0 && f.attraction_ids.length < 2 && (
-          <div className="text-orange-600 text-sm mt-1">Please select at least 2 attractions</div>
-        )}
-      </div>
-
-      {/* Total Price Display */}
-      <div className="mb-4 p-3 bg-gray-50 dark:bg-neutral-800 rounded-md">
-        <div className="text-sm text-gray-600 dark:text-neutral-300">Total Combo Price</div>
-        <div className="text-2xl font-bold text-gray-900 dark:text-white">₹{Number(f.total_price || 0).toFixed(2)}</div>
-        {f.attraction_ids.length > 0 && (
+        {/* Combo Slug */}
+        <div className="mb-4">
+          <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Slug (URL-friendly identifier)</label>
+          <input
+            type="text"
+            className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200"
+            value={f.slug}
+            onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, slug: e.target.value } }))}
+            placeholder="auto-generated-from-name"
+          />
           <div className="text-xs text-gray-500 dark:text-neutral-400 mt-1">
-            Based on {f.attraction_ids.length} attraction(s)
+            Leave empty to auto-generate from name. Used in URLs like /combo-your-slug-here
           </div>
-        )}
-      </div>
+        </div>
 
-      {/* Image uploader */}
-      <div className="mb-4">
-        <ImageUploader
-          label="Combo Image"
-          value={f.image_url}
-          onChange={(url) => setState((s) => ({ ...s, form: { ...s.form, image_url: url } }))}
-          altText={f.image_alt}
-          onAltChange={(alt) => setState((s) => ({ ...s, form: { ...s.form, image_alt: alt } }))}
-          folder="combos"
-        />
-      </div>
-      <div className="mb-4">
-        <ImageUploader
-          label="Desktop Image (optional)"
-          value={f.desktop_image_url}
-          onChange={(url) => setState((s) => ({ ...s, form: { ...s.form, desktop_image_url: url } }))}
-          altText={f.desktop_image_alt}
-          onAltChange={(alt) => setState((s) => ({ ...s, form: { ...s.form, desktop_image_alt: alt } }))}
-          folder="combos"
-        />
-      </div>
+        {/* Short Description */}
+        <div className="mb-4">
+          <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Short Description (for lists/previews)</label>
+          <textarea
+            className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200"
+            rows={2}
+            value={f.short_description}
+            onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, short_description: e.target.value } }))}
+            placeholder="Brief summary of the combo"
+          />
+        </div>
 
-      {/* Discount and Active */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-        <div>
-          <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Discount %</label>
+        {/* Meta Title */}
+        <div className="mb-4">
+          <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Meta Title (SEO title)</label>
+          <input
+            type="text"
+            className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200"
+            value={f.meta_title}
+            onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, meta_title: e.target.value } }))}
+            placeholder="Custom page title for SEO (leave empty to use default)"
+          />
+          <div className="text-xs text-gray-500 dark:text-neutral-400 mt-1">
+            Optional custom title for search engines and browser tabs
+          </div>
+        </div>
+
+        {/* Attractions Selection */}
+        <div className="mb-4">
+          <div className="flex items-center justify-between mb-2">
+            <label className="block text-sm text-gray-600 dark:text-neutral-300">Attractions *</label>
+            <button
+              type="button"
+              onClick={addAttraction}
+              className="text-sm bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700"
+            >
+              + Add Attraction
+            </button>
+          </div>
+
+          {f.attraction_ids.length === 0 && (
+            <div className="text-gray-500 text-sm mb-2">No attractions selected. Add at least 2 attractions.</div>
+          )}
+
+          {f.attraction_ids.map((attractionId, index) => (
+            <div key={index} className="flex gap-2 mb-2">
+              <select
+                className="flex-1 rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200"
+                value={attractionId}
+                onChange={(e) => updateAttraction(index, e.target.value)}
+              >
+                <option value="">— Select attraction —</option>
+                {list.map((a) => (
+                  <option
+                    key={a.attraction_id}
+                    value={a.attraction_id}
+                    disabled={f.attraction_ids.includes(String(a.attraction_id)) && String(a.attraction_id) !== attractionId}
+                  >
+                    {a.title}
+                  </option>
+                ))}
+              </select>
+
+              {attractionId && (
+                <input
+                  type="number"
+                  className="w-32 rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200"
+                  value={f.attraction_prices[attractionId] || ''}
+                  onChange={(e) => updateAttractionPrice(attractionId, e.target.value)}
+                  placeholder="Price"
+                  min="0"
+                  step="0.01"
+                />
+              )}
+
+              {f.attraction_ids.length > 2 && (
+                <button
+                  type="button"
+                  onClick={() => removeAttraction(index)}
+                  className="px-2 py-1 text-red-600 border border-red-300 rounded-md hover:bg-red-50"
+                >
+                  Remove
+                </button>
+              )}
+            </div>
+          ))}
+
+          {f.attraction_ids.length > 0 && f.attraction_ids.length < 2 && (
+            <div className="text-orange-600 text-sm mt-1">Please select at least 2 attractions</div>
+          )}
+        </div>
+
+        {/* Total Price Display */}
+        <div className="mb-4 p-3 bg-gray-50 dark:bg-neutral-800 rounded-md">
+          <div className="text-sm text-gray-600 dark:text-neutral-300">Total Combo Price</div>
+          <div className="text-2xl font-bold text-gray-900 dark:text-white">₹{Number(f.total_price || 0).toFixed(2)}</div>
+          {f.attraction_ids.length > 0 && (
+            <div className="text-xs text-gray-500 dark:text-neutral-400 mt-1">
+              Based on {f.attraction_ids.length} attraction(s)
+            </div>
+          )}
+        </div>
+
+        {/* Image uploader */}
+        <div className="mb-4">
+          <ImageUploader
+            label="Combo Image"
+            value={f.image_url}
+            onChange={(url) => setState((s) => ({ ...s, form: { ...s.form, image_url: url } }))}
+            altText={f.image_alt}
+            onAltChange={(alt) => setState((s) => ({ ...s, form: { ...s.form, image_alt: alt } }))}
+            folder="combos"
+          />
+        </div>
+        <div className="mb-4">
+          <ImageUploader
+            label="Desktop Image (optional)"
+            value={f.desktop_image_url}
+            onChange={(url) => setState((s) => ({ ...s, form: { ...s.form, desktop_image_url: url } }))}
+            altText={f.desktop_image_alt}
+            onAltChange={(alt) => setState((s) => ({ ...s, form: { ...s.form, desktop_image_alt: alt } }))}
+            folder="combos"
+          />
+        </div>
+
+        {/* Discount and Active */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+          <div>
+            <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Discount %</label>
+            <input
+              type="number"
+              className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200"
+              value={f.discount_percent}
+              onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, discount_percent: Number(e.target.value || 0) } }))}
+              min="0"
+              max="100"
+            />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <input
+              id="active"
+              type="checkbox"
+              checked={!!f.active}
+              onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, active: e.target.checked } }))}
+            />
+            <label htmlFor="active" className="text-sm text-gray-700 dark:text-neutral-200">Active</label>
+          </div>
+        </div>
+
+        {/* Manual total price input */}
+        <div className="mb-4">
+          <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Override Total Price (optional)</label>
           <input
             type="number"
             className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200"
-            value={f.discount_percent}
-            onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, discount_percent: Number(e.target.value || 0) } }))}
+            value={f.total_price}
+            onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, total_price: Number(e.target.value || 0) } }))}
             min="0"
-            max="100"
+            step="0.01"
           />
+          <p className="text-xs text-gray-500 dark:text-neutral-400 mt-1">Automatically sums attraction prices; adjust if needed.</p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <input
-            id="active"
-            type="checkbox"
-            checked={!!f.active}
-            onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, active: e.target.checked } }))}
-          />
-          <label htmlFor="active" className="text-sm text-gray-700 dark:text-neutral-200">Active</label>
+        {/* FAQ Section */}
+        <div className="mt-8 pt-6 border-t border-gray-200 dark:border-neutral-800">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-neutral-100">FAQ Section</h2>
+              <p className="text-sm text-gray-500 dark:text-neutral-400 mt-1">Add questions and answers for FAQ structured data (helps SEO)</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                const currentItems = Array.isArray(f.faq_items) ? f.faq_items : [];
+                setState(s => ({ ...s, form: { ...s.form, faq_items: [...currentItems, { question: '', answer: '' }] } }));
+              }}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
+            >
+              + Add FAQ
+            </button>
+          </div>
+          {(f.faq_items || []).map((faq, idx) => (
+            <div key={idx} className="mb-4 p-4 border border-gray-200 dark:border-neutral-700 rounded-lg bg-gray-50 dark:bg-neutral-800">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-sm font-medium text-gray-700 dark:text-neutral-300">FAQ #{idx + 1}</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const items = [...f.faq_items];
+                    items.splice(idx, 1);
+                    setState(s => ({ ...s, form: { ...s.form, faq_items: items } }));
+                  }}
+                  className="text-red-500 hover:text-red-700 text-sm"
+                >
+                  Remove
+                </button>
+              </div>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 dark:text-neutral-400 mb-1">Question</label>
+                  <input
+                    type="text"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-neutral-900 dark:text-neutral-100 text-sm"
+                    value={faq.question || ''}
+                    onChange={(e) => {
+                      const items = [...f.faq_items];
+                      items[idx] = { ...items[idx], question: e.target.value };
+                      setState(s => ({ ...s, form: { ...s.form, faq_items: items } }));
+                    }}
+                    placeholder="What is the question?"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 dark:text-neutral-400 mb-1">Answer</label>
+                  <textarea
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-neutral-900 dark:text-neutral-100 text-sm"
+                    rows={3}
+                    value={faq.answer || ''}
+                    onChange={(e) => {
+                      const items = [...f.faq_items];
+                      items[idx] = { ...items[idx], answer: e.target.value };
+                      setState(s => ({ ...s, form: { ...s.form, faq_items: items } }));
+                    }}
+                    placeholder="Provide the answer..."
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+          {(!f.faq_items || !f.faq_items.length) && (
+            <p className="text-sm text-gray-400 dark:text-neutral-500 italic">No FAQ items yet. Click "+ Add FAQ" to get started.</p>
+          )}
         </div>
-      </div>
 
-      {/* Manual total price input */}
-      <div className="mb-4">
-        <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Override Total Price (optional)</label>
-        <input
-          type="number"
-          className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200"
-          value={f.total_price}
-          onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, total_price: Number(e.target.value || 0) } }))}
-          min="0"
-          step="0.01"
-        />
-        <p className="text-xs text-gray-500 dark:text-neutral-400 mt-1">Automatically sums attraction prices; adjust if needed.</p>
-      </div>
+        {/* Schema Markup */}
+        <div className="mt-8 pt-6 border-t border-gray-200 dark:border-neutral-800">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-neutral-100 mb-2">Schema Markup</h2>
+          <p className="text-sm text-gray-500 dark:text-neutral-400 mb-4">Custom JSON-LD structured data for this combo</p>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">Head Schema (JSON-LD)</label>
+              <textarea
+                className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-neutral-900 dark:text-neutral-100 font-mono text-sm"
+                rows={4}
+                value={f.head_schema || ''}
+                onChange={(e) => setState(s => ({ ...s, form: { ...s.form, head_schema: e.target.value } }))}
+                placeholder='{"@context":"https://schema.org", ...}'
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">Body Schema (JSON-LD)</label>
+              <textarea
+                className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-neutral-900 dark:text-neutral-100 font-mono text-sm"
+                rows={4}
+                value={f.body_schema || ''}
+                onChange={(e) => setState(s => ({ ...s, form: { ...s.form, body_schema: e.target.value } }))}
+                placeholder='{"@context":"https://schema.org", ...}'
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">Footer Schema (JSON-LD)</label>
+              <textarea
+                className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-neutral-900 dark:text-neutral-100 font-mono text-sm"
+                rows={4}
+                value={f.footer_schema || ''}
+                onChange={(e) => setState(s => ({ ...s, form: { ...s.form, footer_schema: e.target.value } }))}
+                placeholder='{"@context":"https://schema.org", ...}'
+              />
+            </div>
+          </div>
+        </div>
 
-      <div className="mt-4 flex gap-2">
-        <button type="submit" className="rounded-md bg-gray-900 text-white px-4 py-2 text-sm">Save</button>
-        {isEdit && (
-          <button
-            type="button"
-            className="rounded-md bg-blue-600 text-white px-4 py-2 text-sm hover:bg-blue-700"
-            onClick={() => navigate(`/admin/catalog/combo-slots?combo_id=${id}`)}
-          >
-            View Slots
-          </button>
-        )}
-        <button type="button" className="rounded-md border px-4 py-2 text-sm" onClick={() => navigate(-1)}>Cancel</button>
-      </div>
+        <div className="mt-8 flex gap-2 pt-6 border-t border-gray-200 dark:border-neutral-800">
+          <button type="submit" disabled={saving} className="rounded-md bg-gray-900 text-white px-4 py-2 text-sm disabled:opacity-50">{saving ? 'Saving...' : 'Save'}</button>
+          {isEdit && (
+            <button
+              type="button"
+              className="rounded-md bg-blue-600 text-white px-4 py-2 text-sm hover:bg-blue-700"
+              onClick={() => navigate(`/admin/catalog/combo-slots?combo_id=${id}`)}
+            >
+              View Slots
+            </button>
+          )}
+          <button type="button" className="rounded-md border px-4 py-2 text-sm" onClick={() => navigate(-1)}>Cancel</button>
+        </div>
 
-      {state.error ? <div className="mt-2 text-sm text-red-600">{state.error?.message || 'Error'}</div> : null}
-    </form>
+        {state.error ? <div className="mt-2 text-sm text-red-600">{state.error?.message || 'Error'}</div> : null}
+      </form>
+    </div>
   );
 }

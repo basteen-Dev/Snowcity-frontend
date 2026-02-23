@@ -14,7 +14,8 @@ const resolveAssetUrl = (url) => {
   return url;
 };
 
-const FONT_WHITELIST = ['inter', 'poppins', 'roboto', 'serif', 'monospace'];
+const FONT_WHITELIST = ['inter', 'opensans', 'poppins', 'roboto', 'serif', 'monospace'];
+const SIZE_WHITELIST = ['small', false, 'large', 'huge'];
 
 export default function RichText({ value, onChange, placeholder = 'Type here…', height = 260, gallery = [] }) {
   const ref = React.useRef({ Editor: null });
@@ -48,8 +49,13 @@ export default function RichText({ value, onChange, placeholder = 'Type here…'
             if (Font) {
               Font.whitelist = FONT_WHITELIST;
               QuillCtor.register(Font, true);
-              fontSetupRef.current = true;
             }
+            const Size = QuillCtor.import?.('formats/size');
+            if (Size) {
+              Size.whitelist = SIZE_WHITELIST;
+              QuillCtor.register(Size, true);
+            }
+            fontSetupRef.current = true;
           }
           ref.current.Editor = EditorComponent;
           force();
@@ -69,20 +75,21 @@ export default function RichText({ value, onChange, placeholder = 'Type here…'
   }, []);
 
   const handleFileChange = async (event) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(event.target.files || []);
+    if (!files.length) return;
     try {
       setUploading(true);
       setUploadErr('');
-      const url = await uploadAdminMedia(file, { folder: 'editor' });
       const quill = quillRef.current?.getEditor?.();
       if (!quill) return;
-      const range = quill.getSelection(true);
-      const insertAt = range ? range.index : quill.getLength();
-
-      const imageUrl = resolveAssetUrl(url);
-      quill.insertEmbed(insertAt, 'image', imageUrl, 'user');
-      quill.setSelection(insertAt + 1);
+      for (const file of files) {
+        const url = await uploadAdminMedia(file, { folder: 'editor' });
+        const range = quill.getSelection(true);
+        const insertAt = range ? range.index : quill.getLength();
+        const imageUrl = resolveAssetUrl(url);
+        quill.insertEmbed(insertAt, 'image', imageUrl, 'user');
+        quill.setSelection(insertAt + 1);
+      }
     } catch (err) {
       setUploadErr(err?.message || 'Upload failed');
     } finally {
@@ -286,10 +293,14 @@ export default function RichText({ value, onChange, placeholder = 'Type here…'
       toolbar: {
         container: [
           [{ font: FONT_WHITELIST }],
-          [{ header: [1, 2, 3, false] }],
+          [{ size: SIZE_WHITELIST }],
+          [{ header: [1, 2, 3, 4, false] }],
           ['bold', 'italic', 'underline', 'strike'],
+          [{ script: 'sub' }, { script: 'super' }],
           [{ color: [] }, { background: [] }],
           [{ list: 'ordered' }, { list: 'bullet' }],
+          [{ indent: '-1' }, { indent: '+1' }],
+          ['blockquote', 'code-block'],
           [{ align: [] }],
           ['link', 'image'],
           ['clean']
@@ -366,6 +377,7 @@ export default function RichText({ value, onChange, placeholder = 'Type here…'
         ref={fileInputRef}
         type="file"
         accept="image/*"
+        multiple
         className="hidden"
         onChange={handleFileChange}
       />

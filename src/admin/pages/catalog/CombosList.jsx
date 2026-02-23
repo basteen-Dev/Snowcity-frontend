@@ -3,6 +3,8 @@ import adminApi from '../../services/adminApi';
 import A from '../../services/adminEndpoints';
 import AdminTable from '../../components/common/AdminTable';
 import { useNavigate } from 'react-router-dom';
+import { imgSrc } from '../../../utils/media';
+
 
 export default function CombosList() {
   const navigate = useNavigate();
@@ -15,10 +17,10 @@ export default function CombosList() {
         adminApi.get(A.combos(), { params: { active: state.active || undefined } }),
         adminApi.get(A.attractions())
       ]);
-      
+
       const items = Array.isArray(combosRes?.data) ? combosRes.data : Array.isArray(combosRes) ? combosRes : [];
       const attractions = Array.isArray(attractionsRes?.data) ? attractionsRes.data : Array.isArray(attractionsRes) ? attractionsRes : [];
-      
+
       // Fetch slot counts for each combo
       const slotCounts = {};
       await Promise.all(
@@ -32,7 +34,7 @@ export default function CombosList() {
           }
         })
       );
-      
+
       setState((s) => ({ ...s, status: 'succeeded', items, attractions, slotCounts }));
     } catch (err) { setState((s) => ({ ...s, status: 'failed', error: err })); }
   };
@@ -62,31 +64,31 @@ export default function CombosList() {
         columns={[
           { key: 'combo_id', title: 'ID' },
           { key: 'name', title: 'Combo Name', render: (r) => r.name || `Combo #${r.combo_id}` },
-          { 
-            key: 'attractions', 
-            title: 'Attractions', 
+          {
+            key: 'attractions',
+            title: 'Attractions',
             render: (r) => {
               if (!r.attraction_ids || !Array.isArray(r.attraction_ids) || r.attraction_ids.length === 0) {
                 return 'No attractions';
               }
-              
+
               const attractionNames = r.attraction_ids
                 .map(id => {
                   const attraction = state.attractions.find(a => a.attraction_id === id);
                   return attraction?.title || `Attraction #${id}`;
                 })
                 .filter(Boolean);
-              
-              return attractionNames.length > 0 
-                ? attractionNames.join(', ') 
+
+              return attractionNames.length > 0
+                ? attractionNames.join(', ')
                 : 'Unknown attractions';
             }
           },
           { key: 'total_price', title: 'Total Price', render: (r) => `₹${(r?.total_price ?? 0).toFixed(2)}` },
           { key: 'discount_percent', title: 'Discount %', render: (r) => `${r?.discount_percent ?? 0}%` },
-          { 
-            key: 'slots', 
-            title: 'Slots', 
+          {
+            key: 'slots',
+            title: 'Slots',
             render: (r) => {
               const slotCount = state.slotCounts[r.combo_id] || 0;
               return (
@@ -105,41 +107,42 @@ export default function CombosList() {
               );
             }
           },
-          { 
-            key: 'image_url', 
-            title: 'Image', 
-            render: (r) => r.image_url ? (
-              <img 
-                src={r.image_url} 
-                alt={r.name} 
-                className="w-8 h-8 object-cover rounded"
-                onError={(e) => { e.target.style.display = 'none'; }}
+          {
+            key: 'image_url',
+            title: 'Image',
+            render: (r) => (
+              <img
+                src={imgSrc(r)}
+                alt={r.name || `Combo #${r.combo_id}`}
+                className="w-10 h-10 object-cover rounded shadow-sm border dark:border-neutral-700"
+                onError={(e) => { e.target.src = '/placeholder-image.png'; }}
               />
-            ) : 'No image'
+            )
           },
-          { key: 'active', title: 'Active', render: (r) => (
-            <div className="flex items-center gap-2">
-              <span className={`px-2 py-1 text-xs rounded ${
-                r?.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-              }`}>
-                {r?.active ? 'Active' : 'Inactive'}
-              </span>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (!window.confirm(`Are you sure you want to delete "${r.name || `Combo #${r.combo_id}`}"? This will also delete all associated slots.`)) return;
-                  
-                  adminApi.delete(A.comboById(r.combo_id))
-                    .then(() => load())
-                    .catch(error => alert(error.message || 'Failed to delete combo'));
-                }}
-                className="text-red-600 hover:text-red-800 text-sm underline"
-                title="Delete combo"
-              >
-                Delete
-              </button>
-            </div>
-          )}
+          {
+            key: 'active', title: 'Active', render: (r) => (
+              <div className="flex items-center gap-2">
+                <span className={`px-2 py-1 text-xs rounded ${r?.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                  }`}>
+                  {r?.active ? 'Active' : 'Inactive'}
+                </span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (!window.confirm(`Are you sure you want to delete "${r.name || `Combo #${r.combo_id}`}"? This will also delete all associated slots.`)) return;
+
+                    adminApi.delete(A.comboById(r.combo_id))
+                      .then(() => load())
+                      .catch(error => alert(error.message || 'Failed to delete combo'));
+                  }}
+                  className="text-red-600 hover:text-red-800 text-sm underline"
+                  title="Delete combo"
+                >
+                  Delete
+                </button>
+              </div>
+            )
+          }
         ]}
         rows={state.items}
         onRowClick={(r) => navigate(`/admin/catalog/combos/${r.combo_id}`)}

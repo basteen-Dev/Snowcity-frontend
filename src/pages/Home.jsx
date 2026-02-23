@@ -24,7 +24,7 @@ import ComboCard from '../components/cards/ComboCard';
 import Loader from '../components/common/Loader';
 import ErrorState from '../components/common/ErrorState';
 import LazyVisible from '../components/common/LazyVisible';
-import SkeletonLoader, {
+import {
   SkeletonHeroSection,
   SkeletonCarousel,
   SkeletonSectionHeader,
@@ -32,6 +32,7 @@ import SkeletonLoader, {
   SkeletonMarquee
 } from '../components/common/SkeletonLoader';
 import { imgSrc } from '../utils/media';
+import usePageSeo from '../hooks/usePageSeo';
 
 // small helpers for localStorage caching
 const CACHE_KEY = 'sc_home_cache_v1';
@@ -69,6 +70,14 @@ export default function Home() {
   const coupons = useSelector((s) => s.coupons);
   const pages = useSelector((s) => s.pages);
   const blogs = useSelector((s) => s.blogs);
+
+  // explicitly manage SEO for the home page
+  usePageSeo({
+    title: 'SnowCity - Experience Excellence',
+    description: 'Visit SnowCity for the ultimate snow experience. Book your tickets now!',
+    keywords: 'snowcity, snow park, amusement park, snow',
+    type: 'website',
+  });
 
   // provide instant content from cache while Redux fetches in background
   const cacheRef = React.useRef(loadCache());

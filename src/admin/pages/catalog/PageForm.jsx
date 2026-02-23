@@ -5,7 +5,10 @@ import RawEditor from '../../components/common/RawEditor';
 import RichText from '../../components/common/RichText';
 import GalleryField from '../../components/common/GalleryField';
 import BulkImageUploader from '../../components/common/BulkImageUploader';
+import ImageUploader from '../../components/common/ImageUploader';
 import useCatalogTargets from '../../hooks/useCatalogTargets';
+import SaveOverlay from '../../components/common/SaveOverlay';
+import toast from 'react-hot-toast';
 
 const NAV_GROUPS = [
   { key: '', label: 'No nav' },
@@ -43,6 +46,12 @@ export default function PageForm() {
     nav_order: 0,
     placement: 'none',
     placement_ref_id: null,
+    hero_image: '',
+    hero_image_alt: '',
+    faq_items: [],
+    head_schema: '',
+    body_schema: '',
+    footer_schema: '',
   });
   const [err, setErr] = React.useState('');
   const [saving, setSaving] = React.useState(false);
@@ -60,6 +69,10 @@ export default function PageForm() {
           nav_order: row.nav_order ?? 0,
           placement: row.placement || 'none',
           placement_ref_id: row.placement_ref_id || null,
+          faq_items: Array.isArray(row.faq_items) ? row.faq_items : [],
+          head_schema: typeof row.head_schema === 'object' ? JSON.stringify(row.head_schema, null, 2) : (row.head_schema || ''),
+          body_schema: typeof row.body_schema === 'object' ? JSON.stringify(row.body_schema, null, 2) : (row.body_schema || ''),
+          footer_schema: typeof row.footer_schema === 'object' ? JSON.stringify(row.footer_schema, null, 2) : (row.footer_schema || ''),
         }));
       } catch (e) {
         setErr(e.message || 'Failed to load page');
@@ -73,6 +86,7 @@ export default function PageForm() {
     e.preventDefault();
     setErr('');
     setSaving(true);
+    const loadingToast = toast.loading(isEdit ? 'Updating page...' : 'Creating page...');
     try {
       const normalizeId = (val) => {
         const num = Number(val);
@@ -84,6 +98,16 @@ export default function PageForm() {
       payload.section_ref_id = payload.section_type === 'none' ? null : normalizeId(form.section_ref_id);
       payload.placement_ref_id = form.placement === 'attraction_details' ? normalizeId(form.placement_ref_id) : null;
       payload.nav_order = Number.isFinite(Number(form.nav_order)) ? Number(form.nav_order) : 0;
+      // Parse schema JSON fields
+      const jsonFields = ['head_schema', 'body_schema', 'footer_schema'];
+      for (const key of jsonFields) {
+        if (payload[key] && typeof payload[key] === 'string' && payload[key].trim()) {
+          try { payload[key] = JSON.parse(payload[key]); } catch { /* send as-is */ }
+        } else {
+          payload[key] = {};
+        }
+      }
+      payload.nav_order = Number.isFinite(Number(form.nav_order)) ? Number(form.nav_order) : 0;
       if (payload.editor_mode === 'raw') {
         // Ensure raw fields present; content not needed
         payload.content = payload.content || '';
@@ -93,8 +117,10 @@ export default function PageForm() {
       } else {
         await adminApi.post('/api/admin/pages', payload);
       }
+      toast.success(isEdit ? 'Page updated successfully' : 'Page created successfully', { id: loadingToast });
       nav('/admin/catalog/pages');
     } catch (e) {
+      toast.error(e.message || 'Save failed', { id: loadingToast });
       setErr(e.message || 'Save failed');
     } finally {
       setSaving(false);
@@ -113,36 +139,43 @@ export default function PageForm() {
 
   const preview = async () => {
     try {
-      const out = await adminApi.post('/api/admin/pages/preview', form);
-      // Build client-side preview too (raw takes precedence)
-      const win = window.open('', '_blank');
-      if (!win) return;
-      let htmlDoc = '';
-      if (form.editor_mode === 'raw') {
-        htmlDoc = `
-<!doctype html><html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<style>${form.raw_css || ''}</style>
-<title>${form.title || ''}</title>
-</head><body>
-${form.raw_html || ''}
-<script>${form.raw_js || ''}<\/script>
-</body></html>`;
-      } else {
-        htmlDoc = `
-<!doctype html><html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>${form.title || ''}</title>
-</head><body>${form.content || ''}</body></html>`;
+      const payload = { ...form };
+      // Parse schema JSON fields
+      const jsonFields = ['head_schema', 'body_schema', 'footer_schema'];
+      for (const key of jsonFields) {
+        if (payload[key] && typeof payload[key] === 'string' && payload[key].trim()) {
+          try { payload[key] = JSON.parse(payload[key]); } catch { /* send as-is */ }
+        } else {
+          payload[key] = {};
+        }
       }
-      win.document.open();
-      win.document.write(htmlDoc);
-      win.document.close();
+
+      const apiBase = adminApi.defaults.baseURL || '';
+      const rootBase = apiBase.endsWith('/api') ? apiBase.slice(0, -4) : apiBase;
+      const response = await fetch(`${rootBase}/preview`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${adminApi.defaults.headers.common['Authorization']?.split(' ')[1] || ''}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const htmlDoc = await response.text();
+      const win = window.open('', '_blank');
+      if (win) {
+        win.document.open();
+        win.document.write(htmlDoc);
+        win.document.close();
+      }
     } catch (e) {
       alert(e.message || 'Preview failed');
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-neutral-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-neutral-900 relative">
+      <SaveOverlay visible={saving} label={isEdit ? 'Updating page…' : 'Saving page…'} />
       <div className="max-w-7xl mx-auto px-4 py-6">
         {/* Header */}
         <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-neutral-700 p-6 mb-6">
@@ -163,6 +196,16 @@ ${form.raw_html || ''}
               >
                 Preview
               </button>
+              {isEdit && (
+                <a
+                  href={`${window.location.origin}/${form.slug}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-4 py-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors flex items-center gap-2"
+                >
+                  View Live
+                </a>
+              )}
               <button
                 type="button"
                 onClick={() => nav('/admin/catalog/pages')}
@@ -211,6 +254,9 @@ ${form.raw_html || ''}
                   onChange={(e) => onChange({ slug: e.target.value })}
                   placeholder="my-custom-page"
                 />
+                <p className="mt-1 text-xs text-gray-500 dark:text-neutral-400">
+                  Live URL: <span className="font-mono text-blue-600 dark:text-blue-400">{window.location.origin}/{form.slug || 'slug'}</span>
+                </p>
               </div>
             </div>
             <div className="mt-4">
@@ -223,6 +269,33 @@ ${form.raw_html || ''}
                 />
                 <span className="ml-2 text-sm text-gray-700 dark:text-neutral-300">Publish page</span>
               </label>
+            </div>
+
+            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6 border-t pt-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">
+                  Hero Image
+                </label>
+                <div className="max-w-[200px]">
+                  <ImageUploader
+                    value={form.hero_image}
+                    onChange={(url) => onChange({ hero_image: url })}
+                    folder="pages"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">
+                  Hero Image Alt Text
+                </label>
+                <input
+                  type="text"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-neutral-700 dark:text-neutral-100"
+                  value={form.hero_image_alt || ''}
+                  onChange={(e) => onChange({ hero_image_alt: e.target.value })}
+                  placeholder="Alt text for hero image"
+                />
+              </div>
             </div>
           </div>
 
@@ -375,6 +448,115 @@ ${form.raw_html || ''}
                 <label className="block text-sm">Meta keywords</label>
                 <input className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700"
                   value={form.meta_keywords || ''} onChange={(e) => onChange({ meta_keywords: e.target.value })} />
+              </div>
+            </div>
+          </div>
+
+          {/* FAQ Section */}
+          <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-neutral-700 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-neutral-100">FAQ Section</h2>
+                <p className="text-sm text-gray-500 dark:text-neutral-400 mt-1">Add questions and answers for FAQPage structured data (helps SEO)</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  const currentItems = Array.isArray(form.faq_items) ? form.faq_items : [];
+                  onChange({ faq_items: [...currentItems, { question: '', answer: '' }] });
+                }}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
+              >
+                + Add FAQ
+              </button>
+            </div>
+            {(form.faq_items || []).map((faq, idx) => (
+              <div key={idx} className="mb-4 p-4 border border-gray-200 dark:border-neutral-600 rounded-lg bg-gray-50 dark:bg-neutral-700/50">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-sm font-medium text-gray-700 dark:text-neutral-300">FAQ #{idx + 1}</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const items = [...form.faq_items];
+                      items.splice(idx, 1);
+                      onChange({ faq_items: items });
+                    }}
+                    className="text-red-500 hover:text-red-700 text-sm"
+                  >
+                    Remove
+                  </button>
+                </div>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 dark:text-neutral-400 mb-1">Question</label>
+                    <input
+                      type="text"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-neutral-700 dark:text-neutral-100 text-sm"
+                      value={faq.question || ''}
+                      onChange={(e) => {
+                        const items = [...form.faq_items];
+                        items[idx] = { ...items[idx], question: e.target.value };
+                        onChange({ faq_items: items });
+                      }}
+                      placeholder="What is the question?"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 dark:text-neutral-400 mb-1">Answer</label>
+                    <textarea
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-neutral-700 dark:text-neutral-100 text-sm"
+                      rows={3}
+                      value={faq.answer || ''}
+                      onChange={(e) => {
+                        const items = [...form.faq_items];
+                        items[idx] = { ...items[idx], answer: e.target.value };
+                        onChange({ faq_items: items });
+                      }}
+                      placeholder="Provide the answer..."
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+            {(!form.faq_items || !form.faq_items.length) && (
+              <p className="text-sm text-gray-400 dark:text-neutral-500 italic">No FAQ items yet. Click "+ Add FAQ" to get started.</p>
+            )}
+          </div>
+
+          {/* Schema Markup */}
+          <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-neutral-700 p-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-neutral-100 mb-2">Schema Markup</h2>
+            <p className="text-sm text-gray-500 dark:text-neutral-400 mb-4">Custom JSON-LD structured data for this page</p>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">Head Schema (JSON-LD)</label>
+                <textarea
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-neutral-700 dark:text-neutral-100 font-mono text-sm"
+                  rows={5}
+                  value={form.head_schema || ''}
+                  onChange={(e) => onChange({ head_schema: e.target.value })}
+                  placeholder='{"@context":"https://schema.org", ...}'
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">Body Schema (JSON-LD)</label>
+                <textarea
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-neutral-700 dark:text-neutral-100 font-mono text-sm"
+                  rows={5}
+                  value={form.body_schema || ''}
+                  onChange={(e) => onChange({ body_schema: e.target.value })}
+                  placeholder='{"@context":"https://schema.org", ...}'
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">Footer Schema (JSON-LD)</label>
+                <textarea
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-neutral-700 dark:text-neutral-100 font-mono text-sm"
+                  rows={5}
+                  value={form.footer_schema || ''}
+                  onChange={(e) => onChange({ footer_schema: e.target.value })}
+                  placeholder='{"@context":"https://schema.org", ...}'
+                />
               </div>
             </div>
           </div>

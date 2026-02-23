@@ -24,6 +24,7 @@ export default function Addons({
     handleNext,
     handleBack,
     hasCartItems,
+    totalAddonCount,
 }) {
     return (
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2.1fr)_minmax(320px,1fr)] gap-6 items-start mt-4">
@@ -35,8 +36,8 @@ export default function Addons({
                                 key={item.key}
                                 onClick={() => dispatch(setActiveCartItem(item.key))}
                                 className={`px-4 py-2 rounded-full border text-sm font-medium transition-all ${item.key === activeItemKey
-                                        ? 'bg-sky-600 text-white border-sky-600 shadow-sm'
-                                        : 'bg-white text-gray-600 border-gray-200 hover:border-sky-200'
+                                    ? 'bg-sky-600 text-white border-sky-600 shadow-sm'
+                                    : 'bg-white text-gray-600 border-gray-200 hover:border-sky-200'
                                     }`}
                             >
                                 {item.title ||
@@ -225,16 +226,25 @@ export default function Addons({
                         <div className="flex flex-col gap-2">
                             <button
                                 type="button"
-                                disabled={!hasCartItems}
+                                disabled={totalAddonCount === 0 || !hasCartItems}
                                 onClick={handleNext}
-                                className={`w-full flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all active:scale-[0.98] ${!hasCartItems
-                                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                                        : 'bg-sky-600 text-white shadow-md hover:bg-sky-700 active:scale-[0.98]'
+                                className={`w-full flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all active:scale-[0.98] ${totalAddonCount === 0 || !hasCartItems
+                                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                    : 'bg-sky-600 text-white shadow-md hover:bg-sky-700 active:scale-[0.98]'
                                     }`}
                             >
                                 <span>Continue</span>
                                 <ArrowRight size={18} />
                             </button>
+                            {totalAddonCount === 0 && (
+                                <button
+                                    type="button"
+                                    onClick={handleNext}
+                                    className="w-full text-center text-sm font-semibold text-sky-600 hover:text-sky-700 py-1"
+                                >
+                                    Skip addons
+                                </button>
+                            )}
                             <button
                                 type="button"
                                 onClick={handleBack}

@@ -4,6 +4,7 @@ import adminApi from '../../services/adminApi';
 import A from '../../services/adminEndpoints';
 import ImageUploader from '../../components/common/ImageUploader';
 import SaveOverlay from '../../components/common/SaveOverlay';
+import toast from 'react-hot-toast';
 
 export default function BannerForm() {
   const { id } = useParams();
@@ -72,14 +73,18 @@ export default function BannerForm() {
     e.preventDefault();
     setSaving(true);
     setState((s) => ({ ...s, error: null }));
+    const loadingToast = toast.loading(isEdit ? 'Updating banner...' : 'Creating banner...');
     try {
       const payload = { ...state.form };
       if (!payload.linked_attraction_id) delete payload.linked_attraction_id;
       if (!payload.linked_offer_id) delete payload.linked_offer_id;
       if (isEdit) await adminApi.put(`${A.banners()}/${id}`, payload);
       else await adminApi.post(A.banners(), payload);
+
+      toast.success(isEdit ? 'Banner updated successfully' : 'Banner created successfully', { id: loadingToast });
       navigate('/admin/catalog/banners');
     } catch (err) {
+      toast.error(err.message || 'Save failed', { id: loadingToast });
       setState((s) => ({ ...s, error: err }));
     } finally {
       setSaving(false);

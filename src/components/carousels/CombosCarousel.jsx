@@ -46,24 +46,24 @@ export default function CombosCarousel({ items = [] }) {
                         <>
                             {/* 2 in first row */}
                             <div className="lg:col-span-3 grid grid-cols-2 gap-8 mb-4 max-w-[1000px] mx-auto w-full">
-                                {sortedItems.slice(0, 2).map((item) => (
-                                    <div key={item?.id ?? item?.combo_id}>
+                                {sortedItems.slice(0, 2).map((item, idx) => (
+                                    <div key={`${item?.id ?? item?.combo_id}-desktop-row1-${idx}`}>
                                         <ComboCard item={item} />
                                     </div>
                                 ))}
                             </div>
                             {/* 3 in second row */}
                             <div className="lg:col-span-3 grid grid-cols-3 gap-8">
-                                {sortedItems.slice(2, 5).map((item) => (
-                                    <div key={item?.id ?? item?.combo_id}>
+                                {sortedItems.slice(2, 5).map((item, idx) => (
+                                    <div key={`${item?.id ?? item?.combo_id}-desktop-row2-${idx}`}>
                                         <ComboCard item={item} />
                                     </div>
                                 ))}
                             </div>
                         </>
                     ) : (
-                        sortedItems.map((item) => (
-                            <div key={item?.id ?? item?.combo_id}>
+                        sortedItems.map((item, idx) => (
+                            <div key={`${item?.id ?? item?.combo_id}-desktop-${idx}`}>
                                 <ComboCard item={item} />
                             </div>
                         ))
@@ -78,7 +78,7 @@ export default function CombosCarousel({ items = [] }) {
                         slidesPerView={1.3}
                         centeredSlides={true}
                         loop={true}
-                        loopedSlides={sortedItems.length}
+                        loopedslides={sortedItems.length}
                         loopPreventsSliding={false}
                         grabCursor={true}
                         watchSlidesProgress={true}

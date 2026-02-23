@@ -53,8 +53,11 @@ export default function FloatingNavBar() {
   const dispatch = useDispatch();
   const isBookingPage = location.pathname.startsWith("/booking");
   const isHome = location.pathname === "/";
-
   const attractions = useSelector((s) => s.attractions.items || []);
+  const pathSlug = location.pathname.slice(1).split('/')[0];
+  const staticRoutes = ["", "attractions", "offers", "combos", "contact", "booking", "gallery", "blog", "visitor-guide", "payment", "my-bookings", "home", "404", "admin", "page"];
+  const isDetailPage = !staticRoutes.includes(pathSlug);
+  const isFullBlock = isDetailPage;
   const offers = useSelector((s) => s.offers.items || []);
   const combos = useSelector((s) => s.combos.items || []);
   const pages = useSelector((s) => s.pages.items || []);
@@ -111,7 +114,7 @@ export default function FloatingNavBar() {
   const toggleMenu = (key) => setMenuOpen((cur) => (cur === key ? null : key));
 
   const topAttractions = prioritizeSnowcityFirst(attractions).slice(0, 12);
-  const guidePages = pages.slice(0, 10);
+  const guidePages = pages.filter((p) => p.nav_group === "visitors_guide").slice(0, 10);
 
   // Prevent background scroll when mobile menu or auth modal is open
   useLockBodyScroll(mobileOpen || authModalOpen);
@@ -464,9 +467,12 @@ export default function FloatingNavBar() {
       <nav
         ref={navRef}
         data-floating-nav
-        className={`fixed top-4 left-4 right-4 z-[150] rounded-full ${isWhite
-          ? "bg-white/95 backdrop-blur-md py-2 shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1),0_0_0_1px_rgba(229,231,235,1)]"
-          : "bg-transparent py-2 shadow-[0_0_0_1px_rgba(255,255,255,0)]"
+        className={`fixed z-[150] transition-all duration-300 ${isFullBlock
+          ? "top-0 left-0 right-0 rounded-none border-b border-gray-100"
+          : "top-4 left-4 right-4 rounded-full"
+          } ${isWhite
+            ? "bg-white/95 backdrop-blur-md py-2 shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1),0_0_0_1px_rgba(229,231,235,1)]"
+            : "bg-transparent py-2 shadow-[0_0_0_1px_rgba(255,255,255,0)]"
           }`}
         style={{ backfaceVisibility: 'hidden' }}
       >
@@ -493,6 +499,13 @@ export default function FloatingNavBar() {
                 {menuOpen === "attr" && (
                   <div className="absolute right-0 top-full mt-2 w-64 rounded-lg border border-gray-200 bg-white shadow-lg p-2 z-[110]" style={{ boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)' }}>
                     <div className="max-h-72 overflow-y-auto">
+                      <Link
+                        to="/attractions"
+                        className="block px-4 py-2.5 text-sm text-gray-800 hover:bg-sky-100 rounded-lg transition-all duration-200 font-medium"
+                        onClick={() => setMenuOpen(null)}
+                      >
+                        All Attractions
+                      </Link>
                       {topAttractions.map((a, idx) => {
                         const attrId = getAttrId(a);
                         const label = a?.name || a?.title || "Attraction";
@@ -508,13 +521,6 @@ export default function FloatingNavBar() {
                           </Link>
                         );
                       })}
-                      <Link
-                        to="/attractions"
-                        className="block px-4 py-2.5 text-sky-600 text-sm hover:bg-sky-100 rounded-lg transition-all duration-200 font-semibold border-t border-gray-200 mt-2 pt-3"
-                        onClick={() => setMenuOpen(null)}
-                      >
-                        View All →
-                      </Link>
                     </div>
                   </div>
                 )}

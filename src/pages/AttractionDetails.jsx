@@ -2,7 +2,7 @@ import React from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import dayjs from 'dayjs';
-import { X } from 'lucide-react';
+import { X, ChevronDown } from 'lucide-react';
 import api from '../services/apiClient';
 import endpoints from '../services/endpoints';
 import Loader from '../components/common/Loader';
@@ -12,6 +12,7 @@ import { addCartItem, setStep } from '../features/bookings/bookingsSlice';
 import toast from 'react-hot-toast';
 import { getAttrId } from '../utils/ids';
 import { imgSrc } from '../utils/media';
+import usePageSeo from '../hooks/usePageSeo';
 import {
   getPrice,
   getBasePrice,
@@ -488,8 +489,6 @@ export default function AttractionDetails() {
         });
         const data = res?.attraction || res || null;
         setDetails({ status: 'succeeded', data, error: null });
-        // Set page title
-        document.title = data?.meta_title || data?.title || data?.name || 'Attraction Details';
       } catch (err) {
         if (err?.canceled) return;
 
@@ -617,6 +616,20 @@ export default function AttractionDetails() {
     placeholderMobile,
   );
   const cover = isDesktop ? coverDesktop : coverMobile;
+
+  // SEO Injection
+  usePageSeo({
+    title: a?.meta_title || title || 'Attraction Details',
+    description: a?.meta_description || a?.short_description || '',
+    keywords: a?.meta_keywords || '',
+    image: cover,
+    imageAlt: a?.image_alt || title,
+    type: 'website',
+    faq_items: a?.faq_items,
+    head_schema: a?.head_schema,
+    body_schema: a?.body_schema,
+    footer_schema: a?.footer_schema,
+  });
 
   // HERO GALLERY DATA (for banner + viewer)
   const heroGalleryItems = React.useMemo(() => {
@@ -842,105 +855,18 @@ export default function AttractionDetails() {
     <>
       {/* Add pb-24 so fixed mobile bar doesn't overlap content */}
       <div className="min-h-screen bg-gradient-to-b from-[#e0f2fe] via-[#bae6fd] to-white font-sans pb-24 lg:pb-0">
-        {/* HERO BANNER + GALLERY (VinWonders-style) */}
+        {/* HERO BANNER + GALLERY (Full Width) */}
         <section className="mt-0 bg-transparent">
-          <div className="max-w-6xl mx-auto px-4 pt-6 space-y-4">
-            {/* Title above banner */}
-            <h1
-              className="text-3xl md:text-4xl font-bold text-gray-900"
-              style={{ fontFamily: 'Inter, sans-serif' }}
-            >
-              {title}
-            </h1>
+          <div className="max-w-6xl mx-auto px-4 pt-16">
+            {/* Title removed from here */}
+          </div>
 
-            {/* Banner card */}
-            <div className="overflow-hidden shadow-lg bg-gray-100">
-              {galleryViewerItems.length > 0 ? (
-                // Multi-image layout when gallery has actual images
-                <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-[2px] bg-white">
-                  {/* Left side - Attraction banner image */}
-                  <button
-                    type="button"
-                    className="relative w-full group"
-                    onClick={() =>
-                      galleryViewerItems.length && setViewerIndex(0)
-                    }
-                  >
-                    <div className="md:h-[420px] w-full overflow-hidden">
-                      <img
-                        src={cover}
-                        alt={title}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                        draggable="false"
-                      />
-
-                      {/* Attraction Title Overlay */}
-                      <div className="absolute inset-0 flex items-start justify-start p-6">
-                        <h2
-                          className="text-2xl md:text-3xl font-bold text-white drop-shadow-lg"
-                          style={{
-                            fontFamily: 'Inter, sans-serif',
-                            color: '#87CEEB',
-                            textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
-                          }}
-                        >
-                          {title}
-                        </h2>
-                      </div>
-                    </div>
-                  </button>
-
-                  {/* Right column - Gallery images */}
-                  <div className="hidden md:grid grid-rows-2 gap-[2px] h-[420px]">
-                    {/* First gallery image */}
-                    <button
-                      type="button"
-                      className="relative w-full group"
-                      onClick={() =>
-                        galleryViewerItems.length > 0 && setViewerIndex(0)
-                      }
-                    >
-                      <div className="w-full h-full overflow-hidden">
-                        <img
-                          src={galleryViewerItems[0]?.image_url || ''}
-                          alt={title}
-                          className="w-full h-full object-cover brightness-[0.95]"
-                          loading="lazy"
-                          draggable="false"
-                        />
-                        <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/50 via-black/10 to-transparent pointer-events-none" />
-                      </div>
-                    </button>
-
-                    {/* Second gallery image with pagination */}
-                    <button
-                      type="button"
-                      className="relative w-full group"
-                      onClick={() =>
-                        galleryViewerItems.length > 1 && setViewerIndex(1)
-                      }
-                    >
-                      <div className="w-full h-full overflow-hidden">
-                        <img
-                          src={galleryViewerItems[1]?.image_url || galleryViewerItems[0]?.image_url || ''}
-                          alt={title}
-                          className="w-full h-full object-cover"
-                          loading="lazy"
-                          draggable="false"
-                        />
-
-                        <div className="absolute bottom-3 right-3 bg-black/60 text-white text-xs px-2 py-1 rounded-full">
-                          {galleryViewerItems.length > 1 ? (
-                            <>1 / {galleryViewerItems.length}</>
-                          ) : null}
-                        </div>
-                      </div>
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                // Full-width banner when no gallery images
+          {/* Banner card - Full Width Block */}
+          <div className="w-full bg-gray-100 border-y border-gray-200">
+            {galleryViewerItems.length > 0 ? (
+              // Multi-image layout when gallery has actual images
+              <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-[2px] bg-white">
+                {/* Left side - Attraction banner image */}
                 <button
                   type="button"
                   className="relative w-full group"
@@ -948,7 +874,7 @@ export default function AttractionDetails() {
                     galleryViewerItems.length && setViewerIndex(0)
                   }
                 >
-                  <div className="h-[420px] w-full overflow-hidden">
+                  <div className="md:h-[420px] w-full overflow-hidden">
                     <img
                       src={cover}
                       alt={title}
@@ -957,25 +883,92 @@ export default function AttractionDetails() {
                       draggable="false"
                     />
 
-                    {/* Attraction Title Overlay */}
-                    <div className="absolute inset-0 flex items-start justify-start p-6">
-                      <h2
-                        className="text-2xl md:text-3xl font-bold text-white drop-shadow-lg"
-                        style={{
-                          fontFamily: 'Inter, sans-serif',
-                          color: '#87CEEB',
-                          textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
-                        }}
-                      >
-                        {title}
-                      </h2>
-                    </div>
+                    {/* Attraction Title Overlay removed */}
                   </div>
                 </button>
-              )}
-            </div>
+
+                {/* Right column - Gallery images */}
+                <div className="hidden md:grid grid-rows-2 gap-[2px] h-[420px]">
+                  {/* First gallery image */}
+                  <button
+                    type="button"
+                    className="relative w-full group"
+                    onClick={() =>
+                      galleryViewerItems.length > 0 && setViewerIndex(0)
+                    }
+                  >
+                    <div className="w-full h-full overflow-hidden">
+                      <img
+                        src={galleryViewerItems[0]?.image_url || ''}
+                        alt={title}
+                        className="w-full h-full object-cover brightness-[0.95]"
+                        loading="lazy"
+                        draggable="false"
+                      />
+                      <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/50 via-black/10 to-transparent pointer-events-none" />
+                    </div>
+                  </button>
+
+                  {/* Second gallery image with pagination */}
+                  <button
+                    type="button"
+                    className="relative w-full group"
+                    onClick={() =>
+                      galleryViewerItems.length > 1 && setViewerIndex(1)
+                    }
+                  >
+                    <div className="w-full h-full overflow-hidden">
+                      <img
+                        src={galleryViewerItems[1]?.image_url || galleryViewerItems[0]?.image_url || ''}
+                        alt={title}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                        draggable="false"
+                      />
+
+                      <div className="absolute bottom-3 right-3 bg-black/60 text-white text-xs px-2 py-1 rounded-full">
+                        {galleryViewerItems.length > 1 ? (
+                          <>1 / {galleryViewerItems.length}</>
+                        ) : null}
+                      </div>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            ) : (
+              // Full-width banner when no gallery images
+              <button
+                type="button"
+                className="relative w-full group"
+                onClick={() =>
+                  galleryViewerItems.length && setViewerIndex(0)
+                }
+              >
+                <div className="h-[420px] w-full overflow-hidden">
+                  <img
+                    src={cover}
+                    alt={title}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                    draggable="false"
+                  />
+
+                  {/* Attraction Title Overlay removed */}
+                </div>
+              </button>
+            )}
           </div>
         </section>
+
+        {/* Mobile Title - Rendered here for mobile only */}
+        <div className="lg:hidden px-4 pt-6 pb-2">
+          <h1
+            className="text-3xl font-extrabold text-gray-900 tracking-tight"
+            style={{ fontFamily: 'Inter, sans-serif' }}
+          >
+            {title}
+          </h1>
+        </div>
 
         {/* MOBILE BOOKING CONTROLS (gallery is handled by hero) */}
         <div className="lg:hidden max-w-6xl mx-auto px-4 py-6">
@@ -1241,10 +1234,18 @@ export default function AttractionDetails() {
               )}
             </button>
           </div>
-        </div>
+        </div >
 
         {/* MAIN CONTENT */}
-        <section className="max-w-6xl mx-auto px-4 py-8 md:py-12 mt-0">
+        <section className="max-w-7xl mx-auto px-4 py-8 md:py-12 mt-0">
+          <div className="mb-8 hidden lg:block">
+            <h1
+              className="text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight"
+              style={{ fontFamily: 'Inter, sans-serif' }}
+            >
+              {title}
+            </h1>
+          </div>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 md:gap-12">
             {/* LEFT CONTENT */}
             <div className="lg:col-span-2 space-y-8">
@@ -1281,6 +1282,31 @@ export default function AttractionDetails() {
                         style={{ fontFamily: 'Inter, sans-serif' }}
                         dangerouslySetInnerHTML={{ __html: a.description }}
                       />
+                    </div>
+                  ) : null}
+
+                  {/* FAQ Section */}
+                  {a?.faq_items && a.faq_items.length > 0 ? (
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 md:p-6 mt-8">
+                      <h2
+                        className="text-xl font-semibold text-gray-900 mb-4"
+                        style={{ fontFamily: 'Inter, sans-serif' }}
+                      >
+                        Frequently Asked Questions
+                      </h2>
+                      <div className="space-y-4">
+                        {a.faq_items.map((faq, idx) => (
+                          <details key={idx} className="group border-b border-gray-100 pb-4 last:border-0 last:pb-0">
+                            <summary className="flex cursor-pointer items-center justify-between text-lg font-medium text-gray-900 marker:content-none [&::-webkit-details-marker]:hidden">
+                              {faq.question}
+                              <ChevronDown className="h-5 w-5 text-gray-500 transition-transform group-open:rotate-180 flex-shrink-0 ml-4" />
+                            </summary>
+                            <p className="mt-3 text-gray-700 whitespace-pre-line text-sm md:text-base leading-relaxed" style={{ fontFamily: 'Inter, sans-serif' }}>
+                              {faq.answer}
+                            </p>
+                          </details>
+                        ))}
+                      </div>
                     </div>
                   ) : null}
 
@@ -1657,125 +1683,129 @@ export default function AttractionDetails() {
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Calendar Modal */}
-      {showCalendar && (
-        <div
-          className="fixed inset-0 z-[80] flex"
-          onClick={() => setShowCalendar(false)}
-        >
-          <div className="flex-1" />
-          <div
-            className="absolute bg-white rounded-2xl shadow-2xl border border-gray-200 p-4 w-80 max-h-[70vh] overflow-y-auto"
-            style={{
-              top: calendarAnchorRect ? `${calendarAnchorRect.top}px` : '50%',
-              left: calendarAnchorRect
-                ? `${calendarAnchorRect.left - 160}px`
-                : '50%',
-              transform: calendarAnchorRect ? 'none' : 'translate(-50%, -50%)',
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-base font-semibold text-gray-900">
-                Select Date
-              </h3>
-              <button
-                type="button"
-                onClick={() => setShowCalendar(false)}
-                className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 transition-colors"
+        {/* Calendar Modal */}
+        {
+          showCalendar && (
+            <div
+              className="fixed inset-0 z-[80] flex"
+              onClick={() => setShowCalendar(false)}
+            >
+              <div className="flex-1" />
+              <div
+                className="absolute bg-white rounded-2xl shadow-2xl border border-gray-200 p-4 w-80 max-h-[70vh] overflow-y-auto"
+                style={{
+                  top: calendarAnchorRect ? `${calendarAnchorRect.top}px` : '50%',
+                  left: calendarAnchorRect
+                    ? `${calendarAnchorRect.left - 160}px`
+                    : '50%',
+                  transform: calendarAnchorRect ? 'none' : 'translate(-50%, -50%)',
+                }}
+                onClick={(e) => e.stopPropagation()}
               >
-                <X size={18} />
-              </button>
-            </div>
-
-            <div className="space-y-3">
-              {[0, 1, 2].map((monthOffset) => {
-                const currentDate = dayjs().add(monthOffset, 'month');
-                const monthStart = currentDate.startOf('month');
-                const monthEnd = currentDate.endOf('month');
-                const startDay = monthStart.day();
-                const daysInMonth = monthEnd.date();
-                const today = dayjs();
-
-                return (
-                  <div
-                    key={monthOffset}
-                    className="border border-gray-100 rounded-xl p-3 bg-white"
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-base font-semibold text-gray-900">
+                    Select Date
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => setShowCalendar(false)}
+                    className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 transition-colors"
                   >
-                    <h4 className="text-sm font-semibold text-gray-700 mb-3">
-                      {currentDate.format('MMMM YYYY')}
-                    </h4>
+                    <X size={18} />
+                  </button>
+                </div>
 
-                    <div className="grid grid-cols-7 gap-1 text-xs">
-                      {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day) => (
-                        <div
-                          key={day}
-                          className="text-center text-gray-400 font-medium py-2"
-                        >
-                          {day}
-                        </div>
-                      ))}
+                <div className="space-y-3">
+                  {[0, 1, 2].map((monthOffset) => {
+                    const currentDate = dayjs().add(monthOffset, 'month');
+                    const monthStart = currentDate.startOf('month');
+                    const monthEnd = currentDate.endOf('month');
+                    const startDay = monthStart.day();
+                    const daysInMonth = monthEnd.date();
+                    const today = dayjs();
 
-                      {Array.from({ length: startDay }).map((_, idx) => (
-                        <div key={`empty-${idx}`} className="p-2" />
-                      ))}
+                    return (
+                      <div
+                        key={monthOffset}
+                        className="border border-gray-100 rounded-xl p-3 bg-white"
+                      >
+                        <h4 className="text-sm font-semibold text-gray-700 mb-3">
+                          {currentDate.format('MMMM YYYY')}
+                        </h4>
 
-                      {Array.from({ length: daysInMonth }).map((_, idx) => {
-                        const current = monthStart.date(idx + 1);
-                        const dateStr = current.format('YYYY-MM-DD');
-                        const isPast = current.isBefore(today, 'day');
-                        const isSelected = date === dateStr;
-                        const isToday = current.isSame(today, 'day');
+                        <div className="grid grid-cols-7 gap-1 text-xs">
+                          {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day) => (
+                            <div
+                              key={day}
+                              className="text-center text-gray-400 font-medium py-2"
+                            >
+                              {day}
+                            </div>
+                          ))}
 
-                        return (
-                          <button
-                            key={dateStr}
-                            type="button"
-                            onClick={() => handleDateSelect(dateStr)}
-                            disabled={isPast}
-                            className={`
+                          {Array.from({ length: startDay }).map((_, idx) => (
+                            <div key={`empty-${idx}`} className="p-2" />
+                          ))}
+
+                          {Array.from({ length: daysInMonth }).map((_, idx) => {
+                            const current = monthStart.date(idx + 1);
+                            const dateStr = current.format('YYYY-MM-DD');
+                            const isPast = current.isBefore(today, 'day');
+                            const isSelected = date === dateStr;
+                            const isToday = current.isSame(today, 'day');
+
+                            return (
+                              <button
+                                key={dateStr}
+                                type="button"
+                                onClick={() => handleDateSelect(dateStr)}
+                                disabled={isPast}
+                                className={`
                               p-2 rounded-lg text-sm font-medium transition-all duration-200
                               ${isPast
-                                ? 'text-gray-300 cursor-not-allowed bg-gray-50'
-                                : ''
-                              }
+                                    ? 'text-gray-300 cursor-not-allowed bg-gray-50'
+                                    : ''
+                                  }
                               ${isSelected
-                                ? 'bg-sky-600 text-white shadow-sm scale-105'
-                                : ''
-                              }
+                                    ? 'bg-sky-600 text-white shadow-sm scale-105'
+                                    : ''
+                                  }
                               ${!isPast && !isSelected
-                                ? 'hover:bg-sky-50 text-gray-700 hover:text-sky-700'
-                                : ''
-                              }
+                                    ? 'hover:bg-sky-50 text-gray-700 hover:text-sky-700'
+                                    : ''
+                                  }
                               ${isToday && !isSelected
-                                ? 'bg-sky-100 text-sky-700 font-semibold border border-sky-200'
-                                : ''
-                              }
+                                    ? 'bg-sky-100 text-sky-700 font-semibold border border-sky-200'
+                                    : ''
+                                  }
                             `}
-                          >
-                            {idx + 1}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
+                              >
+                                {idx + 1}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          )
+        }
 
-      {/* Gallery Viewer - uses only actual gallery images */}
-      {viewerIndex !== null && galleryViewerItems.length > 0 && (
-        <GalleryViewer
-          items={galleryViewerItems}
-          initialIndex={viewerIndex}
-          onClose={() => setViewerIndex(null)}
-        />
-      )}
+        {/* Gallery Viewer - uses only actual gallery images */}
+        {
+          viewerIndex !== null && galleryViewerItems.length > 0 && (
+            <GalleryViewer
+              items={galleryViewerItems}
+              initialIndex={viewerIndex}
+              onClose={() => setViewerIndex(null)}
+            />
+          )
+        }
+      </div>
     </>
   );
 }

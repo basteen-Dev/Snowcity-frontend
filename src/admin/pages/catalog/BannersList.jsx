@@ -3,6 +3,8 @@ import adminApi from '../../services/adminApi';
 import A from '../../services/adminEndpoints';
 import AdminTable from '../../components/common/AdminTable';
 import { useNavigate } from 'react-router-dom';
+import { imgSrc } from '../../../utils/media';
+
 import { DndContext, closestCenter } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 
@@ -113,6 +115,18 @@ export default function BannersList() {
           <AdminTable
             keyField="banner_id"
             columns={[
+              {
+                key: 'image_url',
+                title: 'Image',
+                render: (row) => (
+                  <img
+                    src={imgSrc(row)}
+                    alt={row.title || 'Banner'}
+                    className="w-16 h-8 object-cover rounded shadow-sm border dark:border-neutral-700"
+                    onError={(e) => { e.target.src = '/placeholder-image.png'; }}
+                  />
+                )
+              },
               { key: 'title', title: 'Title' },
               { key: 'linked_attraction_id', title: 'Attraction' },
               { key: 'linked_offer_id', title: 'Offer' },

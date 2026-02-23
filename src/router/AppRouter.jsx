@@ -36,40 +36,20 @@ const BlogDetails = safeLazy(() => import('../pages/Blog.jsx'), () => <Placehold
 const Gallery = safeLazy(() => import('../pages/Gallery.jsx'), () => <Placeholder title="Gallery" />);
 const VisitorPages = safeLazy(() => import('../pages/VisitorPages.jsx'), () => <Placeholder title="Visitor Guide" />);
 const VisitorBlogs = safeLazy(() => import('../pages/VisitorBlogs.jsx'), () => <Placeholder title="Visitor Guide" />);
+const SlugResolverPage = safeLazy(() => import('../pages/SlugResolverPage.jsx'), () => <Placeholder title="Loading..." />);
 const FloatingNavBar = safeLazy(() => import('../components/layout/FloatingNavBar.jsx'), FallbackNav);
 const Footer = safeLazy(() => import('../components/layout/Footer.jsx'), FallbackFooter);
 
 const SlugRouter = () => {
-  const { slug } = useParams();
-  const attractions = useSelector((s) => s.attractions?.items || []);
-  const combos = useSelector((s) => s.combos?.items || []);
-
-  // 1. Check if slug matches a combo (by prefix or by slug/id match)
-  if (slug.startsWith('combo-') || combos.some((c) => c.slug === slug || String(c.id) === slug)) {
-    return <ComboDetails />;
-  }
-
-  // 2. Check if slug matches an attraction from Redux store
-  if (attractions.some((a) => a.slug === slug || String(a.id) === slug)) {
-    return <AttractionDetails />;
-  }
-
-  // 3. If attractions are loaded and slug doesn't match anything, render as blog
-  const attractionsLoaded = attractions.length > 0;
-  if (attractionsLoaded) {
-    return <BlogDetails />;
-  }
-
-  // Default: treat as attraction (component will fetch by slug and handle 404)
-  return <AttractionDetails />;
+  return <SlugResolverPage />;
 };
 
 function ScrollToTop() {
-  const { pathname, search, hash } = useLocation();
+  const location = useLocation();
   React.useEffect(() => {
-    if (hash) return;
+    if (location.hash) return;
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [pathname, search, hash]);
+  }, [location.key]);
   return null;
 }
 
@@ -110,7 +90,6 @@ export default function AppRouter() {
             <Route path="/offers" element={<Offers />} />
             <Route path="/combos" element={<Combos />} />
             <Route path="/combos/:id" element={<ComboDetails />} />
-            <Route path="/page/:slug" element={<CMSPage />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/booking" element={<Booking />} />
             <Route path="/gallery" element={<Gallery />} />

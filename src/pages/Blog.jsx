@@ -7,6 +7,7 @@ import ErrorState from '../components/common/ErrorState';
 import { imgSrc } from '../utils/media';
 import HtmlContent from '../components/cms/HtmlContent';
 import RawFrame from '../components/cms/RawFrame';
+import usePageSeo from '../hooks/usePageSeo';
 
 // Helper function to estimate read time
 const getReadTime = (content) => {
@@ -50,15 +51,30 @@ export default function Blog() {
     return () => ac.abort();
   }, [slug]);
 
-  if (st.status === 'loading') return <Loader />;
-  if (st.status === 'failed') return <ErrorState message={st.error} />;
-
   const b = st.data || {};
   const cover = imgSrc(b);
   const mode = (b.editor_mode || '').toLowerCase();
   const isRaw = mode === 'raw';
   const readTime = getReadTime(b.content);
   const formattedDate = formatDate(b.created_at);
+  const faqItems = Array.isArray(b.faq_items) ? b.faq_items.filter(f => f && f.question && f.answer) : [];
+
+  // Inject SEO meta tags on the client-side (must be called before any early returns)
+  usePageSeo({
+    title: b.meta_title || b.title || 'Blog',
+    description: b.meta_description || '',
+    keywords: b.meta_keywords || '',
+    image: cover || '',
+    imageAlt: b.image_alt || b.title || '',
+    canonical: window.location.href,
+    type: 'blog',
+    author: b.author || '',
+    faq_items: b.faq_items,
+    head_schema: b.head_schema,
+  });
+
+  if (st.status === 'loading') return <Loader />;
+  if (st.status === 'failed') return <ErrorState message={st.error} />;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#e0f2fe] via-[#bae6fd] to-white px-4 pt-20 pb-16">
@@ -130,6 +146,26 @@ export default function Blog() {
             <HtmlContent html={b.content || ''} />
           )}
         </article>
+
+        {/* FAQ Section */}
+        {faqItems.length > 0 && (
+          <section className="mt-12 pt-8 border-t border-gray-200">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
+            <div className="space-y-4">
+              {faqItems.map((faq, idx) => (
+                <details key={idx} className="group bg-white border border-gray-200 rounded-xl shadow-sm">
+                  <summary className="flex items-center justify-between cursor-pointer px-5 py-4 text-gray-900 font-medium hover:bg-gray-50 rounded-xl transition-colors">
+                    <span>{faq.question}</span>
+                    <svg className="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </summary>
+                  <div className="px-5 pb-4 text-gray-600 leading-relaxed" dangerouslySetInnerHTML={{ __html: faq.answer }} />
+                </details>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Article footer */}
         <footer className="mt-12 pt-8 border-t border-gray-200">

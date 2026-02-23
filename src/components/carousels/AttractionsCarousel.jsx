@@ -261,9 +261,26 @@ import AttractionCard from "../cards/AttractionCard";
 
 
 export default function AttractionsCarousel({ items = [] }) {
-  // Sort items to ensure a consistent experience
+  // Sort items to ensure a consistent experience with priority given to Snow Park and Mad Lab
   const sortedItems = React.useMemo(() => {
     return [...items].sort((a, b) => {
+      const titleA = (a?.title || '').toLowerCase();
+      const titleB = (b?.title || '').toLowerCase();
+
+      const isSnowParkA = titleA.includes('snow park');
+      const isSnowParkB = titleB.includes('snow park');
+      const isMadLabA = titleA.includes('mad lab');
+      const isMadLabB = titleB.includes('mad lab');
+
+      // Rank 1: Snow Park
+      if (isSnowParkA && !isSnowParkB) return -1;
+      if (!isSnowParkA && isSnowParkB) return 1;
+
+      // Rank 2: Mad Lab
+      if (isMadLabA && !isMadLabB) return -1;
+      if (!isMadLabA && isMadLabB) return 1;
+
+      // Otherwise maintain ID order
       const idA = a?.attraction_id ?? a?.id ?? 0;
       const idB = b?.attraction_id ?? b?.id ?? 0;
       return idA - idB;
@@ -303,8 +320,8 @@ export default function AttractionsCarousel({ items = [] }) {
 
       {/* DESKTOP GRID (4 Columns) */}
       <div className="hidden md:grid grid-cols-2 lg:grid-cols-4 gap-8 max-w-[1400px] mx-auto mb-16">
-        {sortedItems.slice(0, 4).map((item) => (
-          <div key={item?.id}>
+        {sortedItems.slice(0, 4).map((item, idx) => (
+          <div key={`${item?.id || item?.attraction_id}-desktop-${idx}`}>
             <AttractionCard item={item} />
           </div>
         ))}
@@ -318,7 +335,7 @@ export default function AttractionsCarousel({ items = [] }) {
           slidesPerView={1.3}
           centeredSlides={true}
           loop={true}
-          loopedSlides={sortedItems.length}
+          loopedslides={sortedItems.length}
           loopPreventsSliding={false}
           grabCursor={true}
           watchSlidesProgress={true}

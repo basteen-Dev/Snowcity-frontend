@@ -171,12 +171,14 @@ export default function BlogsList() {
             render: (row) => {
               const cover = imgSrc(row);
               return (
-                <div className="w-20 h-14 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center">
-                  {cover ? (
-                    <img src={cover} alt={row.title || 'Blog cover'} className="w-full h-full object-cover" loading="lazy" />
-                  ) : (
-                    <span className="text-[10px] text-gray-500">No image</span>
-                  )}
+                <div className="w-20 h-14 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center border dark:border-neutral-700">
+                  <img
+                    src={imgSrc(row)}
+                    alt={row.title || 'Blog cover'}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                    onError={(e) => { e.target.src = '/placeholder-image.png'; }}
+                  />
                 </div>
               );
             }

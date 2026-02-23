@@ -4,6 +4,7 @@ import adminApi from '../../services/adminApi';
 import A from '../../services/adminEndpoints';
 import ImageUploader from '../../components/common/ImageUploader';
 import SaveOverlay from '../../components/common/SaveOverlay';
+import toast from 'react-hot-toast';
 
 export default function AddonForm() {
   const { id } = useParams();
@@ -42,6 +43,7 @@ export default function AddonForm() {
     e.preventDefault();
     setSaving(true);
     setState((s) => ({ ...s, error: null }));
+    const loadingToast = toast.loading(isEdit ? 'Updating addon...' : 'Creating addon...');
     try {
       const payload = {
         ...state.form,
@@ -50,8 +52,13 @@ export default function AddonForm() {
       };
       if (isEdit) await adminApi.put(`${A.addons()}/${id}`, payload);
       else await adminApi.post(A.addons(), payload);
+
+      toast.success(isEdit ? 'Addon updated successfully' : 'Addon created successfully', { id: loadingToast });
       navigate('/admin/catalog/addons');
-    } catch (err) { setState((s) => ({ ...s, error: err })); }
+    } catch (err) {
+      toast.error(err.message || 'Save failed', { id: loadingToast });
+      setState((s) => ({ ...s, error: err }));
+    }
     finally {
       setSaving(false);
     }

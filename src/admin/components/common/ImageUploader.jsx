@@ -91,7 +91,7 @@ export default function ImageUploader({
       if (isCloudinary && CLOUD_PRESET && !data.upload_preset) data.upload_preset = CLOUD_PRESET;
       if (folder && !isCloudinary) data.folder = folder;
 
-      const res = await adminApi.upload(ENDPOINT, file, { fieldName, data });
+      const res = await adminApi.upload(ENDPOINT, file, { ...data, fieldName });
       const url = res?.url || res?.url_path || res?.secure_url || res?.location || res?.data?.url || '';
       if (!url) throw new Error(res?.message || 'Upload response missing URL');
 

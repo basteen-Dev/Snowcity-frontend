@@ -2,6 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import adminApi from '../../services/adminApi';
+import { imgSrc } from '../../../utils/media';
 
 export default function PagesList() {
   const [rows, setRows] = React.useState([]);
@@ -86,6 +87,7 @@ export default function PagesList() {
         <table className="min-w-full text-sm">
           <thead className="bg-gray-50 dark:bg-neutral-800">
             <tr>
+              <th className="px-3 py-2 text-left">Hero</th>
               <th className="px-3 py-2 text-left">Title</th>
               <th className="px-3 py-2 text-left">Slug</th>
               <th className="px-3 py-2 text-left">Nav</th>
@@ -97,14 +99,24 @@ export default function PagesList() {
           <tbody>
             {rows.map((r) => (
               <tr key={r.page_id} className="border-t dark:border-neutral-800">
+                <td className="px-3 py-2">
+                  <div className="h-10 w-16 overflow-hidden rounded bg-gray-100 dark:bg-neutral-800">
+                    <img
+                      src={imgSrc(r.hero_image)}
+                      alt=""
+                      className="h-full w-full object-cover"
+                      onError={(e) => { e.target.src = 'https://placehold.co/600x400?text=No+Image'; }}
+                    />
+                  </div>
+                </td>
                 <td className="px-3 py-2">{r.title}</td>
                 <td className="px-3 py-2">{r.slug}</td>
                 <td className="px-3 py-2">{r.nav_group || '-'}</td>
                 <td className="px-3 py-2">
                   {r.placement === 'none' ? '-' :
                     r.placement === 'home_bottom' ? 'Home: bottom' :
-                    r.placement === 'attraction_details' ? `Attraction details (${r.placement_ref_id || '-'})` :
-                    r.placement}
+                      r.placement === 'attraction_details' ? `Attraction details (${r.placement_ref_id || '-'})` :
+                        r.placement}
                 </td>
                 <td className="px-3 py-2">{r.active ? 'Yes' : 'No'}</td>
                 <td className="px-3 py-2 text-right">
@@ -116,7 +128,7 @@ export default function PagesList() {
             ))}
             {!rows.length && !loading && (
               <tr>
-                <td className="px-3 py-6 text-center text-gray-500" colSpan={6}>
+                <td className="px-3 py-6 text-center text-gray-500" colSpan={7}>
                   No pages
                 </td>
               </tr>
