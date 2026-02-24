@@ -298,6 +298,8 @@ export default function AttractionCard({ item, featured = false }) {
             <img
               src={img}
               alt={item?.image_alt || title}
+              width={640}
+              height={400}
               loading="lazy"
               decoding="async"
             />

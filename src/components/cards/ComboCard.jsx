@@ -135,6 +135,8 @@ export default function ComboCard({ item }) {
             src={heroImage}
             alt={item?.image_alt || title}
             className="absolute inset-0 h-full w-full object-cover"
+            width={640}
+            height={400}
             loading="lazy"
             decoding="async"
           />

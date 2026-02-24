@@ -89,11 +89,14 @@ export default function Home() {
 
     // prefetch lower-priority when idle
     const id = onIdle(() => {
-      if (combos.status === 'idle') dispatch(fetchCombos());
-      if (offers.status === 'idle') dispatch(fetchOffers());
-      if (coupons.status === 'idle') dispatch(fetchCoupons({ active: true, limit: 100 }));
-      if (pages.status === 'idle') dispatch(fetchPages());
-      if (blogs.status === 'idle') dispatch(fetchBlogs());
+      // Defer these further to prioritize FCP/LCP of banners/attractions
+      onIdle(() => {
+        if (combos.status === 'idle') dispatch(fetchCombos());
+        if (offers.status === 'idle') dispatch(fetchOffers());
+        if (coupons.status === 'idle') dispatch(fetchCoupons({ active: true, limit: 100 }));
+        if (pages.status === 'idle') dispatch(fetchPages());
+        if (blogs.status === 'idle') dispatch(fetchBlogs());
+      });
     });
     return () => (typeof id === 'number' ? clearTimeout(id) : window.cancelIdleCallback?.(id));
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -201,7 +204,7 @@ export default function Home() {
 
       <main className="bg-gradient-to-b from-[#e0f2fe] via-[#bae6fd] to-white">
         {/* Offers Marquee */}
-        <LazyVisible minHeight={80} placeholder={<div />}>
+        <LazyVisible minHeight={60} shadow={false}>
           {marqueeItems.length ? <OffersMarquee items={marqueeItems} /> : null}
         </LazyVisible>
 

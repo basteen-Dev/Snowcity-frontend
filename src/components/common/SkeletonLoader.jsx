@@ -14,7 +14,7 @@ export const SkeletonText = ({ lines = 3, className = "", large = false, small =
 );
 
 export const SkeletonCard = ({ className = "", height = "200px" }) => (
-  <div 
+  <div
     className={`skeleton skeleton-card ${className}`}
     style={{ height }}
   />
@@ -25,14 +25,14 @@ export const SkeletonHero = ({ className = "" }) => (
 );
 
 export const SkeletonCircle = ({ className = "", size = "60px" }) => (
-  <div 
+  <div
     className={`skeleton skeleton-circle ${className}`}
     style={{ width: size, height: size }}
   />
 );
 
 export const SkeletonButton = ({ className = "", width = "120px" }) => (
-  <div 
+  <div
     className={`skeleton skeleton-button ${className}`}
     style={{ width }}
   />
@@ -43,7 +43,7 @@ export const SkeletonCarousel = ({ items = 3, className = "" }) => (
   <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-${Math.min(items, 3)} gap-6 ${className}`}>
     {Array.from({ length: items }).map((_, index) => (
       <div key={index} className="space-y-3">
-        <SkeletonCard height="250px" />
+        <SkeletonCard height="400px" />
         <SkeletonText lines={2} />
         <SkeletonButton width="80px" />
       </div>

@@ -102,7 +102,12 @@ export default function HeroCarousel({ banners = [], waveColor = "#0b1a33" }) {
               <div className="relative w-full h-full">
                 <div className="absolute inset-0" data-swiper-parallax="-20%">
                   <picture>
-                    <source media="(max-width: 767px)" srcSet={mobileImg} />
+                    <source
+                      media="(max-width: 767px)"
+                      srcSet={mobileImg}
+                      width={600}
+                      height={800}
+                    />
                     <img
                       src={desktopImg}
                       alt={b?.web_image_alt || title || "Banner"}
@@ -111,7 +116,8 @@ export default function HeroCarousel({ banners = [], waveColor = "#0b1a33" }) {
                       height={700}
                       style={{
                         objectPosition: 'center',
-                        objectFit: 'cover'
+                        objectFit: 'cover',
+                        aspectRatio: window.innerWidth < 768 ? '3 / 4' : '2 / 1'
                       }}
                       loading={idx === 0 ? "eager" : "lazy"}
                       fetchPriority={idx === 0 ? "high" : "auto"}

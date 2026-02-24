@@ -31,6 +31,8 @@ export default function BlogCard({ item }) {
         <img
           src={img}
           alt={item?.image_alt || title}
+          width={640}
+          height={400}
           className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
           loading="lazy"
           decoding="async"

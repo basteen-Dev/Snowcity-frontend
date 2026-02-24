@@ -55,30 +55,42 @@ export function useSiteSettings() {
                     });
                 };
 
-                // Inject Head Scripts (without 'seo.' prefix)
-                if (settings['head_scripts']) {
-                    injectHtml(settings['head_scripts'], document.head, false);
-                }
+                // Helper to perform the injection
+                const runInjection = () => {
+                    if (!mounted) return;
 
-                // Inject Body Scripts
-                if (settings['body_scripts']) {
-                    injectHtml(settings['body_scripts'], document.body, true);
-                }
+                    // Inject Head Scripts (without 'seo.' prefix)
+                    if (settings['head_scripts']) {
+                        injectHtml(settings['head_scripts'], document.head, false);
+                    }
 
-                // Inject Footer Scripts
-                if (settings['footer_scripts']) {
-                    injectHtml(settings['footer_scripts'], document.body, false);
-                }
+                    // Inject Body Scripts
+                    if (settings['body_scripts']) {
+                        injectHtml(settings['body_scripts'], document.body, true);
+                    }
 
-                // Inject Organization Schema
-                if (settings['organization_schema']) {
-                    const script = document.createElement('script');
-                    script.type = 'application/ld+json';
-                    const schemaData = settings['organization_schema'];
-                    // Stringify if it's an object, otherwise use as is
-                    script.textContent = typeof schemaData === 'string' ? schemaData : JSON.stringify(schemaData);
-                    document.head.appendChild(script);
-                    containerRef.current.push(script);
+                    // Inject Footer Scripts
+                    if (settings['footer_scripts']) {
+                        injectHtml(settings['footer_scripts'], document.body, false);
+                    }
+
+                    // Inject Organization Schema
+                    if (settings['organization_schema']) {
+                        const script = document.createElement('script');
+                        script.type = 'application/ld+json';
+                        const schemaData = settings['organization_schema'];
+                        // Stringify if it's an object, otherwise use as is
+                        script.textContent = typeof schemaData === 'string' ? schemaData : JSON.stringify(schemaData);
+                        document.head.appendChild(script);
+                        containerRef.current.push(script);
+                    }
+                };
+
+                // Use requestIdleCallback to defer script injection
+                if ('requestIdleCallback' in window) {
+                    window.requestIdleCallback(runInjection, { timeout: 2000 });
+                } else {
+                    setTimeout(runInjection, 1000);
                 }
 
             } catch (e) {
