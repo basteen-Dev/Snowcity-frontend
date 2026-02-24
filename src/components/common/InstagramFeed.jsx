@@ -69,7 +69,7 @@ export default function InstagramFeed() {
           setPosts(
             list.map((post, idx) => ({
               id: post.id || post.code || idx,
-              image: post.thumbnail_url || post.media_url || post.image || post.permalink_thumbnail || FALLBACK_POSTS[idx % FALLBACK_POSTS.length].image,
+              image: post.media_type === 'VIDEO' ? (post.thumbnail_url || post.media_url) : (post.media_url || post.thumbnail_url || post.image || post.permalink_thumbnail || FALLBACK_POSTS[idx % FALLBACK_POSTS.length].image),
               likes: post.like_count ? `${post.like_count}` : FALLBACK_POSTS[idx % FALLBACK_POSTS.length].likes,
               comments: post.comments_count ? `${post.comments_count}` : FALLBACK_POSTS[idx % FALLBACK_POSTS.length].comments,
               url: post.permalink || post.url || 'https://instagram.com/snowcitybangalore'
@@ -109,7 +109,7 @@ export default function InstagramFeed() {
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
       {posts.map((post, index) => (
         <a
-          href="https://www.instagram.com/snowcitybangalore/"
+          href={post.url}
           target="_blank"
           rel="noreferrer"
           key={post.id || index}
