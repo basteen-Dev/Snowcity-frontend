@@ -50,6 +50,8 @@ export default function VideoBlock({ title = 'Experience Snowcity', src = 'https
                 <img
                   src={poster}
                   alt="Video preview"
+                  width={1280}
+                  height={720}
                   className="w-full h-full object-cover"
                   loading="lazy"
                   decoding="async"

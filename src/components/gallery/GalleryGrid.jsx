@@ -67,6 +67,8 @@ export default function GalleryGrid({ items = [], className = "" }) {
                   <img
                     src={mediaUrl}
                     alt={item.image_alt || item.title || 'Gallery item'}
+                    width={400}
+                    height={400}
                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                     loading="lazy"
                     decoding="async"

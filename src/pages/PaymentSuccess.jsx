@@ -166,9 +166,17 @@ export default function PaymentSuccess() {
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                window.open(`https://app.snowcityblr.com/api/tickets/generated/ORDER_${cartRef || bookingId}.pdf`, '_blank');
+                const url = ticketUrl || `https://app.snowcityblr.com/api/tickets/generated/ORDER_${cartRef || booking?.order_ref || bookingId}.pdf`;
+                // Create a temporary link to force download with a nice filename
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `SnowCity_Ticket_${cartRef || booking?.order_ref || 'Booking'}.pdf`;
+                link.target = '_blank';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
               }}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-600 text-white px-6 py-3.5 text-lg font-semibold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-colors"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-600 text-white px-6 py-3.5 text-lg font-semibold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-colors cursor-pointer"
             >
               <FileDown size={22} /> Download Ticket (PDF)
             </button>
