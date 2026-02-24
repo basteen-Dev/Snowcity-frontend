@@ -53,10 +53,8 @@ export const SkeletonCarousel = ({ items = 3, className = "" }) => (
 
 // Hero section skeleton
 export const SkeletonHeroSection = () => (
-  <div className="max-w-6xl mx-auto pt-20 md:pt-24 px-3 lg:px-0">
-    <div className="rounded-3xl overflow-hidden shadow-xl">
-      <SkeletonHero />
-    </div>
+  <div className="w-full">
+    <SkeletonHero />
   </div>
 );
 

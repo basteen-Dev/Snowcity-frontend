@@ -9,6 +9,11 @@ function toAbsolute(path) {
   if (/^https?:\/\//i.test(path)) return path;
   const base = apiBaseUrl();
   try {
+    // If base URL includes /api and path starts with /, 
+    // we need to ensure we don't jump to the root of the domain.
+    if (base && base.endsWith('/api') && path.startsWith('/') && !path.startsWith('/api')) {
+      return `${base}${path}`;
+    }
     if (path.startsWith('/')) return base ? new URL(path, base).toString() : path;
     return base ? new URL(`/${path}`, base).toString() : path;
   } catch {

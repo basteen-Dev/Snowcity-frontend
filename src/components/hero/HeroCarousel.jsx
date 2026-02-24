@@ -108,10 +108,12 @@ export default function HeroCarousel({ banners = [], waveColor = "#0b1a33" }) {
                       alt={b?.web_image_alt || title || "Banner"}
                       className="w-full h-full object-cover object-top md:object-center will-change-transform animate-kenburns brightness-[0.95] contrast-[1.05] saturate-110"
                       width={1400}
-                      height={700}
+                      height={800}
                       style={{
                         objectPosition: 'center',
-                        objectFit: 'cover'
+                        objectFit: 'cover',
+                        position: 'absolute',
+                        inset: 0
                       }}
                       loading={idx === 0 ? "eager" : "lazy"}
                       fetchPriority={idx === 0 ? "high" : "auto"}
