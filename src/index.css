@@ -1,7 +1,6 @@
 @import "./styles/tailwind.css";
 
-/* Global */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Open+Sans:wght@400;500;600;700&family=Poppins:wght@400;500;600&family=Roboto:wght@400;500;700&display=swap');
+/* Google Fonts are loaded via <link rel="preload"> in index.html — no blocking @import */
 
 html,
 body,
@@ -294,36 +293,38 @@ body {
 
 @keyframes kenburns {
   0% {
-    transform: scale(1) translateY(0);
+    transform: scale(1) translate3d(0, 0, 0);
   }
 
   50% {
-    transform: scale(1.1) translateY(-10px);
+    transform: scale(1.1) translate3d(0, -10px, 0);
   }
 
   100% {
-    transform: scale(1) translateY(0);
+    transform: scale(1) translate3d(0, 0, 0);
   }
 }
 
 .animate-kenburns {
   animation: kenburns 10s ease-in-out infinite;
+  will-change: transform;
 }
 
 @keyframes fadeUp {
   0% {
     opacity: 0;
-    transform: translateY(30px);
+    transform: translate3d(0, 30px, 0);
   }
 
   100% {
     opacity: 1;
-    transform: translateY(0);
+    transform: translate3d(0, 0, 0);
   }
 }
 
 .animate-fade-up {
   animation: fadeUp 1.5s ease forwards;
+  will-change: transform, opacity;
 }
 
 @keyframes swing {
@@ -441,13 +442,18 @@ body {
 }
 
 /* Reduce motion on mobile and when user prefers reduced motion */
-@media (max-width: 768px),
-(prefers-reduced-motion: reduce) {
+@media (prefers-reduced-motion: reduce) {
 
   .snowfall,
   .snowleaves,
   .snowfall-light,
-  .animate-kenburns {
+  .animate-kenburns,
+  .animate-fade-up,
+  .animate-swing,
+  .marquee,
+  .wave-track,
+  .animate-waveSlow,
+  .gst-spinner {
     animation: none !important;
   }
 }
@@ -463,6 +469,7 @@ body {
   background-size: 200% 100%;
   animation: skeleton-loading 1.5s ease-in-out infinite;
   border-radius: 0.5rem;
+  will-change: background-position;
 }
 
 @keyframes skeleton-loading {
@@ -746,16 +753,17 @@ section .shadow-lg {
 /* Animations update */
 @keyframes scrollHalf {
   0% {
-    transform: translateX(0);
+    transform: translate3d(0, 0, 0);
   }
 
   100% {
-    transform: translateX(-50%);
+    transform: translate3d(-50%, 0, 0);
   }
 }
 
 .marquee {
   animation: scrollHalf 18s linear infinite;
+  will-change: transform;
 }
 
 .marquee:hover {

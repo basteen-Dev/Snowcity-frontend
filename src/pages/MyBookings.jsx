@@ -207,7 +207,7 @@ export default function MyBookings() {
       }
     } catch (err) {
       console.error('Payment retry error:', err);
-      alert(`Payment failed: ${err.message || 'Unknown error'}`);
+      alert(`Session Closed. please Signin Again`);
     }
   };
 

@@ -125,18 +125,18 @@ export default function FloatingNavBar() {
   const isWhite = scrolled || mobileOpen || !isHome;
 
   const navLinkBase =
-    "px-3 py-2 rounded-lg text-sm font-bold tracking-wide transition-all duration-300 relative group";
+    "px-3 py-2 rounded-lg text-sm font-bold tracking-wide  relative group";
   const navLinkTone = isWhite
     ? "text-gray-800 hover:text-sky-600 hover:bg-sky-50"
     : "text-white hover:text-white/80 drop-shadow-md";
   const navLinkClass = `${navLinkBase} ${navLinkTone}`;
 
   const signInButtonClass = isWhite
-    ? "inline-flex items-center rounded-full border border-sky-400 px-5 py-2 text-sky-600 font-semibold bg-white hover:bg-sky-50 transition-all duration-300 shadow-sm"
-    : "inline-flex items-center rounded-full border border-white/40 px-5 py-2 text-white font-semibold bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-all duration-300 shadow-sm";
+    ? "inline-flex items-center rounded-full border border-sky-400 px-5 py-2 text-sky-600 font-semibold bg-white hover:bg-sky-50  shadow-sm"
+    : "inline-flex items-center rounded-full border border-white/40 px-5 py-2 text-white font-semibold bg-white/10 backdrop-blur-sm hover:bg-white/20  shadow-sm";
 
   const bookTicketButtonClass =
-    "inline-flex items-center rounded-full px-6 py-2.5 text-sm font-bold bg-[#003de6] text-white hover:bg-[#002db3] shadow-md transition-all duration-300 hover:shadow-lg hover:scale-105 active:scale-95";
+    "inline-flex items-center rounded-full px-6 py-2.5 text-sm font-bold bg-[#003de6] text-white hover:bg-[#002db3] shadow-md  hover:shadow-lg hover:scale-105 active:scale-95";
 
   const resetAuthState = React.useCallback(() => {
     setAuthForm({ name: "", email: "", phone: "" });
@@ -471,7 +471,7 @@ export default function FloatingNavBar() {
       <nav
         ref={navRef}
         data-floating-nav
-        className={`fixed z-[150] transition-all duration-300 ${isFullBlock
+        className={`fixed z-[150]  ${isFullBlock
           ? "top-0 left-0 right-0 rounded-none border-b border-gray-100"
           : "top-4 left-4 right-4 rounded-full"
           } ${isWhite
@@ -490,6 +490,8 @@ export default function FloatingNavBar() {
                 src={Logo}
                 alt="SnowCity Logo"
                 className="h-11 w-auto object-contain"
+                width={100}
+                height={44}
               />
             </Link>
 
@@ -665,6 +667,8 @@ export default function FloatingNavBar() {
                 src={Logo}
                 alt="SnowCity Logo"
                 className="h-9 w-auto object-contain pointer-events-none"
+                width={80}
+                height={36}
                 style={{ transition: 'none' }}
               />
             </Link>
@@ -824,7 +828,7 @@ export default function FloatingNavBar() {
             <div className="space-y-2 border-t border-sky-400/20 mt-4 pt-4">
               {!token}
               <button
-                className="w-full py-3 bg-[#003de6] text-white font-bold rounded-full hover:bg-[#002db3] shadow-lg shadow-blue-500/30 transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2"
+                className="w-full py-3 bg-[#003de6] text-white font-bold rounded-full hover:bg-[#002db3] shadow-lg shadow-blue-500/30  hover:scale-105 flex items-center justify-center gap-2"
                 onClick={() => {
                   setMobileOpen(false);
                   sessionStorage.removeItem('snowcity_booking_state');

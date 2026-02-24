@@ -124,6 +124,8 @@ export default function InstagramFeed() {
             src={post.image}
             alt="Instagram post"
             className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.08]"
+            width={400}
+            height={400}
             loading="lazy"
             decoding="async"
           />

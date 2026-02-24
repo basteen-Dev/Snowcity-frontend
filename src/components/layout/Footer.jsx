@@ -18,17 +18,24 @@ const FooterHeader = ({ children }) => (
 
 export default function Footer() {
   const canvasRef = useRef(null);
+  const footerRef = useRef(null);
 
-  /** REALISTIC WIND-DRIVEN SNOW (Canvas High FPS) */
+  /** OPTIMIZED WIND-DRIVEN SNOW (Canvas) */
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+
+    // Respect reduced motion preference
+    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReduced) return;
+
     const ctx = canvas.getContext("2d");
+    const isMobile = window.innerWidth < 768;
 
     let W = (canvas.width = window.innerWidth);
     let H = (canvas.height = 260);
 
-    const maxSnow = 90;
+    const maxSnow = isMobile ? 15 : 60;
     const flakes = [];
 
     for (let i = 0; i < maxSnow; i++) {
@@ -42,21 +49,26 @@ export default function Footer() {
       });
     }
 
+    let animationId;
+    let isVisible = false;
+
     function draw() {
       ctx.clearRect(0, 0, W, H);
-      ctx.fillStyle = "#bae6fd"; // sky-200 for visibility on white
+      ctx.fillStyle = "#bae6fd";
 
-      flakes.forEach((f) => {
+      for (let i = 0; i < flakes.length; i++) {
+        const f = flakes[i];
         ctx.beginPath();
         ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
         ctx.fill();
-      });
+      }
 
       update();
     }
 
     function update() {
-      flakes.forEach((f) => {
+      for (let i = 0; i < flakes.length; i++) {
+        const f = flakes[i];
         f.x += f.speedX;
         f.y += f.speedY;
         f.x += Math.sin(f.y * 0.02) * 0.4;
@@ -65,16 +77,24 @@ export default function Footer() {
           f.x = Math.random() * W;
           f.y = -10;
         }
-      });
+      }
     }
 
-    let animationId;
     function loop() {
+      if (!isVisible) { animationId = null; return; }
       draw();
       animationId = requestAnimationFrame(loop);
     }
 
-    loop();
+    // Only animate when footer is visible
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        isVisible = entry.isIntersecting;
+        if (isVisible && !animationId) loop();
+      },
+      { threshold: 0.01 }
+    );
+    if (footerRef.current) observer.observe(footerRef.current);
 
     const handleResize = () => {
       W = canvas.width = window.innerWidth;
@@ -84,12 +104,13 @@ export default function Footer() {
     window.addEventListener("resize", handleResize);
     return () => {
       window.removeEventListener("resize", handleResize);
-      cancelAnimationFrame(animationId);
+      if (animationId) cancelAnimationFrame(animationId);
+      observer.disconnect();
     };
   }, []);
 
   return (
-    <footer className="relative  bg-gradient-to-t from-[#e0f2fe] via-[#bae6fd] to-white mt-0 overflow-hidden ">
+    <footer ref={footerRef} className="relative  bg-gradient-to-t from-[#e0f2fe] via-[#bae6fd] to-white mt-0 overflow-hidden ">
 
       {/* Wave Top Border (Restored) */}
       <div className="absolute -top-[2px] left-0 right-0 z-10 pointer-events-none">
@@ -118,7 +139,7 @@ export default function Footer() {
           {/* COLUMN 1: BRAND & CONTACT */}
           <div className="space-y-6">
             <Link to="/" className="inline-block">
-              <img src={Logo} alt="SnowCity" className="h-16 w-auto object-contain" />
+              <img src={Logo} alt="SnowCity" className="h-16 w-auto object-contain" width={120} height={64} />
             </Link>
 
             <div className="space-y-4 pt-2">

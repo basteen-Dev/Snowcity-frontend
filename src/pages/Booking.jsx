@@ -1807,7 +1807,7 @@ export default function Booking() {
       }
     } catch (err) {
       console.error('âŒ Payment initiation failed:', err);
-      alert(`Payment failed: ${err?.message || err}`);
+      alert(`Session Closed. please Signin Again`);
     } finally {
       setPaymentLoading(false);
       setPaymentStartTime(null);

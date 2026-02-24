@@ -16,49 +16,52 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preconnect" href="https://snowcity-backend.onrender.com" />
   <link rel="preconnect" href="https://mercury.phonepe.com" />
-  <link rel="preconnect" href="https://fastly.picsum.photos" />
   <link rel="preload"
-    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Poppins:wght@400;600;700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Sans:wght@400;500;700&family=Poppins:wght@400;600;700&family=Open+Sans:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap"
     as="style" onload="this.onload=null;this.rel='stylesheet'" />
   <noscript>
     <link
-      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Poppins:wght@400;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Sans:wght@400;500;700&family=Poppins:wght@400;600;700&family=Open+Sans:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap"
       rel="stylesheet" />
   </noscript>
 
-  <!-- PhonePe Checkout Script -->
+  <!-- PhonePe Checkout Script — loaded only when needed -->
   <script defer src="https://mercury.phonepe.com/web/bundle/checkout.js"></script>
 
-  <!-- Meta Pixel Base Code (loads only if VITE_META_PIXEL_ID is set) -->
-  <script defer>
-    window.addEventListener('load', function() {
+  <!-- Meta Pixel & gtag — deferred to idle time to avoid blocking LCP -->
+  <script>
+    function _scLoadAnalytics() {
+      // Meta Pixel
       !function (f, b, e, v, n, t, s) {
         if (f.fbq) return; n = f.fbq = function () {
-          n.callMethod ?
-            n.callMethod.apply(n, arguments) : n.queue.push(arguments)
+          n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments)
         }; if (!f._fbq) f._fbq = n;
         n.push = n; n.loaded = !0; n.version = '2.0'; n.queue = []; t = b.createElement(e); t.async = !0;
         t.src = v; s = b.getElementsByTagName(e)[0]; s.parentNode.insertBefore(t, s)
-      }(window,
-        document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
-    });
-  </script>
+      }(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
 
-  <!-- Google Global Site Tag (gtag.js) -->
-  <script defer src="https://www.googletagmanager.com/gtag/js"></script>
-  <script defer>
-    window.addEventListener('load', function() {
+      // Google gtag
+      var gs = document.createElement('script');
+      gs.src = 'https://www.googletagmanager.com/gtag/js';
+      gs.async = true;
+      document.head.appendChild(gs);
       window.dataLayer = window.dataLayer || [];
       function gtag() { dataLayer.push(arguments); }
+      window.gtag = gtag;
       gtag('js', new Date());
-    });
+    }
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(_scLoadAnalytics, { timeout: 3000 });
+    } else {
+      window.addEventListener('load', _scLoadAnalytics);
+    }
   </script>
-  <script type="module" crossorigin src="/assets/index-CwVav774.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/redux-vendor-D8EEcQ8d.js">
-  <link rel="modulepreload" crossorigin href="/assets/motion-vendor-XK0s5CQk.js">
-  <link rel="modulepreload" crossorigin href="/assets/react-vendor-VCk0vHAI.js">
-  <link rel="modulepreload" crossorigin href="/assets/ui-vendor-DoFgKLIF.js">
-  <link rel="stylesheet" crossorigin href="/assets/index-Bm8WCxIL.css">
+  <script type="module" crossorigin src="/assets/index-DCHMVW8v.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/redux-vendor-B3nauEsK.js">
+  <link rel="modulepreload" crossorigin href="/assets/motion-vendor-ClGixLvu.js">
+  <link rel="modulepreload" crossorigin href="/assets/react-vendor-HspPKNET.js">
+  <link rel="modulepreload" crossorigin href="/assets/ui-vendor-yIv0JbOc.js">
+  <link rel="stylesheet" crossorigin href="/assets/index-Kl0OqNqu.css">
 </head>
 
 <body>

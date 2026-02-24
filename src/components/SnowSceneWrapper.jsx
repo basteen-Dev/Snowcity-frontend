@@ -1,16 +1,9 @@
 import React, { useEffect, useRef } from "react";
 
 /**
- * SnowSceneWrapper
- * - Provides continuous cinematic gradient background
- * - Canvas-based wind-driven snow (efficient)
- * - Liquid SVG wave at bottom with smooth infinite horizontal motion
- * - Wrap any section content with <SnowSceneWrapper> ... </SnowSceneWrapper>
- *
- * Props:
- *  - children
- *  - waveHeight (px) default 90
- *  - canvasHeight (px) default 260 (controls visible snow area)
+ * SnowSceneWrapper — Performance-optimized version
+ * Uses pre-cached gradient sprite instead of per-flake createRadialGradient.
+ * Respects prefers-reduced-motion and pauses when offscreen.
  */
 export default function SnowSceneWrapper({
   children,
@@ -18,64 +11,83 @@ export default function SnowSceneWrapper({
   canvasHeight = 260,
 }) {
   const canvasRef = useRef(null);
+  const wrapperRef = useRef(null);
   const rafRef = useRef(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+
+    // Respect reduced motion preference
+    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReduced) return;
+
     const ctx = canvas.getContext("2d", { alpha: true });
+    const isMobile = window.innerWidth < 768;
 
     let W = (canvas.width = window.innerWidth);
     let H = (canvas.height = canvasHeight);
 
-    const maxSnow = Math.min(140, Math.floor(W / 8)); // density scales with width
+    // Pre-render a gradient flake sprite (avoids createRadialGradient per frame)
+    const spriteSize = 16;
+    const spriteCanvas = document.createElement("canvas");
+    spriteCanvas.width = spriteSize;
+    spriteCanvas.height = spriteSize;
+    const spriteCtx = spriteCanvas.getContext("2d");
+    const halfSprite = spriteSize / 2;
+    const g = spriteCtx.createRadialGradient(halfSprite, halfSprite, 0, halfSprite, halfSprite, halfSprite);
+    g.addColorStop(0, "rgba(255,255,255,0.95)");
+    g.addColorStop(0.4, "rgba(255,255,255,0.85)");
+    g.addColorStop(1, "rgba(255,255,255,0.02)");
+    spriteCtx.fillStyle = g;
+    spriteCtx.fillRect(0, 0, spriteSize, spriteSize);
+
+    const maxSnow = isMobile ? 30 : Math.min(100, Math.floor(W / 10));
     const flakes = new Array(maxSnow).fill(0).map(() => ({
       x: Math.random() * W,
       y: Math.random() * H,
       r: 1 + Math.random() * 3.5,
-      vx: (Math.random() - 0.3) * 1.5, // horizontal wind
+      vx: (Math.random() - 0.3) * 1.5,
       vy: 0.6 + Math.random() * 1.8,
       tilt: Math.random() * Math.PI * 2,
       swing: 0.5 + Math.random() * 1.2,
     }));
 
+    let isVisible = true;
+
+    // Pause when offscreen
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        isVisible = entry.isIntersecting;
+        if (isVisible && !rafRef.current) draw();
+      },
+      { threshold: 0.01 }
+    );
+    if (wrapperRef.current) observer.observe(wrapperRef.current);
+
     function draw() {
+      if (!isVisible) { rafRef.current = null; return; }
       ctx.clearRect(0, 0, W, H);
 
-      // soft glow backdrop for snow (subtle)
-      // ctx.fillStyle = "rgba(255,255,255,0.01)";
-      // ctx.fillRect(0, 0, W, H);
-
-      flakes.forEach((f) => {
-        const { x, y, r } = f;
-        // draw slightly blurred circle
-        const g = ctx.createRadialGradient(x, y, 0, x, y, r * 3);
-        g.addColorStop(0, "rgba(255,255,255,0.95)");
-        g.addColorStop(0.4, "rgba(255,255,255,0.85)");
-        g.addColorStop(1, "rgba(255,255,255,0.02)");
-
-        ctx.beginPath();
-        ctx.fillStyle = g;
-        ctx.arc(x, y, r, 0, Math.PI * 2);
-        ctx.fill();
-      });
+      for (let i = 0; i < flakes.length; i++) {
+        const f = flakes[i];
+        const size = f.r * 3;
+        ctx.drawImage(spriteCanvas, f.x - size, f.y - size, size * 2, size * 2);
+      }
 
       update();
       rafRef.current = requestAnimationFrame(draw);
     }
 
     function update() {
-      flakes.forEach((f) => {
-        // wind (perlin-like by using sin of tilt)
+      for (let i = 0; i < flakes.length; i++) {
+        const f = flakes[i];
         const wind = Math.sin(f.tilt) * f.swing * 0.6;
         f.x += f.vx + wind;
         f.y += f.vy;
-
         f.tilt += 0.01 + Math.random() * 0.02;
 
-        // reset when out of range
         if (f.y > H + 20 || f.x < -40 || f.x > W + 40) {
-          // respawn from top or side for continuous wind feeling
           if (Math.random() < 0.2) {
             f.x = Math.random() * W;
             f.y = -10 - Math.random() * 100;
@@ -90,7 +102,7 @@ export default function SnowSceneWrapper({
           f.vy = 0.6 + Math.random() * 1.8;
           f.r = 1 + Math.random() * 3.5;
         }
-      });
+      }
     }
 
     function onResize() {
@@ -102,13 +114,13 @@ export default function SnowSceneWrapper({
     draw();
 
     return () => {
-      cancelAnimationFrame(rafRef.current);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
       window.removeEventListener("resize", onResize);
+      observer.disconnect();
     };
   }, [canvasHeight]);
 
-  // Liquid wave SVG — we animate translateX to create moving liquid feel.
-  // Use the same SVG for each section so shapes align visually.
   const waveSVG = (
     <svg
       viewBox="0 0 1440 160"
@@ -122,33 +134,22 @@ export default function SnowSceneWrapper({
           <stop offset="0.5" stopColor="#d9f0ff" stopOpacity="1" />
           <stop offset="1" stopColor="#ffffff" stopOpacity="1" />
         </linearGradient>
-        <filter id="soft" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur stdDeviation="8" result="blur" />
-          <feMerge>
-            <feMergeNode in="blur" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
       </defs>
-
-      <g opacity="0.98" filter="url(#soft)">
-        <path
-          d="M0,52 C180,120 360,6 720,56 C1080,106 1260,20 1440,64 L1440,160 L0,160 Z"
-          fill="url(#waveGrad)"
-        />
-      </g>
+      <path
+        d="M0,52 C180,120 360,6 720,56 C1080,106 1260,20 1440,64 L1440,160 L0,160 Z"
+        fill="url(#waveGrad)"
+      />
     </svg>
   );
 
   return (
-    <div className="relative overflow-hidden">
-      {/* background gradient (mixed) */}
+    <div ref={wrapperRef} className="relative overflow-hidden">
+      {/* background gradient */}
       <div
         className="absolute inset-0 -z-20"
         style={{
           background:
             "linear-gradient(180deg, #071226 0%, #072f52 26%, #0d4b7a 48%, #cfeefd 100%)",
-          opacity: 1,
         }}
       />
 
@@ -168,15 +169,14 @@ export default function SnowSceneWrapper({
         style={{ height: `${canvasHeight}px` }}
       />
 
-      {/* children content sits above snow */}
+      {/* content */}
       <div className="relative z-10">{children}</div>
 
-      {/* Wave wrapper — placed at bottom of wrapper, so stacking multiple wrappers creates a seam */}
+      {/* Wave at bottom */}
       <div
         className="absolute left-0 right-0 -bottom-[1px] z-10 overflow-hidden"
         style={{ height: `${waveHeight}px` }}
       >
-        {/* two copies of the same SVG slide to create continuous liquid motion */}
         <div
           className="wave-track"
           style={{
@@ -185,45 +185,27 @@ export default function SnowSceneWrapper({
             transform: "translate3d(0,0,0)",
           }}
         >
-          <div
-            style={{
-              width: "50%",
-              flex: "0 0 50%",
-            }}
-            className="wave-item"
-          >
+          <div style={{ width: "50%", flex: "0 0 50%" }} className="wave-item">
             {waveSVG}
           </div>
-          <div
-            style={{
-              width: "50%",
-              flex: "0 0 50%",
-            }}
-            className="wave-item"
-          >
+          <div style={{ width: "50%", flex: "0 0 50%" }} className="wave-item">
             {waveSVG}
           </div>
         </div>
 
-        {/* styles for wave animation and small top highlight */}
         <style>{`
-          .wave-track { 
+          .wave-track {
             animation: waveScroll 14s linear infinite;
             will-change: transform;
           }
           @keyframes waveScroll {
-            0% { transform: translateX(0%); }
-            100% { transform: translateX(-50%); }
+            0% { transform: translate3d(0,0,0); }
+            100% { transform: translate3d(-50%,0,0); }
           }
-
-          /* subtle gloss line over wave for premium look */
-          .wave-item svg path {
-            mix-blend-mode: screen;
-            opacity: 0.98;
-          }
-
-          /* Ensure wrapper doesn't block events */
           .wave-track, .wave-item { pointer-events: none; }
+          @media (prefers-reduced-motion: reduce) {
+            .wave-track { animation: none !important; }
+          }
         `}</style>
       </div>
     </div>

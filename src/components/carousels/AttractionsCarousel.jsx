@@ -1,27 +1,6 @@
-// import React from "react";
-// import { Link } from "react-router-dom";
-// import AttractionCard from "../cards/AttractionCard";
 
-// function getUniqueKey(item) {
-//   return (
-//     item?.attraction_id ??
-//     item?.id ??
-//     item?.slug ??
-//     item?.uuid ??
-//     "k-" + Math.random()
-//   ).toString();
-// }
 
-// function getSortValue(item) {
-//   const candidate =
-//     item?.attraction_id ??
-//     item?.id ??
-//     (typeof item?.slug === "string" ? item.slug : null);
-//   const asNumber = Number(candidate);
-//   if (!Number.isNaN(asNumber) && isFinite(asNumber)) return asNumber;
-//   if (candidate != null) return candidate;
-//   return Infinity;
-// }
+
 
 // export default function AttractionsCarousel({ items = [] }) {
 //   const [index, setIndex] = React.useState(0);
