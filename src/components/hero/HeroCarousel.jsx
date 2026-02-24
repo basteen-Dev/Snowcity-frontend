@@ -4,18 +4,29 @@ import { Autoplay, Pagination, EffectFade } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/effect-fade";
+import { imgSrc } from "../../utils/media";
 
 /* Helpers */
 
 const getWebImage = (b, fallback) =>
-  b?.web_image || b?.desktop_image || b?.image_url || fallback;
+  imgSrc(b?.web_image || b?.desktop_image || b?.image_url, fallback);
 
 const getMobileImage = (b, fallback) =>
-  b?.mobile_image || b?.image_url_mobile || fallback;
+  imgSrc(b?.mobile_image || b?.image_url_mobile, fallback);
 
 function deriveHref(b) {
   const link = b?.link_url || b?.url || b?.href;
-  if (link && link !== "#") return link;
+  if (link) return link;
+
+  const attSlug = b?.attraction_slug || b?.linked_attraction_slug || b?.attraction?.slug;
+  if (attSlug) return `/${attSlug}`;
+
+  const offerSlug = b?.offer_slug || b?.linked_offer_slug;
+  if (offerSlug) return `/offers/${offerSlug}`;
+
+  const comboSlug = b?.combo_slug || b?.linked_combo_slug || b?.combo?.slug;
+  if (comboSlug) return `/combo-${comboSlug}`;
+
   return null;
 }
 
@@ -96,7 +107,7 @@ export default function HeroCarousel({ banners = [] }) {
                 {href && (
                   <a
                     href={href}
-                    className="absolute inset-0 z-0"
+                    className="absolute inset-0 z-10"
                     aria-label="Banner link"
                   />
                 )}
