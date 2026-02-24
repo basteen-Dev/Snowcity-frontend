@@ -9,42 +9,42 @@ const FALLBACK_POSTS = [
     image: 'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=400&h=400&fit=crop',
     likes: '2.3k',
     comments: '156',
-    url: 'https://instagram.com/snowcitybangalore'
+    url: 'https://www.instagram.com/snowcitybangalore/'
   },
   {
     id: '2',
     image: 'https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=400&h=400&fit=crop',
     likes: '1.8k',
     comments: '98',
-    url: 'https://instagram.com/snowcitybangalore'
+    url: 'https://www.instagram.com/snowcitybangalore/'
   },
   {
     id: '3',
     image: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=400&h=400&fit=crop',
     likes: '3.1k',
     comments: '203',
-    url: 'https://instagram.com/snowcitybangalore'
+    url: 'https://www.instagram.com/snowcitybangalore/'
   },
   {
     id: '4',
     image: 'https://images.unsplash.com/photo-1524476289-01c0b6e6bb2b?w=400&h=400&fit=crop',
     likes: '2.7k',
     comments: '178',
-    url: 'https://instagram.com/snowcitybangalore'
+    url: 'https://www.instagram.com/snowcitybangalore/'
   },
   {
     id: '5',
     image: 'https://images.unsplash.com/photo-1529310399831-ed472b81d589?w=400&h=400&fit=crop',
     likes: '1.9k',
     comments: '134',
-    url: 'https://instagram.com/snowcitybangalore'
+    url: 'https://www.instagram.com/snowcitybangalore/'
   },
   {
     id: '6',
     image: 'https://images.unsplash.com/photo-1513151233558-d860c5398176?w=400&h=400&fit=crop',
     likes: '2.5k',
     comments: '189',
-    url: 'https://instagram.com/snowcitybangalore'
+    url: 'https://www.instagram.com/snowcitybangalore/'
   }
 ];
 
@@ -58,7 +58,7 @@ export default function InstagramFeed() {
     async function loadInstagram() {
       setStatus('loading');
       try {
-        const res = await api.get(endpoints.social.instagram(), { params: { username: 'snowcitybangalore', limit: 12 } });
+        const res = await api.get(endpoints.social.instagram(), { params: { username: 'snowcitybangalore', limit: 6 } });
         const payload = res?.data || res || {};
         const list = Array.isArray(payload?.posts)
           ? payload.posts
@@ -99,12 +99,7 @@ export default function InstagramFeed() {
       <p className="text-gray-600 max-w-2xl mx-auto mb-4">
         Share your SnowCity moments with <span className="font-semibold text-pink-600">#SnowCityBangalore</span>
       </p>
-      <a
-        href="https://instagram.com/snowcitybangalore"
-        target="_blank"
-        rel="noreferrer"
-        className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-semibold"
-      >
+      <a href="https://www.instagram.com/snowcitybangalore/" target="_blank" rel="noopener noreferrer" className="text-[#E4405F] hover:scale-110 transition-transform" title="Instagram">
         @snowcitybangalore
       </a>
     </div>
@@ -114,7 +109,7 @@ export default function InstagramFeed() {
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
       {posts.map((post, index) => (
         <a
-          href={post.url || 'https://instagram.com/snowcitybangalore'}
+          href="https://www.instagram.com/snowcitybangalore/"
           target="_blank"
           rel="noreferrer"
           key={post.id || index}
