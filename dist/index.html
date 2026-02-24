@@ -27,30 +27,38 @@
   </noscript>
 
   <!-- PhonePe Checkout Script -->
-  <script src="https://mercury.phonepe.com/web/bundle/checkout.js"></script>
+  <script defer src="https://mercury.phonepe.com/web/bundle/checkout.js"></script>
 
   <!-- Meta Pixel Base Code (loads only if VITE_META_PIXEL_ID is set) -->
-  <script>
-    !function (f, b, e, v, n, t, s) {
-      if (f.fbq) return; n = f.fbq = function () {
-        n.callMethod ?
-          n.callMethod.apply(n, arguments) : n.queue.push(arguments)
-      }; if (!f._fbq) f._fbq = n;
-      n.push = n; n.loaded = !0; n.version = '2.0'; n.queue = []; t = b.createElement(e); t.async = !0;
-      t.src = v; s = b.getElementsByTagName(e)[0]; s.parentNode.insertBefore(t, s)
-    }(window,
-      document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
+  <script defer>
+    window.addEventListener('load', function() {
+      !function (f, b, e, v, n, t, s) {
+        if (f.fbq) return; n = f.fbq = function () {
+          n.callMethod ?
+            n.callMethod.apply(n, arguments) : n.queue.push(arguments)
+        }; if (!f._fbq) f._fbq = n;
+        n.push = n; n.loaded = !0; n.version = '2.0'; n.queue = []; t = b.createElement(e); t.async = !0;
+        t.src = v; s = b.getElementsByTagName(e)[0]; s.parentNode.insertBefore(t, s)
+      }(window,
+        document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
+    });
   </script>
 
   <!-- Google Global Site Tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag() { dataLayer.push(arguments); }
-    gtag('js', new Date());
+  <script defer src="https://www.googletagmanager.com/gtag/js"></script>
+  <script defer>
+    window.addEventListener('load', function() {
+      window.dataLayer = window.dataLayer || [];
+      function gtag() { dataLayer.push(arguments); }
+      gtag('js', new Date());
+    });
   </script>
-  <script type="module" crossorigin src="/assets/index-CNQwvPtB.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-DgsLrPLC.css">
+  <script type="module" crossorigin src="/assets/index-CwVav774.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/redux-vendor-D8EEcQ8d.js">
+  <link rel="modulepreload" crossorigin href="/assets/motion-vendor-XK0s5CQk.js">
+  <link rel="modulepreload" crossorigin href="/assets/react-vendor-VCk0vHAI.js">
+  <link rel="modulepreload" crossorigin href="/assets/ui-vendor-DoFgKLIF.js">
+  <link rel="stylesheet" crossorigin href="/assets/index-Bm8WCxIL.css">
 </head>
 
 <body>

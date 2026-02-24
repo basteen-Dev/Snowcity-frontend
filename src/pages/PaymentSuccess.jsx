@@ -163,14 +163,15 @@ export default function PaymentSuccess() {
 
         <div className="mt-6 grid gap-4">
           {ticketUrl ? (
-            <a
-              href={ticketUrl}
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                window.open(`https://app.snowcityblr.com/api/tickets/generated/ORDER_${cartRef || bookingId}.pdf`, '_blank');
+              }}
               className="inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-600 text-white px-6 py-3.5 text-lg font-semibold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-colors"
             >
               <FileDown size={22} /> Download Ticket (PDF)
-            </a>
+            </button>
           ) : (
             <div className="rounded-2xl border border-dashed border-slate-300 px-5 py-4 text-sm text-slate-500 bg-slate-50">
               Tickets are being generated. We will send them to your registered email and WhatsApp shortly.

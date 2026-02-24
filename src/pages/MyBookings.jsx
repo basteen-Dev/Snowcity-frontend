@@ -68,7 +68,7 @@ const buildOrderItems = (items = []) => {
 const getDisplayTitle = (item) => {
   if (!item) return 'Ticket';
   if (String(item.item_type).toLowerCase() === 'combo') {
-    return item.combo_title || item.combo_name || item.item_title || (item.combo_id ? `Combo #${item.combo_id}` : 'Combo');
+    return item.combo_title || item.combo_name || item.item_title || 'Combo Deal';
   }
   return item.item_title || item.attraction_title || 'Ticket';
 };
@@ -406,14 +406,15 @@ export default function MyBookings() {
                     {/* Action Buttons */}
                     <div className="mt-6 flex flex-wrap gap-3 border-t border-gray-200 pt-4">
                       {meta.label === 'Paid' && (
-                        <a
-                          href={absoluteUrl(order.items[0]?.ticket_pdf)}
-                          target="_blank"
-                          rel="noreferrer"
+                        <button
+                          onClick={async (e) => {
+                            e.stopPropagation();
+                            window.open(`https://app.snowcityblr.com/api/tickets/generated/ORDER_${order.ref}.pdf`, '_blank');
+                          }}
                           className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                         >
                           <FileText size={18} /> Download Ticket(s)
-                        </a>
+                        </button>
                       )}
 
                       <button
@@ -480,8 +481,8 @@ export default function MyBookings() {
                           <label className="block text-xs font-semibold text-gray-700 mb-3">Select Payment Gateway</label>
                           <div className="grid grid-cols-2 gap-3">
                             <label className={`flex flex-col items-center p-4 border-2 rounded-xl cursor-pointer transition-all ${paymentGateway === 'payphi'
-                                ? 'border-blue-600 bg-gradient-to-br from-blue-50 to-sky-50 shadow-md'
-                                : 'border-gray-200 bg-white hover:border-blue-300'
+                              ? 'border-blue-600 bg-gradient-to-br from-blue-50 to-sky-50 shadow-md'
+                              : 'border-gray-200 bg-white hover:border-blue-300'
                               }`}>
                               <input
                                 type="radio"
@@ -504,8 +505,8 @@ export default function MyBookings() {
                             </label>
 
                             <label className={`flex flex-col items-center p-4 border-2 rounded-xl cursor-pointer transition-all ${paymentGateway === 'phonepe'
-                                ? 'border-purple-600 bg-gradient-to-br from-purple-50 to-indigo-50 shadow-md'
-                                : 'border-gray-200 bg-white hover:border-purple-300'
+                              ? 'border-purple-600 bg-gradient-to-br from-purple-50 to-indigo-50 shadow-md'
+                              : 'border-gray-200 bg-white hover:border-purple-300'
                               }`}>
                               <input
                                 type="radio"
@@ -577,7 +578,7 @@ export default function MyBookings() {
                   <h4 className="font-bold text-red-800">Payment Failed</h4>
                 </div>
                 <p className="text-red-700 text-sm mb-3">
-                  Your payment for order <span className="font-mono font-bold">#{selectedOrder.ref}</span> could not be processed. 
+                  Your payment for order <span className="font-mono font-bold">#{selectedOrder.ref}</span> could not be processed.
                   Please try again or contact support if the issue persists.
                 </p>
                 <div className="text-xs text-red-600 bg-red-100 rounded-lg p-2">

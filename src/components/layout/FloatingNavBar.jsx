@@ -58,6 +58,8 @@ export default function FloatingNavBar() {
   const staticRoutes = ["", "attractions", "offers", "combos", "contact", "booking", "gallery", "blog", "visitor-guide", "payment", "my-bookings", "home", "404", "admin", "page"];
   const isDetailPage = !staticRoutes.includes(pathSlug);
   const isFullBlock = isDetailPage;
+  const hideNavBarPaths = ['/payment/success', '/payment/return'];
+  const shouldHideNavBar = hideNavBarPaths.includes(location.pathname);
   const offers = useSelector((s) => s.offers.items || []);
   const combos = useSelector((s) => s.combos.items || []);
   const pages = useSelector((s) => s.pages.items || []);
@@ -460,6 +462,8 @@ export default function FloatingNavBar() {
       </div>
     </div>
   ) : null;
+
+  if (shouldHideNavBar) return null;
 
   return (
     <>

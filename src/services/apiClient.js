@@ -1,11 +1,11 @@
 import axios from 'axios';
 
 // 1. Environment Configuration
-const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || 'https://snowpark.netlify.app';
+const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || 'https://app.snowcityblr.com';
 
 if (!API_BASE_URL && import.meta.env?.DEV) {
   // eslint-disable-next-line no-console
-  console.warn('VITE_API_BASE_URL is not set. Using default: https://snowpark.netlify.app');
+  console.warn('VITE_API_BASE_URL is not set. Using default: https://app.snowcityblr.com');
 }
 
 const SESSION_STORAGE_KEY = 'snow_session_id';
