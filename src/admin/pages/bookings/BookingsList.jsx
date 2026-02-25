@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 import { useDispatch, useSelector } from 'react-redux';
 import { listAdminBookings, resendTicketAdmin, resendWhatsAppAdmin, resendEmailAdmin } from '../../features/bookings/adminBookingsSlice';
 import AdminTable from '../../components/common/AdminTable';
-import AdminPagination from '../../components/common/AdminPagination';
+import TablePagination from '../../components/common/TablePagination';
 import { useNavigate } from 'react-router-dom';
 import adminApi from '../../services/adminApi';
 import A from '../../services/adminEndpoints';
@@ -125,9 +125,10 @@ export default function BookingsList() {
     combo: { status: 'idle', data: null }
   });
   const [revenueFilters, setRevenueFilters] = React.useState(cloneRevenueFilters());
+  const [rowsPerPage, setRowsPerPage] = React.useState(20);
 
   React.useEffect(() => {
-    dispatch(listAdminBookings({ page: 1, limit: 20, payment_status: 'Pending' }));
+    dispatch(listAdminBookings({ page: 1, limit: rowsPerPage, payment_status: 'Pending' }));
     loadOverview();
     loadRevenueData('both');
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -145,62 +146,62 @@ export default function BookingsList() {
           adminApi.get(A.offers(), { params: { limit: 1000 } }),
         ]);
         if (cancelled) return;
-        
+
         // Debug logging
         console.log('API Responses:', {
           attractionsRes,
           combosRes,
           offersRes
         });
-        
+
         // Get user roles and scopes
         const userRoles = Array.isArray(user?.roles) ? user.roles.map(r => String(r).toLowerCase()) : [];
         const userScopes = user?.scopes || {};
         const isSubadmin = userRoles.includes('subadmin') && !userRoles.includes('admin') && !userRoles.includes('root');
-        
+
         // Parse all lists
         let allAttractions = normalizeOptionList(attractionsRes);
         let allCombos = normalizeOptionList(combosRes);
         const allOffers = normalizeOptionList(offersRes);
-        
+
         // Filter based on scopes if subadmin
         let filteredAttractions = allAttractions;
         let filteredCombos = allCombos;
-        
+
         if (isSubadmin) {
           const allowedAttractionIds = userScopes.attraction || [];
           const allowedComboIds = userScopes.combo || [];
-          
+
           console.log('Subadmin scopes:', { allowedAttractionIds, allowedComboIds });
-          
+
           // Filter attractions by allowed IDs
           if (allowedAttractionIds.length > 0) {
-            filteredAttractions = allAttractions.filter(a => 
+            filteredAttractions = allAttractions.filter(a =>
               allowedAttractionIds.includes(a.attraction_id) || allowedAttractionIds.includes(a.id)
             );
           } else {
             filteredAttractions = [];
           }
-          
+
           // Filter combos by allowed IDs
           if (allowedComboIds.length > 0) {
-            filteredCombos = allCombos.filter(c => 
+            filteredCombos = allCombos.filter(c =>
               allowedComboIds.includes(c.combo_id) || allowedComboIds.includes(c.id)
             );
           } else {
             filteredCombos = [];
           }
         }
-        
+
         const normalizedData = {
           status: 'succeeded',
           attractions: filteredAttractions,
           combos: filteredCombos,
           offers: allOffers,
         };
-        
+
         console.log('Normalized data:', normalizedData);
-        
+
         setOptions(normalizedData);
       } catch (err) {
         if (cancelled) return;
@@ -296,7 +297,7 @@ export default function BookingsList() {
   }, [filters, revenueFilters]);
 
   const onSearch = () => {
-    dispatch(listAdminBookings({ ...buildQuery(), page: 1, limit: 20 }));
+    dispatch(listAdminBookings({ ...buildQuery(), page: 1, limit: rowsPerPage }));
     loadOverview();
     loadRevenueData('both');
   };
@@ -329,7 +330,7 @@ export default function BookingsList() {
     const payload = {
       ...buildQuery({ date_from: formatted, date_to: formatted }),
       page: 1,
-      limit: 20
+      limit: rowsPerPage
     };
     dispatch(listAdminBookings(payload));
   };
@@ -351,11 +352,11 @@ export default function BookingsList() {
         date_to: to ? to.format('YYYY-MM-DD') : undefined
       }),
       page: 1,
-      limit: 20
+      limit: rowsPerPage
     };
     dispatch(listAdminBookings(payload));
     loadOverview();
-  }, [buildQuery, dispatch, loadOverview]);
+  }, [buildQuery, dispatch, loadOverview, rowsPerPage]);
 
   React.useEffect(() => {
     if (list.status === 'succeeded') loadOverview();
@@ -386,7 +387,7 @@ export default function BookingsList() {
     };
     setFilters((prev) => ({ ...prev, ...payload }));
     const query = buildQuery({ ...payload, page: 1 });
-    dispatch(listAdminBookings({ ...query, page: 1, limit: 20 }));
+    dispatch(listAdminBookings({ ...query, page: 1, limit: rowsPerPage }));
   };
 
   const handleDownloadTicket = (row) => {
@@ -656,9 +657,9 @@ export default function BookingsList() {
           </select>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3">
-          <select 
-            className="rounded-lg border px-3 py-2 disabled:opacity-50" 
-            value={filters.attraction_id} 
+          <select
+            className="rounded-lg border px-3 py-2 disabled:opacity-50"
+            value={filters.attraction_id}
             onChange={(e) => setFilters({ ...filters, attraction_id: e.target.value })}
             disabled={options.status === 'loading'}
           >
@@ -675,9 +676,9 @@ export default function BookingsList() {
               <option disabled>Failed to load attractions</option>
             ) : null}
           </select>
-          <select 
-            className="rounded-lg border px-3 py-2 disabled:opacity-50" 
-            value={filters.combo_id} 
+          <select
+            className="rounded-lg border px-3 py-2 disabled:opacity-50"
+            value={filters.combo_id}
             onChange={(e) => setFilters({ ...filters, combo_id: e.target.value })}
             disabled={options.status === 'loading'}
           >
@@ -694,9 +695,9 @@ export default function BookingsList() {
               <option disabled>Failed to load combos</option>
             ) : null}
           </select>
-          <select 
-            className="rounded-lg border px-3 py-2 disabled:opacity-50" 
-            value={filters.offer_id} 
+          <select
+            className="rounded-lg border px-3 py-2 disabled:opacity-50"
+            value={filters.offer_id}
             onChange={(e) => setFilters({ ...filters, offer_id: e.target.value })}
             disabled={options.status === 'loading'}
           >
@@ -725,7 +726,7 @@ export default function BookingsList() {
               className="rounded-lg border px-3 py-2"
               onClick={() => {
                 setFilters({ search: '', payment_status: 'Pending', booking_status: '', attraction_id: '', combo_id: '', offer_id: '', user_email: '', user_phone: '', item_type: '', date_from: '', date_to: '' });
-                dispatch(listAdminBookings({ page: 1, limit: 20, payment_status: 'Pending' }));
+                dispatch(listAdminBookings({ page: 1, limit: rowsPerPage, payment_status: 'Pending' }));
                 setActiveRange('all');
               }}
             >
@@ -756,154 +757,168 @@ export default function BookingsList() {
         columns={[
           { key: 'booking_ref', title: 'Ref' },
           { key: 'booking_date', title: 'Date', render: (r) => r.booking_date ? dayjs(r.booking_date).format('DD MMM, YYYY') : '—' },
-          { key: 'user_email', title: 'User', render: (r) => (
-            <div className="text-xs">
-              <div>{r.user_email || '—'}</div>
-              <div className="text-gray-500">{r.user_phone || '—'}</div>
-            </div>
-          ) },
-          { key: 'item_title', title: 'Item', render: (r) => (
-            <div className="flex flex-col">
-              <span>{r.item_title || r.attraction_title || '—'}</span>
-              <span className="text-xs text-gray-500">{r.item_type === 'Combo' ? 'Combo' : 'Attraction'}</span>
-            </div>
-          ) },
-          { key: 'combo_title', title: 'Combo/Offer', render: (r) => (
-            <div className="flex flex-col text-xs">
-              {r.combo_title ? <span>Combo: {r.combo_title}</span> : null}
-              {r.offer_title ? <span>Offer: {r.offer_title}</span> : <span className="text-gray-400">—</span>}
-            </div>
-          ) },
+          {
+            key: 'user_email', title: 'User', render: (r) => (
+              <div className="text-xs">
+                <div>{r.user_email || '—'}</div>
+                <div className="text-gray-500">{r.user_phone || '—'}</div>
+              </div>
+            )
+          },
+          {
+            key: 'item_title', title: 'Item', render: (r) => (
+              <div className="flex flex-col">
+                <span>{r.item_title || r.attraction_title || '—'}</span>
+                <span className="text-xs text-gray-500">{r.item_type === 'Combo' ? 'Combo' : 'Attraction'}</span>
+              </div>
+            )
+          },
+          {
+            key: 'combo_title', title: 'Combo/Offer', render: (r) => (
+              <div className="flex flex-col text-xs">
+                {r.combo_title ? <span>Combo: {r.combo_title}</span> : null}
+                {r.offer_title ? <span>Offer: {r.offer_title}</span> : <span className="text-gray-400">—</span>}
+              </div>
+            )
+          },
           { key: 'quantity', title: 'Qty', render: (r) => r.quantity ? `${r.quantity}` : '1' },
-          { key: 'combo_context', title: 'Combo Context', render: (r) => {
-            const isParent = r.item_type === 'Combo';
-            const isChild = Boolean(r.parent_booking_id);
-            const parentRow = isChild ? rowLookup.get(r.parent_booking_id) : null;
-            const parentLabel = parentRow?.booking_ref || parentRow?.booking_id || r.parent_booking_id;
-            const childCount = childCounts[r.booking_id] || 0;
-            const badge = (label, tone = 'indigo') => (
-              <span className={`inline-flex w-fit items-center rounded-full px-2 py-0.5 text-xs font-medium bg-${tone}-100 text-${tone}-700`}>
-                {label}
-              </span>
-            );
-
-            if (isParent) {
-              return (
-                <div className="flex flex-col gap-1 text-xs">
-                  {badge('Combo parent')}
-                  <span className="text-gray-600">
-                    {childCount
-                      ? `${childCount} linked ${childCount === 1 ? 'attraction booking' : 'attraction bookings'}`
-                      : 'Child bookings syncing…'}
-                  </span>
-                </div>
+          {
+            key: 'combo_context', title: 'Combo Context', render: (r) => {
+              const isParent = r.item_type === 'Combo';
+              const isChild = Boolean(r.parent_booking_id);
+              const parentRow = isChild ? rowLookup.get(r.parent_booking_id) : null;
+              const parentLabel = parentRow?.booking_ref || parentRow?.booking_id || r.parent_booking_id;
+              const childCount = childCounts[r.booking_id] || 0;
+              const badge = (label, tone = 'indigo') => (
+                <span className={`inline-flex w-fit items-center rounded-full px-2 py-0.5 text-xs font-medium bg-${tone}-100 text-${tone}-700`}>
+                  {label}
+                </span>
               );
-            }
 
-            if (isChild) {
-              return (
-                <div className="flex flex-col gap-1 text-xs">
-                  {badge('Combo child', 'emerald')}
-                  <div className="flex flex-col gap-1">
+              if (isParent) {
+                return (
+                  <div className="flex flex-col gap-1 text-xs">
+                    {badge('Combo parent')}
                     <span className="text-gray-600">
-                      Parent booking {parentLabel ? `#${parentLabel}` : '—'}
-                      {parentRow?.item_title ? ` · ${parentRow.item_title}` : ''}
+                      {childCount
+                        ? `${childCount} linked ${childCount === 1 ? 'attraction booking' : 'attraction bookings'}`
+                        : 'Child bookings syncing…'}
                     </span>
-                    <button
-                      className="w-fit text-indigo-600 hover:underline"
-                      type="button"
-                      onClick={(e) => { e.stopPropagation(); openParentBooking(r.parent_booking_id); }}
-                    >
-                      View parent
-                    </button>
                   </div>
-                </div>
-              );
-            }
+                );
+              }
 
-            return <span className="text-xs text-gray-400">Standalone booking</span>;
-          } },
-          { key: 'slot', title: 'Slot', render: (r) => {
-            // Debug logging to see what data we have
-            console.log('🔍 DEBUG Admin BookingsList item:', {
-              booking_id: r.booking_id,
-              slot_start_time: r.slot_start_time,
-              slot_end_time: r.slot_end_time,
-              booking_time: r.booking_time,
-              slot_label: r.slot_label
-            });
-            
-            // Format time for display
-            const formatTime12Hour = (time24) => {
-              if (!time24) return '';
-              const [hours, minutes] = time24.split(':');
-              const hour = parseInt(hours);
-              const ampm = hour >= 12 ? 'PM' : 'AM';
-              const hour12 = hour % 12 || 12;
-              return `${hour12}:${minutes} ${ampm}`;
-            };
-            
-            if (r.slot_start_time && r.slot_end_time) {
-              const formatted = `${formatTime12Hour(r.slot_start_time)} - ${formatTime12Hour(r.slot_end_time)}`;
-              console.log('🔍 DEBUG Admin using formatted slot times:', formatted);
-              return formatted;
+              if (isChild) {
+                return (
+                  <div className="flex flex-col gap-1 text-xs">
+                    {badge('Combo child', 'emerald')}
+                    <div className="flex flex-col gap-1">
+                      <span className="text-gray-600">
+                        Parent booking {parentLabel ? `#${parentLabel}` : '—'}
+                        {parentRow?.item_title ? ` · ${parentRow.item_title}` : ''}
+                      </span>
+                      <button
+                        className="w-fit text-indigo-600 hover:underline"
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); openParentBooking(r.parent_booking_id); }}
+                      >
+                        View parent
+                      </button>
+                    </div>
+                  </div>
+                );
+              }
+
+              return <span className="text-xs text-gray-400">Standalone booking</span>;
             }
-            if (r.slot_label) {
-              console.log('🔍 DEBUG Admin using slot_label:', r.slot_label);
-              return r.slot_label;
+          },
+          {
+            key: 'slot', title: 'Slot', render: (r) => {
+              // Debug logging to see what data we have
+              console.log('🔍 DEBUG Admin BookingsList item:', {
+                booking_id: r.booking_id,
+                slot_start_time: r.slot_start_time,
+                slot_end_time: r.slot_end_time,
+                booking_time: r.booking_time,
+                slot_label: r.slot_label
+              });
+
+              // Format time for display
+              const formatTime12Hour = (time24) => {
+                if (!time24) return '';
+                const [hours, minutes] = time24.split(':');
+                const hour = parseInt(hours);
+                const ampm = hour >= 12 ? 'PM' : 'AM';
+                const hour12 = hour % 12 || 12;
+                return `${hour12}:${minutes} ${ampm}`;
+              };
+
+              if (r.slot_start_time && r.slot_end_time) {
+                const formatted = `${formatTime12Hour(r.slot_start_time)} - ${formatTime12Hour(r.slot_end_time)}`;
+                console.log('🔍 DEBUG Admin using formatted slot times:', formatted);
+                return formatted;
+              }
+              if (r.slot_label) {
+                console.log('🔍 DEBUG Admin using slot_label:', r.slot_label);
+                return r.slot_label;
+              }
+              if (r.booking_time) {
+                const formatted = formatTime12Hour(r.booking_time);
+                console.log('🔍 DEBUG Admin using booking_time:', formatted);
+                return formatted;
+              }
+              console.log('🔍 DEBUG Admin no timing info available');
+              return '—';
             }
-            if (r.booking_time) {
-              const formatted = formatTime12Hour(r.booking_time);
-              console.log('🔍 DEBUG Admin using booking_time:', formatted);
-              return formatted;
-            }
-            console.log('🔍 DEBUG Admin no timing info available');
-            return '—';
-          } },
+          },
           { key: 'payment_status', title: 'Payment' },
           { key: 'booking_status', title: 'Status' },
           { key: 'final_amount', title: 'Amount', render: (r) => `₹${r?.final_amount ?? r?.total_amount ?? 0}` },
-          { key: '__actions', title: '', render: (r) => (
-            <div className="flex flex-wrap justify-end gap-3 text-xs">
-              <button className="text-blue-600 hover:underline" onClick={(e) => { e.stopPropagation(); navigate(`/admin/bookings/${r.booking_id ?? r.id}`); }}>Details</button>
-              {r.user_email || r.user_phone ? (
-                <button className="text-gray-600 hover:underline" onClick={(e) => { e.stopPropagation(); viewUserBookings(r); }}>User bookings</button>
-              ) : null}
-              <button
-                className={`hover:underline ${r.ticket_pdf ? 'text-emerald-600' : 'text-gray-400 cursor-not-allowed'}`}
-                onClick={(e) => { e.stopPropagation(); handleDownloadTicket(r); }}
-                disabled={!r.ticket_pdf}
-              >
-                Download ticket
-              </button>
-              <button
-                className="text-green-600 hover:underline"
-                onClick={(e) => { e.stopPropagation(); handleResendWhatsApp(r); }}
-              >
-                WhatsApp
-              </button>
-              <button
-                className="text-blue-600 hover:underline"
-                onClick={(e) => { e.stopPropagation(); handleResendEmail(r); }}
-              >
-                Email
-              </button>
-            </div>
-          ) },
-          { key: 'addons', title: 'Add-ons', render: (r) => {
-            if (!r.addons || !r.addons.length) {
-              return <span className="text-xs text-gray-400">—</span>;
-            }
-            return (
-              <div className="flex flex-col gap-1 text-xs">
-                {r.addons.map((addon, idx) => (
-                  <div key={idx} className="text-gray-600">
-                    • {addon.title} x{addon.quantity} ({formatCurrency(addon.price * addon.quantity)})
-                  </div>
-                ))}
+          {
+            key: '__actions', title: '', render: (r) => (
+              <div className="flex flex-wrap justify-end gap-3 text-xs">
+                <button className="text-blue-600 hover:underline" onClick={(e) => { e.stopPropagation(); navigate(`/admin/bookings/${r.booking_id ?? r.id}`); }}>Details</button>
+                {r.user_email || r.user_phone ? (
+                  <button className="text-gray-600 hover:underline" onClick={(e) => { e.stopPropagation(); viewUserBookings(r); }}>User bookings</button>
+                ) : null}
+                <button
+                  className={`hover:underline ${r.ticket_pdf ? 'text-emerald-600' : 'text-gray-400 cursor-not-allowed'}`}
+                  onClick={(e) => { e.stopPropagation(); handleDownloadTicket(r); }}
+                  disabled={!r.ticket_pdf}
+                >
+                  Download ticket
+                </button>
+                <button
+                  className="text-green-600 hover:underline"
+                  onClick={(e) => { e.stopPropagation(); handleResendWhatsApp(r); }}
+                >
+                  WhatsApp
+                </button>
+                <button
+                  className="text-blue-600 hover:underline"
+                  onClick={(e) => { e.stopPropagation(); handleResendEmail(r); }}
+                >
+                  Email
+                </button>
               </div>
-            );
-          } }
+            )
+          },
+          {
+            key: 'addons', title: 'Add-ons', render: (r) => {
+              if (!r.addons || !r.addons.length) {
+                return <span className="text-xs text-gray-400">—</span>;
+              }
+              return (
+                <div className="flex flex-col gap-1 text-xs">
+                  {r.addons.map((addon, idx) => (
+                    <div key={idx} className="text-gray-600">
+                      • {addon.title} x{addon.quantity} ({formatCurrency(addon.price * addon.quantity)})
+                    </div>
+                  ))}
+                </div>
+              );
+            }
+          }
         ]}
         rows={rows}
         onRowClick={(r) => navigate(`/admin/bookings/${r.booking_id ?? r.id}`)}
@@ -928,10 +943,15 @@ export default function BookingsList() {
         </button>
       </div>
 
-      <AdminPagination
+      <TablePagination
+        count={meta.total || meta.count || meta.totalBookings || rows.length}
         page={currPage}
-        totalPages={totalPages}
-        onPage={(p) => dispatch(listAdminBookings({ ...buildQuery(), page: p, limit: 20 }))}
+        rowsPerPage={rowsPerPage}
+        onPageChange={(p) => dispatch(listAdminBookings({ ...buildQuery(), page: p, limit: rowsPerPage }))}
+        onRowsPerPageChange={(l) => {
+          setRowsPerPage(l);
+          dispatch(listAdminBookings({ ...buildQuery(), page: 1, limit: l }));
+        }}
       />
 
       <SectionCard title="Bookings Trend" subtitle="Paid bookings vs revenue" className="p-4">

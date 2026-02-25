@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import api from '../../services/apiClient';
 import endpoints from '../../services/endpoints';
+import { loadSliceCache, saveSliceCache, isFresh } from '../../utils/sliceCache';
 
 const toErr = (e) =>
   e && typeof e === 'object'
@@ -9,10 +10,15 @@ const toErr = (e) =>
 
 export const fetchOffers = createAsyncThunk(
   'offers/fetchOffers',
-  async (params = { active: true, page: 1, limit: 12 }, { signal, rejectWithValue }) => {
+  async (params = { active: true, page: 1, limit: 12 }, { signal, rejectWithValue, getState }) => {
+    const { offers } = getState();
+    if (isFresh(offers.lastFetched) && offers.items.length) {
+      return offers.items;
+    }
     try {
       const res = await api.get(endpoints.offers.list(), { params, signal });
       const list = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
+      saveSliceCache('offers', list);
       return list;
     } catch (err) {
       return rejectWithValue(err);
@@ -20,9 +26,17 @@ export const fetchOffers = createAsyncThunk(
   }
 );
 
+const cached = loadSliceCache('offers');
+const initialState = {
+  items: cached?.items || [],
+  status: 'idle',
+  error: null,
+  lastFetched: cached?.lastFetched || null
+};
+
 const offersSlice = createSlice({
   name: 'offers',
-  initialState: { items: [], status: 'idle', error: null, lastFetched: null },
+  initialState,
   reducers: {},
   extraReducers: (b) => {
     b.addCase(fetchOffers.pending, (s) => { s.status = 'loading'; s.error = null; });

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import adminApi from '../../services/adminApi';
 import A from '../../services/adminEndpoints';
 import AdminTable from '../../components/common/AdminTable';
-import AdminPagination from '../../components/common/AdminPagination';
+import TablePagination from '../../components/common/TablePagination';
 
 export default function UsersList() {
   const navigate = useNavigate();
@@ -24,7 +24,7 @@ export default function UsersList() {
       const res = await adminApi.get(A.roles());
       const roles = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
       setState((s) => ({ ...s, roles }));
-    } catch {}
+    } catch { }
   };
 
   const load = async (page = 1) => {
@@ -32,7 +32,7 @@ export default function UsersList() {
     try {
       const res = await adminApi.get(A.users(), { params: { search: state.q || undefined, role: state.role || undefined, page, limit: state.limit } });
       const items = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
-      setState((s) => ({ ...s, status: 'succeeded', items, meta: res?.meta || null, page }));
+      setState((s) => ({ ...s, status: 'succeeded', items, meta: res?.meta || { total: items.length, page, limit: s.limit }, page }));
     } catch (err) {
       setState((s) => ({ ...s, status: 'failed', error: err }));
     }
@@ -69,10 +69,17 @@ export default function UsersList() {
         empty={state.status === 'loading' ? 'Loading…' : 'No users found'}
       />
 
-      <AdminPagination
+      <TablePagination
+        count={meta.total || meta.count || state.items.length}
         page={state.page}
-        totalPages={totalPages}
-        onPage={(p) => load(p)}
+        rowsPerPage={state.limit}
+        onPageChange={(p) => load(p)}
+        onRowsPerPageChange={(l) => {
+          setState(s => ({ ...s, limit: l }));
+          // load will be called by useEffect if we track limit, or we can call it here
+          // state.limit is updated asynchronously, so better call it with 'l'
+          setTimeout(() => load(1), 0);
+        }}
       />
     </div>
   );

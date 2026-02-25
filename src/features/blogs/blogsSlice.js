@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import api from '../../services/apiClient';
 import endpoints from '../../services/endpoints';
+import { loadSliceCache, saveSliceCache, isFresh } from '../../utils/sliceCache';
 
 const toErr = (e) =>
   e && typeof e === 'object'
@@ -9,7 +10,12 @@ const toErr = (e) =>
 
 export const fetchBlogs = createAsyncThunk(
   'blogs/fetchBlogs',
-  async (params = { active: true, limit: 3, page: 1 }, { signal, rejectWithValue }) => {
+  async (params = { active: true, limit: 3, page: 1 }, { signal, rejectWithValue, getState }) => {
+    const { blogs } = getState();
+    // Cache check only if default params and already have data
+    if (!params?.search && params?.page === 1 && isFresh(blogs.lastFetched) && blogs.items.length) {
+      return { items: blogs.items, page: 1, hasMore: blogs.hasMore, fromCache: true };
+    }
     try {
       const res = await api.get(endpoints.blogs.list(), { params, signal });
       const list = Array.isArray(res?.data)
@@ -19,16 +25,34 @@ export const fetchBlogs = createAsyncThunk(
           : (res?.data && typeof res.data === 'object' && Array.isArray(res.data.data))
             ? res.data.data
             : [];
-      return { items: list, page: params.page || 1, hasMore: list.length >= (params.limit || 12) };
+
+      const payload = { items: list, page: params.page || 1, hasMore: list.length >= (params.limit || 12) };
+
+      // Cache only if it's the default main list fetch (page 1)
+      if (!params?.search && params?.page === 1) {
+        saveSliceCache('blogs', payload);
+      }
+
+      return payload;
     } catch (err) {
       return rejectWithValue(err);
     }
   }
 );
 
+const cached = loadSliceCache('blogs');
+const initialState = {
+  items: cached?.items?.items || [],
+  status: 'idle',
+  error: null,
+  lastFetched: cached?.lastFetched || null,
+  currentPage: cached?.items?.page || 0,
+  hasMore: cached?.items?.hasMore ?? true
+};
+
 const blogsSlice = createSlice({
   name: 'blogs',
-  initialState: { items: [], status: 'idle', error: null, lastFetched: null, currentPage: 0, hasMore: true },
+  initialState,
   reducers: {
     clearBlogs: (state) => {
       state.items = [];
@@ -45,7 +69,11 @@ const blogsSlice = createSlice({
     });
     b.addCase(fetchBlogs.fulfilled, (s, a) => {
       s.status = 'succeeded';
-      const { items, page, hasMore } = a.payload;
+      const { items, page, hasMore, fromCache } = a.payload;
+      if (fromCache) {
+        // Already loaded from initialState, but fulfilled to update status
+        return;
+      }
       if (page === 1) {
         s.items = items;
       } else {

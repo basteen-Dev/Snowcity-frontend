@@ -2,6 +2,7 @@ import React from 'react';
 import adminApi from '../../services/adminApi';
 import A from '../../services/adminEndpoints';
 import AdminTable from '../../components/common/AdminTable';
+import TablePagination from '../../components/common/TablePagination';
 import { useNavigate } from 'react-router-dom';
 import { imgSrc } from '../../../utils/media';
 
@@ -216,11 +217,39 @@ export default function BlogsList() {
         empty={state.status === 'loading' ? 'Loading…' : 'No blogs'}
       />
 
-      <div className="mt-3 flex items-center gap-2">
-        <button className="rounded-md border px-3 py-1 text-sm" onClick={() => canPrev && load(state.page - 1)} disabled={!canPrev || state.status === 'loading'}>Prev</button>
-        <div className="text-sm text-gray-600">Page {meta.page || state.page}</div>
-        <button className="rounded-md border px-3 py-1 text-sm" onClick={() => canNext && load(state.page + 1)} disabled={!canNext || state.status === 'loading'}>Next</button>
-      </div>
+      <TablePagination
+        count={meta.total || meta.count || meta.total_items || state.items.length}
+        page={state.page}
+        rowsPerPage={state.limit}
+        onPageChange={(p) => load(p)}
+        onRowsPerPageChange={(l) => {
+          setState(s => ({ ...s, limit: l }));
+          // Directly load with new limit for better UX
+          const q = state.q || '';
+          const active = state.active || '';
+          const page = 1;
+
+          (async () => {
+            setState((s) => ({ ...s, status: 'loading', error: null, page }));
+            try {
+              const res = await adminApi.get(A.blogs(), {
+                params: { q: q || undefined, active: active || undefined, page, limit: l }
+              });
+              const { items, meta } = parseBlogsResponse(res);
+              setState((s) => ({
+                ...s,
+                status: 'succeeded',
+                items,
+                meta: meta || { page, limit: l, count: items.length },
+                page,
+                limit: l
+              }));
+            } catch (err) {
+              setState((s) => ({ ...s, status: 'failed', error: err }));
+            }
+          })();
+        }}
+      />
     </div>
   );
 }

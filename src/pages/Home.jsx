@@ -34,23 +34,6 @@ import {
 import { imgSrc } from '../utils/media';
 import usePageSeo from '../hooks/usePageSeo';
 
-// small helpers for localStorage caching
-const CACHE_KEY = 'sc_home_cache_v1';
-const loadCache = () => {
-  try {
-    const raw = localStorage.getItem(CACHE_KEY);
-    return raw ? JSON.parse(raw) : {};
-  } catch {
-    return {};
-  }
-};
-const saveCache = (patch) => {
-  try {
-    const prev = loadCache() || {};
-    localStorage.setItem(CACHE_KEY, JSON.stringify({ ...prev, ...patch, __ts: Date.now() }));
-  } catch { }
-};
-
 // idle helper
 const onIdle = (cb) => {
   if ('requestIdleCallback' in window) {
@@ -79,63 +62,36 @@ export default function Home() {
     type: 'website',
   });
 
-  // provide instant content from cache while Redux fetches in background
-  const cacheRef = React.useRef(loadCache());
-
-  // initial fetch (critical first), with conditions
+  // initial fetch
   React.useEffect(() => {
-    if (banners.status === 'idle') dispatch(fetchBanners());
-    if (attractions.status === 'idle') dispatch(fetchAttractions());
+    dispatch(fetchBanners());
+    dispatch(fetchAttractions());
 
     // prefetch lower-priority when idle
     const id = onIdle(() => {
-      // Defer these further to prioritize FCP/LCP of banners/attractions
       onIdle(() => {
-        if (combos.status === 'idle') dispatch(fetchCombos());
-        if (offers.status === 'idle') dispatch(fetchOffers());
-        if (coupons.status === 'idle') dispatch(fetchCoupons({ active: true, limit: 100 }));
-        if (pages.status === 'idle') dispatch(fetchPages());
-        if (blogs.status === 'idle') dispatch(fetchBlogs());
+        dispatch(fetchCombos());
+        dispatch(fetchOffers());
+        dispatch(fetchCoupons({ active: true, limit: 100 }));
+        dispatch(fetchPages());
+        dispatch(fetchBlogs());
       });
     });
     return () => (typeof id === 'number' ? clearTimeout(id) : window.cancelIdleCallback?.(id));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch]);
 
-  // hydrate cache when slices succeed (so next visits are instant)
-  React.useEffect(() => {
-    if (banners.items?.length) saveCache({ banners: banners.items });
-  }, [banners.items]);
-  React.useEffect(() => {
-    if (attractions.items?.length) saveCache({ attractions: attractions.items });
-  }, [attractions.items]);
-  React.useEffect(() => {
-    if (combos.items?.length) saveCache({ combos: combos.items });
-  }, [combos.items]);
-  React.useEffect(() => {
-    if (offers.items?.length) saveCache({ offers: offers.items });
-  }, [offers.items]);
-  React.useEffect(() => {
-    if (coupons.items?.length) saveCache({ coupons: coupons.items });
-  }, [coupons.items]);
-  React.useEffect(() => {
-    if (pages.items?.length) saveCache({ pages: pages.items });
-  }, [pages.items]);
-  React.useEffect(() => {
-    if (blogs.items?.length) saveCache({ blogs: blogs.items });
-  }, [blogs.items]);
-
-  // resolve “display” items (store first, else cached)
-  const bannerItems = banners.items?.length ? banners.items : cacheRef.current.banners || [];
+  // item resolvers (Redux slices now handle hydration from localStorage)
+  const bannerItems = banners.items || [];
   const attractionItems = React.useMemo(() => {
-    const items = attractions.items?.length ? attractions.items : cacheRef.current.attractions || [];
+    const items = attractions.items || [];
     return [...items].sort((a, b) => (a.id || a.attraction_id || 0) - (b.id || b.attraction_id || 0));
-  }, [attractions.items, cacheRef.current.attractions]);
-  const comboItems = combos.items?.length ? combos.items : cacheRef.current.combos || [];
-  const offerItems = offers.items?.length ? offers.items : cacheRef.current.offers || [];
-  const couponItems = coupons.items?.length ? coupons.items : cacheRef.current.coupons || [];
-  const pageItems = pages.items?.length ? pages.items : cacheRef.current.pages || [];
-  const blogItems = blogs.items?.length ? blogs.items : cacheRef.current.blogs || [];
+  }, [attractions.items]);
+  const comboItems = combos.items || [];
+  const offerItems = offers.items || [];
+  const couponItems = coupons.items || [];
+  const pageItems = pages.items || [];
+  const blogItems = blogs.items || [];
 
   const marqueeItems = React.useMemo(() => {
     const entries = [];

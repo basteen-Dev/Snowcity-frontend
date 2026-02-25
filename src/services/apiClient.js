@@ -64,6 +64,7 @@ let authHandlers = {
 
 export function setAuthToken(token) {
   authToken = token || null;
+  if (typeof clearApiCache === 'function') clearApiCache();
 }
 
 export function setAuthHandlers({ getToken, onUnauthorized } = {}) {
@@ -192,9 +193,24 @@ http.interceptors.response.use(
 
 // 7. Exported API Wrapper
 const api = {
-  async get(url, { params, headers, signal, fullResponse = false } = {}) {
+  async get(url, { params, headers, signal, fullResponse = false, noCache = false } = {}) {
+    const cacheKey = !noCache && !fullResponse ? `${url}:${JSON.stringify(params || {})}` : null;
+
+    if (cacheKey) {
+      const cached = getCache.get(cacheKey);
+      if (cached && (Date.now() - cached.ts < GET_CACHE_TTL)) {
+        return cached.data;
+      }
+    }
+
     const res = await http.get(url, { params, headers, signal });
-    return fullResponse ? res : res.data;
+    const data = fullResponse ? res : res.data;
+
+    if (cacheKey) {
+      getCache.set(cacheKey, { data, ts: Date.now() });
+    }
+
+    return data;
   },
 
   async post(url, body, { params, headers, signal, fullResponse = false } = {}) {

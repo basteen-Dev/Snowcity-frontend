@@ -2,6 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import adminApi from '../../services/adminApi';
+import TablePagination from '../../components/common/TablePagination';
 import { imgSrc } from '../../../utils/media';
 
 export default function PagesList() {
@@ -67,15 +68,7 @@ export default function PagesList() {
           </button>
         </form>
         <div className="ml-auto flex items-center gap-2">
-          <label className="text-sm">Per page</label>
-          <select
-            className="rounded-md border px-2 py-2 text-sm dark:bg-neutral-900 dark:border-neutral-700"
-            value={limit}
-            onChange={(e) => { setLimit(Number(e.target.value)); setPage(1); }}
-          >
-            {[10, 20, 50, 100].map((n) => <option key={n} value={n}>{n}</option>)}
-          </select>
-          <Link to="/admin/catalog/pages/new" className="px-3 py-2 rounded-md bg-gray-900 text-white text-sm">
+          <Link to="/admin/catalog/pages/new" className="px-5 py-2 rounded-md bg-gray-900 text-white text-sm font-semibold">
             New Page
           </Link>
         </div>
@@ -137,28 +130,16 @@ export default function PagesList() {
         </table>
       </div>
 
-      <div className="flex items-center gap-2">
-        <div className="text-sm text-gray-600 dark:text-neutral-300">
-          {total} result{total === 1 ? '' : 's'}
-        </div>
-        <div className="ml-auto flex items-center gap-2">
-          <button
-            className="px-3 py-1 rounded-md border text-sm"
-            disabled={page <= 1}
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-          >
-            Prev
-          </button>
-          <div className="text-sm">Page {page}</div>
-          <button
-            className="px-3 py-1 rounded-md border text-sm"
-            disabled={(page * limit) >= total}
-            onClick={() => setPage((p) => p + 1)}
-          >
-            Next
-          </button>
-        </div>
-      </div>
+      <TablePagination
+        count={total}
+        page={page}
+        rowsPerPage={limit}
+        onPageChange={(p) => setPage(p)}
+        onRowsPerPageChange={(l) => {
+          setLimit(l);
+          setPage(1);
+        }}
+      />
 
       {loading ? <div className="text-sm text-gray-500">Loading…</div> : null}
     </div>

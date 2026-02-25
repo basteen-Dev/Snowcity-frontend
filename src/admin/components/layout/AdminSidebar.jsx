@@ -210,6 +210,7 @@ export default function AdminSidebar({ collapsed, onClose }) {
           ...(canSeeAdminMgmt
             ? [
               { to: '/admin/admins', label: 'Admin Team', icon: UserCog, permsAny: ['admin-management:read'] },
+              { to: '/admin/admins/new', label: 'Create Admin', icon: UserCog, permsAny: ['admin-management:write', 'admin-management:manage'] },
               { to: '/admin/admins/access', label: 'Grant Access', icon: KeyRound, permsAny: ['admin-management:write', 'admin-management:manage'] },
             ]
             : []),
