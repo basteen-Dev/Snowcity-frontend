@@ -63,6 +63,7 @@ const ComboSlotBulk = lazy(() => import('../pages/catalog/ComboSlotBulk.jsx'));
 const DynamicPricing = lazy(() => import('../pages/DynamicPricing'));
 
 const UsersList = lazy(() => import('../pages/users/UsersList'));
+const UserNew = lazy(() => import('../pages/users/UserNew'));
 const UserEdit = lazy(() => import('../pages/users/UserEdit'));
 
 const RolesList = lazy(() => import('../pages/rbac/RolesList'));
@@ -200,6 +201,7 @@ export default function AdminRouter() {
 
           {/* Users */}
           <Route path="users" element={<UsersList />} />
+          <Route path="users/new" element={<UserNew />} />
           <Route path="users/:id" element={<UserEdit />} />
 
           {/* RBAC */}

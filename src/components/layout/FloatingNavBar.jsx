@@ -122,18 +122,14 @@ export default function FloatingNavBar() {
   useLockBodyScroll(mobileOpen || authModalOpen);
 
   // Premium navbar styling
-  const isWhite = scrolled || mobileOpen || !isHome;
+  const isWhite = true; // Always white as per user request
 
   const navLinkBase =
-    "px-3 py-2 rounded-lg text-sm font-bold tracking-wide  relative group";
-  const navLinkTone = isWhite
-    ? "text-gray-800 hover:text-sky-600 hover:bg-sky-50"
-    : "text-white hover:text-white/80 drop-shadow-md";
+    "px-3 py-2 rounded-lg text-sm font-bold tracking-wide relative group";
+  const navLinkTone = "text-gray-800 hover:text-sky-600 hover:bg-sky-50";
   const navLinkClass = `${navLinkBase} ${navLinkTone}`;
 
-  const signInButtonClass = isWhite
-    ? "inline-flex items-center rounded-full border border-sky-400 px-5 py-2 text-sky-600 font-semibold bg-white hover:bg-sky-50  shadow-sm"
-    : "inline-flex items-center rounded-full border border-white/40 px-5 py-2 text-white font-semibold bg-white/10 backdrop-blur-sm hover:bg-white/20  shadow-sm";
+  const signInButtonClass = "inline-flex items-center rounded-full border border-sky-400 px-5 py-2 text-sky-600 font-semibold bg-white hover:bg-sky-50 shadow-sm";
 
   const bookTicketButtonClass =
     "inline-flex items-center rounded-full px-6 py-2.5 text-sm font-bold bg-[#003de6] text-white hover:bg-[#002db3] shadow-md  hover:shadow-lg hover:scale-105 active:scale-95";
@@ -471,14 +467,8 @@ export default function FloatingNavBar() {
       <nav
         ref={navRef}
         data-floating-nav
-        className={`fixed z-[150]  ${isFullBlock
-          ? "top-0 left-0 right-0 rounded-none border-b border-gray-100"
-          : "top-4 left-4 right-4 rounded-full"
-          } ${isWhite
-            ? "bg-white/95 backdrop-blur-md py-2 shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1),0_0_0_1px_rgba(229,231,235,1)]"
-            : "bg-transparent py-2 shadow-[0_0_0_1px_rgba(255,255,255,0)]"
-          }`}
-        style={{ backfaceVisibility: 'hidden' }}
+        className={`fixed z-[150] bg-white py-2 shadow-md transition-none top-4 left-4 right-4 rounded-full border border-gray-200`}
+        style={{ backfaceVisibility: 'hidden', transition: 'none' }}
       >
 
         {/* ------------------- DESKTOP NAV -------------------- */}
@@ -579,7 +569,7 @@ export default function FloatingNavBar() {
               </div>
 
               <Link to="/contact" className={navLinkClass}>
-                Contact Us
+                CONTACT US
               </Link>
               {!token}
               <button

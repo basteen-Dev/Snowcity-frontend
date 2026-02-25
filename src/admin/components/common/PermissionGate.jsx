@@ -16,11 +16,19 @@ const selectAuthContext = (state) => {
 
 export default function PermissionGate({ anyOf = [], allOf = [], children, fallback = null }) {
   const { perms, roles, userId } = useSelector(selectAuthContext, shallowEqual);
-  const roleSet = React.useMemo(() => new Set(roles.map((r) => String(r).toLowerCase())), [roles]);
+  const roleSet = React.useMemo(() => {
+    return new Set(roles.map((r) => {
+      const str = typeof r === 'string' ? r : String(r.role_name || r.name || r || '');
+      return str.toLowerCase().replace(/\s+/g, '');
+    }));
+  }, [roles]);
+
   const isSuperUser = userId != null && Number(userId) === 1;
 
   // Root / superadmin / superuser bypass all UI checks
-  if (isSuperUser || roleSet.has('root') || roleSet.has('superadmin')) return children;
+  const isBypass = isSuperUser || roleSet.has('root') || roleSet.has('superadmin');
+
+  if (isBypass) return children;
 
   const hasAll = allOf.length ? allOf.every((p) => perms.includes(p)) : true;
   const hasAny = anyOf.length ? anyOf.some((p) => perms.includes(p)) : true;

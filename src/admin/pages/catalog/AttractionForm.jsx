@@ -14,7 +14,7 @@ export default function AttractionForm() {
   const [state, setState] = React.useState({
     status: isEdit ? 'loading' : 'idle',
     error: null,
-    form: { title: '', slug: '', image_url: '', image_alt: '', desktop_image_url: '', desktop_image_alt: '', base_price: 0, active: true, description: '', meta_title: '', short_description: '', faq_items: [], head_schema: '', body_schema: '', footer_schema: '' }
+    form: { title: '', slug: '', image_url: '', image_alt: '', desktop_image_url: '', desktop_image_alt: '', base_price: 0, active: true, description: '', meta_title: '', short_description: '', faq_items: [], head_schema: '' }
   });
   const [saving, setSaving] = React.useState(false);
 
@@ -41,8 +41,6 @@ export default function AttractionForm() {
             short_description: a.short_description || '',
             faq_items: Array.isArray(a.faq_items) ? a.faq_items : [],
             head_schema: a.head_schema || '',
-            body_schema: a.body_schema || '',
-            footer_schema: a.footer_schema || '',
           }
         }));
       } catch (err) { setState((s) => ({ ...s, status: 'failed', error: err })); }
@@ -189,39 +187,16 @@ export default function AttractionForm() {
 
         {/* Schema Markup */}
         <div className="mt-8 pt-6 border-t border-gray-200 dark:border-neutral-800">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-neutral-100 mb-2">Schema Markup</h2>
-          <p className="text-sm text-gray-500 dark:text-neutral-400 mb-4">Custom JSON-LD structured data for this attraction</p>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">Head Schema (JSON-LD)</label>
-              <textarea
-                className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-neutral-900 dark:text-neutral-100 font-mono text-sm"
-                rows={4}
-                value={f.head_schema || ''}
-                onChange={(e) => setState(s => ({ ...s, form: { ...s.form, head_schema: e.target.value } }))}
-                placeholder='{"@context":"https://schema.org", ...}'
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">Body Schema (JSON-LD)</label>
-              <textarea
-                className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-neutral-900 dark:text-neutral-100 font-mono text-sm"
-                rows={4}
-                value={f.body_schema || ''}
-                onChange={(e) => setState(s => ({ ...s, form: { ...s.form, body_schema: e.target.value } }))}
-                placeholder='{"@context":"https://schema.org", ...}'
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">Footer Schema (JSON-LD)</label>
-              <textarea
-                className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-neutral-900 dark:text-neutral-100 font-mono text-sm"
-                rows={4}
-                value={f.footer_schema || ''}
-                onChange={(e) => setState(s => ({ ...s, form: { ...s.form, footer_schema: e.target.value } }))}
-                placeholder='{"@context":"https://schema.org", ...}'
-              />
-            </div>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-neutral-100 mb-2">Custom Schema / Scripts</h2>
+          <p className="text-sm text-gray-500 dark:text-neutral-400 mb-4">Paste your schema markup or custom scripts here. It will be added exactly as provided to the attraction page head.</p>
+          <div>
+            <textarea
+              className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-neutral-900 dark:text-neutral-100 font-mono text-sm"
+              rows={10}
+              value={f.head_schema || ''}
+              onChange={(e) => setState(s => ({ ...s, form: { ...s.form, head_schema: e.target.value } }))}
+              placeholder='<script type="application/ld+json">...</script>'
+            />
           </div>
         </div>
 

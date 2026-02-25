@@ -50,8 +50,6 @@ export default function PageForm() {
     hero_image_alt: '',
     faq_items: [],
     head_schema: '',
-    body_schema: '',
-    footer_schema: '',
   });
   const [err, setErr] = React.useState('');
   const [saving, setSaving] = React.useState(false);
@@ -71,8 +69,6 @@ export default function PageForm() {
           placement_ref_id: row.placement_ref_id || null,
           faq_items: Array.isArray(row.faq_items) ? row.faq_items : [],
           head_schema: typeof row.head_schema === 'object' ? JSON.stringify(row.head_schema, null, 2) : (row.head_schema || ''),
-          body_schema: typeof row.body_schema === 'object' ? JSON.stringify(row.body_schema, null, 2) : (row.body_schema || ''),
-          footer_schema: typeof row.footer_schema === 'object' ? JSON.stringify(row.footer_schema, null, 2) : (row.footer_schema || ''),
         }));
       } catch (e) {
         setErr(e.message || 'Failed to load page');
@@ -99,14 +95,6 @@ export default function PageForm() {
       payload.placement_ref_id = form.placement === 'attraction_details' ? normalizeId(form.placement_ref_id) : null;
       payload.nav_order = Number.isFinite(Number(form.nav_order)) ? Number(form.nav_order) : 0;
       // Parse schema JSON fields
-      const jsonFields = ['head_schema', 'body_schema', 'footer_schema'];
-      for (const key of jsonFields) {
-        if (payload[key] && typeof payload[key] === 'string' && payload[key].trim()) {
-          try { payload[key] = JSON.parse(payload[key]); } catch { /* send as-is */ }
-        } else {
-          payload[key] = {};
-        }
-      }
       payload.nav_order = Number.isFinite(Number(form.nav_order)) ? Number(form.nav_order) : 0;
       if (payload.editor_mode === 'raw') {
         // Ensure raw fields present; content not needed
@@ -140,15 +128,7 @@ export default function PageForm() {
   const preview = async () => {
     try {
       const payload = { ...form };
-      // Parse schema JSON fields
-      const jsonFields = ['head_schema', 'body_schema', 'footer_schema'];
-      for (const key of jsonFields) {
-        if (payload[key] && typeof payload[key] === 'string' && payload[key].trim()) {
-          try { payload[key] = JSON.parse(payload[key]); } catch { /* send as-is */ }
-        } else {
-          payload[key] = {};
-        }
-      }
+      // Custom schema is raw string
 
       const apiBase = adminApi.defaults.baseURL || '';
       const rootBase = apiBase.endsWith('/api') ? apiBase.slice(0, -4) : apiBase;
@@ -525,39 +505,16 @@ export default function PageForm() {
 
           {/* Schema Markup */}
           <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-neutral-700 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-neutral-100 mb-2">Schema Markup</h2>
-            <p className="text-sm text-gray-500 dark:text-neutral-400 mb-4">Custom JSON-LD structured data for this page</p>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">Head Schema (JSON-LD)</label>
-                <textarea
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-neutral-700 dark:text-neutral-100 font-mono text-sm"
-                  rows={5}
-                  value={form.head_schema || ''}
-                  onChange={(e) => onChange({ head_schema: e.target.value })}
-                  placeholder='{"@context":"https://schema.org", ...}'
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">Body Schema (JSON-LD)</label>
-                <textarea
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-neutral-700 dark:text-neutral-100 font-mono text-sm"
-                  rows={5}
-                  value={form.body_schema || ''}
-                  onChange={(e) => onChange({ body_schema: e.target.value })}
-                  placeholder='{"@context":"https://schema.org", ...}'
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">Footer Schema (JSON-LD)</label>
-                <textarea
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-neutral-700 dark:text-neutral-100 font-mono text-sm"
-                  rows={5}
-                  value={form.footer_schema || ''}
-                  onChange={(e) => onChange({ footer_schema: e.target.value })}
-                  placeholder='{"@context":"https://schema.org", ...}'
-                />
-              </div>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-neutral-100 mb-2">Custom Schema / Scripts</h2>
+            <p className="text-sm text-gray-500 dark:text-neutral-400 mb-4">Paste your schema markup or custom scripts here. It will be added exactly as provided to the page head.</p>
+            <div>
+              <textarea
+                className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-neutral-700 dark:text-neutral-100 font-mono text-sm"
+                rows={10}
+                value={form.head_schema || ''}
+                onChange={(e) => onChange({ head_schema: e.target.value })}
+                placeholder='<script type="application/ld+json">...</script>'
+              />
             </div>
           </div>
 

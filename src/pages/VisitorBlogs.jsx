@@ -51,7 +51,7 @@ export default function VisitorBlogs() {
   const items = blogs.items || [];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#e0f2fe] via-[#bae6fd] to-white px-4 pt-20 pb-10">
+    <div className="min-h-screen bg-[#e8f2ff] px-4 pt-20 pb-10">
       <div className="max-w-7xl mx-auto">
         <header className="mb-12 text-center">
           <p className="uppercase text-xs tracking-[0.3em] text-blue-500 font-medium">Visitor Stories</p>
@@ -124,7 +124,7 @@ export default function VisitorBlogs() {
                       {(blog.short_description || blog.excerpt || blog.content) && (
                         <p className="text-gray-600 text-sm leading-relaxed line-clamp-3 mb-4">
                           {blog.short_description || blog.excerpt ||
-                           (blog.content ? blog.content.replace(/<[^>]*>/g, '').substring(0, 120) + '...' : '')}
+                            (blog.content ? blog.content.replace(/<[^>]*>/g, '').substring(0, 120) + '...' : '')}
                         </p>
                       )}
 

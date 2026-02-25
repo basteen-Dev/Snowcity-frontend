@@ -116,9 +116,31 @@ export default function usePageSeo({
             createdElements.current.push(script);
         }
 
-        // Helper to inject arbitrary JSON-LD schemas
+        // Helper to inject arbitrary JSON-LD schemas or RAW HTML/SCRIPTS
         const injectSchema = (schemaData, dataSeoTag, targetNode = document.head) => {
             if (!schemaData) return;
+
+            // If it looks like HTML (contains <script, <meta, <link, etc), inject it as-is
+            if (typeof schemaData === 'string' && /<[a-z][\s\S]*>/i.test(schemaData)) {
+                const div = document.createElement('div');
+                div.innerHTML = schemaData;
+                Array.from(div.childNodes).forEach(node => {
+                    if (node.nodeType === 1) { // Element
+                        const newNode = document.createElement(node.tagName);
+                        Array.from(node.attributes).forEach(attr => newNode.setAttribute(attr.name, attr.value));
+                        if (node.tagName.toLowerCase() === 'script') {
+                            newNode.textContent = node.textContent;
+                        } else {
+                            newNode.innerHTML = node.innerHTML;
+                        }
+                        newNode.setAttribute('data-seo', dataSeoTag);
+                        targetNode.appendChild(newNode);
+                        createdElements.current.push(newNode);
+                    }
+                });
+                return;
+            }
+
             const script = document.createElement('script');
             script.type = 'application/ld+json';
             script.setAttribute('data-seo', dataSeoTag);
@@ -142,7 +164,7 @@ export default function usePageSeo({
             createdElements.current.push(script);
         };
 
-        injectSchema(head_schema, 'head-schema', document.head);
+        injectSchema(head_schema, 'custom-schema', document.head);
         injectSchema(body_schema, 'body-schema', document.body);
         injectSchema(footer_schema, 'footer-schema', document.body);
 

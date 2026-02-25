@@ -26,7 +26,7 @@ export default function UserEdit() {
         const roles = Array.isArray(r?.data) ? r.data : Array.isArray(r) ? r : [];
         // Try to infer current roles from user.roles or user.role_ids
         const selectedRoleIds =
-          (user.roles && user.roles.map((x) => x.role_id)) ||
+          (Array.isArray(user.roles) ? user.roles.map((x) => x.role_id) : []) ||
           user.role_ids ||
           [];
         setState({ status: 'idle', error: null, user, roles, selectedRoleIds });

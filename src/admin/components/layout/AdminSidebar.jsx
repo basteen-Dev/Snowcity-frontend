@@ -38,9 +38,9 @@ const STORE_KEY = 'sc_admin_sidebar_open_sections';
 
 function normalizeRoleName(r) {
   if (!r) return '';
-  if (typeof r === 'string') return r.toLowerCase().trim();
-  // In case roles are objects: { role_name: 'Root' } or { name: 'root' }
-  return String(r.role_name || r.name || r).toLowerCase().trim();
+  const str = typeof r === 'string' ? r : String(r.role_name || r.name || r || '');
+  // Remove all whitespace and lowercase for robust comparison ("Super Admin" -> "superadmin")
+  return str.toLowerCase().replace(/\s+/g, '');
 }
 
 function usePersistedSections(defaults) {
@@ -180,8 +180,6 @@ export default function AdminSidebar({ collapsed, onClose }) {
         label: 'Bookings',
         items: [
           { to: '/admin/bookings', label: 'All Bookings', icon: CalendarClock },
-          { to: '/admin/bookings/calendar', label: 'Booking Calendar', icon: Calendar },
-          { to: '/admin/bookings/slots', label: 'Time Slots', icon: Clock3 },
         ],
       },
       {

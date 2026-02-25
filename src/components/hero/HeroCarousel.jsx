@@ -56,6 +56,36 @@ function deriveHref(b) {
 export default function HeroCarousel({ banners = [], waveColor = "#0b1a33" }) {
   if (!banners.length) return null;
 
+  // Preload logic for the first banner (LCP optimization)
+  React.useEffect(() => {
+    if (banners.length > 0) {
+      const first = banners[0];
+      const desktop = getWebImage(first);
+      const mobile = getMobileImage(first);
+
+      const linkD = document.createElement('link');
+      linkD.rel = 'preload';
+      linkD.as = 'image';
+      linkD.href = desktop;
+      linkD.media = '(min-width: 768px)';
+      document.head.appendChild(linkD);
+
+      const linkM = document.createElement('link');
+      linkM.rel = 'preload';
+      linkM.as = 'image';
+      linkM.href = mobile;
+      linkM.media = '(max-width: 767px)';
+      document.head.appendChild(linkM);
+
+      return () => {
+        try {
+          document.head.removeChild(linkD);
+          document.head.removeChild(linkM);
+        } catch (e) { }
+      };
+    }
+  }, [banners]);
+
   // Sort banners by created_at ascending (first inserted first)
   const sortedBanners = [...banners].sort((a, b) => {
     const aDate = new Date(a.created_at || a.inserted_at || 0);
@@ -64,7 +94,7 @@ export default function HeroCarousel({ banners = [], waveColor = "#0b1a33" }) {
   });
 
   return (
-    <section id="hero" className="relative w-full overflow-hidden h-[85vh] min-h-[600px] md:h-[80vh]">
+    <section id="hero" className="relative w-full overflow-hidden h-[70vh] min-h-[500px] sm:h-[85vh] md:h-[80vh]">
       <span id="hero-sentinel" className="pointer-events-none absolute bottom-0 left-0 h-px w-px" />
 
       <Swiper
@@ -106,9 +136,7 @@ export default function HeroCarousel({ banners = [], waveColor = "#0b1a33" }) {
                     <img
                       src={desktopImg}
                       alt={b?.web_image_alt || title || "Banner"}
-                      className="w-full h-full object-cover object-top md:object-center will-change-transform animate-kenburns brightness-[0.95] contrast-[1.05] saturate-110"
-                      width={1400}
-                      height={800}
+                      className="w-full h-full object-cover will-change-transform animate-kenburns"
                       style={{
                         objectPosition: 'center',
                         objectFit: 'cover',
@@ -118,44 +146,40 @@ export default function HeroCarousel({ banners = [], waveColor = "#0b1a33" }) {
                       loading={idx === 0 ? "eager" : "lazy"}
                       fetchPriority={idx === 0 ? "high" : "auto"}
                       decoding="async"
-                      sizes="(max-width: 767px) 100vw, 100vw"
                     />
                   </picture>
                 </div>
 
-                <div className="absolute inset-0 bg-gradient-to-br from-[#020617]/90 via-[#0f172a]/40 to-transparent mix-blend-multiply" />
-                <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-black/60 via-black/20 to-transparent z-10" />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0f172a]/90 via-transparent to-transparent" />
+                {/* Removed darkening overlays to show original image brightness */}
+                <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
 
                 <div
-                  className="absolute inset-0 flex flex-col justify-between px-4 sm:px-10 z-10 text-left pb-8"
+                  className="absolute inset-0 flex flex-col justify-end px-4 sm:px-10 z-10 text-left pb-12 sm:pb-16"
                   data-swiper-parallax="-200"
                 >
-                  <div className="max-w-4xl space-y-4 pt-14 md:pt-0">
-                    <span className="text-xs sm:text-sm font-semibold tracking-[0.35em] uppercase text-white/75">
+                  <div className="max-w-4xl space-y-3 sm:space-y-4">
+                    <span className="text-[10px] sm:text-xs font-semibold tracking-[0.35em] uppercase text-sky-400">
                       {highlight}
                     </span>
-                    {/* {title ? (
-                      <h2 className="text-white text-3xl sm:text-5xl font-black leading-tight drop-shadow-[0_15px_35px_rgba(0,0,0,0.6)]">
+                    {title ? (
+                      <h2 className="text-white text-3xl sm:text-5xl lg:text-6xl font-black leading-tight drop-shadow-[0_15px_35px_rgba(0,0,0,0.6)]">
                         {title}
                       </h2>
-                    ) : null} */}
+                    ) : null}
                     {subtitle ? (
-                      <p className="text-white/80 text-base md:text-xl max-w-2xl">
+                      <p className="text-white/80 text-sm sm:text-base md:text-xl max-w-2xl line-clamp-3 md:line-clamp-none">
                         {subtitle}
                       </p>
                     ) : null}
                   </div>
                   {href && (
-                    <div className="flex justify-center">
+                    <div className="flex justify-start">
                       <a
                         href={href}
-                        className="group relative inline-flex items-center justify-center rounded-full px-7 py-3 sm:px-10 sm:py-3.5 text-[12px] sm:text-sm font-semibold tracking-[0.28em] uppercase text-white bg-transparent border border-white/60 shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_0_0_1px_rgba(255,255,255,0.10),0_0_26px_rgba(255,255,255,0.14),0_18px_55px_rgba(0,0,0,0.45)] transition-all duration-300 hover:border-white/85 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_0_0_1px_rgba(255,255,255,0.16),0_0_40px_rgba(255,255,255,0.20),0_26px_70px_rgba(0,0,0,0.55)] hover:-translate-y-[1px] active:translate-y-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40"
+                        className="group relative inline-flex items-center justify-center rounded-full px-7 py-3 sm:px-10 sm:py-3.5 text-[10px] sm:text-[12px] font-bold tracking-[0.2em] uppercase text-white bg-transparent border border-white/40 shadow-xl transition-all duration-300 hover:border-white/80 hover:bg-white/5"
                       >
-                        <span className="relative">
-                          EXPLORE NOW
-                        </span>
-                        <svg className="ml-2 w-4 h-4 opacity-90 transition-transform duration-300 group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <span>EXPLORE NOW</span>
+                        <svg className="ml-2 w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>
                       </a>

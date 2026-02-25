@@ -1,7 +1,7 @@
 import React from 'react';
 import dayjs from 'dayjs';
 import { useDispatch, useSelector } from 'react-redux';
-import { listAdminBookings, resendTicketAdmin, resendWhatsAppAdmin, resendEmailAdmin } from '../../features/bookings/adminBookingsSlice';
+import { listAdminBookings, updateAdminBooking, resendTicketAdmin, resendWhatsAppAdmin, resendEmailAdmin } from '../../features/bookings/adminBookingsSlice';
 import AdminTable from '../../components/common/AdminTable';
 import TablePagination from '../../components/common/TablePagination';
 import { useNavigate } from 'react-router-dom';
@@ -9,35 +9,47 @@ import adminApi from '../../services/adminApi';
 import A from '../../services/adminEndpoints';
 
 import { ResponsiveContainer, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Line } from 'recharts';
-import { FileText, FileSpreadsheet } from 'lucide-react';
+import { FileText, FileSpreadsheet, Search, Filter, ChevronLeft, ChevronRight, RotateCcw, TrendingUp, DollarSign, Calendar, Ticket } from 'lucide-react';
 
-const SectionCard = ({ title, subtitle, children, className = '' }) => (
-  <div className={`rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:bg-neutral-900 dark:border-neutral-800 ${className}`}>
-    <div className="flex items-center justify-between mb-4">
-      <div>
-        <p className="text-sm font-semibold text-gray-900 dark:text-neutral-100">{title}</p>
-        {subtitle ? <p className="text-xs text-gray-500">{subtitle}</p> : null}
+/* ─── Shared UI ──────────────────────────────────────────── */
+
+const SectionCard = ({ title, subtitle, children, className = '', headerRight }) => (
+  <div className={`rounded-2xl border border-gray-200/80 bg-white shadow-sm dark:bg-neutral-900 dark:border-neutral-800 ${className}`}>
+    {(title || headerRight) && (
+      <div className="flex items-center justify-between px-5 pt-5 pb-2">
+        <div>
+          {title && <p className="text-sm font-semibold text-gray-900 dark:text-neutral-100">{title}</p>}
+          {subtitle && <p className="text-xs text-gray-500 dark:text-neutral-400 mt-0.5">{subtitle}</p>}
+        </div>
+        {headerRight}
       </div>
-    </div>
-    {children}
+    )}
+    <div className="px-5 pb-5">{children}</div>
   </div>
 );
 
 const SummaryCard = ({ icon, label, value, note, accent = 'from-blue-500 to-indigo-600' }) => (
-  <div className="rounded-2xl border border-gray-100 bg-white shadow-sm p-4 dark:bg-neutral-900 dark:border-neutral-800">
-    <div className="flex items-center justify-between">
-      <div>
-        <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{label}</div>
-        <div className={`mt-2 text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r ${accent}`}>{value}</div>
+  <div className="relative overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm p-5 dark:bg-neutral-900 dark:border-neutral-800 group hover:shadow-md transition-shadow">
+    <div className="flex items-start justify-between">
+      <div className="space-y-1">
+        <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{label}</div>
+        <div className={`text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r ${accent}`}>{value}</div>
+        {note && <div className="text-xs text-gray-500 dark:text-neutral-400">{note}</div>}
       </div>
-      {icon}
+      {icon && <div className="p-2.5 rounded-xl bg-gray-50 dark:bg-neutral-800 text-gray-400">{icon}</div>}
     </div>
-    {note ? <div className="text-xs text-gray-500 mt-2">{note}</div> : null}
+    <div className={`absolute -bottom-6 -right-6 w-24 h-24 rounded-full bg-gradient-to-r ${accent} opacity-5 group-hover:opacity-10 transition-opacity`} />
   </div>
 );
 
 const formatCurrency = (value) => `₹${Number(value || 0).toLocaleString()}`;
 const formatNumber = (value) => Number(value || 0).toLocaleString();
+
+/* ─── Input styling ──────────────────────────────────────── */
+const inputClasses = 'w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-700 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all placeholder:text-gray-400';
+const selectClasses = `${inputClasses} appearance-none cursor-pointer`;
+const btnPrimary = 'inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2.5 text-sm font-semibold shadow-sm shadow-blue-500/20 hover:shadow-md hover:shadow-blue-500/30 transition-all';
+const btnSecondary = 'inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800 transition-all';
 
 const revenueFilterDefaults = Object.freeze({
   attraction: { from: '', to: '', attraction_id: '' },
@@ -60,15 +72,12 @@ const normalizeOptionList = (res) => {
   if (res.data && Array.isArray(res.data.data)) return res.data.data;
   if (res.meta && Array.isArray(res.meta.data)) return res.meta.data;
   if (typeof res.data === 'object' && res.data !== null && !Array.isArray(res.data) && Object.keys(res.data).length > 0) {
-    // Handle case where data is an object with items inside
     const firstValue = Object.values(res.data)[0];
     if (Array.isArray(firstValue)) return firstValue;
   }
   return [];
 };
 
-const formatYMD = (value) => dayjs(value).format('YYYY-MM-DD');
-const today = formatYMD(new Date());
 const quickRanges = [
   { key: 'today', label: 'Today', from: () => dayjs().startOf('day'), to: () => dayjs().endOf('day') },
   { key: 'yesterday', label: 'Yesterday', from: () => dayjs().subtract(1, 'day').startOf('day'), to: () => dayjs().subtract(1, 'day').endOf('day') },
@@ -80,33 +89,27 @@ const quickRanges = [
   { key: 'all', label: 'All time', from: () => null, to: () => null }
 ];
 
+const formatTime12Hour = (time24) => {
+  if (!time24) return '';
+  const [hours, minutes] = time24.split(':');
+  const hour = parseInt(hours);
+  const ampm = hour >= 12 ? 'PM' : 'AM';
+  const hour12 = hour % 12 || 12;
+  return `${hour12}:${minutes} ${ampm}`;
+};
+
+/* ─── Main Component ─────────────────────────────────────── */
+
 export default function BookingsList() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { list } = useSelector((s) => s.adminBookings);
   const { user } = useSelector((s) => s.adminAuth);
   const rows = React.useMemo(() => (Array.isArray(list.data) ? list.data : []), [list.data]);
-  const rowLookup = React.useMemo(() => {
-    const map = new Map();
-    rows.forEach((row) => {
-      if (row?.booking_id) {
-        map.set(row.booking_id, row);
-      }
-    });
-    return map;
-  }, [rows]);
-  const childCounts = React.useMemo(() => {
-    const counts = {};
-    rows.forEach((row) => {
-      if (row?.parent_booking_id) {
-        counts[row.parent_booking_id] = (counts[row.parent_booking_id] || 0) + 1;
-      }
-    });
-    return counts;
-  }, [rows]);
+
   const [filters, setFilters] = React.useState({
     search: '',
-    payment_status: '',
+    payment_status: 'Pending',
     booking_status: '',
     attraction_id: '',
     combo_id: '',
@@ -126,6 +129,9 @@ export default function BookingsList() {
   });
   const [revenueFilters, setRevenueFilters] = React.useState(cloneRevenueFilters());
   const [rowsPerPage, setRowsPerPage] = React.useState(20);
+  const [showFilters, setShowFilters] = React.useState(true);
+  const searchTimerRef = React.useRef(null);
+  const [statusUpdating, setStatusUpdating] = React.useState(null); // booking_id being updated
 
   React.useEffect(() => {
     dispatch(listAdminBookings({ page: 1, limit: rowsPerPage, payment_status: 'Pending' }));
@@ -147,34 +153,20 @@ export default function BookingsList() {
         ]);
         if (cancelled) return;
 
-        // Debug logging
-        console.log('API Responses:', {
-          attractionsRes,
-          combosRes,
-          offersRes
-        });
-
-        // Get user roles and scopes
         const userRoles = Array.isArray(user?.roles) ? user.roles.map(r => String(r).toLowerCase()) : [];
         const userScopes = user?.scopes || {};
         const isSubadmin = userRoles.includes('subadmin') && !userRoles.includes('admin') && !userRoles.includes('root');
 
-        // Parse all lists
         let allAttractions = normalizeOptionList(attractionsRes);
         let allCombos = normalizeOptionList(combosRes);
         const allOffers = normalizeOptionList(offersRes);
 
-        // Filter based on scopes if subadmin
         let filteredAttractions = allAttractions;
         let filteredCombos = allCombos;
 
         if (isSubadmin) {
           const allowedAttractionIds = userScopes.attraction || [];
           const allowedComboIds = userScopes.combo || [];
-
-          console.log('Subadmin scopes:', { allowedAttractionIds, allowedComboIds });
-
-          // Filter attractions by allowed IDs
           if (allowedAttractionIds.length > 0) {
             filteredAttractions = allAttractions.filter(a =>
               allowedAttractionIds.includes(a.attraction_id) || allowedAttractionIds.includes(a.id)
@@ -182,8 +174,6 @@ export default function BookingsList() {
           } else {
             filteredAttractions = [];
           }
-
-          // Filter combos by allowed IDs
           if (allowedComboIds.length > 0) {
             filteredCombos = allCombos.filter(c =>
               allowedComboIds.includes(c.combo_id) || allowedComboIds.includes(c.id)
@@ -193,19 +183,14 @@ export default function BookingsList() {
           }
         }
 
-        const normalizedData = {
+        setOptions({
           status: 'succeeded',
           attractions: filteredAttractions,
           combos: filteredCombos,
           offers: allOffers,
-        };
-
-        console.log('Normalized data:', normalizedData);
-
-        setOptions(normalizedData);
+        });
       } catch (err) {
         if (cancelled) return;
-        console.error('Error loading options:', err);
         setOptions((s) => ({ ...s, status: 'failed', error: err }));
       }
     })();
@@ -242,37 +227,35 @@ export default function BookingsList() {
 
   const loadRevenueData = React.useCallback(async (target = 'both') => {
     const targets = target === 'both' ? ['attraction', 'combo'] : [target];
-
     if (targets.includes('attraction')) {
-      const attractionFilter = revenueFilters.attraction;
+      const af = revenueFilters.attraction;
       setRevenueData((prev) => ({ ...prev, attraction: { status: 'loading', data: null } }));
       try {
-        const attractionRes = await adminApi.get(A.analyticsAttractionRevenue(), {
+        const res = await adminApi.get(A.analyticsAttractionRevenue(), {
           params: {
-            from: attractionFilter.from || filters.date_from || undefined,
-            to: attractionFilter.to || filters.date_to || undefined,
-            attraction_id: attractionFilter.attraction_id || filters.attraction_id || undefined
+            from: af.from || filters.date_from || undefined,
+            to: af.to || filters.date_to || undefined,
+            attraction_id: af.attraction_id || filters.attraction_id || undefined
           }
         });
-        setRevenueData((prev) => ({ ...prev, attraction: { status: 'succeeded', data: attractionRes } }));
+        setRevenueData((prev) => ({ ...prev, attraction: { status: 'succeeded', data: res } }));
       } catch (err) {
         setRevenueData((prev) => ({ ...prev, attraction: { status: 'failed', error: err } }));
       }
     }
-
     if (targets.includes('combo')) {
-      const comboFilter = revenueFilters.combo;
+      const cf = revenueFilters.combo;
       setRevenueData((prev) => ({ ...prev, combo: { status: 'loading', data: null } }));
       try {
-        const comboRes = await adminApi.get(A.analyticsComboRevenue(), {
+        const res = await adminApi.get(A.analyticsComboRevenue(), {
           params: {
-            from: comboFilter.from || filters.date_from || undefined,
-            to: comboFilter.to || filters.date_to || undefined,
-            attraction_id: comboFilter.attraction_id || filters.attraction_id || undefined,
-            combo_id: comboFilter.combo_id || filters.combo_id || undefined
+            from: cf.from || filters.date_from || undefined,
+            to: cf.to || filters.date_to || undefined,
+            attraction_id: cf.attraction_id || filters.attraction_id || undefined,
+            combo_id: cf.combo_id || filters.combo_id || undefined
           }
         });
-        setRevenueData((prev) => ({ ...prev, combo: { status: 'succeeded', data: comboRes } }));
+        setRevenueData((prev) => ({ ...prev, combo: { status: 'succeeded', data: res } }));
       } catch (err) {
         setRevenueData((prev) => ({ ...prev, combo: { status: 'failed', error: err } }));
       }
@@ -290,16 +273,90 @@ export default function BookingsList() {
       };
       const url = `${A.analyticsReport(format)}?${new URLSearchParams(params).toString()}`;
       window.open(url, '_blank');
-    } catch (err) {
-      console.error('Download failed:', err);
+    } catch {
       alert('Failed to download report');
     }
   }, [filters, revenueFilters]);
 
-  const onSearch = () => {
+  /* ─── Filter helpers ───────────────────────────────────── */
+
+  const applyFilters = React.useCallback(() => {
     dispatch(listAdminBookings({ ...buildQuery(), page: 1, limit: rowsPerPage }));
     loadOverview();
     loadRevenueData('both');
+  }, [buildQuery, dispatch, loadOverview, loadRevenueData, rowsPerPage]);
+
+  const resetFilters = React.useCallback(() => {
+    setFilters({ search: '', payment_status: 'Pending', booking_status: '', attraction_id: '', combo_id: '', offer_id: '', user_email: '', user_phone: '', item_type: '', date_from: '', date_to: '' });
+    dispatch(listAdminBookings({ page: 1, limit: rowsPerPage, payment_status: 'Pending' }));
+    setActiveRange('all');
+    loadOverview();
+  }, [dispatch, loadOverview, rowsPerPage]);
+
+  const handleFilterChange = (field, value) => {
+    setFilters((prev) => ({ ...prev, [field]: value }));
+  };
+
+  // Debounced auto-search for text inputs (400ms delay)
+  const handleSearchChange = (field, value) => {
+    setFilters((prev) => ({ ...prev, [field]: value }));
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    searchTimerRef.current = setTimeout(() => {
+      const next = { ...filters, [field]: value };
+      const clean = {};
+      Object.entries(next).forEach(([k, v]) => {
+        if (v === undefined || v === null) return;
+        if (typeof v === 'string' && v.trim() === '') return;
+        clean[k] = v;
+      });
+      dispatch(listAdminBookings({ ...clean, page: 1, limit: rowsPerPage }));
+    }, 400);
+  };
+
+  // Clean up debounce timer on unmount
+  React.useEffect(() => {
+    return () => { if (searchTimerRef.current) clearTimeout(searchTimerRef.current); };
+  }, []);
+
+  // Auto-apply on Enter key in any filter input
+  const handleFilterKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+      applyFilters();
+    }
+  };
+
+  // Auto-apply when select/dropdown changes
+  const handleSelectChange = (field, value) => {
+    const next = { ...filters, [field]: value };
+    setFilters(next);
+    const clean = {};
+    Object.entries(next).forEach(([k, v]) => {
+      if (v === undefined || v === null) return;
+      if (typeof v === 'string' && v.trim() === '') return;
+      clean[k] = v;
+    });
+    dispatch(listAdminBookings({ ...clean, page: 1, limit: rowsPerPage }));
+  };
+
+  // Inline status change with confirmation
+  const handleInlineStatusChange = async (row, newStatus) => {
+    const bookingId = row.booking_id ?? row.id;
+    if (!bookingId) return;
+    const oldStatus = row.booking_status || 'Unknown';
+    if (newStatus === oldStatus) return;
+    const ok = window.confirm(`Change booking #${row.booking_ref || bookingId} status from "${oldStatus}" to "${newStatus}"?`);
+    if (!ok) return;
+    setStatusUpdating(bookingId);
+    try {
+      await dispatch(updateAdminBooking({ id: bookingId, patch: { booking_status: newStatus } })).unwrap();
+      // Refresh the list to get updated data
+      dispatch(listAdminBookings({ ...buildQuery(), page: currPage, limit: rowsPerPage }));
+    } catch (err) {
+      window.alert(err?.message || 'Failed to update status');
+    } finally {
+      setStatusUpdating(null);
+    }
   };
 
   const handleRevenueFilterChange = (card, field, value) => {
@@ -309,10 +366,7 @@ export default function BookingsList() {
     }));
   };
 
-  const applyRevenueFilter = (card) => {
-    loadRevenueData(card);
-  };
-
+  const applyRevenueFilter = (card) => loadRevenueData(card);
   const resetRevenueFilter = (card) => {
     setRevenueFilters((prev) => ({
       ...prev,
@@ -327,12 +381,7 @@ export default function BookingsList() {
     const formatted = next.format('YYYY-MM-DD');
     setFilters((prev) => ({ ...prev, date_from: formatted, date_to: formatted }));
     setActiveRange('custom');
-    const payload = {
-      ...buildQuery({ date_from: formatted, date_to: formatted }),
-      page: 1,
-      limit: rowsPerPage
-    };
-    dispatch(listAdminBookings(payload));
+    dispatch(listAdminBookings({ ...buildQuery({ date_from: formatted, date_to: formatted }), page: 1, limit: rowsPerPage }));
   };
 
   const applyQuickRange = React.useCallback((key) => {
@@ -346,15 +395,14 @@ export default function BookingsList() {
       date_to: to ? to.format('YYYY-MM-DD') : ''
     }));
     setActiveRange(key);
-    const payload = {
+    dispatch(listAdminBookings({
       ...buildQuery({
         date_from: from ? from.format('YYYY-MM-DD') : undefined,
         date_to: to ? to.format('YYYY-MM-DD') : undefined
       }),
       page: 1,
       limit: rowsPerPage
-    };
-    dispatch(listAdminBookings(payload));
+    }));
     loadOverview();
   }, [buildQuery, dispatch, loadOverview, rowsPerPage]);
 
@@ -364,13 +412,7 @@ export default function BookingsList() {
   }, [list.status]);
 
   const meta = list.meta || {};
-  const totalPages = meta.totalPages || meta.total_pages || 1;
   const currPage = meta.page || list.query.page || 1;
-
-  const openParentBooking = React.useCallback((parentId) => {
-    if (!parentId) return;
-    navigate(`/admin/bookings/${parentId}`);
-  }, [navigate]);
 
   const ticketUrl = React.useCallback((path) => {
     if (!path) return null;
@@ -380,21 +422,8 @@ export default function BookingsList() {
     return path;
   }, []);
 
-  const viewUserBookings = (r) => {
-    const payload = {
-      user_email: r.user_email || '',
-      user_phone: r.user_phone || ''
-    };
-    setFilters((prev) => ({ ...prev, ...payload }));
-    const query = buildQuery({ ...payload, page: 1 });
-    dispatch(listAdminBookings({ ...query, page: 1, limit: rowsPerPage }));
-  };
-
   const handleDownloadTicket = (row) => {
-    if (!row.ticket_pdf) {
-      window.alert('Ticket PDF not available yet.');
-      return;
-    }
+    if (!row.ticket_pdf) { window.alert('Ticket PDF not available yet.'); return; }
     const url = ticketUrl(row.ticket_pdf);
     if (url) window.open(url, '_blank', 'noopener');
   };
@@ -405,9 +434,7 @@ export default function BookingsList() {
     try {
       await dispatch(resendWhatsAppAdmin({ id: row.booking_id })).unwrap();
       window.alert('WhatsApp ticket resend initiated.');
-    } catch (err) {
-      window.alert(err?.message || 'Failed to resend WhatsApp ticket');
-    }
+    } catch (err) { window.alert(err?.message || 'Failed to resend WhatsApp ticket'); }
   };
 
   const handleResendEmail = async (row) => {
@@ -416,21 +443,47 @@ export default function BookingsList() {
     try {
       await dispatch(resendEmailAdmin({ id: row.booking_id })).unwrap();
       window.alert('Email ticket resend initiated.');
-    } catch (err) {
-      window.alert(err?.message || 'Failed to resend email ticket');
-    }
+    } catch (err) { window.alert(err?.message || 'Failed to resend email ticket'); }
   };
 
+  /* ─── Subadmin check ───────────────────────────────────── */
+  const userRoles = React.useMemo(() => Array.isArray(user?.roles) ? user.roles.map(r => String(r).toLowerCase()) : [], [user]);
+  const isSubadmin = userRoles.includes('subadmin') && !userRoles.includes('admin') && !userRoles.includes('root');
+
+  /* ─── Active filter count ──────────────────────────────── */
+  const activeFilterCount = React.useMemo(() => {
+    let count = 0;
+    if (filters.search) count++;
+    if (filters.payment_status) count++;
+    if (filters.booking_status) count++;
+    if (filters.attraction_id) count++;
+    if (filters.combo_id) count++;
+    if (filters.offer_id) count++;
+    if (filters.user_email) count++;
+    if (filters.user_phone) count++;
+    if (filters.item_type) count++;
+    if (filters.date_from) count++;
+    return count;
+  }, [filters]);
+
+  /* ─── Render ───────────────────────────────────────────── */
+
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold text-gray-900">Bookings Intelligence</h1>
-        <div className="flex gap-2 flex-wrap">
+    <div className="space-y-5">
+      {/* ── Header ── */}
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100">Bookings Intelligence</h1>
+          <p className="text-sm text-gray-500 dark:text-neutral-400 mt-0.5">Monitor and manage all bookings</p>
+        </div>
+        <div className="flex gap-1.5 flex-wrap">
           {quickRanges.map((range) => (
             <button
               key={range.key}
               onClick={() => applyQuickRange(range.key)}
-              className={`rounded-full px-3 py-1 text-xs font-semibold border transition-colors ${activeRange === range.key ? 'bg-gray-900 text-white border-gray-900' : 'border-gray-300 text-gray-600 hover:border-gray-500'}`}
+              className={`rounded-full px-3.5 py-1.5 text-xs font-semibold border transition-all ${activeRange === range.key
+                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-transparent shadow-sm shadow-blue-500/20'
+                : 'border-gray-200 text-gray-600 hover:border-gray-400 hover:bg-gray-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800'}`}
             >
               {range.label}
             </button>
@@ -438,191 +491,96 @@ export default function BookingsList() {
         </div>
       </div>
 
-      {overview.summary ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <SummaryCard label="Paid Bookings" value={Number(overview.summary.total_bookings || 0).toLocaleString()} note="Confirmed" />
-          <SummaryCard label="Pending" value={Number(overview.summary.pending_bookings || 0).toLocaleString()} note="Awaiting payment" accent="from-amber-400 to-orange-500" />
-          <SummaryCard label="Combo Revenue" value={formatCurrency(overview.summary.combo_revenue)} note={`${overview.summary.combo_bookings || 0} combos`} accent="from-indigo-500 to-purple-600" />
-          <SummaryCard label="Offer Revenue" value={formatCurrency(overview.summary.offer_revenue)} note={`${overview.summary.offer_bookings || 0} offers`} accent="from-emerald-500 to-green-600" />
+      {/* ── Summary Cards ── */}
+      {overview.summary && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <SummaryCard label="Paid Bookings" value={formatNumber(overview.summary.total_bookings)} note="Confirmed" icon={<Ticket className="h-5 w-5" />} />
+          <SummaryCard label="Pending" value={formatNumber(overview.summary.pending_bookings)} note="Awaiting payment" accent="from-amber-400 to-orange-500" icon={<Calendar className="h-5 w-5" />} />
+          <SummaryCard label="Attraction Revenue" value={formatCurrency(revenueData.attraction.data?.attraction_revenue)} note={`${formatNumber(revenueData.attraction.data?.attraction_bookings)} bookings`} accent="from-cyan-500 to-blue-600" icon={<TrendingUp className="h-5 w-5" />} />
+          <SummaryCard label="Combo Revenue" value={formatCurrency(overview.summary.combo_revenue)} note={`${overview.summary.combo_bookings || 0} combos`} accent="from-indigo-500 to-purple-600" icon={<DollarSign className="h-5 w-5" />} />
         </div>
-      ) : null}
+      )}
 
+      {/* ── Revenue Cards ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <SectionCard
-          title="Attraction Revenue"
-          subtitle="Completed attraction bookings & revenue"
-        >
-          <div className="flex flex-wrap gap-3 mb-4">
-            <input
-              type="date"
-              className="rounded-lg border px-3 py-2 flex-1"
-              value={revenueFilters.attraction.from}
-              onChange={(e) => handleRevenueFilterChange('attraction', 'from', e.target.value)}
-            />
-            <input
-              type="date"
-              className="rounded-lg border px-3 py-2 flex-1"
-              value={revenueFilters.attraction.to}
-              onChange={(e) => handleRevenueFilterChange('attraction', 'to', e.target.value)}
-            />
-            <select
-              className="rounded-lg border px-3 py-2 flex-1 disabled:opacity-50"
-              value={revenueFilters.attraction.attraction_id}
-              onChange={(e) => handleRevenueFilterChange('attraction', 'attraction_id', e.target.value)}
-              disabled={options.status === 'loading'}
-            >
-              <option value="">
-                {options.status === 'loading' ? 'Loading...' : 'All attractions'}
-              </option>
-              {options.status === 'succeeded' && (options.attractions || []).length > 0 ? (
-                (options.attractions || []).map((a) => (
-                  <option key={a.attraction_id || a.id} value={a.attraction_id || a.id}>
-                    {a.title || a.name || `#${a.attraction_id || a.id}`}
-                  </option>
-                ))
-              ) : null}
+        {/* Attraction Revenue */}
+        <SectionCard title="Attraction Revenue" subtitle="Completed attraction bookings & revenue">
+          <div className="flex flex-wrap gap-2 mb-3">
+            <input type="date" className={`${inputClasses} flex-1 min-w-[120px]`} value={revenueFilters.attraction.from} onChange={(e) => handleRevenueFilterChange('attraction', 'from', e.target.value)} />
+            <input type="date" className={`${inputClasses} flex-1 min-w-[120px]`} value={revenueFilters.attraction.to} onChange={(e) => handleRevenueFilterChange('attraction', 'to', e.target.value)} />
+            <select className={`${selectClasses} flex-1 min-w-[140px]`} value={revenueFilters.attraction.attraction_id} onChange={(e) => handleRevenueFilterChange('attraction', 'attraction_id', e.target.value)} disabled={options.status === 'loading'}>
+              <option value="">{options.status === 'loading' ? 'Loading...' : 'All attractions'}</option>
+              {options.status === 'succeeded' && (options.attractions || []).map((a) => (
+                <option key={a.attraction_id || a.id} value={a.attraction_id || a.id}>{a.title || a.name || `#${a.attraction_id || a.id}`}</option>
+              ))}
             </select>
           </div>
-          <div className="flex flex-wrap items-center gap-2 mb-4">
-            <button className="rounded-lg bg-gray-900 text-white px-3 py-2 text-sm" onClick={() => applyRevenueFilter('attraction')}>
-              Apply
-            </button>
-            <button className="rounded-lg border px-3 py-2 text-sm" onClick={() => resetRevenueFilter('attraction')}>
-              Reset
-            </button>
+          <div className="flex flex-wrap items-center gap-2 mb-3">
+            <button className={btnPrimary} onClick={() => applyRevenueFilter('attraction')}>Apply</button>
+            <button className={btnSecondary} onClick={() => resetRevenueFilter('attraction')}>Reset</button>
             <div className="flex-1" />
-            <button
-              className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm"
-              onClick={() => downloadReport('attraction-revenue', 'csv')}
-            >
-              <FileSpreadsheet className="h-4 w-4" />
-              CSV
-            </button>
-            <button
-              className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm"
-              onClick={() => downloadReport('attraction-revenue', 'pdf')}
-            >
-              <FileText className="h-4 w-4" />
-              PDF
-            </button>
+            <button className={btnSecondary} onClick={() => downloadReport('attraction-revenue', 'csv')}><FileSpreadsheet className="h-4 w-4" />CSV</button>
+            <button className={btnSecondary} onClick={() => downloadReport('attraction-revenue', 'pdf')}><FileText className="h-4 w-4" />PDF</button>
           </div>
-          <div className="rounded-xl border border-gray-100 p-4 bg-gray-50">
+          <div className="rounded-xl border border-gray-100 dark:border-neutral-800 p-4 bg-gray-50/50 dark:bg-neutral-800/30">
             {revenueData.attraction.status === 'loading' ? (
               <div className="text-sm text-gray-500">Loading…</div>
             ) : revenueData.attraction.status === 'failed' ? (
               <div className="text-sm text-red-600">Failed to load data</div>
             ) : (
-              <div className="grid grid-cols-2 gap-3 text-sm">
+              <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <div className="text-gray-500 uppercase text-xs">Bookings</div>
-                  <div className="text-2xl font-semibold text-gray-900">
-                    {formatNumber(revenueData.attraction.data?.attraction_bookings)}
-                  </div>
+                  <div className="text-gray-500 uppercase text-xs tracking-wider">Bookings</div>
+                  <div className="text-2xl font-bold text-gray-900 dark:text-neutral-100 mt-1">{formatNumber(revenueData.attraction.data?.attraction_bookings)}</div>
                 </div>
                 <div>
-                  <div className="text-gray-500 uppercase text-xs">Revenue</div>
-                  <div className="text-2xl font-semibold text-gray-900">
-                    {formatCurrency(revenueData.attraction.data?.attraction_revenue)}
-                  </div>
+                  <div className="text-gray-500 uppercase text-xs tracking-wider">Revenue</div>
+                  <div className="text-2xl font-bold text-gray-900 dark:text-neutral-100 mt-1">{formatCurrency(revenueData.attraction.data?.attraction_revenue)}</div>
                 </div>
               </div>
             )}
           </div>
         </SectionCard>
 
-        <SectionCard
-          title="Combo Revenue"
-          subtitle="Combo bookings & linked revenue"
-        >
-          <div className="flex flex-wrap gap-3 mb-4">
-            <input
-              type="date"
-              className="rounded-lg border px-3 py-2 flex-1"
-              value={revenueFilters.combo.from}
-              onChange={(e) => handleRevenueFilterChange('combo', 'from', e.target.value)}
-            />
-            <input
-              type="date"
-              className="rounded-lg border px-3 py-2 flex-1"
-              value={revenueFilters.combo.to}
-              onChange={(e) => handleRevenueFilterChange('combo', 'to', e.target.value)}
-            />
-            <select
-              className="rounded-lg border px-3 py-2 flex-1 disabled:opacity-50"
-              value={revenueFilters.combo.attraction_id}
-              onChange={(e) => handleRevenueFilterChange('combo', 'attraction_id', e.target.value)}
-              disabled={options.status === 'loading'}
-            >
-              <option value="">
-                {options.status === 'loading' ? 'Loading...' : 'All attractions'}
-              </option>
-              {options.status === 'succeeded' && (options.attractions || []).length > 0 ? (
-                (options.attractions || []).map((a) => (
-                  <option key={a.attraction_id || a.id} value={a.attraction_id || a.id}>
-                    {a.title || a.name || `#${a.attraction_id || a.id}`}
-                  </option>
-                ))
-              ) : null}
+        {/* Combo Revenue */}
+        <SectionCard title="Combo Revenue" subtitle="Combo bookings & linked revenue">
+          <div className="flex flex-wrap gap-2 mb-3">
+            <input type="date" className={`${inputClasses} flex-1 min-w-[120px]`} value={revenueFilters.combo.from} onChange={(e) => handleRevenueFilterChange('combo', 'from', e.target.value)} />
+            <input type="date" className={`${inputClasses} flex-1 min-w-[120px]`} value={revenueFilters.combo.to} onChange={(e) => handleRevenueFilterChange('combo', 'to', e.target.value)} />
+            <select className={`${selectClasses} flex-1 min-w-[140px]`} value={revenueFilters.combo.attraction_id} onChange={(e) => handleRevenueFilterChange('combo', 'attraction_id', e.target.value)} disabled={options.status === 'loading'}>
+              <option value="">{options.status === 'loading' ? 'Loading...' : 'All attractions'}</option>
+              {options.status === 'succeeded' && (options.attractions || []).map((a) => (
+                <option key={a.attraction_id || a.id} value={a.attraction_id || a.id}>{a.title || a.name || `#${a.attraction_id || a.id}`}</option>
+              ))}
             </select>
-            <select
-              className="rounded-lg border px-3 py-2 flex-1 disabled:opacity-50"
-              value={revenueFilters.combo.combo_id}
-              onChange={(e) => handleRevenueFilterChange('combo', 'combo_id', e.target.value)}
-              disabled={options.status === 'loading'}
-            >
-              <option value="">
-                {options.status === 'loading' ? 'Loading...' : 'All combos'}
-              </option>
-              {options.status === 'succeeded' && (options.combos || []).length > 0 ? (
-                (options.combos || []).map((c) => (
-                  <option key={c.combo_id || c.id} value={c.combo_id || c.id}>
-                    {c.title || c.name || `Combo #${c.combo_id || c.id}`}
-                  </option>
-                ))
-              ) : null}
+            <select className={`${selectClasses} flex-1 min-w-[140px]`} value={revenueFilters.combo.combo_id} onChange={(e) => handleRevenueFilterChange('combo', 'combo_id', e.target.value)} disabled={options.status === 'loading'}>
+              <option value="">{options.status === 'loading' ? 'Loading...' : 'All combos'}</option>
+              {options.status === 'succeeded' && (options.combos || []).map((c) => (
+                <option key={c.combo_id || c.id} value={c.combo_id || c.id}>{c.title || c.name || `Combo #${c.combo_id || c.id}`}</option>
+              ))}
             </select>
           </div>
-          <div className="flex flex-wrap items-center gap-2 mb-4">
-            <button className="rounded-lg bg-gray-900 text-white px-3 py-2 text-sm" onClick={() => applyRevenueFilter('combo')}>
-              Apply
-            </button>
-            <button className="rounded-lg border px-3 py-2 text-sm" onClick={() => resetRevenueFilter('combo')}>
-              Reset
-            </button>
+          <div className="flex flex-wrap items-center gap-2 mb-3">
+            <button className={btnPrimary} onClick={() => applyRevenueFilter('combo')}>Apply</button>
+            <button className={btnSecondary} onClick={() => resetRevenueFilter('combo')}>Reset</button>
             <div className="flex-1" />
-            <button
-              className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm"
-              onClick={() => downloadReport('combo-revenue', 'csv')}
-            >
-              <FileSpreadsheet className="h-4 w-4" />
-              CSV
-            </button>
-            <button
-              className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm"
-              onClick={() => downloadReport('combo-revenue', 'pdf')}
-            >
-              <FileText className="h-4 w-4" />
-              PDF
-            </button>
+            <button className={btnSecondary} onClick={() => downloadReport('combo-revenue', 'csv')}><FileSpreadsheet className="h-4 w-4" />CSV</button>
+            <button className={btnSecondary} onClick={() => downloadReport('combo-revenue', 'pdf')}><FileText className="h-4 w-4" />PDF</button>
           </div>
-          <div className="rounded-xl border border-gray-100 p-4 bg-gray-50">
+          <div className="rounded-xl border border-gray-100 dark:border-neutral-800 p-4 bg-gray-50/50 dark:bg-neutral-800/30">
             {revenueData.combo.status === 'loading' ? (
               <div className="text-sm text-gray-500">Loading…</div>
             ) : revenueData.combo.status === 'failed' ? (
               <div className="text-sm text-red-600">Failed to load data</div>
             ) : (
-              <div className="grid grid-cols-2 gap-3 text-sm">
+              <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <div className="text-gray-500 uppercase text-xs">Combo bookings</div>
-                  <div className="text-2xl font-semibold text-gray-900">
-                    {formatNumber(revenueData.combo.data?.combo_bookings)}
-                  </div>
+                  <div className="text-gray-500 uppercase text-xs tracking-wider">Bookings</div>
+                  <div className="text-2xl font-bold text-gray-900 dark:text-neutral-100 mt-1">{formatNumber(revenueData.combo.data?.combo_bookings)}</div>
                 </div>
                 <div>
-                  <div className="text-gray-500 uppercase text-xs">Combo revenue</div>
-                  <div className="text-2xl font-semibold text-gray-900">
-                    {formatCurrency(revenueData.combo.data?.combo_revenue)}
-                  </div>
+                  <div className="text-gray-500 uppercase text-xs tracking-wider">Revenue</div>
+                  <div className="text-2xl font-bold text-gray-900 dark:text-neutral-100 mt-1">{formatCurrency(revenueData.combo.data?.combo_revenue)}</div>
                 </div>
               </div>
             )}
@@ -630,317 +588,229 @@ export default function BookingsList() {
         </SectionCard>
       </div>
 
-      <SectionCard title="Filters" subtitle="Slice bookings by channel, product, and time" className="p-4">
-        {(() => {
-          const userRoles = Array.isArray(user?.roles) ? user.roles.map(r => String(r).toLowerCase()) : [];
-          const isSubadmin = userRoles.includes('subadmin') && !userRoles.includes('admin') && !userRoles.includes('root');
-          return isSubadmin ? (
-            <div className="bg-blue-50 text-blue-900 border border-blue-200 rounded-lg px-3 py-2 text-xs mb-3">
-              <strong>Subadmin Access:</strong> Viewing attractions and combos from your assigned bookings only.
+      {/* ── Filter Bar ── */}
+      <div className="rounded-2xl border border-gray-200/80 bg-white shadow-sm dark:bg-neutral-900 dark:border-neutral-800">
+        <button
+          className="flex w-full items-center justify-between px-5 py-4 text-left"
+          onClick={() => setShowFilters(!showFilters)}
+        >
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-900/20">
+              <Filter className="h-4 w-4 text-blue-600 dark:text-blue-400" />
             </div>
-          ) : null;
-        })()}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3">
-          <input className="rounded-lg border px-3 py-2" placeholder="Search ref / user" value={filters.search} onChange={(e) => setFilters({ ...filters, search: e.target.value })} />
-          <select className="rounded-lg border px-3 py-2" value={filters.payment_status} onChange={(e) => setFilters({ ...filters, payment_status: e.target.value })}>
-            <option value="">Payment: All</option>
-            <option>Pending</option><option>Completed</option><option>Failed</option><option>Cancelled</option>
-          </select>
-          <select className="rounded-lg border px-3 py-2" value={filters.booking_status} onChange={(e) => setFilters({ ...filters, booking_status: e.target.value })}>
-            <option value="">Booking: All</option>
-            <option>Booked</option><option>Redeemed</option><option>Expired</option><option>Cancelled</option>
-          </select>
-          <select className="rounded-lg border px-3 py-2" value={filters.item_type} onChange={(e) => setFilters({ ...filters, item_type: e.target.value })}>
-            <option value="">Item Type</option>
-            <option value="Attraction">Attraction</option>
-            <option value="Combo">Combo</option>
-          </select>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3">
-          <select
-            className="rounded-lg border px-3 py-2 disabled:opacity-50"
-            value={filters.attraction_id}
-            onChange={(e) => setFilters({ ...filters, attraction_id: e.target.value })}
-            disabled={options.status === 'loading'}
-          >
-            <option value="">
-              {options.status === 'loading' ? 'Loading attractions...' : 'Attraction'}
-            </option>
-            {options.status === 'succeeded' && (options.attractions || []).length > 0 ? (
-              (options.attractions || []).map((a) => (
-                <option key={a.attraction_id || a.id} value={a.attraction_id || a.id}>
-                  {a.title || a.name || `#${a.attraction_id || a.id}`}
-                </option>
-              ))
-            ) : options.status === 'failed' ? (
-              <option disabled>Failed to load attractions</option>
-            ) : null}
-          </select>
-          <select
-            className="rounded-lg border px-3 py-2 disabled:opacity-50"
-            value={filters.combo_id}
-            onChange={(e) => setFilters({ ...filters, combo_id: e.target.value })}
-            disabled={options.status === 'loading'}
-          >
-            <option value="">
-              {options.status === 'loading' ? 'Loading combos...' : 'Combo'}
-            </option>
-            {options.status === 'succeeded' && (options.combos || []).length > 0 ? (
-              (options.combos || []).map((c) => (
-                <option key={c.combo_id || c.id} value={c.combo_id || c.id}>
-                  {c.title || c.name || `Combo #${c.combo_id || c.id}`}
-                </option>
-              ))
-            ) : options.status === 'failed' ? (
-              <option disabled>Failed to load combos</option>
-            ) : null}
-          </select>
-          <select
-            className="rounded-lg border px-3 py-2 disabled:opacity-50"
-            value={filters.offer_id}
-            onChange={(e) => setFilters({ ...filters, offer_id: e.target.value })}
-            disabled={options.status === 'loading'}
-          >
-            <option value="">
-              {options.status === 'loading' ? 'Loading offers...' : 'Offer'}
-            </option>
-            {options.status === 'succeeded' && (options.offers || []).length > 0 ? (
-              (options.offers || []).map((o) => (
-                <option key={o.offer_id || o.id} value={o.offer_id || o.id}>
-                  {o.title || o.name || o.code || `Offer #${o.offer_id || o.id}`}
-                </option>
-              ))
-            ) : options.status === 'failed' ? (
-              <option disabled>Failed to load offers</option>
-            ) : null}
-          </select>
-          <input className="rounded-lg border px-3 py-2" placeholder="User email" value={filters.user_email} onChange={(e) => setFilters({ ...filters, user_email: e.target.value })} />
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3">
-          <input className="rounded-lg border px-3 py-2" placeholder="User phone" value={filters.user_phone} onChange={(e) => setFilters({ ...filters, user_phone: e.target.value })} />
-          <input type="date" className="rounded-lg border px-3 py-2" value={filters.date_from} onChange={(e) => { const val = e.target.value; setFilters({ ...filters, date_from: val, date_to: val }); setActiveRange('custom'); }} />
-          <input type="date" className="rounded-lg border px-3 py-2" value={filters.date_to} onChange={(e) => { const val = e.target.value; setFilters({ ...filters, date_from: val, date_to: val }); setActiveRange('custom'); }} />
-          <div className="flex gap-2">
-            <button className="flex-1 rounded-lg bg-gray-900 text-white px-3 py-2" onClick={onSearch}>Apply</button>
-            <button
-              className="rounded-lg border px-3 py-2"
-              onClick={() => {
-                setFilters({ search: '', payment_status: 'Pending', booking_status: '', attraction_id: '', combo_id: '', offer_id: '', user_email: '', user_phone: '', item_type: '', date_from: '', date_to: '' });
-                dispatch(listAdminBookings({ page: 1, limit: rowsPerPage, payment_status: 'Pending' }));
-                setActiveRange('all');
-              }}
-            >
-              Reset
-            </button>
+            <div>
+              <p className="text-sm font-semibold text-gray-900 dark:text-neutral-100">Filters</p>
+              <p className="text-xs text-gray-500 dark:text-neutral-400">
+                {activeFilterCount > 0 ? `${activeFilterCount} active filter${activeFilterCount > 1 ? 's' : ''}` : 'No filters applied'}
+              </p>
+            </div>
           </div>
-        </div>
-      </SectionCard>
+          <ChevronRight className={`h-4 w-4 text-gray-400 transition-transform ${showFilters ? 'rotate-90' : ''}`} />
+        </button>
 
-      {filters.user_email || filters.user_phone ? (
-        <div className="bg-blue-50 text-blue-900 border border-blue-100 rounded-xl px-4 py-2 text-sm">
-          Showing bookings for
-          {filters.user_email ? <> email <strong>{filters.user_email}</strong></> : null}
-          {filters.user_phone ? <> phone <strong>{filters.user_phone}</strong></> : null}
-        </div>
-      ) : null}
+        {showFilters && (
+          <div className="px-5 pb-5 border-t border-gray-100 dark:border-neutral-800 pt-4 space-y-3">
+            {isSubadmin && (
+              <div className="bg-blue-50 text-blue-900 border border-blue-200 rounded-xl px-3 py-2 text-xs dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800">
+                <strong>Subadmin Access:</strong> Viewing attractions and combos from your assigned bookings only.
+              </div>
+            )}
 
-      {filters.user_email || filters.user_phone ? (
-        <div className="mb-4 text-sm text-gray-600">
-          Showing results for
-          {filters.user_email ? <> email <strong>{filters.user_email}</strong></> : null}
-          {filters.user_phone ? <> phone <strong>{filters.user_phone}</strong></> : null}
-        </div>
-      ) : null}
+            {/* Row 1: Search + Payment + Booking Status + Item Type */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                {filters.search && <div className="absolute right-3 top-1/2 -translate-y-1/2"><div className="h-3 w-3 rounded-full border-2 border-blue-500 border-t-transparent animate-spin" style={{ display: searchTimerRef.current ? 'block' : 'none' }} /></div>}
+                <input
+                  className={`${inputClasses} pl-9`}
+                  placeholder="Search ref, email, phone…"
+                  value={filters.search}
+                  onChange={(e) => handleSearchChange('search', e.target.value)}
+                  onKeyDown={handleFilterKeyDown}
+                />
+              </div>
+              <select className={selectClasses} value={filters.payment_status} onChange={(e) => handleSelectChange('payment_status', e.target.value)}>
+                <option value="">Payment: All</option>
+                <option>Pending</option><option>Completed</option><option>Failed</option><option>Cancelled</option>
+              </select>
+              <select className={selectClasses} value={filters.booking_status} onChange={(e) => handleSelectChange('booking_status', e.target.value)}>
+                <option value="">Booking: All</option>
+                <option>Booked</option><option>Redeemed</option><option>Expired</option><option>Cancelled</option>
+              </select>
+              <select className={selectClasses} value={filters.item_type} onChange={(e) => handleSelectChange('item_type', e.target.value)}>
+                <option value="">Item Type: All</option>
+                <option value="Attraction">Attraction</option>
+                <option value="Combo">Combo</option>
+              </select>
+            </div>
 
+            {/* Row 2: Attraction + Combo + Offer + Email */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <select className={selectClasses} value={filters.attraction_id} onChange={(e) => handleSelectChange('attraction_id', e.target.value)} disabled={options.status === 'loading'}>
+                <option value="">{options.status === 'loading' ? 'Loading…' : 'All Attractions'}</option>
+                {options.status === 'succeeded' && (options.attractions || []).map((a) => (
+                  <option key={a.attraction_id || a.id} value={a.attraction_id || a.id}>{a.title || a.name || `#${a.attraction_id || a.id}`}</option>
+                ))}
+              </select>
+              <select className={selectClasses} value={filters.combo_id} onChange={(e) => handleSelectChange('combo_id', e.target.value)} disabled={options.status === 'loading'}>
+                <option value="">{options.status === 'loading' ? 'Loading…' : 'All Combos'}</option>
+                {options.status === 'succeeded' && (options.combos || []).map((c) => (
+                  <option key={c.combo_id || c.id} value={c.combo_id || c.id}>{c.title || c.name || `Combo #${c.combo_id || c.id}`}</option>
+                ))}
+              </select>
+              <select className={selectClasses} value={filters.offer_id} onChange={(e) => handleSelectChange('offer_id', e.target.value)} disabled={options.status === 'loading'}>
+                <option value="">{options.status === 'loading' ? 'Loading…' : 'All Offers'}</option>
+                {options.status === 'succeeded' && (options.offers || []).map((o) => (
+                  <option key={o.offer_id || o.id} value={o.offer_id || o.id}>{o.title || o.name || o.code || `Offer #${o.offer_id || o.id}`}</option>
+                ))}
+              </select>
+              <input className={inputClasses} placeholder="User email" value={filters.user_email} onChange={(e) => handleSearchChange('user_email', e.target.value)} onKeyDown={handleFilterKeyDown} />
+            </div>
+
+            {/* Row 3: Phone + Dates + Actions */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <input className={inputClasses} placeholder="User phone" value={filters.user_phone} onChange={(e) => handleSearchChange('user_phone', e.target.value)} onKeyDown={handleFilterKeyDown} />
+              <input type="date" className={inputClasses} placeholder="From date" value={filters.date_from} onChange={(e) => { handleFilterChange('date_from', e.target.value); setActiveRange('custom'); }} />
+              <input type="date" className={inputClasses} placeholder="To date" value={filters.date_to} onChange={(e) => { handleFilterChange('date_to', e.target.value); setActiveRange('custom'); }} />
+              <div className="flex gap-2">
+                <button className={`flex-1 ${btnPrimary}`} onClick={applyFilters}>
+                  <Search className="h-4 w-4" />
+                  Apply
+                </button>
+                <button className={btnSecondary} onClick={resetFilters} title="Reset all filters">
+                  <RotateCcw className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── User filter banner ── */}
+      {(filters.user_email || filters.user_phone) && (
+        <div className="flex items-center gap-3 bg-blue-50 text-blue-900 border border-blue-100 rounded-xl px-4 py-2.5 text-sm dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800">
+          <Search className="h-4 w-4 flex-shrink-0" />
+          <span>
+            Showing bookings for
+            {filters.user_email ? <> email <strong>{filters.user_email}</strong></> : null}
+            {filters.user_email && filters.user_phone ? ' and' : ''}
+            {filters.user_phone ? <> phone <strong>{filters.user_phone}</strong></> : null}
+          </span>
+          <button
+            className="ml-auto text-xs font-semibold text-blue-700 hover:text-blue-900 dark:text-blue-400"
+            onClick={() => {
+              setFilters((prev) => ({ ...prev, user_email: '', user_phone: '' }));
+              applyFilters();
+            }}
+          >Clear</button>
+        </div>
+      )}
+
+      {/* ── Table ── */}
       <AdminTable
         keyField="booking_id"
         columns={[
-          { key: 'booking_ref', title: 'Ref' },
-          { key: 'booking_date', title: 'Date', render: (r) => r.booking_date ? dayjs(r.booking_date).format('DD MMM, YYYY') : '—' },
+          { key: 'booking_ref', title: 'Ref', tdClass: 'whitespace-nowrap font-medium' },
+          { key: 'booking_date', title: 'Date', tdClass: 'whitespace-nowrap', render: (r) => r.booking_date ? dayjs(r.booking_date).format('DD MMM, YYYY') : '—' },
           {
             key: 'user_email', title: 'User', render: (r) => (
-              <div className="text-xs">
-                <div>{r.user_email || '—'}</div>
+              <div className="text-xs min-w-[140px]">
+                <div className="font-medium text-gray-800 dark:text-neutral-200">{r.user_name || r.user_email || '—'}</div>
                 <div className="text-gray-500">{r.user_phone || '—'}</div>
               </div>
             )
           },
           {
             key: 'item_title', title: 'Item', render: (r) => (
-              <div className="flex flex-col">
-                <span>{r.item_title || r.attraction_title || '—'}</span>
-                <span className="text-xs text-gray-500">{r.item_type === 'Combo' ? 'Combo' : 'Attraction'}</span>
-              </div>
-            )
-          },
-          {
-            key: 'combo_title', title: 'Combo/Offer', render: (r) => (
-              <div className="flex flex-col text-xs">
-                {r.combo_title ? <span>Combo: {r.combo_title}</span> : null}
-                {r.offer_title ? <span>Offer: {r.offer_title}</span> : <span className="text-gray-400">—</span>}
-              </div>
-            )
-          },
-          { key: 'quantity', title: 'Qty', render: (r) => r.quantity ? `${r.quantity}` : '1' },
-          {
-            key: 'combo_context', title: 'Combo Context', render: (r) => {
-              const isParent = r.item_type === 'Combo';
-              const isChild = Boolean(r.parent_booking_id);
-              const parentRow = isChild ? rowLookup.get(r.parent_booking_id) : null;
-              const parentLabel = parentRow?.booking_ref || parentRow?.booking_id || r.parent_booking_id;
-              const childCount = childCounts[r.booking_id] || 0;
-              const badge = (label, tone = 'indigo') => (
-                <span className={`inline-flex w-fit items-center rounded-full px-2 py-0.5 text-xs font-medium bg-${tone}-100 text-${tone}-700`}>
-                  {label}
+              <div className="flex flex-col min-w-[120px]">
+                <span className="font-medium truncate max-w-[200px]">{r.item_title || r.attraction_title || '—'}</span>
+                <span className="text-xs text-gray-500">
+                  {r.item_type === 'Combo' ? 'Combo' : 'Attraction'}
+                  {r.quantity && r.quantity > 1 ? ` × ${r.quantity}` : ''}
                 </span>
-              );
-
-              if (isParent) {
-                return (
-                  <div className="flex flex-col gap-1 text-xs">
-                    {badge('Combo parent')}
-                    <span className="text-gray-600">
-                      {childCount
-                        ? `${childCount} linked ${childCount === 1 ? 'attraction booking' : 'attraction bookings'}`
-                        : 'Child bookings syncing…'}
-                    </span>
-                  </div>
-                );
-              }
-
-              if (isChild) {
-                return (
-                  <div className="flex flex-col gap-1 text-xs">
-                    {badge('Combo child', 'emerald')}
-                    <div className="flex flex-col gap-1">
-                      <span className="text-gray-600">
-                        Parent booking {parentLabel ? `#${parentLabel}` : '—'}
-                        {parentRow?.item_title ? ` · ${parentRow.item_title}` : ''}
-                      </span>
-                      <button
-                        className="w-fit text-indigo-600 hover:underline"
-                        type="button"
-                        onClick={(e) => { e.stopPropagation(); openParentBooking(r.parent_booking_id); }}
-                      >
-                        View parent
-                      </button>
-                    </div>
-                  </div>
-                );
-              }
-
-              return <span className="text-xs text-gray-400">Standalone booking</span>;
-            }
+              </div>
+            )
           },
           {
-            key: 'slot', title: 'Slot', render: (r) => {
-              // Debug logging to see what data we have
-              console.log('🔍 DEBUG Admin BookingsList item:', {
-                booking_id: r.booking_id,
-                slot_start_time: r.slot_start_time,
-                slot_end_time: r.slot_end_time,
-                booking_time: r.booking_time,
-                slot_label: r.slot_label
-              });
-
-              // Format time for display
-              const formatTime12Hour = (time24) => {
-                if (!time24) return '';
-                const [hours, minutes] = time24.split(':');
-                const hour = parseInt(hours);
-                const ampm = hour >= 12 ? 'PM' : 'AM';
-                const hour12 = hour % 12 || 12;
-                return `${hour12}:${minutes} ${ampm}`;
-              };
-
+            key: 'slot', title: 'Slot', tdClass: 'whitespace-nowrap', render: (r) => {
               if (r.slot_start_time && r.slot_end_time) {
-                const formatted = `${formatTime12Hour(r.slot_start_time)} - ${formatTime12Hour(r.slot_end_time)}`;
-                console.log('🔍 DEBUG Admin using formatted slot times:', formatted);
-                return formatted;
+                return `${formatTime12Hour(r.slot_start_time)} - ${formatTime12Hour(r.slot_end_time)}`;
               }
-              if (r.slot_label) {
-                console.log('🔍 DEBUG Admin using slot_label:', r.slot_label);
-                return r.slot_label;
-              }
-              if (r.booking_time) {
-                const formatted = formatTime12Hour(r.booking_time);
-                console.log('🔍 DEBUG Admin using booking_time:', formatted);
-                return formatted;
-              }
-              console.log('🔍 DEBUG Admin no timing info available');
+              if (r.slot_label) return r.slot_label;
+              if (r.booking_time) return formatTime12Hour(r.booking_time);
               return '—';
             }
           },
-          { key: 'payment_status', title: 'Payment' },
-          { key: 'booking_status', title: 'Status' },
-          { key: 'final_amount', title: 'Amount', render: (r) => `₹${r?.final_amount ?? r?.total_amount ?? 0}` },
           {
-            key: '__actions', title: '', render: (r) => (
-              <div className="flex flex-wrap justify-end gap-3 text-xs">
-                <button className="text-blue-600 hover:underline" onClick={(e) => { e.stopPropagation(); navigate(`/admin/bookings/${r.booking_id ?? r.id}`); }}>Details</button>
-                {r.user_email || r.user_phone ? (
-                  <button className="text-gray-600 hover:underline" onClick={(e) => { e.stopPropagation(); viewUserBookings(r); }}>User bookings</button>
-                ) : null}
-                <button
-                  className={`hover:underline ${r.ticket_pdf ? 'text-emerald-600' : 'text-gray-400 cursor-not-allowed'}`}
-                  onClick={(e) => { e.stopPropagation(); handleDownloadTicket(r); }}
-                  disabled={!r.ticket_pdf}
-                >
-                  Download ticket
-                </button>
-                <button
-                  className="text-green-600 hover:underline"
-                  onClick={(e) => { e.stopPropagation(); handleResendWhatsApp(r); }}
-                >
-                  WhatsApp
-                </button>
-                <button
-                  className="text-blue-600 hover:underline"
-                  onClick={(e) => { e.stopPropagation(); handleResendEmail(r); }}
-                >
-                  Email
-                </button>
-              </div>
-            )
-          },
-          {
-            key: 'addons', title: 'Add-ons', render: (r) => {
-              if (!r.addons || !r.addons.length) {
-                return <span className="text-xs text-gray-400">—</span>;
-              }
+            key: 'payment_status', title: 'Payment', tdClass: 'whitespace-nowrap', render: (r) => {
+              const status = r.payment_status || '—';
+              const colors = {
+                Completed: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+                Pending: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+                Failed: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+                Cancelled: 'bg-gray-100 text-gray-600 dark:bg-neutral-800 dark:text-neutral-400',
+              };
               return (
-                <div className="flex flex-col gap-1 text-xs">
-                  {r.addons.map((addon, idx) => (
-                    <div key={idx} className="text-gray-600">
-                      • {addon.title} x{addon.quantity} ({formatCurrency(addon.price * addon.quantity)})
-                    </div>
-                  ))}
-                </div>
+                <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${colors[status] || 'bg-gray-100 text-gray-600'}`}>
+                  {status}
+                </span>
               );
             }
-          }
+          },
+          {
+            key: 'booking_status', title: 'Status', tdClass: 'whitespace-nowrap', render: (r) => {
+              const bookingId = r.booking_id ?? r.id;
+              const status = r.booking_status || '—';
+              const isUpdating = statusUpdating === bookingId;
+              const colorMap = {
+                Booked: 'border-blue-300 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-700',
+                Redeemed: 'border-emerald-300 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-700',
+                Expired: 'border-orange-300 bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-700',
+                Cancelled: 'border-gray-300 bg-gray-50 text-gray-600 dark:bg-neutral-800 dark:text-neutral-400 dark:border-neutral-600',
+              };
+              return (
+                <select
+                  className={`rounded-full px-2.5 py-1 text-xs font-semibold border cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-all ${colorMap[status] || 'border-gray-200 bg-gray-50 text-gray-600'} ${isUpdating ? 'opacity-50 pointer-events-none' : ''}`}
+                  value={status}
+                  onClick={(e) => e.stopPropagation()}
+                  onChange={(e) => { e.stopPropagation(); handleInlineStatusChange(r, e.target.value); }}
+                  disabled={isUpdating}
+                >
+                  <option value="Booked">Booked</option>
+                  <option value="Redeemed">Redeemed</option>
+                  <option value="Expired">Expired</option>
+                  <option value="Cancelled">Cancelled</option>
+                </select>
+              );
+            }
+          },
+          { key: 'final_amount', title: 'Amount', tdClass: 'whitespace-nowrap font-semibold', render: (r) => `₹${Number(r?.final_amount ?? r?.total_amount ?? 0).toLocaleString()}` },
         ]}
         rows={rows}
         onRowClick={(r) => navigate(`/admin/bookings/${r.booking_id ?? r.id}`)}
-        empty={list.status === 'loading' ? 'Loading…' : 'No bookings'}
+        empty={list.status === 'loading' ? 'Loading…' : 'No bookings found'}
+        actions={[
+          { label: 'View', title: 'View details', className: 'bg-blue-50 hover:bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 dark:text-blue-400', onClick: (r) => navigate(`/admin/bookings/${r.booking_id ?? r.id}`) },
+          { label: 'WhatsApp', title: 'Resend via WhatsApp', className: 'bg-green-50 hover:bg-green-100 text-green-700 dark:bg-green-900/30 dark:hover:bg-green-900/50 dark:text-green-400', onClick: (r) => handleResendWhatsApp(r) },
+          { label: 'Email', title: 'Resend via email', className: 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:hover:bg-indigo-900/50 dark:text-indigo-400', onClick: (r) => handleResendEmail(r) },
+        ]}
       />
 
-      <div className="mt-4 flex flex-wrap items-center gap-3">
-        <button
-          className="rounded-md border px-3 py-2 text-sm"
-          onClick={() => stepSingleDate(-1)}
-        >
-          ◀ Prev Date
-        </button>
-        <div className="text-sm text-gray-600">
-          {activeRange === 'all' ? 'All bookings' : filters.date_from ? dayjs(filters.date_from).format('dddd, DD MMM YYYY') : 'No date selected'}
+      {/* ── Date Navigation + Pagination ── */}
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-2">
+          <button className={btnSecondary} onClick={() => stepSingleDate(-1)} title="Previous date">
+            <ChevronLeft className="h-4 w-4" />
+            <span className="hidden sm:inline">Prev</span>
+          </button>
+          <div className="text-sm font-medium text-gray-700 dark:text-neutral-300 px-2">
+            {activeRange === 'all' ? 'All bookings' : filters.date_from ? dayjs(filters.date_from).format('ddd, DD MMM YYYY') : 'No date selected'}
+          </div>
+          <button className={btnSecondary} onClick={() => stepSingleDate(1)} title="Next date">
+            <span className="hidden sm:inline">Next</span>
+            <ChevronRight className="h-4 w-4" />
+          </button>
         </div>
-        <button
-          className="rounded-md border px-3 py-2 text-sm"
-          onClick={() => stepSingleDate(1)}
-        >
-          Next Date ▶
-        </button>
       </div>
 
       <TablePagination
@@ -954,14 +824,15 @@ export default function BookingsList() {
         }}
       />
 
-      <SectionCard title="Bookings Trend" subtitle="Paid bookings vs revenue" className="p-4">
+      {/* ── Trend Chart ── */}
+      <SectionCard title="Bookings Trend" subtitle="Paid bookings vs revenue over time">
         <div style={{ height: 280 }}>
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={overview.trend || []}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis dataKey="bucket" />
-              <YAxis />
-              <Tooltip />
+              <XAxis dataKey="bucket" tick={{ fontSize: 12 }} />
+              <YAxis tick={{ fontSize: 12 }} />
+              <Tooltip contentStyle={{ borderRadius: '12px', border: '1px solid #e5e7eb', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }} />
               <Legend />
               <Line type="monotone" dataKey="bookings" stroke="#2563eb" name="Bookings" strokeWidth={2} dot={false} />
               <Line type="monotone" dataKey="revenue" stroke="#16a34a" name="Revenue" strokeWidth={2} dot={false} />

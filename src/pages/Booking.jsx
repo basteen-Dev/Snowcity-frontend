@@ -1817,7 +1817,7 @@ export default function Booking() {
   return (
     <>
       {/* Page wrapper: make sure everything sits under navbar; ensure Inter font */}
-      <div className="min-h-screen bg-gradient-to-b from-sky-50 to-white font-inter pt-20">
+      <div className="min-h-screen bg-[#f5f9ff] font-inter pt-20">
 
         {/* Progress Bar */}
         <div className="sticky top-[5.5rem] z-10 bg-white/80 pt-3 pb-3 border-b border-gray-100 mb-2">
@@ -2213,59 +2213,52 @@ export default function Booking() {
                             Time slot
                           </p>
                           <div className="relative">
-                            {slots.status === 'loading' ? (
-                              <div className="w-full p-3.5 bg-gray-50 border border-gray-200 rounded-xl flex items-center justify-center">
-                                <div className="flex items-center gap-2 text-gray-500 text-sm">
-                                  <div className="w-4 h-4 border-2 border-gray-300 border-t-sky-600 rounded-full animate-spin"></div>
-                                  Loading slots...
-                                </div>
-                              </div>
-                            ) : slots.status === 'failed' ? (
-                              <div className="w-full p-3.5 bg-red-50 border border-red-200 rounded-xl flex items-center justify-center">
-                                <div className="text-red-600 text-sm">Failed to load slots</div>
-                              </div>
-                            ) : (
-                              <>
-                                <select
-                                  className="w-full p-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-sky-500 outline-none text-sm font-medium appearance-none cursor-pointer disabled:bg-gray-100 disabled:text-gray-400 transition-all hover:border-gray-300"
-                                  value={sel.slotKey}
-                                  onChange={(e) =>
-                                    setSel((st) => ({
-                                      ...st,
-                                      slotKey: e.target.value,
-                                    }))
-                                  }
-                                  disabled={!sel.attractionId && !sel.comboId}
-                                >
-                                  <option value="">
-                                    {!sel.attractionId && !sel.comboId
-                                      ? 'Select a ticket above first'
-                                      : 'Select a time slot'}
-                                  </option>
-                                  {slots.items.map((s, i) => {
-                                    const sid = getSlotKey(s, i);
-                                    const hasCapacity = slotHasCapacity(s);
-                                    const isAvailable = isSlotAvailable(s, sel.date);
-                                    const isDisabled = !hasCapacity || !isAvailable;
+                            <>
+                              <select
+                                className="w-full p-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-sky-500 outline-none text-sm font-medium appearance-none cursor-pointer disabled:bg-gray-100 disabled:text-gray-400 transition-all hover:border-gray-300"
+                                value={sel.slotKey}
+                                onChange={(e) =>
+                                  setSel((st) => ({
+                                    ...st,
+                                    slotKey: e.target.value,
+                                  }))
+                                }
+                                disabled={(!sel.attractionId && !sel.comboId) || (slots.status === 'succeeded' && slots.items.length === 0)}
+                              >
+                                <option value="">
+                                  {!sel.attractionId && !sel.comboId
+                                    ? 'Select a ticket above first'
+                                    : slots.status === 'loading'
+                                      ? 'Loading slots...'
+                                      : slots.status === 'failed'
+                                        ? 'Failed to load slots — try again'
+                                        : slots.items.length === 0
+                                          ? 'No slots available — try another date'
+                                          : 'Select a time slot'}
+                                </option>
+                                {slots.items.map((s, i) => {
+                                  const sid = getSlotKey(s, i);
+                                  const hasCapacity = slotHasCapacity(s);
+                                  const isAvailable = isSlotAvailable(s, sel.date);
+                                  const isDisabled = !hasCapacity || !isAvailable;
 
-                                    return (
-                                      <option key={sid} value={sid} disabled={isDisabled}>
-                                        {getSlotLabel(s)}{' '}
-                                        {!hasCapacity
-                                          ? '(Full)'
-                                          : !isAvailable
-                                            ? '(Not Available)'
-                                            : ''}
-                                      </option>
-                                    );
-                                  })}
-                                </select>
-                                <ChevronRight
-                                  size={16}
-                                  className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 rotate-90"
-                                />
-                              </>
-                            )}
+                                  return (
+                                    <option key={sid} value={sid} disabled={isDisabled}>
+                                      {getSlotLabel(s)}{' '}
+                                      {!hasCapacity
+                                        ? '(Full)'
+                                        : !isAvailable
+                                          ? '(Not Available)'
+                                          : ''}
+                                    </option>
+                                  );
+                                })}
+                              </select>
+                              <ChevronRight
+                                size={16}
+                                className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 rotate-90"
+                              />
+                            </>
                           </div>
                         </div>
 

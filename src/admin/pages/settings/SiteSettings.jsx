@@ -16,6 +16,42 @@ export default function SiteSettings() {
     });
     const [saving, setSaving] = React.useState(false);
 
+    const preview = async () => {
+        try {
+            const payload = {
+                title: 'Site Settings Preview',
+                meta_title: 'Site Settings Preview',
+                meta_description: 'Preview of global SEO scripts and schemas',
+                content: '<p style="text-align:center;padding:40px;color:#666;">This is a preview of your global SEO settings.<br/>Inspect the page source to verify injected scripts and schemas.</p>',
+                head_schema: state.form.head_schema || '',
+                body_schema: state.form.body_schema || '',
+                footer_schema: state.form.footer_schema || '',
+                organization_schema: state.form.organization_schema || '',
+            };
+
+            const apiBase = adminApi.defaults.baseURL || '';
+            const rootBase = apiBase.endsWith('/api') ? apiBase.slice(0, -4) : apiBase;
+            const response = await fetch(`${rootBase}/preview`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${adminApi.defaults.headers.common['Authorization']?.split(' ')[1] || ''}`
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const htmlDoc = await response.text();
+            const win = window.open('', '_blank');
+            if (win) {
+                win.document.open();
+                win.document.write(htmlDoc);
+                win.document.close();
+            }
+        } catch (e) {
+            toast.error(e.message || 'Preview failed');
+        }
+    };
+
     React.useEffect(() => {
         (async () => {
             try {
@@ -65,6 +101,13 @@ export default function SiteSettings() {
                     <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Site Settings (SEO)</h1>
                     <p className="mt-1 text-sm text-gray-500 dark:text-neutral-400">Global scripts and schemas injected across all pages.</p>
                 </div>
+                <button
+                    type="button"
+                    onClick={preview}
+                    className="px-4 py-2 bg-gray-100 dark:bg-neutral-700 text-gray-700 dark:text-neutral-300 rounded-lg hover:bg-gray-200 dark:hover:bg-neutral-600 transition-colors text-sm font-medium"
+                >
+                    Preview
+                </button>
             </div>
 
             <form onSubmit={save} className="max-w-4xl bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl p-6 shadow-sm">

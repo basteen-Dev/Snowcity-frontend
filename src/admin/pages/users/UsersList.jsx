@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import adminApi from '../../services/adminApi';
 import A from '../../services/adminEndpoints';
 import AdminTable from '../../components/common/AdminTable';
+import PageHeader from '../../components/common/PageHeader';
+import FilterBar from '../../components/common/FilterBar';
 import TablePagination from '../../components/common/TablePagination';
 
 export default function UsersList() {
@@ -41,28 +43,43 @@ export default function UsersList() {
   React.useEffect(() => { loadRoles(); load(1); /* eslint-disable-next-line */ }, []);
 
   const meta = state.meta || {};
-  const totalPages = meta.totalPages || meta.total_pages || 1;
+  const totalCount = meta.total || meta.count || state.items.length;
 
   return (
     <div>
-      <h1 className="text-xl font-semibold mb-3">Users</h1>
+      <PageHeader title="Customers" subtitle="Manage registered users">
+        <button
+          onClick={() => navigate('/admin/users/new')}
+          className="rounded-lg bg-gray-900 dark:bg-blue-600 text-white px-4 py-2 text-sm font-medium hover:bg-gray-800 dark:hover:bg-blue-700 transition-colors"
+        >
+          + Create Customer
+        </button>
+      </PageHeader>
 
-      <div className="mb-3 grid grid-cols-1 md:grid-cols-4 gap-2">
-        <input className="rounded-md border px-3 py-2" placeholder="Search name/email/phone" value={state.q} onChange={(e) => setState({ ...state, q: e.target.value })} />
-        <select className="rounded-md border px-3 py-2" value={state.role} onChange={(e) => setState({ ...state, role: e.target.value })}>
+      <FilterBar onApply={() => load(1)} onReset={() => { setState((s) => ({ ...s, q: '', role: '' })); setTimeout(() => load(1), 0); }} loading={state.status === 'loading'}>
+        <input
+          className="w-full rounded-lg border border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 text-sm dark:text-neutral-200 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+          placeholder="Search name, email, or phone…"
+          value={state.q}
+          onChange={(e) => setState({ ...state, q: e.target.value })}
+        />
+        <select
+          className="w-full rounded-lg border border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 text-sm dark:text-neutral-200 focus:ring-1 focus:ring-blue-500"
+          value={state.role}
+          onChange={(e) => setState({ ...state, role: e.target.value })}
+        >
           <option value="">All roles</option>
           {(state.roles || []).map((r) => <option key={r.role_id} value={r.role_name}>{r.role_name}</option>)}
         </select>
-        <button className="rounded-md border px-3 py-2 text-sm" onClick={() => load(1)}>Filter</button>
-      </div>
+      </FilterBar>
 
       <AdminTable
         keyField="user_id"
         columns={[
           { key: 'name', title: 'Name' },
           { key: 'email', title: 'Email' },
-          { key: 'phone', title: 'Phone' },
-          { key: 'last_login_at', title: 'Last Login' }
+          { key: 'phone', title: 'Phone', render: (r) => r.phone || '—' },
+          { key: 'last_login_at', title: 'Last Login', render: (r) => r.last_login_at ? new Date(r.last_login_at).toLocaleDateString() : '—' }
         ]}
         rows={state.items}
         onRowClick={(r) => navigate(`/admin/users/${r.user_id}`)}
@@ -70,14 +87,12 @@ export default function UsersList() {
       />
 
       <TablePagination
-        count={meta.total || meta.count || state.items.length}
+        count={totalCount}
         page={state.page}
         rowsPerPage={state.limit}
         onPageChange={(p) => load(p)}
         onRowsPerPageChange={(l) => {
           setState(s => ({ ...s, limit: l }));
-          // load will be called by useEffect if we track limit, or we can call it here
-          // state.limit is updated asynchronously, so better call it with 'l'
           setTimeout(() => load(1), 0);
         }}
       />

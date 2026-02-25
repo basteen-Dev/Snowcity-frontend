@@ -2,6 +2,10 @@ import React from 'react';
 import adminApi from '../../services/adminApi';
 import A from '../../services/adminEndpoints';
 import AdminTable from '../../components/common/AdminTable';
+import PageHeader from '../../components/common/PageHeader';
+import FilterBar from '../../components/common/FilterBar';
+import StatusBadge from '../../components/common/StatusBadge';
+import TablePagination from '../../components/common/TablePagination';
 import { useNavigate } from 'react-router-dom';
 import { imgSrc } from '../../../utils/media';
 
@@ -50,7 +54,6 @@ export default function AttractionsList() {
     }
   };
 
-  // Reorder handling
   const onDragEnd = (event) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
@@ -67,10 +70,8 @@ export default function AttractionsList() {
     setState((s) => ({ ...s, saving: true }));
     try {
       try {
-        // Preferred single-call reorder
         await adminApi.post(A.attractionsReorder(), { ids });
       } catch {
-        // Fallback: set sort_order individually if supported
         await Promise.all(ids.map((id, idx) => adminApi.put(`${A.attractions()}/${id}`, { sort_order: idx })));
       }
       alert('Order saved');
@@ -83,40 +84,54 @@ export default function AttractionsList() {
   };
 
   const meta = state.meta || {};
-  const canPrev = state.page > 1;
-  const canNext = meta.page ? (meta.page < (meta.totalPages || meta.total_pages || 1)) : false;
+  const totalCount = meta.total || meta.count || state.items.length;
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-3">
-        <h1 className="text-xl font-semibold">Attractions</h1>
-        <div className="flex items-center gap-2">
-          <button className="rounded-md border px-3 py-2 text-sm" onClick={() => setState((s) => ({ ...s, reorder: !s.reorder }))}>
-            {state.reorder ? 'Exit Reorder' : 'Reorder'}
+      <PageHeader title="Attractions" subtitle="Manage your attractions catalog">
+        <button
+          className="rounded-lg border border-gray-300 dark:border-neutral-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors"
+          onClick={() => setState((s) => ({ ...s, reorder: !s.reorder }))}
+        >
+          {state.reorder ? 'Exit Reorder' : 'Reorder'}
+        </button>
+        {state.reorder ? (
+          <button
+            className="rounded-lg bg-blue-600 text-white px-4 py-2 text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            onClick={saveOrder}
+            disabled={state.saving}
+          >
+            {state.saving ? 'Saving…' : 'Save Order'}
           </button>
-          {state.reorder ? (
-            <button className="rounded-md bg-gray-900 text-white px-3 py-2 text-sm disabled:opacity-50" onClick={saveOrder} disabled={state.saving}>
-              {state.saving ? 'Saving…' : 'Save Order'}
-            </button>
-          ) : (
-            <button className="rounded-md bg-gray-900 text-white px-3 py-2 text-sm" onClick={() => navigate('/admin/catalog/attractions/new')}>
-              New Attraction
-            </button>
-          )}
-        </div>
-      </div>
+        ) : (
+          <button
+            className="rounded-lg bg-gray-900 dark:bg-blue-600 text-white px-4 py-2 text-sm font-medium hover:bg-gray-800 dark:hover:bg-blue-700 transition-colors"
+            onClick={() => navigate('/admin/catalog/attractions/new')}
+          >
+            + New Attraction
+          </button>
+        )}
+      </PageHeader>
 
       {!state.reorder ? (
         <>
-          <div className="mb-3 grid grid-cols-1 md:grid-cols-4 gap-2">
-            <input className="rounded-md border px-3 py-2" placeholder="Search title" value={state.q} onChange={(e) => setState((s) => ({ ...s, q: e.target.value }))} />
-            <select className="rounded-md border px-3 py-2" value={state.active} onChange={(e) => setState((s) => ({ ...s, active: e.target.value }))}>
-              <option value="">Active: All</option>
+          <FilterBar onApply={() => load(1)} onReset={() => { setState((s) => ({ ...s, q: '', active: '' })); setTimeout(() => load(1), 0); }} loading={state.status === 'loading'}>
+            <input
+              className="w-full rounded-lg border border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 text-sm dark:text-neutral-200 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+              placeholder="Search by title…"
+              value={state.q}
+              onChange={(e) => setState((s) => ({ ...s, q: e.target.value }))}
+            />
+            <select
+              className="w-full rounded-lg border border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 text-sm dark:text-neutral-200 focus:ring-1 focus:ring-blue-500"
+              value={state.active}
+              onChange={(e) => setState((s) => ({ ...s, active: e.target.value }))}
+            >
+              <option value="">Status: All</option>
               <option value="true">Active</option>
               <option value="false">Inactive</option>
             </select>
-            <button className="rounded-md border px-3 py-2 text-sm" onClick={() => load(1)}>Filter</button>
-          </div>
+          </FilterBar>
 
           <AdminTable
             keyField="attraction_id"
@@ -128,7 +143,7 @@ export default function AttractionsList() {
                   <img
                     src={imgSrc(row)}
                     alt={row.title}
-                    className="w-10 h-10 object-cover rounded shadow-sm border dark:border-neutral-700"
+                    className="w-10 h-10 object-cover rounded-lg shadow-sm border border-gray-200 dark:border-neutral-700"
                     onError={(e) => { e.target.src = '/placeholder-image.png'; }}
                   />
                 )
@@ -137,28 +152,9 @@ export default function AttractionsList() {
               { key: 'base_price', title: 'Base Price', render: (row) => `₹${row?.base_price ?? 0}` },
               {
                 key: 'active',
-                title: 'Active',
+                title: 'Status',
                 render: (row) => (
-                  <div className="flex items-center gap-2">
-                    <span className={`px-2 py-1 text-xs rounded ${row?.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                      }`}>
-                      {row?.active ? 'Active' : 'Inactive'}
-                    </span>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (!window.confirm(`Are you sure you want to delete "${row.title}"? This will also delete all associated slots.`)) return;
-
-                        adminApi.delete(`${A.attractions()}/${row.attraction_id || row.id}`)
-                          .then(() => setState((s) => ({ ...s, items: s.items.filter((it) => (it.attraction_id || it.id) !== (row.attraction_id || row.id)) })))
-                          .catch(error => alert(error.message || 'Failed to delete attraction'));
-                      }}
-                      className="text-red-600 hover:text-red-800 text-sm underline"
-                      title="Delete attraction"
-                    >
-                      Delete
-                    </button>
-                  </div>
+                  <StatusBadge status={row?.active ? 'active' : 'inactive'} />
                 )
               },
               {
@@ -170,44 +166,58 @@ export default function AttractionsList() {
                       e.stopPropagation();
                       navigate(`/admin/catalog/attraction-slots?attraction_id=${row.attraction_id || row.id}`);
                     }}
-                    className="text-blue-600 hover:text-blue-800 text-sm underline"
+                    className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium"
                   >
                     View Slots
+                  </button>
+                )
+              },
+              {
+                key: '__actions',
+                title: '',
+                render: (row) => (
+                  <button
+                    onClick={(e) => remove(row, e)}
+                    className="text-red-500 hover:text-red-700 text-sm font-medium"
+                  >
+                    Delete
                   </button>
                 )
               }
             ]}
             rows={state.items}
             onRowClick={(row) => navigate(`/admin/catalog/attractions/${row.attraction_id || row.id}`)}
-            empty={state.status === 'loading' ? 'Loading…' : 'No attractions'}
+            empty={state.status === 'loading' ? 'Loading…' : 'No attractions found'}
           />
 
-          <div className="mt-3 flex items-center gap-2">
-            <button className="rounded-md border px-3 py-1 text-sm" onClick={() => canPrev && load(state.page - 1)} disabled={!canPrev || state.status === 'loading'}>Prev</button>
-            <div className="text-sm text-gray-600">Page {meta.page || state.page}</div>
-            <button className="rounded-md border px-3 py-1 text-sm" onClick={() => canNext && load(state.page + 1)} disabled={!canNext || state.status === 'loading'}>Next</button>
-          </div>
+          <TablePagination
+            count={totalCount}
+            page={state.page}
+            rowsPerPage={state.limit}
+            onPageChange={(p) => load(p)}
+            onRowsPerPageChange={(l) => { setState((s) => ({ ...s, limit: l })); setTimeout(() => load(1), 0); }}
+          />
         </>
       ) : (
-        <div className="overflow-x-auto rounded-lg border bg-white dark:bg-neutral-900">
+        <div className="rounded-2xl border border-gray-200/80 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-sm overflow-hidden">
           <DndContext collisionDetection={closestCenter} onDragEnd={onDragEnd}>
             <SortableContext items={state.items.map((a) => String(a.attraction_id))} strategy={verticalListSortingStrategy}>
               <table className="min-w-full text-sm">
-                <thead className="bg-gray-50 dark:bg-neutral-800 text-gray-600 dark:text-neutral-300">
-                  <tr>
-                    <th className="px-3 py-2 text-left">Drag</th>
-                    <th className="px-3 py-2 text-left">Title</th>
-                    <th className="px-3 py-2 text-left">Base Price</th>
-                    <th className="px-3 py-2 text-left">Active</th>
+                <thead>
+                  <tr className="bg-gray-50/80 dark:bg-neutral-800/60 border-b border-gray-200 dark:border-neutral-700">
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Drag</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Title</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Base Price</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Status</th>
                   </tr>
                 </thead>
-                <tbody className="text-gray-800 dark:text-neutral-200">
+                <tbody className="divide-y divide-gray-100 dark:divide-neutral-800">
                   {state.items.map((r) => (
-                    <tr key={r.attraction_id} id={String(r.attraction_id)} className="border-t border-gray-200 dark:border-neutral-800">
-                      <td className="px-3 py-2 cursor-grab">⋮⋮</td>
-                      <td className="px-3 py-2">{r.title || '—'}</td>
-                      <td className="px-3 py-2">₹{r?.base_price ?? 0}</td>
-                      <td className="px-3 py-2">{String(r?.active)}</td>
+                    <tr key={r.attraction_id} id={String(r.attraction_id)} className="hover:bg-gray-50 dark:hover:bg-neutral-800/60">
+                      <td className="px-4 py-3 cursor-grab text-gray-400">⋮⋮</td>
+                      <td className="px-4 py-3 text-gray-700 dark:text-neutral-200">{r.title || '—'}</td>
+                      <td className="px-4 py-3 text-gray-700 dark:text-neutral-200">₹{r?.base_price ?? 0}</td>
+                      <td className="px-4 py-3"><StatusBadge status={r?.active ? 'active' : 'inactive'} /></td>
                     </tr>
                   ))}
                 </tbody>
