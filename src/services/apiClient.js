@@ -62,6 +62,14 @@ let authHandlers = {
   onUnauthorized: null
 };
 
+// 4b. GET Cache
+const getCache = new Map();
+const GET_CACHE_TTL = 30000; // 30 seconds for transient in-memory cache
+
+export function clearApiCache() {
+  getCache.clear();
+}
+
 export function setAuthToken(token) {
   authToken = token || null;
   if (typeof clearApiCache === 'function') clearApiCache();
