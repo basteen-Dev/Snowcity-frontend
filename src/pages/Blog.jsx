@@ -77,7 +77,7 @@ export default function Blog() {
   if (st.status === 'failed') return <ErrorState message={st.error} />;
 
   return (
-    <div className="min-h-screen bg-[#f5f9ff] px-4 pt-20 pb-16">
+    <div className="min-h-screen bg-gradient-to-b from-[#f5f8ff] to-white px-4 pt-24 pb-16">
       <div className="max-w-4xl mx-auto">
         {/* Back to blogs link */}
         <div className="mb-8">

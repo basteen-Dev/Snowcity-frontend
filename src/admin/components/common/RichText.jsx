@@ -17,6 +17,21 @@ const resolveAssetUrl = (url) => {
 const FONT_WHITELIST = ['inter', 'opensans', 'poppins', 'roboto', 'serif', 'monospace'];
 const SIZE_WHITELIST = ['small', false, 'large', 'huge'];
 
+/**
+ * Strip all inline background colors / background-color from pasted HTML.
+ * Also strips white/near-white text colors that come from dark-mode copy.
+ */
+function stripPasteBackgrounds(html) {
+  if (!html) return html;
+  // Remove background-color and background inline styles
+  let cleaned = html.replace(/background(-color)?\s*:\s*[^;"]*(;|(?="))/gi, '');
+  // Remove white/near-white text colors (rgb(255,255,255), #fff, #ffffff, white)
+  cleaned = cleaned.replace(/color\s*:\s*(white|#fff(fff)?|rgb\(\s*255\s*,\s*255\s*,\s*255\s*\))\s*(;|(?="))/gi, '');
+  // Remove empty style attributes left behind
+  cleaned = cleaned.replace(/\sstyle\s*=\s*"[\s;]*"/gi, '');
+  return cleaned;
+}
+
 export default function RichText({ value, onChange, placeholder = 'Type here…', height = 260, gallery = [] }) {
   const ref = React.useRef({ Editor: null });
   const quillRef = React.useRef(null);
@@ -34,11 +49,19 @@ export default function RichText({ value, onChange, placeholder = 'Type here…'
   const [imageAlignment, setImageAlignment] = React.useState('inline');
   const [previewOpen, setPreviewOpen] = React.useState(false);
 
+  // ── Modal states ──
+  const [altModal, setAltModal] = React.useState(null); // { file: File, resolve }
+  const [ytModal, setYtModal] = React.useState(false);
+  const [ytUrl, setYtUrl] = React.useState('');
+  const [btnModal, setBtnModal] = React.useState(false);
+  const [btnText, setBtnText] = React.useState('');
+  const [btnLink, setBtnLink] = React.useState('');
+  const [imageAltEdit, setImageAltEdit] = React.useState('');
+
   React.useEffect(() => {
     let mounted = true;
     (async () => {
       try {
-        // Prefer 'react-quill-new' (present in deps)
         const mod2 = await import('react-quill-new');
         try { await import('react-quill-new/dist/quill.snow.css'); } catch { }
         if (mounted) {
@@ -69,6 +92,33 @@ export default function RichText({ value, onChange, placeholder = 'Type here…'
     return () => { mounted = false; };
   }, []);
 
+  // ── Paste handler: strip backgrounds ──
+  React.useEffect(() => {
+    if (!editorReady) return;
+    const quill = quillRef.current?.getEditor?.();
+    if (!quill) return;
+
+    const handlePaste = (e) => {
+      const html = e.clipboardData?.getData('text/html');
+      if (!html) return; // plain text paste — let Quill handle it
+      e.preventDefault();
+      const cleaned = stripPasteBackgrounds(html);
+      // Use Quill's clipboard to paste sanitized HTML
+      const delta = quill.clipboard.convert({ html: cleaned });
+      const range = quill.getSelection(true);
+      quill.updateContents(
+        quill.constructor.import('delta').default
+          ? new (quill.constructor.import('delta').default)().retain(range.index).delete(range.length).concat(delta)
+          : (() => { quill.deleteText(range.index, range.length); quill.setSelection(range.index); quill.clipboard.dangerouslyPasteHTML(range.index, cleaned); return null; })(),
+        'user'
+      );
+    };
+
+    quill.root.addEventListener('paste', handlePaste);
+    return () => quill.root.removeEventListener('paste', handlePaste);
+  }, [editorReady]);
+
+  // ── Image upload with alt text prompt ──
   const handleSelectImage = React.useCallback(() => {
     setUploadErr('');
     fileInputRef.current?.click();
@@ -83,11 +133,21 @@ export default function RichText({ value, onChange, placeholder = 'Type here…'
       const quill = quillRef.current?.getEditor?.();
       if (!quill) return;
       for (const file of files) {
+        // Show alt-text modal
+        const altText = await new Promise((resolve) => {
+          setAltModal({ file, resolve });
+        });
+
         const url = await uploadAdminMedia(file, { folder: 'editor' });
         const range = quill.getSelection(true);
         const insertAt = range ? range.index : quill.getLength();
         const imageUrl = resolveAssetUrl(url);
         quill.insertEmbed(insertAt, 'image', imageUrl, 'user');
+        // Set alt attribute on the inserted image
+        const imgNode = quill.root.querySelector(`img[src="${imageUrl}"]`);
+        if (imgNode && altText) {
+          imgNode.setAttribute('alt', altText);
+        }
         quill.setSelection(insertAt + 1);
       }
     } catch (err) {
@@ -98,13 +158,66 @@ export default function RichText({ value, onChange, placeholder = 'Type here…'
     }
   };
 
+  // ── YouTube embed ──
+  const handleYouTubeInsert = React.useCallback(() => {
+    setYtUrl('');
+    setYtModal(true);
+  }, []);
+
+  const confirmYouTube = () => {
+    const quill = quillRef.current?.getEditor?.();
+    if (!quill || !ytUrl.trim()) { setYtModal(false); return; }
+
+    // Extract YouTube video ID
+    let videoId = '';
+    try {
+      const url = new URL(ytUrl.trim());
+      if (url.hostname.includes('youtu.be')) {
+        videoId = url.pathname.slice(1);
+      } else {
+        videoId = url.searchParams.get('v') || '';
+      }
+    } catch {
+      // Try direct ID
+      videoId = ytUrl.trim();
+    }
+
+    if (!videoId) { setYtModal(false); return; }
+
+    const range = quill.getSelection(true);
+    const insertAt = range ? range.index : quill.getLength();
+    const embedHtml = `<div class="yt-embed" style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;max-width:100%;margin:1rem 0;border-radius:12px;"><iframe src="https://www.youtube.com/embed/${videoId}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;border-radius:12px;" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen></iframe></div>`;
+    quill.clipboard.dangerouslyPasteHTML(insertAt, embedHtml, 'user');
+    quill.setSelection(insertAt + 1);
+    setYtModal(false);
+    setYtUrl('');
+  };
+
+  // ── Button insert ──
+  const handleButtonInsert = React.useCallback(() => {
+    setBtnText('');
+    setBtnLink('');
+    setBtnModal(true);
+  }, []);
+
+  const confirmButton = () => {
+    const quill = quillRef.current?.getEditor?.();
+    if (!quill || !btnText.trim() || !btnLink.trim()) { setBtnModal(false); return; }
+
+    const range = quill.getSelection(true);
+    const insertAt = range ? range.index : quill.getLength();
+    const buttonHtml = `<p><a href="${btnLink.trim()}" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:10px 24px;background:linear-gradient(135deg,#2563eb,#4f46e5);color:#fff;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">${btnText.trim()}</a></p>`;
+    quill.clipboard.dangerouslyPasteHTML(insertAt, buttonHtml, 'user');
+    quill.setSelection(insertAt + 1);
+    setBtnModal(false);
+  };
+
   const insertImageUrl = React.useCallback(async (url) => {
     try {
       const quill = quillRef.current?.getEditor?.();
       if (!quill) return;
       const range = quill.getSelection(true);
       const insertAt = range ? range.index : quill.getLength();
-
       const imageUrl = resolveAssetUrl(url);
       quill.insertEmbed(insertAt, 'image', imageUrl, 'user');
       quill.setSelection(insertAt + 1);
@@ -171,6 +284,7 @@ export default function RichText({ value, onChange, placeholder = 'Type here…'
         const pct = Number(leaf.domNode.dataset.widthPct || 100);
         setImageWidth(Number.isFinite(pct) ? pct : 100);
         setImageAlignment(leaf.domNode.dataset.alignMode || 'inline');
+        setImageAltEdit(leaf.domNode.getAttribute('alt') || '');
       } else {
         setSelectedImage(null);
         setImageAlignment('inline');
@@ -189,12 +303,18 @@ export default function RichText({ value, onChange, placeholder = 'Type here…'
     applyAlignment(selectedImage, mode);
   };
 
+  const onAltChange = (alt) => {
+    setImageAltEdit(alt);
+    if (selectedImage) selectedImage.setAttribute('alt', alt);
+  };
+
   React.useEffect(() => {
     if (!selectedImage) return;
     applyWidth(selectedImage, imageWidth);
     applyAlignment(selectedImage, imageAlignment);
   }, [selectedImage, imageWidth, imageAlignment, applyWidth, applyAlignment]);
 
+  // ── Drag and drop for images ──
   React.useEffect(() => {
     if (!editorReady) return undefined;
     const quill = quillRef.current?.getEditor?.();
@@ -302,21 +422,24 @@ export default function RichText({ value, onChange, placeholder = 'Type here…'
           [{ indent: '-1' }, { indent: '+1' }],
           ['blockquote', 'code-block'],
           [{ align: [] }],
-          ['link', 'image'],
+          ['link', 'image', 'video'],
           ['clean']
         ],
         handlers: {
           image: handleSelectImage,
+          video: handleYouTubeInsert,
         }
+      },
+      clipboard: {
+        matchVisual: false,
       }
     }),
-    [handleSelectImage]
+    [handleSelectImage, handleYouTubeInsert]
   );
 
   const EditorComponent = ref.current.Editor;
 
   if (!EditorComponent) {
-    // Fallback: simple textarea (editable, no toolbar)
     return (
       <textarea
         value={value || ''}
@@ -354,7 +477,26 @@ export default function RichText({ value, onChange, placeholder = 'Type here…'
         </div>
       ) : null}
       <div className="flex items-center justify-between text-xs text-gray-500">
-        <span>Visual Editor</span>
+        <div className="flex items-center gap-2">
+          <span>Visual Editor</span>
+          {/* Extra toolbar buttons */}
+          <button
+            type="button"
+            onClick={handleYouTubeInsert}
+            className="px-2 py-1 rounded-md border border-red-300 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 text-xs font-medium"
+            title="Insert YouTube video"
+          >
+            ▶ YouTube
+          </button>
+          <button
+            type="button"
+            onClick={handleButtonInsert}
+            className="px-2 py-1 rounded-md border border-blue-300 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 text-xs font-medium"
+            title="Insert styled button with link"
+          >
+            ⬡ Button
+          </button>
+        </div>
         <button
           type="button"
           onClick={() => setPreviewOpen((prev) => !prev)}
@@ -383,44 +525,66 @@ export default function RichText({ value, onChange, placeholder = 'Type here…'
       />
       {uploading ? <div className="text-xs text-gray-500">Uploading image…</div> : null}
       {uploadErr ? <div className="text-xs text-red-600">{uploadErr}</div> : null}
+
+      {/* ── Image controls panel (when image selected) ── */}
       {selectedImage ? (
-        <div className="flex flex-col gap-2 rounded-md border border-dashed p-2 text-sm">
-          <div className="font-medium">Selected image controls</div>
-          <label className="text-xs">Width: {imageWidth}%</label>
-          <input
-            type="range"
-            min={20}
-            max={100}
-            value={imageWidth}
-            onChange={(e) => onWidthChange(Number(e.target.value))}
-          />
-          <div className="flex flex-wrap gap-2 text-xs">
-            <button type="button" className="px-2 py-1 rounded-md border" onClick={() => onWidthChange(100)}>
-              Reset width
-            </button>
-            <button
-              type="button"
-              className="px-2 py-1 rounded-md border"
-              onClick={() => selectedImage && applyWidth(selectedImage, 50)}
-            >
-              50%
-            </button>
+        <div className="flex flex-col gap-2 rounded-xl border border-dashed border-blue-300 bg-blue-50/50 dark:bg-blue-900/10 p-3 text-sm">
+          <div className="font-medium text-gray-900 dark:text-neutral-100">Image Controls</div>
+          {/* Alt text */}
+          <div>
+            <label className="text-xs text-gray-600 dark:text-neutral-400 block mb-1">Alt Text (SEO)</label>
+            <input
+              type="text"
+              className="w-full px-2 py-1.5 rounded-lg border border-gray-300 dark:border-neutral-700 text-sm dark:bg-neutral-800 dark:text-neutral-200"
+              value={imageAltEdit}
+              onChange={(e) => onAltChange(e.target.value)}
+              placeholder="Describe the image for accessibility & SEO…"
+            />
           </div>
-          <div className="text-xs font-medium mt-2">Alignment</div>
-          <div className="flex flex-wrap gap-2 text-xs">
-            {['inline', 'left', 'center', 'right'].map((mode) => (
-              <button
-                key={mode}
-                type="button"
-                className={`px-2 py-1 rounded-md border ${imageAlignment === mode ? 'bg-gray-900 text-white' : ''}`}
-                onClick={() => onAlignmentChange(mode)}
-              >
-                {mode.charAt(0).toUpperCase() + mode.slice(1)}
+          {/* Width */}
+          <div>
+            <label className="text-xs text-gray-600 dark:text-neutral-400">Width: {imageWidth}%</label>
+            <input
+              type="range"
+              min={20}
+              max={100}
+              value={imageWidth}
+              onChange={(e) => onWidthChange(Number(e.target.value))}
+              className="w-full"
+            />
+            <div className="flex flex-wrap gap-2 text-xs mt-1">
+              <button type="button" className="px-2 py-1 rounded-md border" onClick={() => onWidthChange(100)}>
+                Reset width
               </button>
-            ))}
+              <button
+                type="button"
+                className="px-2 py-1 rounded-md border"
+                onClick={() => onWidthChange(50)}
+              >
+                50%
+              </button>
+            </div>
+          </div>
+          {/* Alignment */}
+          <div>
+            <div className="text-xs font-medium text-gray-600 dark:text-neutral-400 mb-1">Alignment</div>
+            <div className="flex flex-wrap gap-2 text-xs">
+              {['inline', 'left', 'center', 'right'].map((mode) => (
+                <button
+                  key={mode}
+                  type="button"
+                  className={`px-2 py-1 rounded-md border ${imageAlignment === mode ? 'bg-gray-900 text-white' : ''}`}
+                  onClick={() => onAlignmentChange(mode)}
+                >
+                  {mode.charAt(0).toUpperCase() + mode.slice(1)}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       ) : null}
+
+      {/* ── Preview ── */}
       {previewOpen ? (
         <div className="richtext-preview text-sm mt-2">
           {value ? (
@@ -430,6 +594,8 @@ export default function RichText({ value, onChange, placeholder = 'Type here…'
           )}
         </div>
       ) : null}
+
+      {/* ── Drag hint ── */}
       {dragHint ? (
         <div
           className="pointer-events-none absolute z-10"
@@ -440,6 +606,125 @@ export default function RichText({ value, onChange, placeholder = 'Type here…'
           </div>
         </div>
       ) : null}
+
+      {/* ══════ MODALS ══════ */}
+
+      {/* Alt text modal for new image upload */}
+      {altModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => { altModal.resolve(''); setAltModal(null); }}>
+          <div className="bg-white dark:bg-neutral-800 rounded-2xl shadow-2xl p-6 w-full max-w-md mx-4" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-base font-semibold text-gray-900 dark:text-neutral-100 mb-1">Image Alt Text</h3>
+            <p className="text-xs text-gray-500 dark:text-neutral-400 mb-3">
+              Describe this image for SEO and accessibility. You can leave empty if needed.
+            </p>
+            {altModal.file && (
+              <div className="mb-3 rounded-lg overflow-hidden border max-h-40">
+                <img src={URL.createObjectURL(altModal.file)} alt="Preview" className="w-full h-full object-contain max-h-40" />
+              </div>
+            )}
+            <input
+              type="text"
+              autoFocus
+              className="w-full px-3 py-2 rounded-xl border border-gray-300 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-100 text-sm mb-3"
+              placeholder="e.g. Snow park entrance at SnowCity"
+              id="alt-text-input"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  altModal.resolve(e.target.value);
+                  setAltModal(null);
+                }
+              }}
+            />
+            <div className="flex gap-2 justify-end">
+              <button
+                type="button"
+                className="px-3 py-1.5 rounded-xl border text-sm text-gray-700 dark:text-neutral-300"
+                onClick={() => { altModal.resolve(''); setAltModal(null); }}
+              >
+                Skip
+              </button>
+              <button
+                type="button"
+                className="px-4 py-1.5 rounded-xl bg-blue-600 text-white text-sm font-medium"
+                onClick={() => {
+                  const inp = document.getElementById('alt-text-input');
+                  altModal.resolve(inp?.value || '');
+                  setAltModal(null);
+                }}
+              >
+                Save Alt Text
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* YouTube URL modal */}
+      {ytModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => setYtModal(false)}>
+          <div className="bg-white dark:bg-neutral-800 rounded-2xl shadow-2xl p-6 w-full max-w-md mx-4" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-base font-semibold text-gray-900 dark:text-neutral-100 mb-1">Embed YouTube Video</h3>
+            <p className="text-xs text-gray-500 dark:text-neutral-400 mb-3">
+              Paste a YouTube URL (e.g. https://www.youtube.com/watch?v=xxx)
+            </p>
+            <input
+              type="url"
+              autoFocus
+              className="w-full px-3 py-2 rounded-xl border border-gray-300 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-100 text-sm mb-3"
+              placeholder="https://www.youtube.com/watch?v=..."
+              value={ytUrl}
+              onChange={(e) => setYtUrl(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && confirmYouTube()}
+            />
+            <div className="flex gap-2 justify-end">
+              <button type="button" className="px-3 py-1.5 rounded-xl border text-sm" onClick={() => setYtModal(false)}>Cancel</button>
+              <button type="button" className="px-4 py-1.5 rounded-xl bg-red-600 text-white text-sm font-medium" onClick={confirmYouTube}>Embed Video</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Button modal */}
+      {btnModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => setBtnModal(false)}>
+          <div className="bg-white dark:bg-neutral-800 rounded-2xl shadow-2xl p-6 w-full max-w-md mx-4" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-base font-semibold text-gray-900 dark:text-neutral-100 mb-1">Insert Button</h3>
+            <p className="text-xs text-gray-500 dark:text-neutral-400 mb-3">
+              Add a styled CTA button with a link.
+            </p>
+            <div className="space-y-3 mb-3">
+              <input
+                type="text"
+                autoFocus
+                className="w-full px-3 py-2 rounded-xl border border-gray-300 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-100 text-sm"
+                placeholder="Button text (e.g. Book Now)"
+                value={btnText}
+                onChange={(e) => setBtnText(e.target.value)}
+              />
+              <input
+                type="url"
+                className="w-full px-3 py-2 rounded-xl border border-gray-300 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-100 text-sm"
+                placeholder="Link URL (e.g. https://snowcity.com/book)"
+                value={btnLink}
+                onChange={(e) => setBtnLink(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && confirmButton()}
+              />
+            </div>
+            {/* Preview */}
+            {btnText && (
+              <div className="mb-3 text-center">
+                <span className="inline-block px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg text-sm font-semibold">
+                  {btnText}
+                </span>
+              </div>
+            )}
+            <div className="flex gap-2 justify-end">
+              <button type="button" className="px-3 py-1.5 rounded-xl border text-sm" onClick={() => setBtnModal(false)}>Cancel</button>
+              <button type="button" className="px-4 py-1.5 rounded-xl bg-blue-600 text-white text-sm font-medium" onClick={confirmButton}>Insert Button</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

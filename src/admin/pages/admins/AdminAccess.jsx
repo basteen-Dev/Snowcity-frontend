@@ -2,101 +2,68 @@
 import React from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import adminApi from '../../services/adminApi';
+import toast from 'react-hot-toast';
 
-const MODULE_ALL_PREFIX = '__module_all__';
-const moduleTokenFor = (type) => `${MODULE_ALL_PREFIX}:${type}`;
+const MODULE_PERMISSIONS = [
+  { key: 'analytics', label: 'Analytics & Reports', desc: 'View analytics dashboard and reports' },
+  { key: 'bookings', label: 'Bookings', desc: 'View and manage bookings' },
+  { key: 'offers', label: 'Offers', desc: 'Create and manage offers' },
+  { key: 'dynamic_pricing', label: 'Dynamic Pricing', desc: 'Manage dynamic pricing rules' },
+];
 
-const EMPTY_ACCESS = Object.freeze({
-  attraction: [],
-  combo: [],
-  banner: [],
-  page: [],
-  blog: [],
-  gallery: [],
-});
-
-const EMPTY_LISTS = Object.freeze({
-  attractions: [],
-  combos: [],
-  banners: [],
-  pages: [],
-  blogs: [],
-  gallery: [],
-});
-
-function Section({ title, items, sel, setSel, disabled, moduleLabel, moduleValue }) {
+function ResourceSection({ title, items, sel, setSel, disabled }) {
   const safeSel = Array.isArray(sel) ? sel : [];
   const allIds = items.map((it) => it.id);
-  const hasModuleToken = moduleValue ? safeSel.includes(moduleValue) : false;
-  const hasFullModule = moduleValue
-    ? hasModuleToken
-    : Boolean(moduleLabel && (allIds.length === 0 || allIds.every((id) => safeSel.includes(id))));
+  const hasAll = safeSel.includes('*') || (allIds.length > 0 && allIds.every((id) => safeSel.includes(id)));
 
   const toggle = (id) => {
-    if (disabled) return;
-    if (hasModuleToken) return; // module-level override active
+    if (disabled || safeSel.includes('*')) return;
     const next = safeSel.includes(id) ? safeSel.filter((x) => x !== id) : [...safeSel, id];
     setSel(next);
   };
 
-  const toggleModule = () => {
-    if (disabled || !moduleLabel) return;
-    if (moduleValue) {
-      setSel(hasModuleToken ? [] : [moduleValue]);
-    } else {
-      const next = hasFullModule ? [] : allIds;
-      setSel(next);
-    }
+  const toggleAll = () => {
+    if (disabled) return;
+    setSel(hasAll ? [] : ['*']);
   };
 
   return (
-    <div className="rounded-xl border p-4 dark:border-neutral-800 dark:bg-neutral-900/60 bg-white/70">
-      <div className="flex items-center justify-between gap-3 mb-2">
+    <div className="rounded-2xl border p-4 dark:border-neutral-800 dark:bg-neutral-900/60 bg-white/70">
+      <div className="flex items-center justify-between gap-3 mb-3">
         <div className="font-medium text-gray-900 dark:text-neutral-100">{title}</div>
-        {moduleLabel ? (
-          <label
-            className={[
-              'inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium transition-colors',
-              hasFullModule
-                ? 'bg-emerald-600 text-white border-emerald-600'
-                : 'text-blue-600 border-blue-500 hover:bg-blue-50 dark:hover:bg-neutral-800',
-              disabled ? 'opacity-60 cursor-not-allowed' : '',
-            ].join(' ')}
-          >
-            <input
-              type="checkbox"
-              className="accent-white"
-              checked={hasFullModule}
-              onChange={toggleModule}
-              disabled={disabled || (!moduleValue && !allIds.length && !hasFullModule)}
-            />
-            <span>{moduleLabel}</span>
-          </label>
-        ) : null}
+        <label className={[
+          'inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium transition-colors cursor-pointer',
+          hasAll ? 'bg-emerald-600 text-white border-emerald-600' : 'text-blue-600 border-blue-500 hover:bg-blue-50 dark:hover:bg-neutral-800',
+          disabled ? 'opacity-60 cursor-not-allowed' : '',
+        ].join(' ')}>
+          <input type="checkbox" className="accent-white" checked={hasAll} onChange={toggleAll} disabled={disabled} />
+          <span>Full Access</span>
+        </label>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
         {items.map((it) => (
-          <label
-            key={it.id}
-            className={[
-              'flex items-center gap-2 text-sm rounded-lg border px-3 py-2',
-              disabled || hasModuleToken ? 'opacity-60 cursor-not-allowed' : 'hover:border-blue-400 dark:hover:border-blue-500',
-            ].join(' ')}
-          >
+          <label key={it.id} className={[
+            'flex items-center gap-2 text-sm rounded-xl border px-3 py-2 cursor-pointer transition-colors',
+            disabled || safeSel.includes('*') ? 'opacity-60 cursor-not-allowed' : 'hover:border-blue-400 dark:hover:border-blue-500',
+            safeSel.includes(it.id) ? 'border-blue-400 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-200 dark:border-neutral-700',
+          ].join(' ')}>
             <input
               type="checkbox"
-              disabled={disabled || hasModuleToken}
-              checked={safeSel.includes(it.id)}
+              disabled={disabled || safeSel.includes('*')}
+              checked={safeSel.includes(it.id) || safeSel.includes('*')}
               onChange={() => toggle(it.id)}
             />
             <span className="truncate">{it.label}</span>
           </label>
         ))}
-        {!items.length && <div className="text-xs text-gray-500">No items</div>}
+        {!items.length && <div className="text-xs text-gray-500 col-span-full">No items available</div>}
       </div>
     </div>
   );
 }
+
+const EMPTY_ACCESS = Object.freeze({ attraction: [], combo: [] });
+const EMPTY_LISTS = Object.freeze({ attractions: [], combos: [] });
 
 export default function AdminAccess() {
   const params = useParams();
@@ -105,32 +72,30 @@ export default function AdminAccess() {
 
   const forcedAdminId = params?.id || '';
   const [admins, setAdmins] = React.useState([]);
-  const [selectedAdminId, setSelectedAdminId] = React.useState(forcedAdminId || searchParams.get('adminId') || '');
-
+  const [selectedAdminId, setSelectedAdminId] = React.useState(
+    forcedAdminId || searchParams.get('adminId') || ''
+  );
   const [access, setAccess] = React.useState(EMPTY_ACCESS);
+  const [modulePerms, setModulePerms] = React.useState([]);
   const [lists, setLists] = React.useState(EMPTY_LISTS);
+  const [selectedAdmin, setSelectedAdmin] = React.useState(null);
 
   const [loadingBase, setLoadingBase] = React.useState(true);
   const [loadingAccess, setLoadingAccess] = React.useState(false);
   const [saving, setSaving] = React.useState(false);
   const [err, setErr] = React.useState('');
   const [notice, setNotice] = React.useState('');
-  const [showPreview, setShowPreview] = React.useState(false);
-  const [previewAccess, setPreviewAccess] = React.useState(EMPTY_ACCESS);
 
+  // Load admins + resource lists
   React.useEffect(() => {
     (async () => {
       try {
         setErr('');
         setLoadingBase(true);
-        const [adminList, atts, cmbs, bnrs, pgs, blgs, gll] = await Promise.all([
+        const [adminList, atts, cmbs] = await Promise.all([
           adminApi.get('/api/admin/admins', { limit: 200 }),
           adminApi.get('/api/admin/attractions', { limit: 200 }),
           adminApi.get('/api/admin/combos', { active: true }),
-          adminApi.get('/api/admin/banners', { limit: 200 }),
-          adminApi.get('/api/admin/pages', { limit: 200 }),
-          adminApi.get('/api/admin/blogs', { limit: 200 }),
-          adminApi.get('/api/admin/gallery', { limit: 200 }),
         ]);
         setAdmins(Array.isArray(adminList) ? adminList : []);
         setLists({
@@ -140,32 +105,28 @@ export default function AdminAccess() {
           })),
           combos: (cmbs?.data || cmbs || []).map((c) => ({
             id: c.combo_id,
-            label: c.title || `${c.attraction_1_id}+${c.attraction_2_id}`,
-          })),
-          banners: (bnrs?.data || bnrs || []).map((b) => ({
-            id: b.banner_id,
-            label: b.title || `Banner #${b.banner_id}`,
-          })),
-          pages: (pgs?.data || pgs || []).map((p) => ({ id: p.page_id, label: p.title })),
-          blogs: (blgs?.data || blgs || []).map((b) => ({ id: b.blog_id, label: b.title })),
-          gallery: (gll?.data || gll || []).map((g) => ({
-            id: g.gallery_item_id,
-            label: g.title || g.url,
+            label: c.title || `Combo #${c.combo_id}`,
           })),
         });
       } catch (e) {
-        setErr(e.message || 'Failed to load Grant Access data');
+        setErr(e.message || 'Failed to load data');
       } finally {
         setLoadingBase(false);
       }
     })();
   }, []);
 
+  // Load access for selected admin
   React.useEffect(() => {
     if (!selectedAdminId) {
       setAccess(EMPTY_ACCESS);
+      setModulePerms([]);
+      setSelectedAdmin(null);
       return;
     }
+
+    const found = admins.find((a) => String(a.user_id) === String(selectedAdminId));
+    setSelectedAdmin(found || null);
 
     let cancelled = false;
     (async () => {
@@ -178,38 +139,31 @@ export default function AdminAccess() {
         setAccess({
           attraction: acc?.access?.attraction || [],
           combo: acc?.access?.combo || [],
-          banner: acc?.access?.banner || [],
-          page: acc?.access?.page || [],
-          blog: acc?.access?.blog || [],
-          gallery: acc?.access?.gallery || [],
         });
+        setModulePerms(Array.isArray(acc?.module_permissions) ? acc.module_permissions : []);
       } catch (e) {
-        if (!cancelled) setErr(e.message || 'Failed to load admin access');
+        if (!cancelled) setErr(e.message || 'Failed to load access');
       } finally {
         if (!cancelled) setLoadingAccess(false);
       }
     })();
 
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedAdminId]);
+    return () => { cancelled = true; };
+  }, [selectedAdminId, admins]);
 
   const save = async () => {
-    if (!selectedAdminId) {
-      setErr('Select an admin to grant access.');
-      return;
-    }
+    if (!selectedAdminId) return setErr('Select an admin to grant access.');
     try {
       setErr('');
       setNotice('');
       setSaving(true);
-      await adminApi.put(`/api/admin/admins/${selectedAdminId}/access`, { access });
+      await adminApi.put(`/api/admin/admins/${selectedAdminId}/access`, {
+        access,
+        module_permissions: modulePerms,
+      });
+      toast.success('Access saved!');
       setNotice('Access updated successfully.');
-      if (forcedAdminId) {
-        // If we came via legacy route, send user back to the Admin Team list.
-        nav('/admin/admins');
-      }
+      if (forcedAdminId) nav('/admin/admins');
     } catch (e) {
       setErr(e.message || 'Save failed');
     } finally {
@@ -217,82 +171,53 @@ export default function AdminAccess() {
     }
   };
 
-  const previewCurrentAccess = async () => {
-    if (!selectedAdminId) return;
-    try {
-      setLoadingAccess(true);
-      const acc = await adminApi.get(`/api/admin/admins/${selectedAdminId}/access`);
-      setPreviewAccess({
-        attraction: acc?.access?.attraction || [],
-        combo: acc?.access?.combo || [],
-        banner: acc?.access?.banner || [],
-        page: acc?.access?.page || [],
-        blog: acc?.access?.blog || [],
-        gallery: acc?.access?.gallery || [],
-      });
-      setShowPreview(true);
-    } catch (e) {
-      setErr(e.message || 'Failed to load access preview');
-    } finally {
-      setLoadingAccess(false);
-    }
-  };
-
-  const revokeAccess = async (resourceType) => {
-    if (!selectedAdminId) return;
-    if (!confirm(`Revoke all ${resourceType} access for ${selectedAdmin?.name || `Admin #${selectedAdminId}`}?`)) return;
-    try {
-      setErr('');
-      setNotice('');
-      const newAccess = { ...previewAccess, [resourceType]: [] };
-      await adminApi.put(`/api/admin/admins/${selectedAdminId}/access`, { access: newAccess });
-      setPreviewAccess(newAccess);
-      setNotice(`${resourceType} access revoked successfully.`);
-      // Also update local access state if it matches the admin being previewed
-      if (String(selectedAdminId) === String(selectedAdminId)) {
-        setAccess(prev => ({ ...prev, [resourceType]: [] }));
-      }
-    } catch (e) {
-      setErr(e.message || 'Revoke failed');
-    }
+  const toggleModulePerm = (key) => {
+    setModulePerms((prev) =>
+      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
+    );
   };
 
   const makeSectionSetter = React.useCallback(
-    (field) => (updater) => {
+    (field) => (updater) =>
       setAccess((prev) => {
-        const previous = Array.isArray(prev[field]) ? prev[field] : [];
-        const next = typeof updater === 'function' ? updater(previous) : updater;
+        const prev2 = Array.isArray(prev[field]) ? prev[field] : [];
+        const next = typeof updater === 'function' ? updater(prev2) : updater;
         return { ...prev, [field]: Array.isArray(next) ? next : [] };
-      });
-    },
+      }),
     []
   );
 
-  if (loadingBase) return <div className="p-3 text-sm">Loading Grant Access module…</div>;
+  // Detect if selected admin is a staff role
+  const isStaffAdmin = React.useMemo(() => {
+    if (!selectedAdmin) return false;
+    const roles = Array.isArray(selectedAdmin.roles) ? selectedAdmin.roles : [];
+    return roles.some((r) => {
+      const n = (typeof r === 'string' ? r : String(r.role_name || r)).toLowerCase();
+      return n === 'staff' || n === 'subadmin';
+    });
+  }, [selectedAdmin]);
 
-  const selectedAdmin = admins.find((a) => String(a.user_id) === String(selectedAdminId));
-  const canEdit = Boolean(selectedAdminId) && !loadingAccess;
+  if (loadingBase) return <div className="p-6 text-sm text-gray-500">Loading…</div>;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
+      {/* Header */}
       <div>
-        <div className="text-lg font-semibold">Grant Access</div>
-        <p className="text-sm text-gray-600 dark:text-neutral-400">
-          Root & Super Admins can scope sub-admins to specific attractions, combos, and content. Sub-admins will only
-          see revenue, bookings, offers, promos, and creatives tied to what you select here.
+        <h1 className="text-xl font-bold text-gray-900 dark:text-neutral-100">Grant Access</h1>
+        <p className="text-sm text-gray-600 dark:text-neutral-400 mt-1">
+          Scope staff members to specific attractions and combos. They will only see data for what you assign here.
         </p>
       </div>
 
-      {err ? <div className="text-sm text-red-600">{err}</div> : null}
-      {notice ? <div className="text-sm text-emerald-600">{notice}</div> : null}
+      {err && <div className="rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-4 py-3 text-sm text-red-700 dark:text-red-300">{err}</div>}
+      {notice && <div className="rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 px-4 py-3 text-sm text-emerald-700 dark:text-emerald-300">{notice}</div>}
 
-      <div className="rounded-xl border bg-white dark:bg-neutral-900 p-4 space-y-3">
+      {/* Admin selector */}
+      <div className="rounded-2xl border bg-white dark:bg-neutral-900 p-5 space-y-3">
         <div className="flex flex-col gap-2 md:flex-row md:items-center">
-          <label className="text-sm font-medium w-full md:w-64 text-gray-900 dark:text-neutral-200">
-            Select Sub Admin
-          </label>
+          <label className="text-sm font-medium w-full md:w-48 text-gray-900 dark:text-neutral-200">Select Admin</label>
           <select
-            className="flex-1 rounded-lg border px-3 py-2 bg-white dark:bg-neutral-900"
+            className="flex-1 rounded-xl border border-gray-300 dark:border-neutral-700 px-3 py-2 bg-white dark:bg-neutral-900 text-sm"
             value={selectedAdminId}
             onChange={(e) => setSelectedAdminId(e.target.value)}
             disabled={!!forcedAdminId}
@@ -300,167 +225,102 @@ export default function AdminAccess() {
             <option value="">Pick an admin…</option>
             {admins.map((admin) => (
               <option key={admin.user_id} value={admin.user_id}>
-                {admin.name || admin.email || `Admin #${admin.user_id}`}
+                {admin.name || admin.email || `Admin #${admin.user_id}`} — {Array.isArray(admin.roles) ? admin.roles.join(', ') : ''}
               </option>
             ))}
           </select>
-          <Link
-            to="/admin/admins/new"
-            className="text-sm font-medium text-blue-600 hover:text-blue-500 whitespace-nowrap"
-          >
+          <Link to="/admin/admins/new" className="text-sm font-medium text-blue-600 hover:text-blue-500 whitespace-nowrap">
             + Create Admin
           </Link>
         </div>
-        {forcedAdminId ? (
-          <p className="text-xs text-gray-500">Granting access for admin #{forcedAdminId}. Selection locked.</p>
-        ) : (
-          <p className="text-xs text-gray-500">
-            Need a fresh sub-admin for SnowCity or combos? Create them first, then grant access here.
-          </p>
-        )}
+        {forcedAdminId && <p className="text-xs text-gray-500">Granting access for admin #{forcedAdminId}. Selection locked.</p>}
       </div>
 
-      {selectedAdminId ? (
+      {selectedAdminId && (
         <>
+          {/* Info banner */}
           <div className="rounded-xl border-l-4 border-blue-500 bg-blue-50 dark:bg-blue-500/10 p-4 text-sm text-gray-700 dark:text-neutral-200">
-            {selectedAdmin?.name || 'This sub-admin'} will only see dashboards, revenue, bookings, offers, banners, pages,
-            blogs, and gallery items tied to the attractions/combos you check below. Select Snow City & Snow City Together
-            Combo to limit them to those modules.
+            <strong>{selectedAdmin?.name || 'This admin'}</strong> will only see analytics, bookings, and catalog items for the attractions and combos checked below.
+            {!isStaffAdmin && (
+              <span className="block mt-1 text-xs text-amber-600 dark:text-amber-400">
+                ⚠ This admin's role may not be "Staff" — scoping only applies to staff accounts.
+              </span>
+            )}
           </div>
 
-          <Section
-            title="Attractions (bookings / revenue scope)"
+          {/* Resource access */}
+          <ResourceSection
+            title="Attractions"
             items={lists.attractions}
             sel={access.attraction}
             setSel={makeSectionSetter('attraction')}
             disabled={loadingAccess}
-            moduleLabel="attractions module"
-            moduleValue={moduleTokenFor('attraction')}
           />
-          <Section
+          <ResourceSection
             title="Combos"
             items={lists.combos}
             sel={access.combo}
             setSel={makeSectionSetter('combo')}
             disabled={loadingAccess}
-            moduleLabel="combos module"
-            moduleValue={moduleTokenFor('combo')}
           />
-          <Section
-            title="Banners"
-            items={lists.banners}
-            sel={access.banner}
-            setSel={makeSectionSetter('banner')}
-            disabled={loadingAccess}
-            moduleLabel="banners module"
-            moduleValue={moduleTokenFor('banner')}
-          />
-          <Section
-            title="Pages"
-            items={lists.pages}
-            sel={access.page}
-            setSel={makeSectionSetter('page')}
-            disabled={loadingAccess}
-            moduleLabel="pages module"
-            moduleValue={moduleTokenFor('page')}
-          />
-          <Section
-            title="Blogs"
-            items={lists.blogs}
-            sel={access.blog}
-            setSel={makeSectionSetter('blog')}
-            disabled={loadingAccess}
-            moduleLabel="blog module"
-            moduleValue={moduleTokenFor('blog')}
-          />
-          <Section
-            title="Gallery"
-            items={lists.gallery}
-            sel={access.gallery}
-            setSel={makeSectionSetter('gallery')}
-            disabled={loadingAccess}
-            moduleLabel="gallery module"
-            moduleValue={moduleTokenFor('gallery')}
-          />
+
+          {/* Module permissions (staff only) */}
+          {isStaffAdmin && (
+            <div className="rounded-2xl border p-5 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+              <h3 className="font-semibold text-gray-900 dark:text-neutral-100 mb-1">Module Permissions</h3>
+              <p className="text-xs text-gray-500 dark:text-neutral-400 mb-4">
+                Choose which modules this staff member can access within their scoped attractions.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {MODULE_PERMISSIONS.map((m) => {
+                  const active = modulePerms.includes(m.key);
+                  return (
+                    <label
+                      key={m.key}
+                      className={[
+                        'flex items-start gap-3 rounded-xl border-2 p-3 cursor-pointer transition-all',
+                        active ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-200 dark:border-neutral-700 hover:border-blue-300',
+                      ].join(' ')}
+                    >
+                      <input
+                        type="checkbox"
+                        className="mt-0.5 accent-blue-500"
+                        checked={active}
+                        onChange={() => toggleModulePerm(m.key)}
+                      />
+                      <div>
+                        <div className="text-sm font-medium text-gray-900 dark:text-neutral-100">{m.label}</div>
+                        <div className="text-xs text-gray-500 dark:text-neutral-400">{m.desc}</div>
+                      </div>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="flex flex-wrap gap-3">
+            <button
+              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-medium shadow-lg shadow-blue-500/25 hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50"
+              onClick={save}
+              disabled={loadingAccess || saving}
+            >
+              {saving ? 'Saving…' : 'Save Access'}
+            </button>
+            <button
+              className="px-4 py-2.5 rounded-xl border border-gray-300 dark:border-neutral-700 text-sm text-gray-700 dark:text-neutral-300 hover:bg-gray-50 dark:hover:bg-neutral-800"
+              onClick={() => forcedAdminId ? nav('/admin/admins') : setSelectedAdminId('')}
+            >
+              Cancel
+            </button>
+          </div>
         </>
-      ) : (
-        <div className="rounded-xl border border-dashed bg-white/50 dark:bg-neutral-900/40 p-6 text-center text-sm text-gray-500">
-          Select an admin above to start granting scoped access.
-        </div>
       )}
 
-      <div className="flex flex-wrap gap-2">
-        <button
-          className="px-4 py-2 rounded-lg bg-gray-900 text-white disabled:bg-gray-400"
-          onClick={save}
-          disabled={!canEdit || saving}
-        >
-          {saving ? 'Saving…' : 'Save Access'}
-        </button>
-        <button
-          className="px-4 py-2 rounded-lg border border-blue-500 text-blue-600 dark:text-blue-400"
-          onClick={previewCurrentAccess}
-          disabled={!selectedAdminId || loadingAccess}
-        >
-          Preview Access
-        </button>
-        <button
-          className="px-4 py-2 rounded-lg border"
-          onClick={() => {
-            if (forcedAdminId) {
-              nav('/admin/admins');
-            } else {
-              setSelectedAdminId('');
-            }
-          }}
-        >
-          Cancel
-        </button>
-      </div>
-
-      {showPreview && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-xl max-w-2xl w-full max-h-[80vh] overflow-auto p-6">
-            <h3 className="text-lg font-semibold mb-4">Current Access for {selectedAdmin?.name || `Admin #${selectedAdminId}`}</h3>
-            <div className="space-y-3 text-sm">
-              {Object.entries(previewAccess).map(([type, items]) => (
-                <div key={type} className="border rounded-lg p-3">
-                  <div className="font-medium capitalize mb-1 flex items-center justify-between">
-                    <span>{type}</span>
-                    {items.length > 0 && (
-                      <button
-                        className="text-xs px-2 py-1 rounded bg-red-500 text-white hover:bg-red-600"
-                        onClick={() => revokeAccess(type)}
-                      >
-                        Revoke All
-                      </button>
-                    )}
-                  </div>
-                  {items.length === 0 ? (
-                    <div className="text-gray-500">No access</div>
-                  ) : items.includes('*') ? (
-                    <div className="text-green-600 font-medium">Full module access</div>
-                  ) : (
-                    <div className="flex flex-wrap gap-1">
-                      {items.map(id => (
-                        <span key={id} className="px-2 py-1 bg-gray-100 dark:bg-neutral-800 rounded text-xs">
-                          {id}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-            <div className="flex justify-end gap-2 mt-6">
-              <button
-                className="px-4 py-2 rounded-lg border"
-                onClick={() => setShowPreview(false)}
-              >
-                Close
-              </button>
-            </div>
-          </div>
+      {!selectedAdminId && (
+        <div className="rounded-2xl border border-dashed bg-white/50 dark:bg-neutral-900/40 p-8 text-center text-sm text-gray-500">
+          Select an admin above to start granting scoped access.
         </div>
       )}
     </div>

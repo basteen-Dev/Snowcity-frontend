@@ -2,6 +2,7 @@
 import React, { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import { useAdminRole } from '../hooks/useAdminRole';
 
 import AdminLayout from '../components/layout/AdminLayout';
 import Login from '../pages/Login';
@@ -68,7 +69,7 @@ const UserEdit = lazy(() => import('../pages/users/UserEdit'));
 
 const RolesList = lazy(() => import('../pages/rbac/RolesList'));
 const RoleForm = lazy(() => import('../pages/rbac/RoleForm'));
-// Permissions UI removed -> keep roles/users only
+const RolePermissions = lazy(() => import('../pages/rbac/RolePermissions'));
 
 // Analytics pages
 const AnalyticsOverview = lazy(() => import('../pages/analytics/Overview.jsx'));
@@ -78,7 +79,7 @@ const AnalyticsCustom = lazy(() => import('../pages/analytics/Custom.jsx'));
 const AnalyticsPeople = lazy(() => import('../pages/analytics/People.jsx'));
 const AnalyticsViews = lazy(() => import('../pages/analytics/Views.jsx'));
 const AnalyticsSplit = lazy(() => import('../pages/analytics/Split.jsx'));
-const AnalyticsTop = lazy(() => import('../pages/analytics/TopAttractions')); // optional/legacy
+const AnalyticsTop = lazy(() => import('../pages/analytics/TopAttractions'));
 const ConversionDashboard = lazy(() => import('../pages/analytics/ConversionDashboard'));
 
 // Revenue pages
@@ -102,9 +103,47 @@ function SuspenseOutlet() {
   );
 }
 
+/**
+ * Route guard — only renders children if the check returns true,
+ * otherwise redirects to catalog (for editors) or admin dashboard.
+ */
+function RequireRole({ allowed, children }) {
+  const {
+    isSuperAdmin, isGM, isStaff, isEditor,
+  } = useAdminRole();
+
+  const roleMap = { superadmin: isSuperAdmin, gm: isGM, staff: isStaff, editor: isEditor };
+
+  // SuperAdmin always passes
+  if (isSuperAdmin) return children;
+
+  // Check if any of the allowed roles match
+  const ok = (allowed || []).some((r) => {
+    const key = r.toLowerCase().replace(/\s+/g, '');
+    return roleMap[key];
+  });
+
+  if (!ok) {
+    // Editors go to catalog, others to admin root
+    return <Navigate to={isEditor ? '/admin/catalog/attractions' : '/admin'} replace />;
+  }
+  return children;
+}
+
+/**
+ * Dashboard index — editors are redirected to catalog since they have no dashboard access.
+ */
+function DashboardIndex() {
+  const { isEditor } = useAdminRole();
+  if (isEditor) return <Navigate to="/admin/catalog/attractions" replace />;
+  return (
+    <Suspense fallback={<div className="p-4 text-sm">Loading…</div>}>
+      <Dashboard />
+    </Suspense>
+  );
+}
+
 export default function AdminRouter() {
-  // IMPORTANT: This router should be mounted at path="/admin/*" in your App router.
-  // All paths here are relative to /admin.
   return (
     <Routes>
       {/* Public admin auth routes */}
@@ -112,7 +151,7 @@ export default function AdminRouter() {
       <Route path="forgot-password" element={<ForgotPassword />} />
       <Route path="reset-password" element={<ResetPassword />} />
 
-      {/* Protected admin area (everything under /admin/*) */}
+      {/* Protected admin area */}
       <Route
         path="/"
         element={
@@ -121,16 +160,19 @@ export default function AdminRouter() {
           </RequireAdmin>
         }
       >
-        {/* Wrap all lazy children in one Suspense boundary */}
         <Route element={<SuspenseOutlet />}>
-          {/* Dashboard (index) */}
-          <Route index element={<Dashboard />} />
+          {/* Dashboard (index) — editors redirect to catalog */}
+          <Route index element={<DashboardIndex />} />
 
-          {/* Profile */}
+          {/* Profile — all roles */}
           <Route path="profile" element={<AdminProfile />} />
 
-          {/* Analytics */}
-          <Route path="analytics" element={<SuspenseOutlet />}>
+          {/* ──── Analytics — SuperAdmin + GM + Staff ──── */}
+          <Route path="analytics" element={
+            <RequireRole allowed={['superadmin', 'gm', 'staff']}>
+              <SuspenseOutlet />
+            </RequireRole>
+          }>
             <Route index element={<Navigate to="overview" replace />} />
             <Route path="overview" element={<AnalyticsOverview />} />
             <Route path="attractions" element={<AnalyticsAttractions />} />
@@ -143,11 +185,19 @@ export default function AdminRouter() {
             <Route path="conversion" element={<ConversionDashboard />} />
           </Route>
 
-          {/* Bookings */}
-          <Route path="bookings" element={<BookingsList />} />
-          <Route path="bookings/:id" element={<BookingDetails />} />
+          {/* ──── Bookings — SuperAdmin + GM + Staff ──── */}
+          <Route path="bookings" element={
+            <RequireRole allowed={['superadmin', 'gm', 'staff']}>
+              <BookingsList />
+            </RequireRole>
+          } />
+          <Route path="bookings/:id" element={
+            <RequireRole allowed={['superadmin', 'gm', 'staff']}>
+              <BookingDetails />
+            </RequireRole>
+          } />
 
-          {/* Catalog */}
+          {/* ──── Catalog — all roles (content varies by sidebar filtering) ──── */}
           <Route path="catalog/attractions" element={<AttractionsList />} />
           <Route path="catalog/attractions/new" element={<AttractionForm />} />
           <Route path="catalog/attractions/:id" element={<AttractionForm />} />
@@ -157,19 +207,67 @@ export default function AdminRouter() {
           <Route path="catalog/slots/new" element={<SlotForm />} />
           <Route path="catalog/slots/:id" element={<SlotForm />} />
 
-          <Route path="catalog/addons" element={<AddonsList />} />
-          <Route path="catalog/addons/new" element={<AddonForm />} />
-          <Route path="catalog/addons/:id" element={<AddonForm />} />
+          <Route path="catalog/addons" element={
+            <RequireRole allowed={['superadmin', 'gm', 'editor']}>
+              <AddonsList />
+            </RequireRole>
+          } />
+          <Route path="catalog/addons/new" element={
+            <RequireRole allowed={['superadmin', 'gm', 'editor']}>
+              <AddonForm />
+            </RequireRole>
+          } />
+          <Route path="catalog/addons/:id" element={
+            <RequireRole allowed={['superadmin', 'gm', 'editor']}>
+              <AddonForm />
+            </RequireRole>
+          } />
 
-          <Route path="catalog/offers" element={<OffersList />} />
-          <Route path="catalog/offers/new" element={<OfferForm />} />
-          <Route path="catalog/offers/:id" element={<OfferForm />} />
+          {/* Offers — SuperAdmin + GM + Staff */}
+          <Route path="catalog/offers" element={
+            <RequireRole allowed={['superadmin', 'gm', 'staff']}>
+              <OffersList />
+            </RequireRole>
+          } />
+          <Route path="catalog/offers/new" element={
+            <RequireRole allowed={['superadmin', 'gm', 'staff']}>
+              <OfferForm />
+            </RequireRole>
+          } />
+          <Route path="catalog/offers/:id" element={
+            <RequireRole allowed={['superadmin', 'gm', 'staff']}>
+              <OfferForm />
+            </RequireRole>
+          } />
 
-          <Route path="catalog/dynamic-pricing" element={<DynamicPricing />} />
+          {/* Dynamic Pricing — SuperAdmin + GM + Staff */}
+          <Route path="catalog/dynamic-pricing" element={
+            <RequireRole allowed={['superadmin', 'gm', 'staff']}>
+              <DynamicPricing />
+            </RequireRole>
+          } />
 
-          <Route path="catalog/coupons" element={<CouponsList />} />
-          <Route path="catalog/coupons/new" element={<CouponForm />} />
-          <Route path="catalog/coupons/:id" element={<CouponForm />} />
+          {/* Coupons — SuperAdmin + GM only */}
+          <Route path="catalog/coupons" element={
+            <RequireRole allowed={['superadmin', 'gm']}>
+              <CouponsList />
+            </RequireRole>
+          } />
+          <Route path="catalog/coupons/new" element={
+            <RequireRole allowed={['superadmin', 'gm']}>
+              <CouponForm />
+            </RequireRole>
+          } />
+          <Route path="catalog/coupons/:id" element={
+            <RequireRole allowed={['superadmin', 'gm']}>
+              <CouponForm />
+            </RequireRole>
+          } />
+
+          {/* Combos — all roles with catalog access */}
+          <Route path="catalog/combos" element={<CombosList />} />
+          <Route path="catalog/combos/new" element={<ComboForm />} />
+          <Route path="catalog/combos/:id" element={<ComboForm />} />
 
           <Route path="catalog/combo-slots" element={<ComboSlotList />} />
           <Route path="catalog/combo-slots/new" element={<ComboSlotForm />} />
@@ -178,49 +276,153 @@ export default function AdminRouter() {
 
           <Route path="catalog/attraction-slots" element={<AttractionSlotList />} />
 
-          <Route path="catalog/banners" element={<BannersList />} />
-          <Route path="catalog/banners/new" element={<BannerForm />} />
-          <Route path="catalog/banners/:id" element={<BannerForm />} />
+          {/* Banners, Gallery, Pages, Blogs — SuperAdmin + GM + Editor */}
+          <Route path="catalog/banners" element={
+            <RequireRole allowed={['superadmin', 'gm', 'editor']}>
+              <BannersList />
+            </RequireRole>
+          } />
+          <Route path="catalog/banners/new" element={
+            <RequireRole allowed={['superadmin', 'gm', 'editor']}>
+              <BannerForm />
+            </RequireRole>
+          } />
+          <Route path="catalog/banners/:id" element={
+            <RequireRole allowed={['superadmin', 'gm', 'editor']}>
+              <BannerForm />
+            </RequireRole>
+          } />
 
-          <Route path="catalog/pages" element={<PagesList />} />
-          <Route path="catalog/pages/new" element={<PageForm />} />
-          <Route path="catalog/pages/:id" element={<PageForm />} />
+          <Route path="catalog/pages" element={
+            <RequireRole allowed={['superadmin', 'gm', 'editor']}>
+              <PagesList />
+            </RequireRole>
+          } />
+          <Route path="catalog/pages/new" element={
+            <RequireRole allowed={['superadmin', 'gm', 'editor']}>
+              <PageForm />
+            </RequireRole>
+          } />
+          <Route path="catalog/pages/:id" element={
+            <RequireRole allowed={['superadmin', 'gm', 'editor']}>
+              <PageForm />
+            </RequireRole>
+          } />
 
-          <Route path="catalog/blogs" element={<BlogsList />} />
-          <Route path="catalog/blogs/new" element={<BlogForm />} />
-          <Route path="catalog/blogs/:id" element={<BlogForm />} />
-
-          <Route path="catalog/combos" element={<CombosList />} />
-          <Route path="catalog/combos/new" element={<ComboForm />} />
-          <Route path="catalog/combos/:id" element={<ComboForm />} />
+          <Route path="catalog/blogs" element={
+            <RequireRole allowed={['superadmin', 'gm', 'editor']}>
+              <BlogsList />
+            </RequireRole>
+          } />
+          <Route path="catalog/blogs/new" element={
+            <RequireRole allowed={['superadmin', 'gm', 'editor']}>
+              <BlogForm />
+            </RequireRole>
+          } />
+          <Route path="catalog/blogs/:id" element={
+            <RequireRole allowed={['superadmin', 'gm', 'editor']}>
+              <BlogForm />
+            </RequireRole>
+          } />
 
           {/* Gallery */}
-          <Route path="catalog/gallery" element={<GalleryManager />} />
-          <Route path="catalog/gallery/new" element={<GalleryForm />} />
-          <Route path="catalog/gallery/:id" element={<GalleryForm />} />
+          <Route path="catalog/gallery" element={
+            <RequireRole allowed={['superadmin', 'gm', 'editor']}>
+              <GalleryManager />
+            </RequireRole>
+          } />
+          <Route path="catalog/gallery/new" element={
+            <RequireRole allowed={['superadmin', 'gm', 'editor']}>
+              <GalleryForm />
+            </RequireRole>
+          } />
+          <Route path="catalog/gallery/:id" element={
+            <RequireRole allowed={['superadmin', 'gm', 'editor']}>
+              <GalleryForm />
+            </RequireRole>
+          } />
 
-          {/* Users */}
-          <Route path="users" element={<UsersList />} />
-          <Route path="users/new" element={<UserNew />} />
-          <Route path="users/:id" element={<UserEdit />} />
+          {/* ──── Users — SuperAdmin + GM ──── */}
+          <Route path="users" element={
+            <RequireRole allowed={['superadmin', 'gm']}>
+              <UsersList />
+            </RequireRole>
+          } />
+          <Route path="users/new" element={
+            <RequireRole allowed={['superadmin', 'gm']}>
+              <UserNew />
+            </RequireRole>
+          } />
+          <Route path="users/:id" element={
+            <RequireRole allowed={['superadmin', 'gm']}>
+              <UserEdit />
+            </RequireRole>
+          } />
 
-          {/* RBAC */}
-          <Route path="roles" element={<RolesList />} />
-          <Route path="roles/new" element={<RoleForm />} />
-          <Route path="roles/:id" element={<RoleForm />} />
-          <Route path="admins" element={<AdminsList />} />
-          <Route path="admins/new" element={<AdminNew />} />
-          <Route path="admins/access" element={<AdminAccess />} />
-          <Route path="admins/:id/access" element={<AdminAccess />} />
+          {/* ──── RBAC — SuperAdmin + GM (read) ──── */}
+          <Route path="roles" element={
+            <RequireRole allowed={['superadmin', 'gm']}>
+              <RolesList />
+            </RequireRole>
+          } />
+          <Route path="roles/new" element={
+            <RequireRole allowed={['superadmin']}>
+              <RoleForm />
+            </RequireRole>
+          } />
+          <Route path="roles/:id" element={
+            <RequireRole allowed={['superadmin']}>
+              <RoleForm />
+            </RequireRole>
+          } />
+          <Route path="roles/:id/permissions" element={
+            <RequireRole allowed={['superadmin']}>
+              <RolePermissions />
+            </RequireRole>
+          } />
 
-          {/* Revenue */}
-          <Route path="revenue/attractions" element={<AttractionsRevenue />} />
-          <Route path="revenue/combos" element={<ComboRevenue />} />
+          {/* ──── Admin Management — SuperAdmin only for create ──── */}
+          <Route path="admins" element={
+            <RequireRole allowed={['superadmin', 'gm']}>
+              <AdminsList />
+            </RequireRole>
+          } />
+          <Route path="admins/new" element={
+            <RequireRole allowed={['superadmin']}>
+              <AdminNew />
+            </RequireRole>
+          } />
+          <Route path="admins/access" element={
+            <RequireRole allowed={['superadmin']}>
+              <AdminAccess />
+            </RequireRole>
+          } />
+          <Route path="admins/:id/access" element={
+            <RequireRole allowed={['superadmin']}>
+              <AdminAccess />
+            </RequireRole>
+          } />
 
-          {/* Site Settings */}
-          <Route path="site-settings" element={<SiteSettings />} />
+          {/* ──── Revenue — SuperAdmin + GM ──── */}
+          <Route path="revenue/attractions" element={
+            <RequireRole allowed={['superadmin', 'gm']}>
+              <AttractionsRevenue />
+            </RequireRole>
+          } />
+          <Route path="revenue/combos" element={
+            <RequireRole allowed={['superadmin', 'gm']}>
+              <ComboRevenue />
+            </RequireRole>
+          } />
 
-          {/* Fallback within /admin */}
+          {/* ──── Site Settings — SuperAdmin + GM ──── */}
+          <Route path="site-settings" element={
+            <RequireRole allowed={['superadmin', 'gm']}>
+              <SiteSettings />
+            </RequireRole>
+          } />
+
+          {/* Fallback */}
           <Route path="*" element={<Navigate to="." replace />} />
         </Route>
       </Route>

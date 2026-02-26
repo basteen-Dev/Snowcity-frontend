@@ -158,7 +158,7 @@ export default function Home() {
         <div id="hero-sentinel" className="absolute bottom-0 left-0 right-0 h-1" />
       </section>
 
-      <main className="bg-gradient-to-b from-[#e0f2fe] via-[#bae6fd] to-white">
+      <main className="bg-gradient-to-b from-[#f5f8ff] to-white">
         {/* Offers Marquee */}
         <LazyVisible minHeight={60} shadow={false}>
           {marqueeItems.length ? <OffersMarquee items={marqueeItems} /> : null}

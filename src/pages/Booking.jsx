@@ -1817,7 +1817,7 @@ export default function Booking() {
   return (
     <>
       {/* Page wrapper: make sure everything sits under navbar; ensure Inter font */}
-      <div className="min-h-screen bg-[#f5f9ff] font-inter pt-20">
+      <div className="min-h-screen bg-gradient-to-b from-[#f5f8ff] to-white font-inter pt-24">
 
         {/* Progress Bar */}
         <div className="sticky top-[5.5rem] z-10 bg-white/80 pt-3 pb-3 border-b border-gray-100 mb-2">

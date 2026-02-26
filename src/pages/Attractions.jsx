@@ -54,7 +54,7 @@ export default function Attractions() {
   }, [attractions, q]);
 
   return (
-    <div className="min-h-screen bg-[#f5f9ff] pt-20 pb-16">
+    <div className="min-h-screen bg-gradient-to-b from-[#f5f8ff] to-white pt-24 pb-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Hero Section */}
         <div className="text-center py-12 mb-8">

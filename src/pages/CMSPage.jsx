@@ -76,7 +76,7 @@ export default function CMSPage() {
   if (state.status === 'failed') return <ErrorState message={state.error} />;
 
   return (
-    <div className="min-h-screen bg-[#f5f9ff] w-full px-4 pt-20 pb-10 md:pb-14">
+    <div className="min-h-screen bg-gradient-to-b from-[#f5f8ff] to-white w-full px-4 pt-24 pb-10 md:pb-14">
       <div className="max-w-6xl mx-auto space-y-4">
         <h1 className="text-3xl md:text-4xl font-semibold">{title}</h1>
         {isRaw ? (

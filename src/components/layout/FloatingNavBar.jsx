@@ -422,24 +422,43 @@ export default function FloatingNavBar() {
           </button>
 
           {authOtp.sent && (
-            <div className="flex gap-3 items-center">
-              <input
-                className="flex-1 p-3 rounded-xl border border-blue-200 focus:border-blue-500 outline-none text-center tracking-widest font-mono"
-                maxLength={6}
-                inputMode="numeric"
-                pattern="[0-9]*"
-                value={authOtp.code}
-                onChange={(e) =>
-                  setAuthOtp((prev) => ({ ...prev, code: e.target.value }))
-                }
-              />
-              <button
-                className="w-full inline-flex items-center justify-center rounded-xl bg-[#003de6] text-white px-6 py-3 text-sm font-bold shadow-md hover:bg-[#002db3] transition-all"
-                onClick={verifyNavOtp}
-                disabled={authOtp.status === "verifying"}
-              >
-                {authOtp.status === "verifying" ? "Verifying..." : "Verify"}
-              </button>
+            <div className="space-y-2">
+              <div className="flex gap-3 items-center">
+                <input
+                  className="flex-1 p-3 rounded-xl border border-blue-200 focus:border-blue-500 outline-none text-center tracking-widest font-mono"
+                  maxLength={6}
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  autoComplete="one-time-code"
+                  placeholder="● ● ● ● ● ●"
+                  value={authOtp.code}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+                    setAuthOtp((prev) => ({ ...prev, code: val }));
+                    // Auto-verify when 6 digits are entered
+                    if (val.length === 6) {
+                      setTimeout(() => {
+                        const codeNow = val;
+                        if (/^\d{6}$/.test(codeNow)) {
+                          // Trigger verify automatically
+                          setAuthOtp((prev) => ({ ...prev, code: codeNow }));
+                          verifyNavOtp();
+                        }
+                      }, 300);
+                    }
+                  }}
+                />
+                <button
+                  className="inline-flex items-center justify-center rounded-xl bg-[#003de6] text-white px-6 py-3 text-sm font-bold shadow-md hover:bg-[#002db3] transition-all whitespace-nowrap"
+                  onClick={verifyNavOtp}
+                  disabled={authOtp.status === "verifying" || authOtp.code.length < 6}
+                >
+                  {authOtp.status === "verifying" ? "Verifying..." : "Verify"}
+                </button>
+              </div>
+              <p className="text-xs text-gray-500 text-center">
+                OTP will auto-verify once all 6 digits are filled
+              </p>
             </div>
           )}
 

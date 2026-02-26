@@ -948,9 +948,9 @@ export default function ComboDetails() {
   /* ========= Render ========= */
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#e0f2fe] via-[#bae6fd] to-white font-sans">
+    <div className="min-h-screen bg-gradient-to-b from-[#f5f8ff] to-white font-sans">
       <section className="mt-0 bg-transparent">
-        <div className="max-w-6xl mx-auto px-4 pt-16">
+        <div className="max-w-6xl mx-auto px-4 pt-24">
           {/* Title removed from here */}
         </div>
 

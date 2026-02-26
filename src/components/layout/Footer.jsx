@@ -110,7 +110,7 @@ export default function Footer() {
   }, []);
 
   return (
-    <footer ref={footerRef} className="relative  bg-gradient-to-t from-[#e0f2fe] via-[#bae6fd] to-white mt-0 overflow-hidden ">
+    <footer ref={footerRef} className="relative bg-gradient-to-t from-[#f5f9ff] to-white mt-0 overflow-hidden ">
 
       {/* Wave Top Border (Restored) */}
       <div className="absolute -top-[2px] left-0 right-0 z-10 pointer-events-none">

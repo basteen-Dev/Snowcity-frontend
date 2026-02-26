@@ -208,15 +208,27 @@ export default function YourDetails({
                         </p>
                         <div className="flex gap-3 flex-col sm:flex-row">
                             <input
-                                placeholder="XXXXXX"
+                                placeholder="● ● ● ● ● ●"
                                 className="flex-1 p-3.5 text-center tracking-[0.5em] font-bold text-xl border-2 border-sky-200 rounded-xl focus:border-sky-600 focus:ring-4 focus:ring-sky-100 outline-none bg-white transition-all"
                                 maxLength={6}
+                                inputMode="numeric"
+                                pattern="[0-9]*"
+                                autoComplete="one-time-code"
                                 value={otpCode}
-                                onChange={(e) => setOtpCode(e.target.value)}
+                                onChange={(e) => {
+                                    const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+                                    setOtpCode(val);
+                                    // Auto-verify when 6 digits are entered
+                                    if (val.length === 6 && /^\d{6}$/.test(val)) {
+                                        setTimeout(() => {
+                                            verifyOTP();
+                                        }, 300);
+                                    }
+                                }}
                             />
                             <button
                                 onClick={verifyOTP}
-                                disabled={otp.status === 'loading'}
+                                disabled={otp.status === 'loading' || otpCode.length < 6}
                                 className="bg-sky-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:bg-sky-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 w-full sm:w-auto text-sm sm:text-base"
                             >
                                 {otp.status === 'loading' ? (
@@ -240,6 +252,9 @@ export default function YourDetails({
                                 )}
                             </button>
                         </div>
+                        <p className="text-xs text-gray-500 mt-2 text-center">
+                            OTP will auto-verify once all 6 digits are filled
+                        </p>
 
                         {/* Resend OTP */}
                         <div className="mt-4 flex items-center justify-between pt-3 border-t border-sky-100">
@@ -249,8 +264,8 @@ export default function YourDetails({
                                 onClick={handleResendOTP}
                                 disabled={resendCooldown > 0 || otp.status === 'loading'}
                                 className={`inline-flex items-center gap-1.5 text-sm font-semibold transition-all ${resendCooldown > 0 || otp.status === 'loading'
-                                        ? 'text-gray-400 cursor-not-allowed'
-                                        : 'text-sky-700 hover:text-sky-900 active:scale-95'
+                                    ? 'text-gray-400 cursor-not-allowed'
+                                    : 'text-sky-700 hover:text-sky-900 active:scale-95'
                                     }`}
                             >
                                 <RefreshCw size={14} className={otp.status === 'loading' ? 'animate-spin' : ''} />

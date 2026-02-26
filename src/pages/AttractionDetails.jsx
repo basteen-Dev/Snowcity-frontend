@@ -854,10 +854,10 @@ export default function AttractionDetails() {
   return (
     <>
       {/* Add pb-24 so fixed mobile bar doesn't overlap content */}
-      <div className="min-h-screen bg-gradient-to-b from-[#e0f2fe] via-[#bae6fd] to-white font-sans pb-24 lg:pb-0">
+      <div className="min-h-screen bg-gradient-to-b from-[#f5f8ff] to-white font-sans pb-24 lg:pb-0">
         {/* HERO BANNER + GALLERY (Full Width) */}
         <section className="mt-0 bg-transparent">
-          <div className="max-w-6xl mx-auto px-4 pt-16">
+          <div className="max-w-6xl mx-auto px-4 pt-24">
             {/* Title removed from here */}
           </div>
 

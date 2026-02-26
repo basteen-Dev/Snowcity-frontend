@@ -2,56 +2,61 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../../../services/apiClient';
 import endpoints from '../../../services/endpoints';
 import adminApi from '../../services/adminApi';
-import A from '../../services/adminEndpoints';
-import { setAdminCredentials, setAdminPermissions, adminLogout } from './adminAuthSlice';
+import { setAdminCredentials, setAdminProfile, adminLogout } from './adminAuthSlice';
 
+/**
+ * Login thunk: authenticate, then fetch /me to get roles, perms, scopes.
+ */
 export const adminLogin = createAsyncThunk('adminAuth/adminLogin',
   async ({ email, password }, { dispatch, rejectWithValue }) => {
     try {
-      // Public login with admin flag
       const res = await api.post(endpoints.auth.login(), { email, password, isAdmin: true });
       const token = res?.token;
       if (!token) throw new Error('No token from login');
 
-      // Set admin credentials
-      dispatch(setAdminCredentials({ 
-        user: { ...res?.user, isAdmin: true }, 
-        token, 
-        expires_at: res?.expires_at || null 
+      dispatch(setAdminCredentials({
+        user: { ...res?.user, isAdmin: true },
+        token,
+        expires_at: res?.expires_at || null,
       }));
 
-      // Since we removed all permission restrictions, skip admin access verification
-      // All authenticated users now have admin access
+      // Fetch full profile (roles, perms, scopes)
       await dispatch(adminHydratePermissions()).unwrap();
       return res;
     } catch (err) {
       dispatch(adminLogout());
-      // Return serializable error message instead of Error object
-      const errorMessage = err?.response?.data?.error || 
-                          err?.response?.data?.message || 
-                          err?.message || 
-                          'Login failed';
+      const errorMessage =
+        err?.response?.data?.error ||
+        err?.response?.data?.message ||
+        err?.message ||
+        'Login failed';
       return rejectWithValue(errorMessage);
     }
   }
 );
 
-// Simplified permissions hydration - all authenticated users get full access
+/**
+ * Hydrate roles, permissions, and scopes from /api/admin/admins/me
+ */
 export const adminHydratePermissions = createAsyncThunk('adminAuth/hydratePerms',
   async (_, { dispatch, rejectWithValue }) => {
     try {
-      // Since we removed all permission restrictions, grant full access to all authenticated users
-      const perms = ['all']; // Single permission representing full access
-      dispatch(setAdminPermissions(perms));
-      return perms;
+      // Call the /me endpoint which returns roles, perms, and scopes
+      const profile = await adminApi.get('/api/admin/admins/me');
+
+      // Normalize
+      const roles = Array.isArray(profile?.roles) ? profile.roles : [];
+      const perms = Array.isArray(profile?.perms) ? profile.perms : [];
+      const scopes = profile?.scopes || null;
+      const is_super_admin = Boolean(profile?.is_super_admin);
+
+      dispatch(setAdminProfile({ roles, perms, scopes, is_super_admin }));
+      return { roles, perms, scopes, is_super_admin };
     } catch (err) {
-      dispatch(setAdminPermissions([]));
-      // Return serializable error message
-      const errorMessage = err?.response?.data?.error || 
-                          err?.response?.data?.message || 
-                          err?.message || 
-                          'Failed to hydrate permissions';
-      return rejectWithValue(errorMessage);
+      // If /me fails (e.g. old backend), fall back to granting basic access
+      console.warn('adminHydratePermissions: /me failed, using fallback', err?.message);
+      dispatch(setAdminProfile({ roles: [], perms: ['all'], scopes: null, is_super_admin: false }));
+      return { roles: [], perms: ['all'], scopes: null, is_super_admin: false };
     }
   }
 );

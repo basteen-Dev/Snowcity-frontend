@@ -1,13 +1,10 @@
 import React from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
-import { shallowEqual, useSelector } from 'react-redux';
 import {
   LayoutDashboard,
   CalendarClock,
   Ticket,
   SquareStack,
-  Clock3,
-  Boxes,
   Gift,
   BadgePercent,
   Image as ImageIcon,
@@ -18,30 +15,24 @@ import {
   KeyRound,
   Network,
   BarChart3,
-  PieChart,
   TrendingUp,
   SplitSquareHorizontal,
   UserCog,
   ChevronDown,
   DollarSign,
-  Calendar,
   Building2,
   Eye,
   Settings,
+  Boxes,
+  Tag,
+  Layers,
 } from 'lucide-react';
-import PermissionGate from '../common/PermissionGate.jsx';
+import { useAdminRole } from '../../hooks/useAdminRole';
 
 const baseLinkClasses =
   'group relative flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition-colors';
 
 const STORE_KEY = 'sc_admin_sidebar_open_sections';
-
-function normalizeRoleName(r) {
-  if (!r) return '';
-  const str = typeof r === 'string' ? r : String(r.role_name || r.name || r || '');
-  // Remove all whitespace and lowercase for robust comparison ("Super Admin" -> "superadmin")
-  return str.toLowerCase().replace(/\s+/g, '');
-}
 
 function usePersistedSections(defaults) {
   const [openMap, setOpenMap] = React.useState(() => {
@@ -57,138 +48,102 @@ function usePersistedSections(defaults) {
 
   const save = React.useCallback((next) => {
     setOpenMap(next);
-    try {
-      localStorage.setItem(STORE_KEY, JSON.stringify(next));
-    } catch { }
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(next)); } catch { }
   }, []);
 
   const setOne = React.useCallback(
-    (key, val) => {
-      save({ ...openMap, [key]: !!val });
-    },
+    (key, val) => save({ ...openMap, [key]: !!val }),
     [openMap, save]
   );
 
   return [openMap, setOne];
 }
 
-const EMPTY_ROLES = Object.freeze([]);
-const EMPTY_PERMS = Object.freeze([]);
-
-const selectSidebarAuth = (state) => {
-  const auth = state.adminAuth || {};
-  const user = auth.user || null;
-  return {
-    roles: Array.isArray(user?.roles) ? user.roles : EMPTY_ROLES,
-    perms: Array.isArray(auth.perms) ? auth.perms : EMPTY_PERMS,
-    userId: user?.user_id ?? user?.id ?? null,
-  };
-};
-
 export default function AdminSidebar({ collapsed, onClose }) {
   const location = useLocation();
-
-  // Roles, permissions, and user id from Redux
-  const { roles: rolesRaw, perms: permsRaw, userId } = useSelector(selectSidebarAuth, shallowEqual);
-  const roles = React.useMemo(() => (rolesRaw || []).map(normalizeRoleName), [rolesRaw]);
-  const perms = React.useMemo(() => new Set((permsRaw || []).map((p) => String(p).toLowerCase().trim())), [permsRaw]);
-  const isSuperUser = userId != null && Number(userId) === 1;
-
-  // Show “Admin Management” if root/superadmin/superuser OR you granted explicit permission keys
-  const canSeeAdminMgmt =
-    isSuperUser ||
-    roles.includes('root') ||
-    roles.includes('superadmin') ||
-    perms.has('admin-management:manage') ||
-    perms.has('admin-management:write') ||
-    perms.has('admin-management:read') ||
-    perms.has('admins:manage') ||
-    perms.has('admins:write') ||
-    perms.has('admins:read');
-
-  const handleNavClick = () => {
-    if (typeof onClose === 'function') onClose();
-  };
+  const {
+    isSuperAdmin,
+    isGM,
+    isStaff,
+    isEditor,
+    canManageAdmins,
+    canListAdmins,
+    canSeeAnalytics,
+    canSeeBookings,
+    canSeeRevenue,
+    canSeeSettings,
+    canSeeUsers,
+    canSeeFullCatalog,
+    canSeeScopedCatalog,
+    canSeeEditorCatalog,
+  } = useAdminRole();
 
   const [navFilter, setNavFilter] = React.useState('');
 
+  const handleNavClick = () => { if (typeof onClose === 'function') onClose(); };
+
   const NAV_SECTIONS = React.useMemo(() => {
-    const baseSections = [
-      {
+    const sections = [];
+
+    // ─────────────────────────────────────────────────
+    // 1. Dashboard — everyone except Editor
+    // ─────────────────────────────────────────────────
+    if (!isEditor) {
+      sections.push({
         key: 'Dashboard',
         label: 'Overview',
         items: [{ to: '/admin', end: true, label: 'Executive Dashboard', icon: LayoutDashboard }],
-      },
-      {
-        key: 'Analytics',
-        label: 'Analytics',
-        items: [
-          {
-            to: '/admin/analytics/overview',
-            label: 'Overview',
-            icon: BarChart3,
-          },
-          {
-            to: '/admin/analytics/attractions',
-            label: 'Attractions',
-            icon: Building2,
-          },
-          {
-            to: '/admin/analytics/daily',
-            label: 'Daily Trend',
-            icon: TrendingUp,
-          },
-          {
-            to: '/admin/analytics/split',
-            label: 'Split Analysis',
-            icon: SplitSquareHorizontal,
-          },
-          {
-            to: '/admin/analytics/custom',
-            label: 'Custom Report',
-            icon: FileText,
-          },
-          {
-            to: '/admin/analytics/people',
-            label: 'People',
-            icon: Users,
-          },
-          {
-            to: '/admin/analytics/views',
-            label: 'Views',
-            icon: Eye,
-          },
-          {
-            to: '/admin/analytics/conversion',
-            label: 'Conversion',
-            icon: TrendingUp,
-          },
-          {
-            to: '/admin/revenue/attractions',
-            label: 'Attraction Revenue',
-            icon: DollarSign,
-          },
-          {
-            to: '/admin/revenue/combos',
-            label: 'Combo Revenue',
-            icon: DollarSign,
-          },
-        ],
-      },
-      {
+      });
+    }
+
+    // ─────────────────────────────────────────────────
+    // 2. Analytics — SuperAdmin, GM, Staff
+    // ─────────────────────────────────────────────────
+    if (canSeeAnalytics) {
+      const analyticsItems = [
+        { to: '/admin/analytics/overview', label: 'Overview', icon: BarChart3 },
+        { to: '/admin/analytics/daily', label: 'Daily Trend', icon: TrendingUp },
+      ];
+      // Full analytics (non-scoped)  — SuperAdmin + GM only
+      if (isSuperAdmin || isGM) {
+        analyticsItems.push(
+          { to: '/admin/analytics/attractions', label: 'Attractions', icon: Building2 },
+          { to: '/admin/analytics/split', label: 'Split Analysis', icon: SplitSquareHorizontal },
+          { to: '/admin/analytics/custom', label: 'Custom Report', icon: FileText },
+          { to: '/admin/analytics/people', label: 'People', icon: Users },
+          { to: '/admin/analytics/views', label: 'Views', icon: Eye },
+          { to: '/admin/analytics/conversion', label: 'Conversion', icon: TrendingUp },
+          { to: '/admin/revenue/attractions', label: 'Attraction Revenue', icon: DollarSign },
+          { to: '/admin/revenue/combos', label: 'Combo Revenue', icon: DollarSign },
+        );
+      }
+      sections.push({ key: 'Analytics', label: 'Analytics', items: analyticsItems });
+    }
+
+    // ─────────────────────────────────────────────────
+    // 3. Bookings — SuperAdmin, GM, Staff
+    // ─────────────────────────────────────────────────
+    if (canSeeBookings) {
+      sections.push({
         key: 'Bookings',
         label: 'Bookings',
-        items: [
-          { to: '/admin/bookings', label: 'All Bookings', icon: CalendarClock },
-        ],
-      },
-      {
+        items: [{ to: '/admin/bookings', label: 'All Bookings', icon: CalendarClock }],
+      });
+    }
+
+    // ─────────────────────────────────────────────────
+    // 4. Catalog sections vary by role
+    // ─────────────────────────────────────────────────
+
+    if (isSuperAdmin || isGM) {
+      // Full catalog
+      sections.push({
         key: 'Catalog',
         label: 'Catalog',
         items: [
           { to: '/admin/catalog/attractions', label: 'Attractions', icon: Gift },
-          { to: '/admin/catalog/addons', label: 'Add-ons', icon: Gift },
           { to: '/admin/catalog/combos', label: 'Combos', icon: Boxes },
+          { to: '/admin/catalog/addons', label: 'Add-ons', icon: Gift },
           { to: '/admin/catalog/offers', label: 'Offers', icon: BadgePercent },
           { to: '/admin/catalog/dynamic-pricing', label: 'Dynamic Pricing', icon: DollarSign },
           { to: '/admin/catalog/coupons', label: 'Coupons', icon: Ticket },
@@ -197,64 +152,97 @@ export default function AdminSidebar({ collapsed, onClose }) {
           { to: '/admin/catalog/pages', label: 'Pages', icon: FileText },
           { to: '/admin/catalog/blogs', label: 'Blogs', icon: Newspaper },
         ],
-      },
-      // Only show People section for admins/root/superadmins, hide for subadmins only
-      ...(roles.includes('subadmin') && !roles.includes('admin') && !roles.includes('root') && !roles.includes('superadmin') ? [] : [{
-        key: 'AdminManagement',
-        label: 'People',
+      });
+    } else if (isStaff) {
+      // Staff — attractions, combos (scoped), offers, dynamic pricing
+      sections.push({
+        key: 'Catalog',
+        label: 'Catalog',
         items: [
-          { to: '/admin/users', label: 'Customers', icon: Users },
-          { to: '/admin/roles', label: 'Admin Roles', icon: ShieldCheck },
-          ...(canSeeAdminMgmt
-            ? [
-              { to: '/admin/admins', label: 'Admin Team', icon: UserCog, permsAny: ['admin-management:read'] },
-              { to: '/admin/admins/new', label: 'Create Admin', icon: UserCog, permsAny: ['admin-management:write', 'admin-management:manage'] },
-              { to: '/admin/admins/access', label: 'Grant Access', icon: KeyRound, permsAny: ['admin-management:write', 'admin-management:manage'] },
-            ]
-            : []),
+          { to: '/admin/catalog/attractions', label: 'Attractions', icon: Gift },
+          { to: '/admin/catalog/combos', label: 'Combos', icon: Boxes },
+          { to: '/admin/catalog/offers', label: 'Offers', icon: BadgePercent },
+          { to: '/admin/catalog/dynamic-pricing', label: 'Dynamic Pricing', icon: DollarSign },
         ],
-      }]),
-      {
+      });
+    } else if (isEditor) {
+      // Editor — catalog only, NO offers/coupons/dynamic pricing
+      sections.push({
+        key: 'Catalog',
+        label: 'Catalog',
+        items: [
+          { to: '/admin/catalog/attractions', label: 'Attractions', icon: Gift },
+          { to: '/admin/catalog/combos', label: 'Combos', icon: Boxes },
+          { to: '/admin/catalog/addons', label: 'Add-ons', icon: Gift },
+          { to: '/admin/catalog/banners', label: 'Banners', icon: ImageIcon },
+          { to: '/admin/catalog/gallery', label: 'Gallery', icon: ImageIcon },
+          { to: '/admin/catalog/pages', label: 'Pages', icon: FileText },
+          { to: '/admin/catalog/blogs', label: 'Blogs', icon: Newspaper },
+        ],
+      });
+    }
+
+    // ─────────────────────────────────────────────────
+    // 5. People — SuperAdmin (full) + GM (read-only)
+    // ─────────────────────────────────────────────────
+    if (canListAdmins) {
+      const peopleItems = [
+        { to: '/admin/users', label: 'Customers', icon: Users },
+        { to: '/admin/roles', label: 'Admin Roles', icon: ShieldCheck },
+        { to: '/admin/admins', label: 'Admin Team', icon: UserCog },
+      ];
+      if (canManageAdmins) {
+        peopleItems.push(
+          { to: '/admin/admins/new', label: 'Create Admin', icon: UserCog },
+          { to: '/admin/admins/access', label: 'Grant Access', icon: KeyRound },
+        );
+      }
+      sections.push({ key: 'People', label: 'People', items: peopleItems });
+    }
+
+    // ─────────────────────────────────────────────────
+    // 6. Settings — SuperAdmin + GM
+    // ─────────────────────────────────────────────────
+    if (canSeeSettings) {
+      sections.push({
         key: 'Settings',
         label: 'Settings',
         items: [
-          { to: '/admin/site-settings', label: 'Site Settings (SEO)', icon: Settings }
-        ]
-      },
-    ];
+          { to: '/admin/site-settings', label: 'Site Settings (SEO)', icon: Settings },
+        ],
+      });
+    }
 
-    if (navFilter.trim() === '') return baseSections;
+    // Filter by search
+    if (!navFilter.trim()) return sections;
     const term = navFilter.trim().toLowerCase();
-    return baseSections
-      .map((section) => {
-        const items = section.items.filter((item) => item.label.toLowerCase().includes(term));
-        if (!items.length) return null;
-        return { ...section, items };
+    return sections
+      .map((s) => {
+        const items = s.items.filter((it) => it.label.toLowerCase().includes(term));
+        return items.length ? { ...s, items } : null;
       })
       .filter(Boolean);
-  }, [canSeeAdminMgmt, navFilter]);
+  }, [
+    isSuperAdmin, isGM, isStaff, isEditor,
+    canManageAdmins, canListAdmins, canSeeAnalytics,
+    canSeeBookings, canSeeSettings, navFilter,
+  ]);
 
-  const defaults = React.useMemo(
-    () => ({
-      Dashboard: true,
-      Analytics: false,
-      Bookings: true,
-      Catalog: true,
-      AdminManagement: true,
-      UsersRBAC: false,
-      Settings: false,
-    }),
-    []
-  );
+  const defaults = React.useMemo(() => ({
+    Dashboard: true,
+    Analytics: false,
+    Bookings: true,
+    Catalog: true,
+    People: false,
+    Settings: false,
+  }), []);
 
   const [openMap, setOpen] = usePersistedSections(defaults);
 
-  // Auto-open section for current route
   React.useEffect(() => {
     const path = location.pathname || '';
     for (const s of NAV_SECTIONS) {
-      const isActiveSection = s.items.some((it) => path.startsWith(it.to));
-      if (isActiveSection && !openMap[s.key]) {
+      if (s.items.some((it) => path.startsWith(it.to)) && !openMap[s.key]) {
         setOpen(s.key, true);
       }
     }
@@ -273,6 +261,15 @@ export default function AdminSidebar({ collapsed, onClose }) {
     [location.pathname]
   );
 
+  // Role badge for the info panel
+  const roleBadge = React.useMemo(() => {
+    if (isSuperAdmin) return { label: 'Super Admin', color: 'from-red-500 to-rose-600' };
+    if (isGM) return { label: 'General Manager', color: 'from-purple-500 to-violet-600' };
+    if (isStaff) return { label: 'Staff', color: 'from-blue-500 to-cyan-600' };
+    if (isEditor) return { label: 'Editor', color: 'from-green-500 to-emerald-600' };
+    return { label: 'Admin', color: 'from-gray-500 to-gray-600' };
+  }, [isSuperAdmin, isGM, isStaff, isEditor]);
+
   return (
     <aside
       className={[
@@ -281,15 +278,18 @@ export default function AdminSidebar({ collapsed, onClose }) {
       ].join(' ')}
       aria-label="Admin navigation"
     >
+      {/* Logo */}
       <div className="px-4 py-5 flex items-center justify-between border-b border-gray-200/50 dark:border-neutral-900/60">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-semibold shadow-lg shadow-blue-500/30">
+          <div className={`flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br ${roleBadge.color} text-white font-semibold shadow-lg`}>
             SC
           </div>
           {!collapsed && (
             <div>
               <p className="text-sm font-semibold text-gray-900 dark:text-neutral-100">SnowCity Admin</p>
-              <p className="text-xs text-gray-500 dark:text-neutral-400">Experience Excellence</p>
+              <span className={`inline-block text-[10px] font-medium px-2 py-0.5 rounded-full text-white bg-gradient-to-r ${roleBadge.color}`}>
+                {roleBadge.label}
+              </span>
             </div>
           )}
         </div>
@@ -302,6 +302,7 @@ export default function AdminSidebar({ collapsed, onClose }) {
         </button>
       </div>
 
+      {/* Search */}
       {!collapsed && (
         <div className="px-4 pt-4">
           <label className="relative block">
@@ -316,7 +317,8 @@ export default function AdminSidebar({ collapsed, onClose }) {
         </div>
       )}
 
-      <nav className="px-3 pb-4 h-[calc(100vh-140px)] overflow-y-auto">
+      {/* Nav */}
+      <nav className="px-3 pb-4 h-[calc(100vh-160px)] overflow-y-auto">
         {NAV_SECTIONS.map((section) => {
           if (!section.items?.length) return null;
           const isOpen = !!openMap[section.key];
@@ -335,31 +337,20 @@ export default function AdminSidebar({ collapsed, onClose }) {
                 title={collapsed ? section.label : undefined}
               >
                 {!collapsed && <span className="font-medium">{section.label}</span>}
-                {collapsed && (
-                  <span className="font-medium" aria-hidden="true">
-                    {section.label.charAt(0)}
-                  </span>
-                )}
+                {collapsed && <span className="font-medium" aria-hidden="true">{section.label.charAt(0)}</span>}
                 <ChevronDown
-                  className={[
-                    'h-4 w-4 shrink-0 transition-transform',
-                    isOpen ? 'rotate-180' : '',
-                  ].join(' ')}
+                  className={['h-4 w-4 shrink-0 transition-transform', isOpen ? 'rotate-180' : ''].join(' ')}
                 />
               </button>
 
               <div
                 id={`section-${section.key}`}
-                className={[
-                  'overflow-hidden transition-all',
-                  isOpen ? 'max-h-[1200px] ease-in' : 'max-h-0 ease-out',
-                ].join(' ')}
+                className={['overflow-hidden transition-all', isOpen ? 'max-h-[1200px] ease-in' : 'max-h-0 ease-out'].join(' ')}
               >
                 <div className="mt-1 space-y-1">
-                  {section.items.map(({ to, end, label, icon: Icon, permsAny, permsAll }) => {
-                    const link = (
+                  {section.items.map(({ to, end, label, icon: Icon }) => (
+                    <div className="relative" key={to}>
                       <NavLink
-                        key={to}
                         to={to}
                         end={end}
                         title={collapsed ? label : undefined}
@@ -377,25 +368,11 @@ export default function AdminSidebar({ collapsed, onClose }) {
                         <Icon className="h-5 w-5" aria-hidden="true" />
                         {!collapsed && <span>{label}</span>}
                       </NavLink>
-                    );
-
-                    if (permsAny || permsAll) {
-                      return (
-                        <PermissionGate key={to} anyOf={permsAny || []} allOf={permsAll || []}>
-                          {link}
-                        </PermissionGate>
-                      );
-                    }
-
-                    return (
-                      <div className="relative" key={to}>
-                        {link}
-                        {isLinkActive(to, end) && !collapsed && (
-                          <span className="absolute right-3 top-1/2 -translate-y-1/2 h-1.5 w-1.5 rounded-full bg-emerald-400" aria-hidden="true" />
-                        )}
-                      </div>
-                    );
-                  })}
+                      {isLinkActive(to, end) && !collapsed && (
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 h-1.5 w-1.5 rounded-full bg-emerald-400" aria-hidden="true" />
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -403,18 +380,22 @@ export default function AdminSidebar({ collapsed, onClose }) {
         })}
       </nav>
 
+      {/* Bottom panel */}
       <div className="px-4 pb-5">
-        <div className="rounded-2xl bg-gradient-to-br from-slate-900 via-indigo-900 to-blue-700 text-white p-4 shadow-lg">
-          <p className="text-sm font-semibold mb-1">Need quick access?</p>
-          <p className="text-xs text-white/80 mb-3">Jump to bookings or reach support instantly.</p>
+        <div className={`rounded-2xl bg-gradient-to-br ${roleBadge.color.replace('from-', 'from-').replace('to-', 'to-')} text-white p-4 shadow-lg`}
+          style={{ background: 'linear-gradient(135deg, #1e3a5f, #1e40af)' }}>
+          <p className="text-sm font-semibold mb-1">Quick Access</p>
+          <p className="text-xs text-white/80 mb-3">Jump to bookings or reach support.</p>
           <div className="flex flex-col gap-2">
-            <Link
-              to="/admin/bookings"
-              className="inline-flex items-center justify-center rounded-full bg-white/10 px-3 py-1.5 text-xs font-semibold hover:bg-white/20"
-              onClick={handleNavClick}
-            >
-              Go to Bookings
-            </Link>
+            {canSeeBookings && (
+              <Link
+                to="/admin/bookings"
+                className="inline-flex items-center justify-center rounded-full bg-white/10 px-3 py-1.5 text-xs font-semibold hover:bg-white/20"
+                onClick={handleNavClick}
+              >
+                Go to Bookings
+              </Link>
+            )}
             <a
               href="mailto:support@snowcity.com"
               className="inline-flex items-center justify-center rounded-full bg-white text-slate-900 px-3 py-1.5 text-xs font-semibold"
