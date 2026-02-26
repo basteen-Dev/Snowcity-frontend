@@ -4,6 +4,7 @@ import dayjs from 'dayjs';
 
 /**
  * Addons Component (Step 2 of Booking)
+ * Matches reference: clean card layout, hover borders, Back/Continue buttons
  */
 export default function Addons({
     cartItems,
@@ -27,15 +28,16 @@ export default function Addons({
     totalAddonCount,
 }) {
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2.1fr)_minmax(320px,1fr)] gap-6 items-start mt-4">
-            <div className="space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 items-start mt-4">
+            {/* LEFT: Addons list */}
+            <div className="lg:col-span-2 space-y-6">
                 {cartItems.length > 1 && (
                     <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
                         {cartItems.map((item) => (
                             <button
                                 key={item.key}
                                 onClick={() => dispatch(setActiveCartItem(item.key))}
-                                className={`px-4 py-2 rounded-full border text-sm font-medium transition-all ${item.key === activeItemKey
+                                className={`px-4 py-2 rounded-full border text-sm font-medium transition-all whitespace-nowrap ${item.key === activeItemKey
                                     ? 'bg-sky-600 text-white border-sky-600 shadow-sm'
                                     : 'bg-white text-gray-600 border-gray-200 hover:border-sky-200'
                                     }`}
@@ -56,75 +58,92 @@ export default function Addons({
                     </div>
                 )}
 
-                <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+                <div className="space-y-4">
                     {addonsState.status === 'loading' ? (
                         <div className="text-center py-10 text-gray-500 text-sm">Loading add-ons...</div>
                     ) : (
-                        <div className="space-y-4">
-                            {(addonsState.items || []).map((addon) => {
-                                const addonId = getAddonId(addon);
-                                const price = getAddonPrice(addon);
-                                const name = getAddonName(addon);
-                                const image = getAddonImage(addon);
-                                const quantity = Number(currentItemAddons.get(addonId)?.quantity || 0);
+                        (addonsState.items || []).map((addon) => {
+                            const addonId = getAddonId(addon);
+                            const price = getAddonPrice(addon);
+                            const name = getAddonName(addon);
+                            const image = getAddonImage(addon);
+                            const quantity = Number(currentItemAddons.get(addonId)?.quantity || 0);
+                            const isSelected = quantity > 0;
 
-                                const formatCurrency = (val) => `₹${Number(val).toFixed(0)}`;
-
-                                return (
-                                    <div
-                                        key={addonId}
-                                        className="flex gap-4 items-center border border-gray-200 rounded-2xl p-4 hover:border-sky-200 transition-all"
-                                    >
+                            return (
+                                <div
+                                    key={addonId}
+                                    className={`bg-white p-4 rounded-xl shadow border flex justify-between items-center cursor-pointer transition-all hover:border-sky-400 ${isSelected
+                                        ? 'border-sky-500 ring-2 ring-sky-300'
+                                        : 'border-transparent'
+                                        }`}
+                                >
+                                    <div className="flex gap-4 items-center flex-1 min-w-0">
                                         {image ? (
                                             <img
                                                 src={image}
                                                 alt={name}
-                                                className="w-16 h-16 rounded-xl object-cover border border-gray-100"
+                                                className="w-14 h-14 rounded-xl object-cover border border-gray-100 shrink-0"
                                             />
                                         ) : (
-                                            <div className="w-16 h-16 rounded-xl bg-gray-100 flex items-center justify-center text-gray-400">
-                                                <ShoppingBag />
+                                            <div className="w-14 h-14 rounded-xl bg-gray-100 flex items-center justify-center text-gray-400 shrink-0">
+                                                <ShoppingBag size={20} />
                                             </div>
                                         )}
-
-                                        <div className="flex-1 min-w-0">
+                                        <div className="min-w-0">
                                             <div className="font-semibold text-gray-900 truncate">{name}</div>
-                                            <div className="text-sm text-gray-500 tabular-nums">
-                                                {formatCurrency(price)}
-                                            </div>
-                                        </div>
-
-                                        <div className="flex items-center gap-3">
-                                            <button
-                                                onClick={() =>
-                                                    handleAddonQuantityChange(addonId, Math.max(0, quantity - 1), addon)
-                                                }
-                                                className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center hover:border-sky-200 active:scale-95 transition"
-                                            >
-                                                <Minus size={16} />
-                                            </button>
-                                            <span className="w-6 text-center font-semibold text-gray-800 tabular-nums">
-                                                {quantity}
-                                            </span>
-                                            <button
-                                                onClick={() => handleAddonQuantityChange(addonId, quantity + 1, addon)}
-                                                className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center hover:border-sky-200 active:scale-95 bg-sky-600 text-white shadow"
-                                            >
-                                                <Plus size={16} />
-                                            </button>
+                                            <div className="text-sm font-semibold text-sky-600 tabular-nums">₹{Number(price).toFixed(0)}</div>
                                         </div>
                                     </div>
-                                );
-                            })}
-                        </div>
+
+                                    <div className="flex items-center gap-3 shrink-0">
+                                        <button
+                                            onClick={() =>
+                                                handleAddonQuantityChange(addonId, Math.max(0, quantity - 1), addon)
+                                            }
+                                            className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center hover:border-sky-300 active:scale-95 transition"
+                                        >
+                                            <Minus size={14} />
+                                        </button>
+                                        <span className="w-6 text-center font-semibold text-gray-800 tabular-nums">
+                                            {quantity}
+                                        </span>
+                                        <button
+                                            onClick={() => handleAddonQuantityChange(addonId, quantity + 1, addon)}
+                                            className="w-9 h-9 rounded-full border border-sky-200 flex items-center justify-center active:scale-95 bg-sky-600 text-white shadow-sm"
+                                        >
+                                            <Plus size={14} />
+                                        </button>
+                                    </div>
+                                </div>
+                            );
+                        })
                     )}
+                </div>
+
+                {/* Back / Continue buttons (desktop) */}
+                <div className="hidden lg:flex gap-4 mt-8">
+                    <button
+                        type="button"
+                        onClick={handleBack}
+                        className="px-6 py-3 border rounded-xl text-gray-700 hover:bg-gray-50 transition font-semibold"
+                    >
+                        Back
+                    </button>
+                    <button
+                        type="button"
+                        onClick={handleNext}
+                        className="px-6 py-3 rounded-xl font-semibold shadow-sm transition hover:-translate-y-0.5 bg-sky-600 text-white hover:bg-sky-700"
+                    >
+                        Continue →
+                    </button>
                 </div>
             </div>
 
-            {/* Right: order details */}
-            <div className="lg:sticky lg:top-[140px]">
-                <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-5 sm:p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-1">Order details</h3>
+            {/* RIGHT: Order summary */}
+            <div>
+                <div className="bg-white p-6 rounded-2xl shadow-xl sticky top-[180px]">
+                    <h3 className="font-semibold text-lg mb-4">Your Booking</h3>
 
                     {!hasCartItems ? (
                         <div className="flex flex-col items-center justify-center text-center py-8">
@@ -150,58 +169,29 @@ export default function Addons({
                                     >
                                         <div className="min-w-0">
                                             <div className="font-semibold text-gray-900 line-clamp-2">
-                                                {item.title ||
-                                                    item.meta?.title ||
+                                                {item.title || item.meta?.title ||
                                                     (item.item_type === 'combo'
-                                                        ? item.combo?.title ||
-                                                        item.combo?.name ||
-                                                        item.combo?.combo_name ||
-                                                        `Combo #${item.combo_id}`
-                                                        : item.attraction?.title ||
-                                                        item.attraction?.name ||
-                                                        `Attraction #${item.attraction_id}`)}
+                                                        ? item.combo?.title || item.combo?.name || item.combo?.combo_name || `Combo #${item.combo_id}`
+                                                        : item.attraction?.title || item.attraction?.name || `Attraction #${item.attraction_id}`)}
                                             </div>
                                             <div className="text-xs text-gray-500 mt-1">
                                                 {item.quantity} ticket(s) •{' '}
                                                 {item.dateLabel || dayjs(item.booking_date).format('D MMMM YYYY') || item.booking_date}
                                                 {item.slotLabel ? ` • ${item.slotLabel}` : ''}
                                             </div>
-
                                             <div className="flex gap-3 mt-1">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => onEditCartItem(item)}
-                                                    className="text-[11px] text-sky-700 hover:underline"
-                                                >
-                                                    Edit
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => onRemoveCartItem(item.key)}
-                                                    className="text-[11px] text-red-500 hover:underline"
-                                                >
-                                                    Remove
-                                                </button>
+                                                <button type="button" onClick={() => onEditCartItem(item)} className="text-[11px] text-sky-700 hover:underline">Edit</button>
+                                                <button type="button" onClick={() => onRemoveCartItem(item.key)} className="text-[11px] text-red-500 hover:underline">Remove</button>
                                             </div>
-
                                             {itemAddons.length > 0 && (
                                                 <div className="mt-2 text-xs text-gray-600">
-                                                    <div className="font-medium text-gray-700 mb-1">Extras</div>
-                                                    <div className="space-y-1">
-                                                        {itemAddons.map((a) => (
-                                                            <div
-                                                                key={a.addon_id}
-                                                                className="flex items-center justify-between text-sm text-gray-600"
-                                                            >
-                                                                <div className="truncate">
-                                                                    {a.name} <span className="text-xs text-gray-400">x{a.quantity}</span>
-                                                                </div>
-                                                                <div className="tabular-nums">
-                                                                    ₹{(Number(a.price || 0) * Number(a.quantity || 0)).toFixed(0)}
-                                                                </div>
-                                                            </div>
-                                                        ))}
-                                                    </div>
+                                                    <div className="font-medium text-gray-700 mb-1">Add-ons</div>
+                                                    {itemAddons.map((a) => (
+                                                        <div key={a.addon_id} className="flex items-center justify-between text-sm text-gray-600">
+                                                            <div className="truncate">{a.name} <span className="text-xs text-gray-400">x{a.quantity}</span></div>
+                                                            <div className="tabular-nums">₹{(Number(a.price || 0) * Number(a.quantity || 0)).toFixed(0)}</div>
+                                                        </div>
+                                                    ))}
                                                 </div>
                                             )}
                                         </div>
@@ -216,45 +206,14 @@ export default function Addons({
                         </div>
                     )}
 
-                    <div className="pt-3 border-t border-gray-100 mt-2">
-                        <div className="flex items-center justify-between mb-3">
-                            <span className="text-sm text-gray-500">Total amount</span>
-                            <span className="text-lg font-semibold text-sky-700 tabular-nums">
-                                ₹{finalTotal.toFixed(0)}
-                            </span>
-                        </div>
-                        <div className="flex flex-col gap-2">
-                            <button
-                                type="button"
-                                disabled={totalAddonCount === 0 || !hasCartItems}
-                                onClick={handleNext}
-                                className={`w-full flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all active:scale-[0.98] ${totalAddonCount === 0 || !hasCartItems
-                                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                                    : 'bg-sky-600 text-white shadow-md hover:bg-sky-700 active:scale-[0.98]'
-                                    }`}
-                            >
-                                <span>Continue</span>
-                                <ArrowRight size={18} />
-                            </button>
-                            {totalAddonCount === 0 && (
-                                <button
-                                    type="button"
-                                    onClick={handleNext}
-                                    className="w-full text-center text-sm font-semibold text-sky-600 hover:text-sky-700 py-1"
-                                >
-                                    Skip addons
-                                </button>
-                            )}
-                            <button
-                                type="button"
-                                onClick={handleBack}
-                                className="hidden lg:flex items-center justify-center gap-2 w-full rounded-xl px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-all border border-gray-100"
-                            >
-                                <ArrowLeft size={16} />
-                                Back
-                            </button>
-                        </div>
+                    <hr className="my-4" />
+                    <div className="flex justify-between font-semibold text-lg">
+                        <span>Total</span>
+                        <span className="tabular-nums">₹{finalTotal.toFixed(0)}</span>
                     </div>
+                    <p className="text-xs text-gray-500 mt-4">
+                        Free reschedule up to 24 hours before visit.
+                    </p>
                 </div>
             </div>
         </div>

@@ -1,6 +1,6 @@
 import React from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Autoplay, Pagination, EffectFade, Parallax } from "swiper/modules";
+import { Autoplay, Pagination, EffectFade } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/effect-fade";
@@ -98,13 +98,13 @@ export default function HeroCarousel({ banners = [], waveColor = "#0b1a33" }) {
       <span id="hero-sentinel" className="pointer-events-none absolute bottom-0 left-0 h-px w-px" />
 
       <Swiper
-        modules={[Autoplay, Pagination, EffectFade, Parallax]}
+        modules={[Autoplay, Pagination, EffectFade]}
         slidesPerView={1}
         loop
         autoplay={{ delay: 5000, disableOnInteraction: false }}
         effect="fade"
-        parallax
-        speed={900}
+        fadeEffect={{ crossFade: true }}
+        speed={1200}
         pagination={{
           clickable: true
         }}
@@ -130,7 +130,7 @@ export default function HeroCarousel({ banners = [], waveColor = "#0b1a33" }) {
           return (
             <SwiperSlide key={uniqueKey}>
               <div className="relative w-full h-full">
-                <div className="absolute inset-0" data-swiper-parallax="-20%">
+                <div className="absolute inset-0">
                   <picture>
                     <source media="(max-width: 767px)" srcSet={mobileImg} />
                     <img
@@ -155,7 +155,6 @@ export default function HeroCarousel({ banners = [], waveColor = "#0b1a33" }) {
 
                 <div
                   className="absolute inset-0 flex flex-col justify-end px-4 sm:px-10 z-10 text-left pb-12 sm:pb-16"
-                  data-swiper-parallax="-200"
                 >
                   <div className="max-w-4xl space-y-3 sm:space-y-4">
                     <span className="text-[10px] sm:text-xs font-semibold tracking-[0.35em] uppercase text-sky-400">

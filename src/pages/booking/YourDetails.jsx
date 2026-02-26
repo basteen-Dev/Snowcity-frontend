@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { User, Mail, AlertCircle, Globe, ChevronRight, Phone, ArrowLeft, ArrowRight, RefreshCw } from 'lucide-react';
+import { AlertCircle, Globe, ChevronRight, RefreshCw } from 'lucide-react';
 
 /**
  * YourDetails Component (Step 3 of Booking)
- * - Handles name, email, phone input
- * - Send OTP / Resend OTP / Verify OTP flow
+ * 2-column layout: form on left, booking summary on right
+ * Matches reference screenshot exactly
  */
 export default function YourDetails({
     hasToken,
@@ -25,18 +25,20 @@ export default function YourDetails({
     verifyOTP,
     handleBack,
     handleNext,
+    cartItems = [],
+    finalTotal = 0,
+    totalAddonsCost = 0,
+    hasCartItems = false,
 }) {
     const [resendCooldown, setResendCooldown] = useState(0);
     const cooldownRef = useRef(null);
 
-    // Start cooldown timer when OTP is sent
     useEffect(() => {
         if (otp.sent && resendCooldown === 0) {
             setResendCooldown(30);
         }
     }, [otp.sent]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    // Countdown timer
     useEffect(() => {
         if (resendCooldown <= 0) {
             if (cooldownRef.current) clearInterval(cooldownRef.current);
@@ -62,38 +64,37 @@ export default function YourDetails({
 
     if (hasToken) return null;
 
+    const ticketsTotal = cartItems.reduce(
+        (acc, item) => acc + Number(item.unitPrice || 0) * Number(item.quantity || 0),
+        0,
+    );
+
     return (
-        <div className="space-y-6 max-w-md mx-auto animate-in fade-in slide-in-from-right-8 duration-300 mt-4">
-            <div className="space-y-5">
-                <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-gray-500 uppercase ml-1">Full Name</label>
-                    <div className="relative group">
-                        <User
-                            className="absolute left-4 top-3.5 text-gray-400 group-focus-within:text-sky-600 transition-colors"
-                            size={18}
-                        />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 items-start mt-4">
+            {/* LEFT: Form */}
+            <div className="lg:col-span-2">
+                <h2 className="text-xl font-bold text-gray-900 mb-6">Your Details</h2>
+
+                <div className="bg-white p-8 rounded-2xl shadow-sm space-y-6">
+                    {/* Full Name */}
+                    <div>
                         <input
-                            placeholder="John Doe"
-                            className="w-full pl-11 p-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-sky-500 focus:bg-white outline-none transition-all font-medium"
+                            type="text"
+                            placeholder="Full Name"
+                            className="w-full border border-gray-200 rounded-xl px-4 py-3.5 focus:ring-2 focus:ring-sky-500 focus:border-sky-400 outline-none transition-all text-gray-900 placeholder:text-gray-400"
                             value={contact.name}
                             onChange={(e) => dispatch(setContact({ name: e.target.value }))}
                         />
                     </div>
-                </div>
 
-                <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-gray-500 uppercase ml-1">Email Address</label>
-                    <div className="relative group">
-                        <Mail
-                            className="absolute left-4 top-3.5 text-gray-400 group-focus-within:text-sky-600 transition-colors"
-                            size={18}
-                        />
+                    {/* Email */}
+                    <div>
                         <input
-                            placeholder="name@example.com"
+                            placeholder="Email Address"
                             type="email"
-                            className={`w-full pl-11 p-3.5 bg-gray-50 border rounded-xl focus:ring-2 focus:bg-white outline-none transition-all font-medium ${contactErrors.email
+                            className={`w-full border rounded-xl px-4 py-3.5 focus:ring-2 outline-none transition-all text-gray-900 placeholder:text-gray-400 ${contactErrors.email
                                 ? 'border-red-300 focus:ring-red-200'
-                                : 'border-gray-200 focus:ring-sky-500'
+                                : 'border-gray-200 focus:ring-sky-500 focus:border-sky-400'
                                 }`}
                             value={contact.email}
                             onChange={(e) => {
@@ -101,84 +102,65 @@ export default function YourDetails({
                                 if (contactErrors.email) setContactErrors((p) => ({ ...p, email: undefined }));
                             }}
                         />
+                        {contactErrors.email && (
+                            <p className="text-xs text-red-500 mt-1 ml-1 flex items-center gap-1">
+                                <AlertCircle size={12} /> {contactErrors.email}
+                            </p>
+                        )}
                     </div>
-                    {contactErrors.email && (
-                        <p className="text-xs text-red-500 ml-1 flex items-center gap-1">
-                            <AlertCircle size={12} /> {contactErrors.email}
-                        </p>
-                    )}
-                </div>
 
-                <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-gray-500 uppercase ml-1">Mobile Number</label>
-                    <div className="flex gap-3">
-                        <div className="relative w-32">
-                            <div className="absolute left-3 top-3.5 z-10 pointer-events-none">
-                                <Globe size={18} className="text-gray-400" />
+                    {/* Mobile Number */}
+                    <div>
+                        <div className="flex gap-3">
+                            <div className="relative w-28">
+                                <select
+                                    className="w-full px-3 py-3.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-sky-500 outline-none appearance-none font-medium text-sm"
+                                    value={countryCode}
+                                    onChange={(e) => setCountryCode(e.target.value)}
+                                >
+                                    {COUNTRY_CODES.map((c) => (
+                                        <option key={c.code} value={c.code}>{c.code}</option>
+                                    ))}
+                                </select>
+                                <ChevronRight
+                                    size={14}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 rotate-90 pointer-events-none"
+                                />
                             </div>
-                            <select
-                                className="w-full pl-10 pr-8 p-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-sky-500 outline-none appearance-none font-medium text-sm"
-                                value={countryCode}
-                                onChange={(e) => setCountryCode(e.target.value)}
-                            >
-                                {COUNTRY_CODES.map((c) => (
-                                    <option key={c.code} value={c.code}>
-                                        {c.code}
-                                    </option>
-                                ))}
-                            </select>
-                            <ChevronRight
-                                size={14}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 rotate-90 pointer-events-none"
-                            />
-                        </div>
-
-                        <div className="relative flex-1 group">
-                            <Phone
-                                className="absolute left-4 top-3.5 text-gray-400 group-focus-within:text-sky-600 transition-colors"
-                                size={18}
-                            />
                             <input
-                                placeholder="98765 43210"
+                                placeholder="Mobile Number"
                                 type="tel"
                                 maxLength={10}
-                                className={`w-full pl-11 p-3.5 bg-gray-50 border rounded-xl focus:ring-2 focus:bg-white outline-none transition-all font-medium tracking-wide ${contactErrors.phone
+                                className={`flex-1 border rounded-xl px-4 py-3.5 focus:ring-2 outline-none transition-all text-gray-900 placeholder:text-gray-400 tracking-wide ${contactErrors.phone
                                     ? 'border-red-300 focus:ring-red-200'
-                                    : 'border-gray-200 focus:ring-sky-500'
+                                    : 'border-gray-200 focus:ring-sky-500 focus:border-sky-400'
                                     }`}
                                 value={phoneLocal}
                                 onChange={handlePhoneChange}
                             />
                         </div>
+                        {contactErrors.phone && (
+                            <p className="text-xs text-red-500 mt-1 ml-1 flex items-center gap-1">
+                                <AlertCircle size={12} /> {contactErrors.phone}
+                            </p>
+                        )}
                     </div>
-                    {contactErrors.phone && (
-                        <p className="text-xs text-red-500 ml-1 flex items-center gap-1">
-                            <AlertCircle size={12} /> {contactErrors.phone}
-                        </p>
-                    )}
-                </div>
 
-                <div className="space-y-1.5">
-                    <label className="flex items-center gap-2 cursor-pointer">
+                    {/* WhatsApp Consent - pre-checked toggle style from screenshot */}
+                    <div className="flex items-center justify-between py-3">
+                        <p className="text-sm font-medium text-gray-900">Receive updates on WhatsApp</p>
                         <input
                             type="checkbox"
-                            required
-                            checked={contact.whatsapp_consent || false}
+                            checked={contact.whatsapp_consent !== false}
                             onChange={(e) => dispatch(setContact({ whatsapp_consent: e.target.checked }))}
-                            className="w-4 h-4 text-sky-600 bg-gray-100 border-gray-300 rounded focus:ring-sky-500 focus:ring-2"
+                            className="w-5 h-5 text-sky-600 rounded border-gray-300 focus:ring-sky-500"
                         />
-                        <span className="text-sm text-gray-700 font-medium">
-                            I agree to receive WhatsApp notifications *
-                        </span>
-                    </label>
-                    <p className="text-xs text-gray-500 ml-6">
-                        We'll send booking confirmations and updates via WhatsApp
-                    </p>
+                    </div>
                 </div>
 
-                {/* OTP Error Display */}
+                {/* OTP Error */}
                 {otp.error && (
-                    <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 flex items-start gap-2">
+                    <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 flex items-start gap-2 mt-4">
                         <AlertCircle size={16} className="text-red-500 mt-0.5 shrink-0" />
                         <p className="text-sm text-red-700 font-medium">
                             {otp.error?.message || otp.error || 'Something went wrong. Please try again.'}
@@ -186,11 +168,12 @@ export default function YourDetails({
                     </div>
                 )}
 
+                {/* OTP Flow */}
                 {!otp.sent ? (
                     <button
                         onClick={sendOTP}
                         disabled={otp.status === 'loading'}
-                        className="w-full bg-sky-700 text-white py-3 rounded-xl font-bold text-base shadow-lg hover:bg-sky-800 transition-all disabled:opacity-70 flex items-center justify-center gap-2 mt-4"
+                        className="mt-6 w-full bg-sky-600 text-white py-3.5 rounded-xl font-semibold text-base shadow-sm hover:bg-sky-700 transition-all disabled:opacity-70 flex items-center justify-center gap-2"
                     >
                         {otp.status === 'loading' ? (
                             <>
@@ -202,7 +185,7 @@ export default function YourDetails({
                         )}
                     </button>
                 ) : (
-                    <div className="mt-6 bg-sky-50 border border-sky-100 p-5 rounded-2xl animate-in fade-in slide-in-from-bottom-2">
+                    <div className="mt-6 bg-sky-50 border border-sky-100 p-5 rounded-2xl">
                         <p className="text-sm text-sky-800 mb-3 font-medium">
                             Enter OTP sent to {countryCode} {phoneLocal}
                         </p>
@@ -218,18 +201,15 @@ export default function YourDetails({
                                 onChange={(e) => {
                                     const val = e.target.value.replace(/\D/g, '').slice(0, 6);
                                     setOtpCode(val);
-                                    // Auto-verify when 6 digits are entered
                                     if (val.length === 6 && /^\d{6}$/.test(val)) {
-                                        setTimeout(() => {
-                                            verifyOTP(val);
-                                        }, 300);
+                                        setTimeout(() => { verifyOTP(val); }, 300);
                                     }
                                 }}
                             />
                             <button
                                 onClick={verifyOTP}
                                 disabled={otp.status === 'loading' || otpCode.length < 6}
-                                className="bg-sky-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:bg-sky-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 w-full sm:w-auto text-sm sm:text-base"
+                                className="bg-sky-600 text-white px-6 py-3 rounded-xl font-bold shadow-sm hover:bg-sky-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 w-full sm:w-auto justify-center"
                             >
                                 {otp.status === 'loading' ? (
                                     <>
@@ -239,24 +219,16 @@ export default function YourDetails({
                                 ) : otp.verified ? (
                                     <>
                                         <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                            <path
-                                                fillRule="evenodd"
-                                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                                clipRule="evenodd"
-                                            />
+                                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                         </svg>
                                         Verified
                                     </>
-                                ) : (
-                                    'Verify'
-                                )}
+                                ) : 'Verify'}
                             </button>
                         </div>
                         <p className="text-xs text-gray-500 mt-2 text-center">
                             OTP will auto-verify once all 6 digits are filled
                         </p>
-
-                        {/* Resend OTP */}
                         <div className="mt-4 flex items-center justify-between pt-3 border-t border-sky-100">
                             <p className="text-xs text-gray-500">Didn't receive the OTP?</p>
                             <button
@@ -269,22 +241,18 @@ export default function YourDetails({
                                     }`}
                             >
                                 <RefreshCw size={14} className={otp.status === 'loading' ? 'animate-spin' : ''} />
-                                {resendCooldown > 0
-                                    ? `Resend in ${resendCooldown}s`
-                                    : otp.status === 'loading'
-                                        ? 'Sending...'
-                                        : 'Resend OTP'}
+                                {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : otp.status === 'loading' ? 'Sending...' : 'Resend OTP'}
                             </button>
                         </div>
                     </div>
                 )}
 
-                {/* desktop next/back buttons for Step 3 */}
-                <div className="hidden md:flex items-center gap-4 mt-8 pt-6 border-t border-gray-100">
+                {/* Back / Proceed buttons */}
+                <div className="flex gap-4 mt-8">
                     <button
                         type="button"
                         onClick={handleBack}
-                        className="px-8 py-3 rounded-xl border border-gray-200 text-gray-700 font-bold hover:bg-gray-50 transition-all"
+                        className="px-6 py-3 border rounded-xl text-gray-700 hover:bg-gray-50 transition font-semibold"
                     >
                         Back
                     </button>
@@ -292,14 +260,42 @@ export default function YourDetails({
                         type="button"
                         onClick={handleNext}
                         disabled={!otp.verified}
-                        className={`flex-1 flex items-center justify-center gap-2 rounded-xl px-8 py-3 text-base font-bold transition-all ${!otp.verified
+                        className={`px-6 py-3 rounded-xl font-semibold shadow-sm transition hover:-translate-y-0.5 ${!otp.verified
                             ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                            : 'bg-sky-600 text-white shadow-lg hover:bg-sky-700 active:scale-[0.98]'
+                            : 'bg-sky-600 text-white hover:bg-sky-700'
                             }`}
                     >
-                        Continue
-                        <ArrowRight size={20} />
+                        Proceed to Payment →
                     </button>
+                </div>
+            </div>
+
+            {/* RIGHT: Booking Summary */}
+            <div className="lg:sticky lg:top-[180px]">
+                <div className="bg-white p-6 rounded-2xl shadow-xl">
+                    <h3 className="font-semibold text-lg mb-4">Your Booking</h3>
+
+                    <div className="space-y-3 text-sm">
+                        <div className="flex justify-between">
+                            <span className="text-gray-600">Tickets</span>
+                            <span className="font-semibold tabular-nums">₹{ticketsTotal.toLocaleString()}</span>
+                        </div>
+                        {totalAddonsCost > 0 && (
+                            <div className="flex justify-between">
+                                <span className="text-gray-600">Add-ons</span>
+                                <span className="font-semibold tabular-nums">₹{totalAddonsCost.toLocaleString()}</span>
+                            </div>
+                        )}
+                    </div>
+
+                    <hr className="my-4" />
+                    <div className="flex justify-between font-semibold text-lg">
+                        <span>Total</span>
+                        <span className="tabular-nums">₹{finalTotal.toLocaleString()}</span>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-4">
+                        Free reschedule up to 24 hours before visit.
+                    </p>
                 </div>
             </div>
         </div>

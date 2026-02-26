@@ -254,7 +254,7 @@ export default function MyBookings() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#e0f2fe] via-[#bae6fd] to-white px-4 pt-20 pb-8">
+    <div className="min-h-screen bg-gradient-to-b from-[#f5f8ff] to-white px-4 pt-20 pb-8">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -409,7 +409,7 @@ export default function MyBookings() {
                         <button
                           onClick={async (e) => {
                             e.stopPropagation();
-                            window.open(`app.snowcityblr.com/api/tickets/generated/ORDER_${order.ref}.pdf`, '_blank');
+                            window.open(`https://app.snowcity.blr/api/tickets/generated/ORDER_${order.ref}.pdf`, '_blank');
                           }}
                           className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                         >

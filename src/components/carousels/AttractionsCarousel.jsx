@@ -309,7 +309,6 @@ export default function AttractionsCarousel({ items = [] }) {
       {/* MOBILE SLIDER */}
       <div className="md:hidden relative z-10 premium-carousel mb-8">
         <Swiper
-          modules={[Autoplay]}
           spaceBetween={16}
           slidesPerView={1.3}
           centeredSlides={true}
@@ -319,10 +318,6 @@ export default function AttractionsCarousel({ items = [] }) {
           grabCursor={true}
           watchSlidesProgress={true}
           onSlideChange={(swiper) => setActiveIndex(swiper.realIndex)}
-          autoplay={{
-            delay: 3000,
-            disableOnInteraction: false,
-          }}
           className="pt-10 pb-10 !overflow-visible"
         >
           {displayItems.map((item, idx) => (

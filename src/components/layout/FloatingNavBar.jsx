@@ -485,8 +485,20 @@ export default function FloatingNavBar() {
       <nav
         ref={navRef}
         data-floating-nav
-        className={`fixed z-[150] bg-white py-2 shadow-md transition-none top-4 left-4 right-4 rounded-full border border-gray-200`}
-        style={{ backfaceVisibility: 'hidden', transition: 'none' }}
+        className={`fixed z-[150] bg-white shadow-md border-gray-200
+          top-0 left-0 right-0 py-2 md:top-4 md:left-4 md:right-4 md:rounded-full md:border`}
+        style={{
+          transition: 'none !important',
+          animation: 'none !important',
+          transform: 'none !important',
+          backfaceVisibility: 'hidden',
+          WebkitBackfaceVisibility: 'hidden',
+          willChange: 'auto',
+          left: '0 !important',
+          right: '0 !important',
+          top: '0 !important',
+          width: '100% !important'
+        }}
       >
 
         {/* ------------------- DESKTOP NAV -------------------- */}
@@ -575,7 +587,7 @@ export default function FloatingNavBar() {
                     {guidePages.map((p, idx) => (
                       <Link
                         key={idx}
-                        to={`/page/${p.slug || p.id}`}
+                        to={`/${p.slug || p.id}`}
                         className="block px-4 py-2.5 text-sm text-gray-800 hover:bg-sky-100 rounded-lg transition-all duration-200 font-medium"
                         onClick={() => setMenuOpen(null)}
                       >
@@ -647,103 +659,53 @@ export default function FloatingNavBar() {
         </div>
 
         <div
-          className={`md:hidden h-14 relative flex items-center px-4 ${isWhite
+          className={`md:hidden h-14 flex items-center justify-between px-3 ${isWhite
             ? "text-gray-900"
             : "text-white"
             }`}
         >
           {/* LEFT: Menu Button */}
-          <div className="absolute left-2 top-1/2 -translate-y-1/2 z-20">
-            <button
-              className="p-2 active:scale-95"
-              onClick={() => setMobileOpen((v) => !v)}
-              aria-expanded={mobileOpen}
-              aria-label="Open menu"
-            >
-              {mobileOpen ? (
-                <X className="w-6 h-6" />
-              ) : (
-                <Menu className="w-6 h-6" />
-              )}
-            </button>
-          </div>
-
-          {/* MIDDLE: Logo (Absolutely Centered) */}
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
-            <Link to="/" aria-label="Home" className="flex items-center">
-              <img
-                src={Logo}
-                alt="SnowCity Logo"
-                className="h-9 w-auto object-contain pointer-events-none"
-                width={80}
-                height={36}
-                style={{ transition: 'none' }}
-              />
-            </Link>
-          </div>
-
-          {/* RIGHT: Profile Button */}
-          <div className="absolute right-4 top-1/2 -translate-y-1/2 z-20">
-            {token ? (
-              <div className="relative">
-                <button
-                  className="h-9 w-9 rounded-full flex items-center justify-center bg-white border border-gray-200 text-gray-700 shadow-sm"
-                  onClick={() => setProfileOpen((v) => !v)}
-                  aria-expanded={profileOpen}
-                  aria-label="Account menu"
-                  title={userName}
-                >
-                  <User className="w-5 h-5" />
-                </button>
-
-                {profileOpen && (
-                  <div className="absolute right-0 top-full mt-3 w-56 rounded-lg border border-gray-200 bg-white shadow-lg p-3 z-[110]" style={{ boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)' }}>
-                    <Link
-                      to="/my-bookings"
-                      className="block px-3 py-2 text-gray-800 text-sm hover:bg-gray-100 rounded-lg font-medium transition-all duration-200"
-                      onClick={() => {
-                        setProfileOpen(false);
-                        setMobileOpen(false);
-                      }}
-                    >
-                      <ClipboardList className="w-4 h-4 inline mr-2 text-blue-600" /> My Bookings
-                    </Link>
-                    <div className="px-3 py-2.5 mt-2 rounded-lg bg-gray-50 border border-gray-200 text-xs text-gray-700">
-                      <p className="font-semibold text-gray-900 text-sm mb-1.5">Account Details</p>
-                      <p className="leading-relaxed mb-1">
-                        <span className="font-semibold text-gray-800">Name:</span> {userName || "Guest"}
-                      </p>
-                      <p className="leading-relaxed mb-1">
-                        <span className="font-semibold text-gray-800">Phone:</span> {userPhone}
-                      </p>
-                      <p className="leading-relaxed">
-                        <span className="font-semibold text-gray-800">Email:</span> {userEmail}
-                      </p>
-                    </div>
-
-                    <button
-                      className="w-full px-3 py-2 mt-2 text-red-600 hover:bg-red-50 rounded-lg text-sm font-semibold transition-all duration-200 text-left"
-                      onClick={() => {
-                        dispatch(logout());
-                        setProfileOpen(false);
-                        setMobileOpen(false);
-                      }}
-                    >
-                      <LogOut className="w-4 h-4 inline mr-2" /> Logout
-                    </button>
-                  </div>
-                )}
-              </div>
+          <button
+            className="p-2 shrink-0"
+            onClick={() => setMobileOpen((v) => !v)}
+            aria-expanded={mobileOpen}
+            aria-label="Open menu"
+          >
+            {mobileOpen ? (
+              <X className="w-6 h-6" />
             ) : (
-              <div className="w-9 h-9" />
+              <Menu className="w-6 h-6" />
             )}
-          </div>
+          </button>
+
+          {/* MIDDLE: Logo */}
+          <Link to="/" aria-label="Home" className="flex items-center shrink-0">
+            <img
+              src={Logo}
+              alt="SnowCity Logo"
+              className="h-9 w-auto object-contain"
+              width={80}
+              height={36}
+            />
+          </Link>
+
+          {/* RIGHT: Book Button */}
+          <button
+            className="inline-flex items-center rounded-full px-4 py-2 text-xs font-bold bg-[#003de6] text-white shadow-sm shrink-0"
+            onClick={() => {
+              setMobileOpen(false);
+              sessionStorage.removeItem('snowcity_booking_state');
+              navigate('/booking');
+            }}
+          >
+            <Ticket className="w-4 h-4 mr-1" /> Book
+          </button>
         </div>
 
         {/* ------------------- MOBILE MENU PANEL -------------------- */}
         {mobileOpen && (
           <div
-            className="md:hidden fixed left-4 right-4 top-[5.5rem] z-[120] bg-white border border-gray-200 rounded-2xl shadow-2xl px-4 py-4 space-y-2 max-h-[calc(100vh-8rem)] overflow-y-auto"
+            className="md:hidden fixed left-0 right-0 top-[calc(3.5rem+1rem)] z-[120] bg-white shadow-lg px-4 py-4 space-y-1 max-h-[calc(100vh-4.5rem)] overflow-y-auto"
           >
             <Link
               to="/"
@@ -833,10 +795,63 @@ export default function FloatingNavBar() {
               <Newspaper className="w-5 h-5 inline mr-3 text-blue-600" /> Blogs
             </Link>
 
-            <div className="space-y-2 border-t border-sky-400/20 mt-4 pt-4">
-              {!token}
+            {/* Profile Section */}
+            {token ? (
+              <div className="border-t border-gray-200 mt-3 pt-3">
+                <details className="group">
+                  <summary className="cursor-pointer py-3 px-4 text-black font-semibold rounded-lg hover:bg-gray-100 list-none flex items-center justify-between">
+                    <div className="flex items-center">
+                      <div className="h-8 w-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold mr-3">
+                        {initial}
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900 leading-tight">{userName}</p>
+                        <p className="text-xs text-gray-500 leading-tight">{userEmail}</p>
+                      </div>
+                    </div>
+                    <ChevronDown className="w-4 h-4 text-gray-400 group-open:rotate-180 transition-transform" />
+                  </summary>
+                  <div className="pl-4 space-y-1 mt-1 pb-2">
+                    <div className="px-4 py-2 rounded-lg bg-gray-50 text-xs text-gray-600 space-y-1">
+                      <p><span className="font-semibold text-gray-800">Phone:</span> {userPhone}</p>
+                      <p><span className="font-semibold text-gray-800">Email:</span> {userEmail}</p>
+                    </div>
+                    <Link
+                      to="/my-bookings"
+                      className="block py-2.5 px-4 text-gray-700 hover:text-black font-medium hover:bg-gray-50 rounded-lg transition-all"
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      <ClipboardList className="w-4 h-4 inline mr-2 text-blue-600" /> My Bookings
+                    </Link>
+                    <button
+                      className="w-full py-2.5 px-4 text-red-600 hover:bg-red-50 rounded-lg text-sm font-medium text-left transition-all"
+                      onClick={() => {
+                        dispatch(logout());
+                        setMobileOpen(false);
+                      }}
+                    >
+                      <LogOut className="w-4 h-4 inline mr-2" /> Sign Out
+                    </button>
+                  </div>
+                </details>
+              </div>
+            ) : (
+              <div className="border-t border-gray-200 mt-3 pt-3">
+                <button
+                  className="w-full py-3 px-4 text-gray-800 font-semibold rounded-lg hover:bg-gray-100 flex items-center transition-all"
+                  onClick={() => {
+                    setMobileOpen(false);
+                    openAuthModal();
+                  }}
+                >
+                  <User className="w-5 h-5 inline mr-3 text-blue-600" /> Sign In
+                </button>
+              </div>
+            )}
+
+            <div className="border-t border-gray-200 mt-2 pt-3">
               <button
-                className="w-full py-3 bg-[#003de6] text-white font-bold rounded-full hover:bg-[#002db3] shadow-lg shadow-blue-500/30  hover:scale-105 flex items-center justify-center gap-2"
+                className="w-full py-3 bg-[#003de6] text-white font-bold rounded-xl shadow-md flex items-center justify-center gap-2"
                 onClick={() => {
                   setMobileOpen(false);
                   sessionStorage.removeItem('snowcity_booking_state');

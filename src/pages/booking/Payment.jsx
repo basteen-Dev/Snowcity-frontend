@@ -6,7 +6,7 @@ import {
 
 /**
  * Payment Component (Step 4 of Booking)
- * Corporate-grade UI with detailed order breakdown
+ * Matches reference: green pay button, secure badges, clean card layout
  */
 export default function Payment({
     OfferSelector,
@@ -43,14 +43,6 @@ export default function Payment({
 
     return (
         <div className="space-y-5 max-w-lg mx-auto animate-in fade-in slide-in-from-right-8 duration-300 pb-20">
-            {/* Header */}
-            <div className="text-center mb-2">
-                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-sky-50 border border-sky-100 mb-3">
-                    <Lock size={14} className="text-sky-600" />
-                    <span className="text-xs font-semibold text-sky-700">Secure Checkout</span>
-                </div>
-            </div>
-
             {/* Order Items Card */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                 <div className="px-5 py-4 bg-gradient-to-r from-gray-50 to-white border-b border-gray-100">
@@ -288,17 +280,10 @@ export default function Payment({
             </div>
 
             {/* Payment Summary */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                <div className="px-5 py-4 bg-gradient-to-r from-gray-50 to-white border-b border-gray-100">
-                    <h3 className="font-bold text-gray-900 flex items-center gap-2">
-                        <Ticket className="text-sky-600" size={18} />
-                        Payment Summary
-                    </h3>
-                </div>
-
+            <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
                 <div className="px-5 py-4 space-y-2.5">
                     <div className="flex justify-between items-center text-sm">
-                        <span className="text-gray-600">Tickets Subtotal</span>
+                        <span className="text-gray-600">Tickets</span>
                         <span className="font-semibold text-gray-800 tabular-nums">₹{ticketsTotal.toLocaleString()}</span>
                     </div>
 
@@ -329,64 +314,48 @@ export default function Payment({
                         </div>
                     )}
 
-                    <div className="border-t border-dashed border-gray-200 pt-3 mt-3 flex justify-between items-center">
-                        <span className="font-bold text-gray-900 text-base">Total Amount</span>
-                        <span className="font-extrabold text-2xl text-sky-700 tabular-nums">₹{finalTotal.toLocaleString()}</span>
+                    <hr className="my-4" />
+                    <div className="flex justify-between font-semibold text-lg">
+                        <span>Total</span>
+                        <span className="tabular-nums">₹{finalTotal.toLocaleString()}</span>
                     </div>
                 </div>
             </div>
 
-            {/* Trust Badges */}
-            <div className="flex items-center justify-center gap-6 py-2">
-                <div className="flex items-center gap-1.5 text-gray-400">
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    <span className="text-[11px] font-medium">256-bit SSL</span>
-                </div>
-                <div className="flex items-center gap-1.5 text-gray-400">
-                    <Lock size={13} />
-                    <span className="text-[11px] font-medium">PCI Compliant</span>
-                </div>
-                <div className="flex items-center gap-1.5 text-gray-400">
-                    <Shield size={13} />
-                    <span className="text-[11px] font-medium">100% Secure</span>
-                </div>
-            </div>
+            {/* Pay Button */}
+            <button
+                type="button"
+                onClick={onPlaceOrderAndPay}
+                disabled={creating?.status === 'loading' || paymentLoading || !hasCartItems}
+                className={`w-full py-4 rounded-xl transition-all shadow-lg font-bold text-lg flex items-center justify-center gap-2 ${creating?.status === 'loading' || paymentLoading || !hasCartItems
+                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
+                    : 'bg-green-600 text-white hover:bg-green-700'
+                    }`}
+            >
+                {paymentLoading ? (
+                    <>
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        Processing...
+                    </>
+                ) : (
+                    <>
+                        Pay <span className="tabular-nums">₹{finalTotal.toLocaleString()}</span>
+                    </>
+                )}
+            </button>
+            <p className="text-xs text-gray-500 text-center">
+                🔒 100% Secure Payments • Instant Confirmation
+            </p>
 
-            {/* Desktop Pay/Back Buttons */}
-            <div className="hidden md:flex items-center gap-4 mt-6 pt-5 border-t border-gray-100">
-                <button
-                    type="button"
-                    onClick={handleBack}
-                    disabled={creating?.status === 'loading' || paymentLoading}
-                    className="px-8 py-3.5 rounded-xl border border-gray-200 text-gray-700 font-bold hover:bg-gray-50 transition-all disabled:opacity-50"
-                >
-                    Back
-                </button>
-                <button
-                    type="button"
-                    onClick={onPlaceOrderAndPay}
-                    disabled={creating?.status === 'loading' || paymentLoading || !hasCartItems}
-                    className={`flex-1 flex items-center justify-center gap-2 rounded-xl px-8 py-3.5 text-base font-bold transition-all ${creating?.status === 'loading' || paymentLoading || !hasCartItems
-                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                        : 'bg-gradient-to-r from-sky-600 to-sky-700 text-white shadow-lg shadow-sky-600/20 hover:from-sky-700 hover:to-sky-800 active:scale-[0.98]'
-                        }`}
-                >
-                    {paymentLoading ? (
-                        <>
-                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                            Processing...
-                        </>
-                    ) : (
-                        <>
-                            <Lock size={16} />
-                            Pay ₹{finalTotal.toLocaleString()}
-                        </>
-                    )}
-                    <ArrowRight size={18} />
-                </button>
-            </div>
+            {/* Back button (desktop) */}
+            <button
+                type="button"
+                onClick={handleBack}
+                disabled={creating?.status === 'loading' || paymentLoading}
+                className="hidden md:flex items-center justify-center gap-2 w-full px-6 py-3 border rounded-xl text-gray-700 hover:bg-gray-50 transition font-semibold disabled:opacity-50"
+            >
+                Back
+            </button>
         </div>
     );
 }

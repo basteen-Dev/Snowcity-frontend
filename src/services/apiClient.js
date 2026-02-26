@@ -1,11 +1,11 @@
 import axios from 'axios';
 
 // 1. Environment Configuration
-const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || 'app.snowcityblr.com';
+const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || 'https://app.snowcity.blr';
 
 if (!API_BASE_URL && import.meta.env?.DEV) {
   // eslint-disable-next-line no-console
-  console.warn('VITE_API_BASE_URL is not set. Using default: app.snowcityblr.com');
+  console.warn('VITE_API_BASE_URL is not set. Using default: https://app.snowcity.blr');
 }
 
 const SESSION_STORAGE_KEY = 'snow_session_id';

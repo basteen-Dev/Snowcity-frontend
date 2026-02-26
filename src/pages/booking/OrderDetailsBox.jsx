@@ -2,6 +2,10 @@ import React from 'react';
 import { ShoppingBag, ArrowRight } from 'lucide-react';
 import dayjs from 'dayjs';
 
+/**
+ * OrderDetailsBox — Right-side sticky summary card
+ * Matches reference: "Your Booking" card with Tickets / Add-ons / Total / Continue
+ */
 export default function OrderDetailsBox({
     cartItems,
     hasCartItems,
@@ -13,9 +17,9 @@ export default function OrderDetailsBox({
     paymentLoading,
 }) {
     return (
-        <div className="lg:sticky lg:top-[140px]">
-            <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-5 sm:p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-1">Order details</h3>
+        <div className="lg:sticky lg:top-[180px]">
+            <div className="bg-white p-6 rounded-2xl shadow-xl">
+                <h3 className="font-semibold text-lg mb-4">Your Booking</h3>
 
                 {!hasCartItems ? (
                     <div className="flex flex-col items-center justify-center text-center py-8">
@@ -104,26 +108,27 @@ export default function OrderDetailsBox({
                     </div>
                 )}
 
-                <div className="pt-3 border-t border-gray-100 mt-2">
-                    <div className="flex items-center justify-between mb-3">
-                        <span className="text-sm text-gray-500">Total amount</span>
-                        <span className="text-lg font-semibold text-sky-700 tabular-nums">
-                            ₹{finalTotal.toFixed(0)}
-                        </span>
-                    </div>
-                    <button
-                        type="button"
-                        disabled={!hasCartItems}
-                        onClick={handleNext}
-                        className={`w-full flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all active:scale-[0.98] ${!hasCartItems
-                            ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                            : 'bg-sky-600 text-white shadow-md hover:bg-sky-700 active:scale-[0.98]'
-                            }`}
-                    >
-                        {step === 4 ? (paymentLoading ? 'Processing...' : `Pay ₹${finalTotal}`) : 'Continue'}
-                        {step !== 4 && <ArrowRight size={16} />}
-                    </button>
+                <hr className="my-4" />
+                <div className="flex justify-between font-semibold text-lg">
+                    <span>Total</span>
+                    <span className="tabular-nums">₹{finalTotal.toFixed(0)}</span>
                 </div>
+
+                <p className="text-xs text-gray-500 mt-4">
+                    Free reschedule up to 24 hours before visit.
+                </p>
+
+                <button
+                    type="button"
+                    disabled={!hasCartItems}
+                    onClick={handleNext}
+                    className={`mt-4 w-full flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition-all active:scale-[0.98] ${!hasCartItems
+                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                        : 'bg-sky-600 text-white shadow-md hover:bg-sky-700'
+                        }`}
+                >
+                    {step === 4 ? (paymentLoading ? 'Processing...' : `Pay ₹${finalTotal}`) : 'Continue →'}
+                </button>
             </div>
         </div>
     );

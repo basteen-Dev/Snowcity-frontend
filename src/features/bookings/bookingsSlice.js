@@ -212,7 +212,7 @@ const createInitialState = () => ({
     activeKey: null,
   },
 
-  contact: { name: '', email: '', phone: '', whatsapp_consent: false },
+  contact: { name: '', email: '', phone: '', whatsapp_consent: true },
 
   otp: {
     status: 'idle',
