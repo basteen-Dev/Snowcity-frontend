@@ -245,8 +245,8 @@ export default function FloatingNavBar() {
 
   // VERIFY OTP (6-digit)
   const verifyNavOtp = React.useCallback(
-    async () => {
-      const code = (authOtp.code || "").trim();
+    async (codeFromAuto) => {
+      const code = (typeof codeFromAuto === 'string' ? codeFromAuto : (authOtp.code || "")).trim();
 
       if (!/^\d{6}$/.test(code)) {
         setAuthOtp((prev) => ({ ...prev, error: "Enter the 6-digit OTP" }));
@@ -441,8 +441,7 @@ export default function FloatingNavBar() {
                         const codeNow = val;
                         if (/^\d{6}$/.test(codeNow)) {
                           // Trigger verify automatically
-                          setAuthOtp((prev) => ({ ...prev, code: codeNow }));
-                          verifyNavOtp();
+                          verifyNavOtp(codeNow);
                         }
                       }, 300);
                     }

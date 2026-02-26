@@ -1290,9 +1290,10 @@ export default function Booking() {
     }
   };
 
-  const verifyOTP = async () => {
-    if (!otpCode || otpCode.length < 4) return alert('Enter the full OTP code');
-    await dispatch(verifyAuthOtp({ otp: otpCode }))
+  const verifyOTP = async (codeFromAuto) => {
+    const finalCode = typeof codeFromAuto === 'string' ? codeFromAuto : otpCode;
+    if (!finalCode || finalCode.length < 6) return alert('Enter the full OTP code');
+    await dispatch(verifyAuthOtp({ otp: finalCode }))
       .unwrap()
       .then(() => {
         setOtpCode('');

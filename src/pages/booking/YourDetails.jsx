@@ -221,7 +221,7 @@ export default function YourDetails({
                                     // Auto-verify when 6 digits are entered
                                     if (val.length === 6 && /^\d{6}$/.test(val)) {
                                         setTimeout(() => {
-                                            verifyOTP();
+                                            verifyOTP(val);
                                         }, 300);
                                     }
                                 }}

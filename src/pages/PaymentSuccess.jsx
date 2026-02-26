@@ -166,7 +166,7 @@ export default function PaymentSuccess() {
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                const url = ticketUrl || `https://app.snowcityblr.com/api/tickets/generated/ORDER_${cartRef || booking?.order_ref || bookingId}.pdf`;
+                const url = ticketUrl || `app.snowcityblr.com/api/tickets/generated/ORDER_${cartRef || booking?.order_ref || bookingId}.pdf`;
                 // Create a temporary link to force download with a nice filename
                 const link = document.createElement('a');
                 link.href = url;
