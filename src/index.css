@@ -13,6 +13,10 @@ html {
   overflow-y: scroll;
 }
 
+.rupee {
+  font-family: 'Inter', sans-serif !important;
+}
+
 /* Lock floating nav — prevent ANY shifts */
 [data-floating-nav] {
   transform: none !important;

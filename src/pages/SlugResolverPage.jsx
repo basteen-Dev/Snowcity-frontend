@@ -26,7 +26,7 @@ export default function SlugResolverPage() {
             setState({ status: 'loading', type: null, error: null });
             try {
                 // We use the new resolution endpoint
-                const res = await api.get(`/api/resolve-slug/${slug}`, { signal: ac.signal });
+                const res = await api.get(`/api/resolve-slug/${slug}`, { signal: ac.signal, quiet404: true });
                 setState({ status: 'succeeded', type: res.type, error: null });
             } catch (err) {
                 if (err?.status === 404) {

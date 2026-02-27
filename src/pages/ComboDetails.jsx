@@ -886,7 +886,10 @@ export default function ComboDetails() {
     );
   }
 
+  const isBookingStopped = combo?.stop_booking === true;
+
   const onBook = (slot, pricingInfo) => {
+    if (isBookingStopped) return;
     const q = Math.max(1, Number(qty) || 1);
     const pricing = pricingInfo || getSlotPricing(slot);
     const unitPrice =
@@ -947,8 +950,20 @@ export default function ComboDetails() {
 
   /* ========= Render ========= */
 
+  const stoppedBanner = isBookingStopped ? (
+    <div className="bg-red-50 border-y border-red-100 py-3">
+      <div className="max-w-7xl mx-auto px-4 flex items-center justify-center gap-2 text-red-700 font-medium">
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span>Booking is temporarily unavailable for this combo deal.</span>
+      </div>
+    </div>
+  ) : null;
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#f5f8ff] to-white font-sans">
+      {stoppedBanner}
       <section className="mt-0 bg-transparent">
         <div className="max-w-6xl mx-auto px-4 pt-24">
           {/* Title removed from here */}
@@ -1311,14 +1326,14 @@ export default function ComboDetails() {
                               </div>
                               <button
                                 type="button"
-                                disabled={disabled}
+                                disabled={disabled || isBookingStopped}
                                 onClick={() => onBook(slot, pricingInfo)}
-                                className={`px-4 py-2 rounded-full border text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${disabled
+                                className={`px-4 py-2 rounded-full border text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${disabled || isBookingStopped
                                   ? 'opacity-50 cursor-not-allowed bg-gray-100 border-gray-200 text-gray-400'
                                   : 'bg-[#003de6] text-white border-[#003de6] hover:bg-[#002db3]'
                                   }`}
                               >
-                                Book this slot
+                                {isBookingStopped ? 'Unavailable' : 'Book this slot'}
                               </button>
                             </div>
                           );
@@ -1338,7 +1353,7 @@ export default function ComboDetails() {
                   Combo price
                 </p>
                 <div className="flex items-baseline gap-2 mt-1">
-                  <span className="text-3xl font-semibold text-gray-900">
+                  <span className="text-3xl font-semibold text-gray-900 rupee">
                     {formatCurrency(comboPrice)}
                   </span>
                   <span className="text-sm text-gray-500">per combo</span>
@@ -1540,17 +1555,23 @@ export default function ComboDetails() {
 
                 {!date || !selectedSlot ? (
                   <div className="mt-4 rounded-2xl border bg-gray-50 px-3 py-2 text-sm text-center text-gray-500">
-                    Please select a date and time slot to book.
+                    Please select {!date ? 'a date' : 'a time slot'} to book.
                   </div>
                 ) : null}
+
+                {isBookingStopped && (
+                  <div className="mt-4 rounded-2xl border border-red-100 bg-red-50 px-3 py-2 text-sm text-center text-red-600 font-medium">
+                    This combo is currently unavailable for booking.
+                  </div>
+                )}
 
                 {/* Book button */}
                 <button
                   type="button"
                   className="w-full inline-flex items-center justify-center rounded-xl bg-[#003de6] text-white px-6 py-2.5 text-sm font-semibold shadow-md hover:bg-[#002db3] disabled:opacity-60 disabled:cursor-not-allowed"
-                  disabled={!selectedSlot || slotState.status === 'loading'}
+                  disabled={isBookingStopped || !selectedSlot || slotState.status === 'loading'}
                   onClick={() => {
-                    if (!selectedSlot) return;
+                    if (!selectedSlot || isBookingStopped) return;
                     onBook(selectedSlot, selectedSlotPricing);
                   }}
                   style={{ fontFamily: 'Inter, sans-serif' }}
@@ -1637,13 +1658,13 @@ export default function ComboDetails() {
             <button
               type="button"
               className="inline-flex items-center justify-center rounded-xl bg-[#003de6] text-white px-6 py-2.5 text-sm font-semibold shadow-md hover:bg-[#002db3] disabled:opacity-60 disabled:cursor-not-allowed"
-              disabled={!selectedSlot || slotState.status === 'loading'}
+              disabled={isBookingStopped || !selectedSlot || slotState.status === 'loading'}
               onClick={() => {
-                if (!selectedSlot) return;
+                if (!selectedSlot || isBookingStopped) return;
                 onBook(selectedSlot, selectedSlotPricing);
               }}
             >
-              {barPrice ? (
+              {isBookingStopped ? 'Unavailable' : barPrice ? (
                 <>
                   Book •{' '}
                   <span className="ml-1 rupee">

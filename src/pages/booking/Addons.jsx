@@ -122,7 +122,7 @@ export default function Addons({
                 </div>
 
                 {/* Back / Continue buttons (desktop) */}
-                <div className="hidden lg:flex gap-4 mt-8">
+                <div className="hidden lg:flex items-center gap-6 mt-8">
                     <button
                         type="button"
                         onClick={handleBack}
@@ -130,13 +130,22 @@ export default function Addons({
                     >
                         Back
                     </button>
-                    <button
-                        type="button"
-                        onClick={handleNext}
-                        className="px-6 py-3 rounded-xl font-semibold shadow-sm transition hover:-translate-y-0.5 bg-sky-600 text-white hover:bg-sky-700"
-                    >
-                        Continue →
-                    </button>
+                    <div className="flex items-center gap-4">
+                        <button
+                            type="button"
+                            onClick={handleNext}
+                            className="px-6 py-3 rounded-xl font-semibold shadow-sm transition hover:-translate-y-0.5 bg-sky-600 text-white hover:bg-sky-700"
+                        >
+                            Continue →
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleNext}
+                            className="text-sm font-medium text-gray-400 hover:text-sky-600 transition underline underline-offset-4"
+                        >
+                            Skip Add-ons
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -211,9 +220,6 @@ export default function Addons({
                         <span>Total</span>
                         <span className="tabular-nums">₹{finalTotal.toFixed(0)}</span>
                     </div>
-                    <p className="text-xs text-gray-500 mt-4">
-                        Free reschedule up to 24 hours before visit.
-                    </p>
                 </div>
             </div>
         </div>

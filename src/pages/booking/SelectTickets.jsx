@@ -136,9 +136,29 @@ export default function SelectTickets({
                     <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1 truncate">
                       {title}
                     </h3>
-                    <p className="text-xs text-gray-500">
-                      Great for families • Flexible slots • Instant confirmation
-                    </p>
+                    <div className="text-xs text-gray-500">
+                      <span className="line-clamp-2 inline">
+                        {item.short_description || item.subtitle || 'Instant confirmation • Best experience'}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSel((prev) => ({
+                            ...prev,
+                            itemType: sel.itemType,
+                            attractionId: sel.itemType === 'attraction' ? String(id) : '',
+                            comboId: sel.itemType === 'combo' ? String(id) : '',
+                            slotKey: '',
+                          }));
+                          setDetailsMainImage(image || null);
+                          setDrawerMode('details');
+                          setDrawerOpen(true);
+                        }}
+                        className="text-sky-600 font-semibold hover:underline ml-1"
+                      >
+                        read more
+                      </button>
+                    </div>
                     <button
                       type="button"
                       onClick={() => {
@@ -191,6 +211,7 @@ export default function SelectTickets({
       <div className="space-y-4">
         {/* quick date row */}
         <div className="flex flex-wrap gap-2 items-center mb-1">
+          <span className="text-sm font-semibold text-gray-700 mr-1">Date</span>
           <button
             type="button"
             onClick={handleToday}
@@ -227,7 +248,6 @@ export default function SelectTickets({
               ? formatDateDisplay(sel.date)
               : 'All Days'}
           </button>
-          <span className="text-xs sm:text-sm text-gray-500 ml-1">Change date/time in details panel</span>
         </div>
 
         <ProductList />

@@ -368,6 +368,12 @@ export default function AttractionDetails() {
     return details.data?.attraction_id || null;
   }, [details.data]);
 
+  const a = details.data;
+  const title = a?.name || a?.title || 'Attraction';
+
+  const isTimeSlotDisabled = a?.time_slot_enabled === false;
+  const isBookingStopped = a?.stop_booking === true;
+
   const loadLinkedGallery = React.useCallback((targetId) => {
     if (!targetId) return () => { };
     let canceled = false;
@@ -510,6 +516,14 @@ export default function AttractionDetails() {
 
   const fetchSlots = React.useCallback(async () => {
     if (!numericAttrId || !date) return;
+
+    // Skip slot fetching if time slots are disabled for this attraction
+    if (a?.time_slot_enabled === false) {
+      setSlots({ status: 'succeeded', items: [], error: null });
+      setSlotKey('no-slot'); // Special key for non-slotted booking
+      return;
+    }
+
     setSlots((s) => ({ ...s, status: 'loading', error: null, items: [] }));
     const ac = new AbortController();
     try {
@@ -537,7 +551,7 @@ export default function AttractionDetails() {
       });
     }
     return () => ac.abort();
-  }, [numericAttrId, date]);
+  }, [numericAttrId, date, a?.time_slot_enabled]);
 
   React.useEffect(() => {
     if (numericAttrId && date) {
@@ -582,8 +596,7 @@ export default function AttractionDetails() {
     };
   }, [numericAttrId, offers.status]);
 
-  const a = details.data;
-  const title = a?.name || a?.title || 'Attraction';
+
 
   // hero image placeholders
   const placeholderDesktop = `https://picsum.photos/seed/attr${numericAttrId}/1920/800`;
@@ -755,10 +768,19 @@ export default function AttractionDetails() {
   const totalPrice = Number(effectiveUnitPrice || 0) * qtyNumber;
 
   const onBookNow = () => {
-    if (!a || !date || !selectedSlot || !qty) return;
-    const slotId =
-      selectedSlot?.id ?? selectedSlot?._id ?? selectedSlot?.slot_id;
-    if (!slotId) return;
+    if (!a || !date || !qty || isBookingStopped) return;
+
+    // Check slot only if slots are enabled
+    if (!isTimeSlotDisabled && !selectedSlot) {
+      toast.error('Please select a time slot');
+      return;
+    }
+
+    const slotId = isTimeSlotDisabled
+      ? null
+      : (selectedSlot?.id ?? selectedSlot?._id ?? selectedSlot?.slot_id);
+
+    if (!isTimeSlotDisabled && !slotId) return;
 
     const aId = getAttrId(a);
     const sanitizedQty = qtyNumber;
@@ -776,20 +798,20 @@ export default function AttractionDetails() {
           selectedSlot?.slot_start_time ||
           null,
         slotId,
-        slot: selectedSlot,
+        slot: selectedSlot || null,
         qty: sanitizedQty,
         unitPrice: Number(
           effectiveUnitPrice ?? selectedSlot?.price ?? baseUnitPrice,
         ),
         title: a?.title || a?.name || `Attraction #${aId}`,
-        slotLabel: getSlotLabel(selectedSlot),
+        slotLabel: isTimeSlotDisabled ? null : getSlotLabel(selectedSlot),
         dateLabel: dayjs(date).format('DD MMM YYYY'),
         meta: {
           title: a?.title || a?.name || `Attraction #${aId}`,
-          start_time: selectedSlot?.start_time,
-          end_time: selectedSlot?.end_time,
-          capacity: selectedSlot?.capacity,
-          available: selectedSlot?.available,
+          start_time: selectedSlot?.start_time || null,
+          end_time: selectedSlot?.end_time || null,
+          capacity: selectedSlot?.capacity || null,
+          available: selectedSlot?.available || null,
         },
         offer_id: appliedOffer?.offer_id,
         offer_rule_id: appliedOffer?.rule_id || bestOffer?.rule?.rule_id,
@@ -833,6 +855,19 @@ export default function AttractionDetails() {
     );
   }
 
+  // Handle stopped booking state with a full-page overlay or banner if needed, 
+  // but usually we just disable the sidebar. For UX, let's show a banner if stopped.
+  const stoppedBanner = isBookingStopped ? (
+    <div className="bg-red-50 border-y border-red-100 py-3 mb-6">
+      <div className="max-w-7xl mx-auto px-4 flex items-center justify-center gap-2 text-red-700 font-medium">
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span>Booking is temporarily unavailable for this attraction.</span>
+      </div>
+    </div>
+  ) : null;
+
   if (!a) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center bg-white px-4">
@@ -855,6 +890,7 @@ export default function AttractionDetails() {
     <>
       {/* Add pb-24 so fixed mobile bar doesn't overlap content */}
       <div className="min-h-screen bg-gradient-to-b from-[#f5f8ff] to-white font-sans pb-24 lg:pb-0">
+        {stoppedBanner}
         {/* HERO BANNER + GALLERY (Full Width) */}
         <section className="mt-0 bg-transparent">
           <div className="max-w-6xl mx-auto px-4 pt-24">
@@ -1091,60 +1127,70 @@ export default function AttractionDetails() {
             </div>
 
             {/* Time Slot Selection */}
-            <div className="space-y-3">
-              <label
-                className="text-sm font-medium text-gray-700"
-                style={{ fontFamily: 'Inter, sans-serif' }}
-              >
-                Select Time Slot
-              </label>
-              {slots.status === 'loading' ? (
-                <div className="py-3">
-                  <Loader size="sm" />
-                </div>
-              ) : slots.status === 'failed' ? (
-                <div className="py-3">
-                  <ErrorState message={slots.error || 'Failed to load slots'} />
-                </div>
-              ) : (
-                <select
-                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-900 outline-none"
-                  value={slotKey}
-                  onChange={(e) => setSlotKey(e.target.value)}
-                  disabled={!slots.items.length}
+            {!isTimeSlotDisabled && (
+              <div className="space-y-3">
+                <label
+                  className="text-sm font-medium text-gray-700"
                   style={{ fontFamily: 'Inter, sans-serif' }}
                 >
-                  {!slots.items.length ? (
-                    <option>No slots</option>
-                  ) : (
-                    <>
-                      {!slotKey && <option value="">Select slot</option>}
-                      {slots.items
-                        .filter((s) => isSlotAvailable(s, date))
-                        .map((s, i) => {
-                          const sid = getSlotKey(s, i);
-                          const disabled =
-                            s?.available === 0 || s?.capacity === 0;
-                          const pricingBase =
-                            getSlotUnitPrice(s, fallbackUnitPrice) ||
-                            fallbackUnitPrice ||
-                            0;
+                  Select Time Slot
+                </label>
+                {slots.status === 'loading' ? (
+                  <div className="py-3">
+                    <Loader size="sm" />
+                  </div>
+                ) : slots.status === 'failed' ? (
+                  <div className="py-3">
+                    <ErrorState message={slots.error || 'Failed to load slots'} />
+                  </div>
+                ) : (
+                  <select
+                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-900 outline-none"
+                    value={slotKey}
+                    onChange={(e) => setSlotKey(e.target.value)}
+                    disabled={!slots.items.length}
+                    style={{ fontFamily: 'Inter, sans-serif' }}
+                  >
+                    {!slots.items.length ? (
+                      <option>No slots</option>
+                    ) : (
+                      <>
+                        {!slotKey && <option value="">Select slot</option>}
+                        {slots.items
+                          .filter((s) => isSlotAvailable(s, date))
+                          .map((s, i) => {
+                            const sid = getSlotKey(s, i);
+                            const disabled =
+                              s?.available === 0 || s?.capacity === 0;
+                            const pricingBase =
+                              getSlotUnitPrice(s, fallbackUnitPrice) ||
+                              fallbackUnitPrice ||
+                              0;
 
-                          return (
-                            <option key={sid} value={sid} disabled={disabled}>
-                              {getSlotLabel(s)}
-                              {pricingBase
-                                ? ` • ${formatCurrency(pricingBase)}`
-                                : ''}
-                              {disabled ? ' — Unavailable' : ''}
-                            </option>
-                          );
-                        })}
-                    </>
-                  )}
-                </select>
-              )}
-            </div>
+                            return (
+                              <option key={sid} value={sid} disabled={disabled}>
+                                {getSlotLabel(s)}
+                                {pricingBase
+                                  ? ` • ${formatCurrency(pricingBase)}`
+                                  : ''}
+                                {disabled ? ' — Unavailable' : ''}
+                              </option>
+                            );
+                          })}
+                      </>
+                    )}
+                  </select>
+                )}
+              </div>
+            )}
+
+            {isTimeSlotDisabled && (
+              <div className="bg-sky-50 border border-sky-100 rounded-xl p-3">
+                <p className="text-xs text-sky-700 font-medium text-center">
+                  Duration-free entry: Date selection only.
+                </p>
+              </div>
+            )}
 
             {/* Quantity Selection */}
             <div className="space-y-3">
@@ -1210,17 +1256,23 @@ export default function AttractionDetails() {
               </div>
             )}
 
-            {!date || !selectedSlotForBar ? (
+            {!date || (!isTimeSlotDisabled && !selectedSlotForBar) ? (
               <div className="mt-4 rounded-2xl border bg-gray-50 px-3 py-2 text-sm text-center text-gray-500">
-                Please select a date and time slot.
+                Please select {!date ? 'a date' : 'a time slot'}.
               </div>
             ) : null}
+
+            {isBookingStopped && (
+              <div className="mt-4 rounded-2xl border border-red-100 bg-red-50 px-3 py-2 text-sm text-center text-red-600 font-medium">
+                Booking for this attraction is currently unavailable.
+              </div>
+            )}
 
             {/* Book button */}
             <button
               type="button"
               className="w-full inline-flex items-center justify-center rounded-xl bg-[#003de6] text-white px-6 py-2.5 text-sm font-semibold shadow-md hover:bg-[#002db3] disabled:opacity-60 disabled:cursor-not-allowed"
-              disabled={!selectedSlotForBar || !effectiveUnitPrice}
+              disabled={isBookingStopped || !date || (!isTimeSlotDisabled && !selectedSlotForBar) || !effectiveUnitPrice}
               onClick={onBookNow}
               style={{ fontFamily: 'Inter, sans-serif' }}
             >
@@ -1454,61 +1506,71 @@ export default function AttractionDetails() {
                   </div>
 
                   {/* Slot */}
-                  <div className="space-y-2">
-                    <label
-                      className="text-sm font-medium text-gray-700"
-                      style={{ fontFamily: 'Inter, sans-serif' }}
-                    >
-                      Select Time Slot
-                    </label>
-
-                    {slots.status === 'loading' ? (
-                      <div className="py-2">
-                        <Loader size="sm" />
-                      </div>
-                    ) : slots.status === 'failed' ? (
-                      <ErrorState
-                        message={slots.error || 'Failed to load slots'}
-                      />
-                    ) : (
-                      <select
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-900 outline-none"
-                        value={slotKey}
-                        onChange={(e) => setSlotKey(e.target.value)}
-                        disabled={!slots.items.length}
+                  {!isTimeSlotDisabled && (
+                    <div className="space-y-2">
+                      <label
+                        className="text-sm font-medium text-gray-700"
                         style={{ fontFamily: 'Inter, sans-serif' }}
                       >
-                        {!slots.items.length ? (
-                          <option>No slots</option>
-                        ) : (
-                          <>
-                            {!slotKey && <option value="">Select slot</option>}
-                            {slots.items
-                              .filter((s) => isSlotAvailable(s, date))
-                              .map((s, i) => {
-                                const sid = getSlotKey(s, i);
-                                const disabled =
-                                  s?.available === 0 || s?.capacity === 0;
-                                const pricingBase =
-                                  getSlotUnitPrice(s, fallbackUnitPrice) ||
-                                  fallbackUnitPrice ||
-                                  0;
+                        Select Time Slot
+                      </label>
 
-                                return (
-                                  <option key={sid} value={sid} disabled={disabled}>
-                                    {getSlotLabel(s)}
-                                    {pricingBase
-                                      ? ` • ${formatCurrency(pricingBase)}`
-                                      : ''}
-                                    {disabled ? ' — Unavailable' : ''}
-                                  </option>
-                                );
-                              })}
-                          </>
-                        )}
-                      </select>
-                    )}
-                  </div>
+                      {slots.status === 'loading' ? (
+                        <div className="py-2">
+                          <Loader size="sm" />
+                        </div>
+                      ) : slots.status === 'failed' ? (
+                        <ErrorState
+                          message={slots.error || 'Failed to load slots'}
+                        />
+                      ) : (
+                        <select
+                          className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-900 outline-none"
+                          value={slotKey}
+                          onChange={(e) => setSlotKey(e.target.value)}
+                          disabled={!slots.items.length}
+                          style={{ fontFamily: 'Inter, sans-serif' }}
+                        >
+                          {!slots.items.length ? (
+                            <option>No slots</option>
+                          ) : (
+                            <>
+                              {!slotKey && <option value="">Select slot</option>}
+                              {slots.items
+                                .filter((s) => isSlotAvailable(s, date))
+                                .map((s, i) => {
+                                  const sid = getSlotKey(s, i);
+                                  const disabled =
+                                    s?.available === 0 || s?.capacity === 0;
+                                  const pricingBase =
+                                    getSlotUnitPrice(s, fallbackUnitPrice) ||
+                                    fallbackUnitPrice ||
+                                    0;
+
+                                  return (
+                                    <option key={sid} value={sid} disabled={disabled}>
+                                      {getSlotLabel(s)}
+                                      {pricingBase
+                                        ? ` • ${formatCurrency(pricingBase)}`
+                                        : ''}
+                                      {disabled ? ' — Unavailable' : ''}
+                                    </option>
+                                  );
+                                })}
+                            </>
+                          )}
+                        </select>
+                      )}
+                    </div>
+                  )}
+
+                  {isTimeSlotDisabled && (
+                    <div className="bg-sky-50 border border-sky-100 rounded-2xl p-4 text-center">
+                      <p className="text-sm text-sky-700 font-medium">
+                        Open Entry attraction — no time slot selection required.
+                      </p>
+                    </div>
+                  )}
 
                   {/* Qty */}
                   <div className="space-y-2">
@@ -1578,17 +1640,23 @@ export default function AttractionDetails() {
                     </div>
                   )}
 
-                  {!date || !selectedSlotForBar ? (
+                  {!date || (!isTimeSlotDisabled && !selectedSlotForBar) ? (
                     <div className="mt-4 rounded-2xl border bg-gray-50 px-3 py-2 text-sm text-center text-gray-500">
-                      Please select a date and time slot to book.
+                      Please select {!date ? 'a date' : 'a time slot'} to book.
                     </div>
                   ) : null}
+
+                  {isBookingStopped && (
+                    <div className="mt-4 rounded-2xl border border-red-100 bg-red-50 px-3 py-2 text-sm text-center text-red-600 font-medium">
+                      Booking is currently unavailable for this attraction.
+                    </div>
+                  )}
 
                   {/* Book button */}
                   <button
                     type="button"
                     className="w-full inline-flex items-center justify-center rounded-xl bg-[#003de6] text-white px-6 py-2.5 text-sm font-semibold shadow-md hover:bg-[#002db3] disabled:opacity-60 disabled:cursor-not-allowed"
-                    disabled={!selectedSlotForBar || !effectiveUnitPrice}
+                    disabled={isBookingStopped || !date || (!isTimeSlotDisabled && !selectedSlotForBar) || !effectiveUnitPrice}
                     onClick={onBookNow}
                     style={{ fontFamily: 'Inter, sans-serif' }}
                   >
@@ -1674,7 +1742,7 @@ export default function AttractionDetails() {
               <button
                 type="button"
                 className="shrink-0 inline-flex items-center justify-center rounded-xl bg-[#003de6] text-white px-5 py-2.5 text-sm font-semibold shadow-md hover:bg-[#002db3] disabled:opacity-60 disabled:cursor-not-allowed"
-                disabled={!selectedSlotForBar || !effectiveUnitPrice}
+                disabled={isBookingStopped || !date || (!isTimeSlotDisabled && !selectedSlotForBar) || !effectiveUnitPrice}
                 onClick={onBookNow}
                 style={{ fontFamily: 'Inter, sans-serif' }}
               >

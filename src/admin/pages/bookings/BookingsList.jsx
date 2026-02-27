@@ -8,58 +8,18 @@ import { useNavigate } from 'react-router-dom';
 import adminApi from '../../services/adminApi';
 import A from '../../services/adminEndpoints';
 
-import { ResponsiveContainer, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Line } from 'recharts';
-import { FileText, FileSpreadsheet, Search, Filter, ChevronLeft, ChevronRight, RotateCcw, TrendingUp, DollarSign, Calendar, Ticket } from 'lucide-react';
+import {
+  Search, Filter, ChevronLeft, ChevronRight, RotateCcw,
+  MoreVertical, Eye, MessageSquare, Mail, Download, ChevronDown
+} from 'lucide-react';
 
 /* ─── Shared UI ──────────────────────────────────────────── */
-
-const SectionCard = ({ title, subtitle, children, className = '', headerRight }) => (
-  <div className={`rounded-2xl border border-gray-200/80 bg-white shadow-sm dark:bg-neutral-900 dark:border-neutral-800 ${className}`}>
-    {(title || headerRight) && (
-      <div className="flex items-center justify-between px-5 pt-5 pb-2">
-        <div>
-          {title && <p className="text-sm font-semibold text-gray-900 dark:text-neutral-100">{title}</p>}
-          {subtitle && <p className="text-xs text-gray-500 dark:text-neutral-400 mt-0.5">{subtitle}</p>}
-        </div>
-        {headerRight}
-      </div>
-    )}
-    <div className="px-5 pb-5">{children}</div>
-  </div>
-);
-
-const SummaryCard = ({ icon, label, value, note, accent = 'from-blue-500 to-indigo-600' }) => (
-  <div className="relative overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm p-5 dark:bg-neutral-900 dark:border-neutral-800 group hover:shadow-md transition-shadow">
-    <div className="flex items-start justify-between">
-      <div className="space-y-1">
-        <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{label}</div>
-        <div className={`text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r ${accent}`}>{value}</div>
-        {note && <div className="text-xs text-gray-500 dark:text-neutral-400">{note}</div>}
-      </div>
-      {icon && <div className="p-2.5 rounded-xl bg-gray-50 dark:bg-neutral-800 text-gray-400">{icon}</div>}
-    </div>
-    <div className={`absolute -bottom-6 -right-6 w-24 h-24 rounded-full bg-gradient-to-r ${accent} opacity-5 group-hover:opacity-10 transition-opacity`} />
-  </div>
-);
-
 const formatCurrency = (value) => `₹${Number(value || 0).toLocaleString()}`;
-const formatNumber = (value) => Number(value || 0).toLocaleString();
 
-/* ─── Input styling ──────────────────────────────────────── */
 const inputClasses = 'w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-700 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all placeholder:text-gray-400';
 const selectClasses = `${inputClasses} appearance-none cursor-pointer`;
 const btnPrimary = 'inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2.5 text-sm font-semibold shadow-sm shadow-blue-500/20 hover:shadow-md hover:shadow-blue-500/30 transition-all';
 const btnSecondary = 'inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800 transition-all';
-
-const revenueFilterDefaults = Object.freeze({
-  attraction: { from: '', to: '', attraction_id: '' },
-  combo: { from: '', to: '', attraction_id: '', combo_id: '' },
-});
-
-const cloneRevenueFilters = () => ({
-  attraction: { ...revenueFilterDefaults.attraction },
-  combo: { ...revenueFilterDefaults.combo },
-});
 
 const normalizeOptionList = (res) => {
   if (!res) return [];
@@ -89,13 +49,56 @@ const quickRanges = [
   { key: 'all', label: 'All time', from: () => null, to: () => null }
 ];
 
-const formatTime12Hour = (time24) => {
-  if (!time24) return '';
-  const [hours, minutes] = time24.split(':');
-  const hour = parseInt(hours);
-  const ampm = hour >= 12 ? 'PM' : 'AM';
-  const hour12 = hour % 12 || 12;
-  return `${hour12}:${minutes} ${ampm}`;
+/* ─── 3-dot Action Menu ──────────────────────────────────── */
+const ActionMenu = ({ row, onView, onWhatsApp, onEmail, onDownload }) => {
+  const [open, setOpen] = React.useState(false);
+  const ref = React.useRef(null);
+
+  React.useEffect(() => {
+    const close = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    if (open) document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, [open]);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={(e) => { e.stopPropagation(); setOpen(!open); }}
+        className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors"
+      >
+        <MoreVertical size={16} className="text-gray-500" />
+      </button>
+      {open && (
+        <div className="absolute right-0 top-full mt-1 z-50 w-48 rounded-xl border border-gray-200 bg-white shadow-lg dark:bg-neutral-900 dark:border-neutral-700 py-1 animate-in fade-in slide-in-from-top-1">
+          <button
+            onClick={(e) => { e.stopPropagation(); setOpen(false); onView(row); }}
+            className="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-neutral-200 dark:hover:bg-neutral-800 transition-colors"
+          >
+            <Eye size={15} className="text-blue-500" /> View Details
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); setOpen(false); onWhatsApp(row); }}
+            className="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-neutral-200 dark:hover:bg-neutral-800 transition-colors"
+          >
+            <MessageSquare size={15} className="text-green-500" /> Send WhatsApp
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); setOpen(false); onEmail(row); }}
+            className="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-neutral-200 dark:hover:bg-neutral-800 transition-colors"
+          >
+            <Mail size={15} className="text-indigo-500" /> Send Email
+          </button>
+          <div className="border-t border-gray-100 dark:border-neutral-700 my-1" />
+          <button
+            onClick={(e) => { e.stopPropagation(); setOpen(false); onDownload(row); }}
+            className="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-neutral-200 dark:hover:bg-neutral-800 transition-colors"
+          >
+            <Download size={15} className="text-cyan-500" /> Download Ticket
+          </button>
+        </div>
+      )}
+    </div>
+  );
 };
 
 /* ─── Main Component ─────────────────────────────────────── */
@@ -109,7 +112,7 @@ export default function BookingsList() {
 
   const [filters, setFilters] = React.useState({
     search: '',
-    payment_status: 'Pending',
+    payment_status: '',   // Default: ALL (no filter)
     booking_status: '',
     attraction_id: '',
     combo_id: '',
@@ -121,24 +124,41 @@ export default function BookingsList() {
     date_to: ''
   });
   const [options, setOptions] = React.useState({ status: 'idle', attractions: [], combos: [], offers: [] });
-  const [overview, setOverview] = React.useState({ status: 'idle', trend: [], summary: null });
   const [activeRange, setActiveRange] = React.useState('all');
-  const [revenueData, setRevenueData] = React.useState({
-    attraction: { status: 'idle', data: null },
-    combo: { status: 'idle', data: null }
-  });
-  const [revenueFilters, setRevenueFilters] = React.useState(cloneRevenueFilters());
   const [rowsPerPage, setRowsPerPage] = React.useState(20);
-  const [showFilters, setShowFilters] = React.useState(true);
+  const [showFilters, setShowFilters] = React.useState(false); // Default: collapsed
   const searchTimerRef = React.useRef(null);
-  const [statusUpdating, setStatusUpdating] = React.useState(null); // booking_id being updated
+  const [statusUpdating, setStatusUpdating] = React.useState(null);
+  const [autoSync, setAutoSync] = React.useState(true);
 
+  // Auto-sync: poll every 15s for new bookings
   React.useEffect(() => {
-    dispatch(listAdminBookings({ page: 1, limit: rowsPerPage, payment_status: 'Pending' }));
-    loadOverview();
-    loadRevenueData('both');
+    // Initial load
+    dispatch(listAdminBookings({ page: 1, limit: rowsPerPage }));
+
+    if (!autoSync) return;
+
+    const poll = () => {
+      if (document.hidden) return; // skip if tab not visible
+      dispatch(listAdminBookings({ ...buildQuery(), page: currPageRef.current, limit: rowsPerPage }));
+    };
+
+    const intervalId = setInterval(poll, 15000);
+
+    // Pause on tab hide, resume on tab show
+    const onVisibility = () => {
+      if (!document.hidden) poll(); // immediate fetch on tab return
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+
+    return () => {
+      clearInterval(intervalId);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [autoSync, rowsPerPage]);
+
+  const currPageRef = React.useRef(1);
 
   React.useEffect(() => {
     let cancelled = false;
@@ -208,96 +228,22 @@ export default function BookingsList() {
     return clean;
   }, [filters]);
 
-  const loadOverview = React.useCallback(async () => {
-    setOverview((s) => ({ ...s, status: 'loading' }));
-    try {
-      const res = await adminApi.get(A.analyticsOverview(), {
-        params: {
-          from: filters.date_from || undefined,
-          to: filters.date_to || undefined,
-          attraction_id: filters.attraction_id || undefined
-        }
-      });
-      const trend = Array.isArray(res?.trend) ? res.trend : [];
-      setOverview({ status: 'succeeded', trend, summary: res?.summary || res });
-    } catch (err) {
-      setOverview((s) => ({ ...s, status: 'failed', error: err }));
-    }
-  }, [filters]);
-
-  const loadRevenueData = React.useCallback(async (target = 'both') => {
-    const targets = target === 'both' ? ['attraction', 'combo'] : [target];
-    if (targets.includes('attraction')) {
-      const af = revenueFilters.attraction;
-      setRevenueData((prev) => ({ ...prev, attraction: { status: 'loading', data: null } }));
-      try {
-        const res = await adminApi.get(A.analyticsAttractionRevenue(), {
-          params: {
-            from: af.from || filters.date_from || undefined,
-            to: af.to || filters.date_to || undefined,
-            attraction_id: af.attraction_id || filters.attraction_id || undefined
-          }
-        });
-        setRevenueData((prev) => ({ ...prev, attraction: { status: 'succeeded', data: res } }));
-      } catch (err) {
-        setRevenueData((prev) => ({ ...prev, attraction: { status: 'failed', error: err } }));
-      }
-    }
-    if (targets.includes('combo')) {
-      const cf = revenueFilters.combo;
-      setRevenueData((prev) => ({ ...prev, combo: { status: 'loading', data: null } }));
-      try {
-        const res = await adminApi.get(A.analyticsComboRevenue(), {
-          params: {
-            from: cf.from || filters.date_from || undefined,
-            to: cf.to || filters.date_to || undefined,
-            attraction_id: cf.attraction_id || filters.attraction_id || undefined,
-            combo_id: cf.combo_id || filters.combo_id || undefined
-          }
-        });
-        setRevenueData((prev) => ({ ...prev, combo: { status: 'succeeded', data: res } }));
-      } catch (err) {
-        setRevenueData((prev) => ({ ...prev, combo: { status: 'failed', error: err } }));
-      }
-    }
-  }, [filters, revenueFilters]);
-
-  const downloadReport = React.useCallback((type, format) => {
-    try {
-      const params = {
-        type,
-        from: revenueFilters[type === 'attraction-revenue' ? 'attraction' : 'combo']?.from || filters.date_from || undefined,
-        to: revenueFilters[type === 'attraction-revenue' ? 'attraction' : 'combo']?.to || filters.date_to || undefined,
-        attraction_id: revenueFilters[type === 'attraction-revenue' ? 'attraction' : 'combo']?.attraction_id || filters.attraction_id || undefined,
-        combo_id: revenueFilters[type === 'combo-revenue' ? 'combo' : 'attraction']?.combo_id || filters.combo_id || undefined
-      };
-      const url = `${A.analyticsReport(format)}?${new URLSearchParams(params).toString()}`;
-      window.open(url, '_blank');
-    } catch {
-      alert('Failed to download report');
-    }
-  }, [filters, revenueFilters]);
-
   /* ─── Filter helpers ───────────────────────────────────── */
 
   const applyFilters = React.useCallback(() => {
     dispatch(listAdminBookings({ ...buildQuery(), page: 1, limit: rowsPerPage }));
-    loadOverview();
-    loadRevenueData('both');
-  }, [buildQuery, dispatch, loadOverview, loadRevenueData, rowsPerPage]);
+  }, [buildQuery, dispatch, rowsPerPage]);
 
   const resetFilters = React.useCallback(() => {
-    setFilters({ search: '', payment_status: 'Pending', booking_status: '', attraction_id: '', combo_id: '', offer_id: '', user_email: '', user_phone: '', item_type: '', date_from: '', date_to: '' });
-    dispatch(listAdminBookings({ page: 1, limit: rowsPerPage, payment_status: 'Pending' }));
+    setFilters({ search: '', payment_status: '', booking_status: '', attraction_id: '', combo_id: '', offer_id: '', user_email: '', user_phone: '', item_type: '', date_from: '', date_to: '' });
+    dispatch(listAdminBookings({ page: 1, limit: rowsPerPage }));
     setActiveRange('all');
-    loadOverview();
-  }, [dispatch, loadOverview, rowsPerPage]);
+  }, [dispatch, rowsPerPage]);
 
   const handleFilterChange = (field, value) => {
     setFilters((prev) => ({ ...prev, [field]: value }));
   };
 
-  // Debounced auto-search for text inputs (400ms delay)
   const handleSearchChange = (field, value) => {
     setFilters((prev) => ({ ...prev, [field]: value }));
     if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
@@ -313,12 +259,10 @@ export default function BookingsList() {
     }, 400);
   };
 
-  // Clean up debounce timer on unmount
   React.useEffect(() => {
     return () => { if (searchTimerRef.current) clearTimeout(searchTimerRef.current); };
   }, []);
 
-  // Auto-apply on Enter key in any filter input
   const handleFilterKeyDown = (e) => {
     if (e.key === 'Enter') {
       if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
@@ -326,7 +270,6 @@ export default function BookingsList() {
     }
   };
 
-  // Auto-apply when select/dropdown changes
   const handleSelectChange = (field, value) => {
     const next = { ...filters, [field]: value };
     setFilters(next);
@@ -339,40 +282,23 @@ export default function BookingsList() {
     dispatch(listAdminBookings({ ...clean, page: 1, limit: rowsPerPage }));
   };
 
-  // Inline status change with confirmation
+  // Inline status change — propagate to all sibling bookings in same order
   const handleInlineStatusChange = async (row, newStatus) => {
     const bookingId = row.booking_id ?? row.id;
     if (!bookingId) return;
     const oldStatus = row.booking_status || 'Unknown';
     if (newStatus === oldStatus) return;
-    const ok = window.confirm(`Change booking #${row.booking_ref || bookingId} status from "${oldStatus}" to "${newStatus}"?`);
+    const ok = window.confirm(`Change booking #${row.booking_ref || bookingId} status from "${oldStatus}" to "${newStatus}"?\n\nThis will update all items in this order.`);
     if (!ok) return;
     setStatusUpdating(bookingId);
     try {
-      await dispatch(updateAdminBooking({ id: bookingId, patch: { booking_status: newStatus } })).unwrap();
-      // Refresh the list to get updated data
+      await dispatch(updateAdminBooking({ id: bookingId, patch: { booking_status: newStatus, propagate: true } })).unwrap();
       dispatch(listAdminBookings({ ...buildQuery(), page: currPage, limit: rowsPerPage }));
     } catch (err) {
       window.alert(err?.message || 'Failed to update status');
     } finally {
       setStatusUpdating(null);
     }
-  };
-
-  const handleRevenueFilterChange = (card, field, value) => {
-    setRevenueFilters((prev) => ({
-      ...prev,
-      [card]: { ...prev[card], [field]: value },
-    }));
-  };
-
-  const applyRevenueFilter = (card) => loadRevenueData(card);
-  const resetRevenueFilter = (card) => {
-    setRevenueFilters((prev) => ({
-      ...prev,
-      [card]: { ...revenueFilterDefaults[card] },
-    }));
-    loadRevenueData(card);
   };
 
   const stepSingleDate = (days) => {
@@ -403,16 +329,11 @@ export default function BookingsList() {
       page: 1,
       limit: rowsPerPage
     }));
-    loadOverview();
-  }, [buildQuery, dispatch, loadOverview, rowsPerPage]);
-
-  React.useEffect(() => {
-    if (list.status === 'succeeded') loadOverview();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [list.status]);
+  }, [buildQuery, dispatch, rowsPerPage]);
 
   const meta = list.meta || {};
   const currPage = meta.page || list.query.page || 1;
+  currPageRef.current = currPage;
 
   const ticketUrl = React.useCallback((path) => {
     if (!path) return null;
@@ -453,7 +374,6 @@ export default function BookingsList() {
   /* ─── Active filter count ──────────────────────────────── */
   const activeFilterCount = React.useMemo(() => {
     let count = 0;
-    if (filters.search) count++;
     if (filters.payment_status) count++;
     if (filters.booking_status) count++;
     if (filters.attraction_id) count++;
@@ -472,9 +392,21 @@ export default function BookingsList() {
     <div className="space-y-5">
       {/* ── Header ── */}
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100">Bookings Intelligence</h1>
-          <p className="text-sm text-gray-500 dark:text-neutral-400 mt-0.5">Monitor and manage all bookings</p>
+        <div className="flex items-center gap-3">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100">Bookings</h1>
+            <p className="text-sm text-gray-500 dark:text-neutral-400 mt-0.5">Manage all bookings</p>
+          </div>
+          <button
+            onClick={() => setAutoSync(!autoSync)}
+            className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold border transition-all ${autoSync
+              ? 'bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-900/20 dark:border-emerald-700 dark:text-emerald-400'
+              : 'bg-gray-50 border-gray-200 text-gray-500 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-400'}`}
+            title={autoSync ? 'Auto-sync ON (every 15s) — click to disable' : 'Auto-sync OFF — click to enable'}
+          >
+            <span className={`inline-block w-2 h-2 rounded-full ${autoSync ? 'bg-emerald-500 animate-pulse' : 'bg-gray-400'}`} />
+            {autoSync ? 'Live' : 'Paused'}
+          </button>
         </div>
         <div className="flex gap-1.5 flex-wrap">
           {quickRanges.map((range) => (
@@ -491,144 +423,47 @@ export default function BookingsList() {
         </div>
       </div>
 
-      {/* ── Summary Cards ── */}
-      {overview.summary && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <SummaryCard label="Paid Bookings" value={formatNumber(overview.summary.total_bookings)} note="Confirmed" icon={<Ticket className="h-5 w-5" />} />
-          <SummaryCard label="Pending" value={formatNumber(overview.summary.pending_bookings)} note="Awaiting payment" accent="from-amber-400 to-orange-500" icon={<Calendar className="h-5 w-5" />} />
-          <SummaryCard label="Attraction Revenue" value={formatCurrency(revenueData.attraction.data?.attraction_revenue)} note={`${formatNumber(revenueData.attraction.data?.attraction_bookings)} bookings`} accent="from-cyan-500 to-blue-600" icon={<TrendingUp className="h-5 w-5" />} />
-          <SummaryCard label="Combo Revenue" value={formatCurrency(overview.summary.combo_revenue)} note={`${overview.summary.combo_bookings || 0} combos`} accent="from-indigo-500 to-purple-600" icon={<DollarSign className="h-5 w-5" />} />
-        </div>
-      )}
-
-      {/* ── Revenue Cards ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Attraction Revenue */}
-        <SectionCard title="Attraction Revenue" subtitle="Completed attraction bookings & revenue">
-          <div className="flex flex-wrap gap-2 mb-3">
-            <input type="date" className={`${inputClasses} flex-1 min-w-[120px]`} value={revenueFilters.attraction.from} onChange={(e) => handleRevenueFilterChange('attraction', 'from', e.target.value)} />
-            <input type="date" className={`${inputClasses} flex-1 min-w-[120px]`} value={revenueFilters.attraction.to} onChange={(e) => handleRevenueFilterChange('attraction', 'to', e.target.value)} />
-            <select className={`${selectClasses} flex-1 min-w-[140px]`} value={revenueFilters.attraction.attraction_id} onChange={(e) => handleRevenueFilterChange('attraction', 'attraction_id', e.target.value)} disabled={options.status === 'loading'}>
-              <option value="">{options.status === 'loading' ? 'Loading...' : 'All attractions'}</option>
-              {options.status === 'succeeded' && (options.attractions || []).map((a) => (
-                <option key={a.attraction_id || a.id} value={a.attraction_id || a.id}>{a.title || a.name || `#${a.attraction_id || a.id}`}</option>
-              ))}
-            </select>
-          </div>
-          <div className="flex flex-wrap items-center gap-2 mb-3">
-            <button className={btnPrimary} onClick={() => applyRevenueFilter('attraction')}>Apply</button>
-            <button className={btnSecondary} onClick={() => resetRevenueFilter('attraction')}>Reset</button>
-            <div className="flex-1" />
-            <button className={btnSecondary} onClick={() => downloadReport('attraction-revenue', 'csv')}><FileSpreadsheet className="h-4 w-4" />CSV</button>
-            <button className={btnSecondary} onClick={() => downloadReport('attraction-revenue', 'pdf')}><FileText className="h-4 w-4" />PDF</button>
-          </div>
-          <div className="rounded-xl border border-gray-100 dark:border-neutral-800 p-4 bg-gray-50/50 dark:bg-neutral-800/30">
-            {revenueData.attraction.status === 'loading' ? (
-              <div className="text-sm text-gray-500">Loading…</div>
-            ) : revenueData.attraction.status === 'failed' ? (
-              <div className="text-sm text-red-600">Failed to load data</div>
-            ) : (
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <div className="text-gray-500 uppercase text-xs tracking-wider">Bookings</div>
-                  <div className="text-2xl font-bold text-gray-900 dark:text-neutral-100 mt-1">{formatNumber(revenueData.attraction.data?.attraction_bookings)}</div>
-                </div>
-                <div>
-                  <div className="text-gray-500 uppercase text-xs tracking-wider">Revenue</div>
-                  <div className="text-2xl font-bold text-gray-900 dark:text-neutral-100 mt-1">{formatCurrency(revenueData.attraction.data?.attraction_revenue)}</div>
-                </div>
-              </div>
-            )}
-          </div>
-        </SectionCard>
-
-        {/* Combo Revenue */}
-        <SectionCard title="Combo Revenue" subtitle="Combo bookings & linked revenue">
-          <div className="flex flex-wrap gap-2 mb-3">
-            <input type="date" className={`${inputClasses} flex-1 min-w-[120px]`} value={revenueFilters.combo.from} onChange={(e) => handleRevenueFilterChange('combo', 'from', e.target.value)} />
-            <input type="date" className={`${inputClasses} flex-1 min-w-[120px]`} value={revenueFilters.combo.to} onChange={(e) => handleRevenueFilterChange('combo', 'to', e.target.value)} />
-            <select className={`${selectClasses} flex-1 min-w-[140px]`} value={revenueFilters.combo.attraction_id} onChange={(e) => handleRevenueFilterChange('combo', 'attraction_id', e.target.value)} disabled={options.status === 'loading'}>
-              <option value="">{options.status === 'loading' ? 'Loading...' : 'All attractions'}</option>
-              {options.status === 'succeeded' && (options.attractions || []).map((a) => (
-                <option key={a.attraction_id || a.id} value={a.attraction_id || a.id}>{a.title || a.name || `#${a.attraction_id || a.id}`}</option>
-              ))}
-            </select>
-            <select className={`${selectClasses} flex-1 min-w-[140px]`} value={revenueFilters.combo.combo_id} onChange={(e) => handleRevenueFilterChange('combo', 'combo_id', e.target.value)} disabled={options.status === 'loading'}>
-              <option value="">{options.status === 'loading' ? 'Loading...' : 'All combos'}</option>
-              {options.status === 'succeeded' && (options.combos || []).map((c) => (
-                <option key={c.combo_id || c.id} value={c.combo_id || c.id}>{c.title || c.name || `Combo #${c.combo_id || c.id}`}</option>
-              ))}
-            </select>
-          </div>
-          <div className="flex flex-wrap items-center gap-2 mb-3">
-            <button className={btnPrimary} onClick={() => applyRevenueFilter('combo')}>Apply</button>
-            <button className={btnSecondary} onClick={() => resetRevenueFilter('combo')}>Reset</button>
-            <div className="flex-1" />
-            <button className={btnSecondary} onClick={() => downloadReport('combo-revenue', 'csv')}><FileSpreadsheet className="h-4 w-4" />CSV</button>
-            <button className={btnSecondary} onClick={() => downloadReport('combo-revenue', 'pdf')}><FileText className="h-4 w-4" />PDF</button>
-          </div>
-          <div className="rounded-xl border border-gray-100 dark:border-neutral-800 p-4 bg-gray-50/50 dark:bg-neutral-800/30">
-            {revenueData.combo.status === 'loading' ? (
-              <div className="text-sm text-gray-500">Loading…</div>
-            ) : revenueData.combo.status === 'failed' ? (
-              <div className="text-sm text-red-600">Failed to load data</div>
-            ) : (
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <div className="text-gray-500 uppercase text-xs tracking-wider">Bookings</div>
-                  <div className="text-2xl font-bold text-gray-900 dark:text-neutral-100 mt-1">{formatNumber(revenueData.combo.data?.combo_bookings)}</div>
-                </div>
-                <div>
-                  <div className="text-gray-500 uppercase text-xs tracking-wider">Revenue</div>
-                  <div className="text-2xl font-bold text-gray-900 dark:text-neutral-100 mt-1">{formatCurrency(revenueData.combo.data?.combo_revenue)}</div>
-                </div>
-              </div>
-            )}
-          </div>
-        </SectionCard>
-      </div>
-
       {/* ── Filter Bar ── */}
       <div className="rounded-2xl border border-gray-200/80 bg-white shadow-sm dark:bg-neutral-900 dark:border-neutral-800">
-        <button
-          className="flex w-full items-center justify-between px-5 py-4 text-left"
-          onClick={() => setShowFilters(!showFilters)}
-        >
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-900/20">
-              <Filter className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-gray-900 dark:text-neutral-100">Filters</p>
-              <p className="text-xs text-gray-500 dark:text-neutral-400">
-                {activeFilterCount > 0 ? `${activeFilterCount} active filter${activeFilterCount > 1 ? 's' : ''}` : 'No filters applied'}
-              </p>
-            </div>
+        {/* Always-visible: search bar + filter toggle */}
+        <div className="flex items-center gap-3 px-4 py-3">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <input
+              className={`${inputClasses} pl-9`}
+              placeholder="Search ref, email, phone…"
+              value={filters.search}
+              onChange={(e) => handleSearchChange('search', e.target.value)}
+              onKeyDown={handleFilterKeyDown}
+            />
           </div>
-          <ChevronRight className={`h-4 w-4 text-gray-400 transition-transform ${showFilters ? 'rotate-90' : ''}`} />
-        </button>
+          <button
+            className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-sm font-medium transition-all ${showFilters
+              ? 'bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-900/20 dark:border-blue-700 dark:text-blue-400'
+              : 'border-gray-200 text-gray-600 hover:bg-gray-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800'}`}
+            onClick={() => setShowFilters(!showFilters)}
+          >
+            <Filter className="h-4 w-4" />
+            Filters
+            {activeFilterCount > 0 && (
+              <span className="bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+                {activeFilterCount}
+              </span>
+            )}
+            <ChevronDown className={`h-3.5 w-3.5 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
+          </button>
+        </div>
 
         {showFilters && (
-          <div className="px-5 pb-5 border-t border-gray-100 dark:border-neutral-800 pt-4 space-y-3">
+          <div className="px-4 pb-4 border-t border-gray-100 dark:border-neutral-800 pt-3 space-y-3">
             {isSubadmin && (
               <div className="bg-blue-50 text-blue-900 border border-blue-200 rounded-xl px-3 py-2 text-xs dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800">
                 <strong>Subadmin Access:</strong> Viewing attractions and combos from your assigned bookings only.
               </div>
             )}
 
-            {/* Row 1: Search + Payment + Booking Status + Item Type */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                {filters.search && <div className="absolute right-3 top-1/2 -translate-y-1/2"><div className="h-3 w-3 rounded-full border-2 border-blue-500 border-t-transparent animate-spin" style={{ display: searchTimerRef.current ? 'block' : 'none' }} /></div>}
-                <input
-                  className={`${inputClasses} pl-9`}
-                  placeholder="Search ref, email, phone…"
-                  value={filters.search}
-                  onChange={(e) => handleSearchChange('search', e.target.value)}
-                  onKeyDown={handleFilterKeyDown}
-                />
-              </div>
+            {/* Row 1: Payment + Booking Status + Item Type */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               <select className={selectClasses} value={filters.payment_status} onChange={(e) => handleSelectChange('payment_status', e.target.value)}>
                 <option value="">Payment: All</option>
                 <option>Pending</option><option>Completed</option><option>Failed</option><option>Cancelled</option>
@@ -644,8 +479,8 @@ export default function BookingsList() {
               </select>
             </div>
 
-            {/* Row 2: Attraction + Combo + Offer + Email */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {/* Row 2: Attraction + Combo + Offer */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               <select className={selectClasses} value={filters.attraction_id} onChange={(e) => handleSelectChange('attraction_id', e.target.value)} disabled={options.status === 'loading'}>
                 <option value="">{options.status === 'loading' ? 'Loading…' : 'All Attractions'}</option>
                 {options.status === 'succeeded' && (options.attractions || []).map((a) => (
@@ -664,14 +499,16 @@ export default function BookingsList() {
                   <option key={o.offer_id || o.id} value={o.offer_id || o.id}>{o.title || o.name || o.code || `Offer #${o.offer_id || o.id}`}</option>
                 ))}
               </select>
-              <input className={inputClasses} placeholder="User email" value={filters.user_email} onChange={(e) => handleSearchChange('user_email', e.target.value)} onKeyDown={handleFilterKeyDown} />
             </div>
 
-            {/* Row 3: Phone + Dates + Actions */}
+            {/* Row 3: Email + Phone + Dates + Actions */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <input className={inputClasses} placeholder="User email" value={filters.user_email} onChange={(e) => handleSearchChange('user_email', e.target.value)} onKeyDown={handleFilterKeyDown} />
               <input className={inputClasses} placeholder="User phone" value={filters.user_phone} onChange={(e) => handleSearchChange('user_phone', e.target.value)} onKeyDown={handleFilterKeyDown} />
-              <input type="date" className={inputClasses} placeholder="From date" value={filters.date_from} onChange={(e) => { handleFilterChange('date_from', e.target.value); setActiveRange('custom'); }} />
-              <input type="date" className={inputClasses} placeholder="To date" value={filters.date_to} onChange={(e) => { handleFilterChange('date_to', e.target.value); setActiveRange('custom'); }} />
+              <div className="flex gap-2">
+                <input type="date" className={`${inputClasses} flex-1`} placeholder="From" value={filters.date_from} onChange={(e) => { handleFilterChange('date_from', e.target.value); setActiveRange('custom'); }} />
+                <input type="date" className={`${inputClasses} flex-1`} placeholder="To" value={filters.date_to} onChange={(e) => { handleFilterChange('date_to', e.target.value); setActiveRange('custom'); }} />
+              </div>
               <div className="flex gap-2">
                 <button className={`flex-1 ${btnPrimary}`} onClick={applyFilters}>
                   <Search className="h-4 w-4" />
@@ -708,12 +545,12 @@ export default function BookingsList() {
 
       {/* ── Table ── */}
       <AdminTable
-        keyField="booking_id"
+        keyField="order_id"
         columns={[
-          { key: 'booking_ref', title: 'Ref', tdClass: 'whitespace-nowrap font-medium' },
+          { key: 'order_ref', title: 'ID', tdClass: 'whitespace-nowrap font-medium', render: (r) => r.order_ref || r.booking_ref || '—' },
           { key: 'booking_date', title: 'Date', tdClass: 'whitespace-nowrap', render: (r) => r.booking_date ? dayjs(r.booking_date).format('DD MMM, YYYY') : '—' },
           {
-            key: 'user_email', title: 'User', render: (r) => (
+            key: 'user_email', title: 'Customer', render: (r) => (
               <div className="text-xs min-w-[140px]">
                 <div className="font-medium text-gray-800 dark:text-neutral-200">{r.user_name || r.user_email || '—'}</div>
                 <div className="text-gray-500">{r.user_phone || '—'}</div>
@@ -723,24 +560,15 @@ export default function BookingsList() {
           {
             key: 'item_title', title: 'Item', render: (r) => (
               <div className="flex flex-col min-w-[120px]">
-                <span className="font-medium truncate max-w-[200px]">{r.item_title || r.attraction_title || '—'}</span>
+                <span className="font-medium truncate max-w-[200px]">{r.item_title || '—'}</span>
                 <span className="text-xs text-gray-500">
-                  {r.item_type === 'Combo' ? 'Combo' : 'Attraction'}
+                  {r.item_count > 1 ? `${r.item_count} items` : (r.items?.[0]?.item_type === 'Combo' ? 'Combo' : 'Attraction')}
                   {r.quantity && r.quantity > 1 ? ` × ${r.quantity}` : ''}
                 </span>
               </div>
             )
           },
-          {
-            key: 'slot', title: 'Slot', tdClass: 'whitespace-nowrap', render: (r) => {
-              if (r.slot_start_time && r.slot_end_time) {
-                return `${formatTime12Hour(r.slot_start_time)} - ${formatTime12Hour(r.slot_end_time)}`;
-              }
-              if (r.slot_label) return r.slot_label;
-              if (r.booking_time) return formatTime12Hour(r.booking_time);
-              return '—';
-            }
-          },
+          { key: 'final_amount', title: 'Amount', tdClass: 'whitespace-nowrap font-semibold', render: (r) => `₹${Number(r?.final_amount ?? r?.total_amount ?? 0).toLocaleString()}` },
           {
             key: 'payment_status', title: 'Payment', tdClass: 'whitespace-nowrap', render: (r) => {
               const status = r.payment_status || '—';
@@ -784,16 +612,21 @@ export default function BookingsList() {
               );
             }
           },
-          { key: 'final_amount', title: 'Amount', tdClass: 'whitespace-nowrap font-semibold', render: (r) => `₹${Number(r?.final_amount ?? r?.total_amount ?? 0).toLocaleString()}` },
+          {
+            key: '_actions', title: '', tdClass: 'w-10', render: (r) => (
+              <ActionMenu
+                row={r}
+                onView={(r) => navigate(`/admin/bookings/${r.order_id || r.booking_id || r.id}`)}
+                onWhatsApp={handleResendWhatsApp}
+                onEmail={handleResendEmail}
+                onDownload={handleDownloadTicket}
+              />
+            )
+          },
         ]}
         rows={rows}
-        onRowClick={(r) => navigate(`/admin/bookings/${r.booking_id ?? r.id}`)}
+        onRowClick={(r) => navigate(`/admin/bookings/${r.order_id || r.booking_id || r.id}`)}
         empty={list.status === 'loading' ? 'Loading…' : 'No bookings found'}
-        actions={[
-          { label: 'View', title: 'View details', className: 'bg-blue-50 hover:bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 dark:text-blue-400', onClick: (r) => navigate(`/admin/bookings/${r.booking_id ?? r.id}`) },
-          { label: 'WhatsApp', title: 'Resend via WhatsApp', className: 'bg-green-50 hover:bg-green-100 text-green-700 dark:bg-green-900/30 dark:hover:bg-green-900/50 dark:text-green-400', onClick: (r) => handleResendWhatsApp(r) },
-          { label: 'Email', title: 'Resend via email', className: 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:hover:bg-indigo-900/50 dark:text-indigo-400', onClick: (r) => handleResendEmail(r) },
-        ]}
       />
 
       {/* ── Date Navigation + Pagination ── */}
@@ -823,23 +656,6 @@ export default function BookingsList() {
           dispatch(listAdminBookings({ ...buildQuery(), page: 1, limit: l }));
         }}
       />
-
-      {/* ── Trend Chart ── */}
-      <SectionCard title="Bookings Trend" subtitle="Paid bookings vs revenue over time">
-        <div style={{ height: 280 }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={overview.trend || []}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis dataKey="bucket" tick={{ fontSize: 12 }} />
-              <YAxis tick={{ fontSize: 12 }} />
-              <Tooltip contentStyle={{ borderRadius: '12px', border: '1px solid #e5e7eb', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }} />
-              <Legend />
-              <Line type="monotone" dataKey="bookings" stroke="#2563eb" name="Bookings" strokeWidth={2} dot={false} />
-              <Line type="monotone" dataKey="revenue" stroke="#16a34a" name="Revenue" strokeWidth={2} dot={false} />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      </SectionCard>
     </div>
   );
 }

@@ -33,7 +33,8 @@ listener.startListening({
   }
 });
 
-const preloadedState = { adminAuth: loadAuth() };
+const loadedAuth = loadAuth();
+const preloadedState = { adminAuth: loadedAuth ? { ...loadedAuth, checked: true } : undefined };
 
 export const adminStore = configureStore({
   reducer: {

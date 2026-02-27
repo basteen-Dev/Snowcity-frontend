@@ -127,7 +127,10 @@ export default function AdminSidebar({ collapsed, onClose }) {
       sections.push({
         key: 'Bookings',
         label: 'Bookings',
-        items: [{ to: '/admin/bookings', label: 'All Bookings', icon: CalendarClock }],
+        items: [
+          { to: '/admin/bookings', label: 'All Bookings', icon: CalendarClock },
+          { to: '/admin/bookings/analytics', label: 'Booking Analytics', icon: BarChart3 },
+        ],
       });
     }
 

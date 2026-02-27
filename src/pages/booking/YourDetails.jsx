@@ -293,9 +293,6 @@ export default function YourDetails({
                         <span>Total</span>
                         <span className="tabular-nums">₹{finalTotal.toLocaleString()}</span>
                     </div>
-                    <p className="text-xs text-gray-500 mt-4">
-                        Free reschedule up to 24 hours before visit.
-                    </p>
                 </div>
             </div>
         </div>

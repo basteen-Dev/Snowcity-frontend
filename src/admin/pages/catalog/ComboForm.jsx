@@ -30,7 +30,8 @@ export default function ComboForm() {
       meta_title: '',
       short_description: '',
       faq_items: [],
-      head_schema: ''
+      head_schema: '',
+      stop_booking: false
     }
   });
   const [saving, setSaving] = React.useState(false);
@@ -70,7 +71,8 @@ export default function ComboForm() {
           meta_title: c.meta_title || '',
           short_description: c.short_description || '',
           faq_items: Array.isArray(c.faq_items) ? c.faq_items : [],
-          head_schema: c.head_schema || ''
+          head_schema: c.head_schema || '',
+          stop_booking: !!c.stop_booking
         };
 
         // Check if it's legacy format (has attraction_1_id and attraction_2_id)
@@ -133,7 +135,8 @@ export default function ComboForm() {
         meta_title: f.meta_title?.trim() || null,
         short_description: f.short_description?.trim() || null,
         faq_items: f.faq_items || [],
-        head_schema: f.head_schema?.trim() || null
+        head_schema: f.head_schema?.trim() || null,
+        stop_booking: !!f.stop_booking
       };
 
       if (isEdit) await adminApi.put(A.comboById(id), payload);
@@ -464,6 +467,26 @@ export default function ComboForm() {
             />
             <label htmlFor="active" className="text-sm text-gray-700 dark:text-neutral-200">Active</label>
           </div>
+        </div>
+
+        {/* Stop Booking Control */}
+        <div className="mb-4 p-4 border border-gray-200 dark:border-neutral-700 rounded-lg bg-gray-50 dark:bg-neutral-800">
+          <h3 className="text-sm font-semibold text-gray-700 dark:text-neutral-200 mb-3">Booking Settings</h3>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={!!f.stop_booking}
+              onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, stop_booking: e.target.checked } }))}
+              className="w-4 h-4 rounded border-gray-300 text-red-600 focus:ring-red-500"
+            />
+            <span className="text-sm text-red-600 dark:text-red-400 font-medium">Stop Booking</span>
+            <span className="text-xs text-gray-400">(temporarily make this combo unavailable for booking)</span>
+          </label>
+          {f.stop_booking && (
+            <p className="mt-2 text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-3 py-1.5 rounded">
+              🛑 Booking is stopped — this combo will show as "Unavailable" on the public booking page.
+            </p>
+          )}
         </div>
 
         {/* Manual total price input */}

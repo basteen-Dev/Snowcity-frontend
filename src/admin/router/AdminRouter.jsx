@@ -19,6 +19,7 @@ const Dashboard = lazy(() => import('../pages/Dashboard'));
 
 const BookingsList = lazy(() => import('../pages/bookings/BookingsList'));
 const BookingDetails = lazy(() => import('../pages/bookings/BookingDetails'));
+const BookingsAnalytics = lazy(() => import('../pages/bookings/BookingsAnalytics'));
 
 const AttractionsList = lazy(() => import('../pages/catalog/AttractionsList'));
 const AttractionForm = lazy(() => import('../pages/catalog/AttractionForm'));
@@ -111,6 +112,19 @@ function RequireRole({ allowed, children }) {
   const {
     isSuperAdmin, isGM, isStaff, isEditor,
   } = useAdminRole();
+  const { checked, token, profileLoaded } = useSelector((s) => ({
+    checked: s.adminAuth?.checked,
+    token: s.adminAuth?.token,
+    profileLoaded: (s.adminAuth?.roles?.length > 0) || s.adminAuth?.isSuperAdmin || s.adminAuth?.scopes !== null || (s.adminAuth?.perms?.length > 0),
+  }));
+
+  // Not authenticated at all yet
+  if (!checked && !token) return null;
+
+  // Token exists but profile (roles) haven't loaded yet — show loader briefly
+  if (token && !profileLoaded) {
+    return <div className="flex items-center justify-center py-20"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" /></div>;
+  }
 
   const roleMap = { superadmin: isSuperAdmin, gm: isGM, staff: isStaff, editor: isEditor };
 
@@ -189,6 +203,11 @@ export default function AdminRouter() {
           <Route path="bookings" element={
             <RequireRole allowed={['superadmin', 'gm', 'staff']}>
               <BookingsList />
+            </RequireRole>
+          } />
+          <Route path="bookings/analytics" element={
+            <RequireRole allowed={['superadmin', 'gm', 'staff']}>
+              <BookingsAnalytics />
             </RequireRole>
           } />
           <Route path="bookings/:id" element={

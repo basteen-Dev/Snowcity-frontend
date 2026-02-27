@@ -114,10 +114,6 @@ export default function OrderDetailsBox({
                     <span className="tabular-nums">₹{finalTotal.toFixed(0)}</span>
                 </div>
 
-                <p className="text-xs text-gray-500 mt-4">
-                    Free reschedule up to 24 hours before visit.
-                </p>
-
                 <button
                     type="button"
                     disabled={!hasCartItems}

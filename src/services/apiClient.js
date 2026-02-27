@@ -1,11 +1,11 @@
 import axios from 'axios';
 
 // 1. Environment Configuration
-const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || 'https://app.snowcity.blr';
+const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || 'https://app.snowcityblr.com';
 
 if (!API_BASE_URL && import.meta.env?.DEV) {
   // eslint-disable-next-line no-console
-  console.warn('VITE_API_BASE_URL is not set. Using default: https://app.snowcity.blr');
+  console.warn('VITE_API_BASE_URL is not set. Using default: https://app.snowcityblr.com');
 }
 
 const SESSION_STORAGE_KEY = 'snow_session_id';
@@ -191,7 +191,7 @@ http.interceptors.response.use(
     }
 
     // Log actual backend error in console for easier debugging
-    if (import.meta.env?.DEV && status >= 400) {
+    if (import.meta.env?.DEV && status >= 400 && !(status === 404 && cfg.quiet404)) {
       console.error('[API Error]', error.response?.data || error.message);
     }
 
@@ -201,7 +201,7 @@ http.interceptors.response.use(
 
 // 7. Exported API Wrapper
 const api = {
-  async get(url, { params, headers, signal, fullResponse = false, noCache = false } = {}) {
+  async get(url, { params, headers, signal, fullResponse = false, noCache = false, quiet404 = false } = {}) {
     const cacheKey = !noCache && !fullResponse ? `${url}:${JSON.stringify(params || {})}` : null;
 
     if (cacheKey) {
@@ -211,7 +211,7 @@ const api = {
       }
     }
 
-    const res = await http.get(url, { params, headers, signal });
+    const res = await http.get(url, { params, headers, signal, quiet404 });
     const data = fullResponse ? res : res.data;
 
     if (cacheKey) {

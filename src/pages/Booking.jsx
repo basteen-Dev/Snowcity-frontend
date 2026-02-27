@@ -919,6 +919,15 @@ export default function Booking() {
     const key = itemType === 'combo' ? comboId : attractionId;
     if (!key) return;
 
+    // Skip slot fetching for attractions with time slots disabled
+    if (itemType === 'attraction') {
+      const attr = attractions.find(a => String(getAttrId(a)) === String(attractionId));
+      if (attr && attr.time_slot_enabled === false) {
+        setSlots({ status: 'succeeded', items: [], error: null });
+        return;
+      }
+    }
+
     setSlots({ status: 'loading', items: [], error: null });
     try {
       if (itemType === 'combo') {
@@ -939,7 +948,7 @@ export default function Booking() {
         error: err?.message || 'Failed to load slots',
       });
     }
-  }, []);
+  }, [attractions]);
 
   useEffect(() => {
     const itemType = sel.itemType;
@@ -1103,7 +1112,31 @@ export default function Booking() {
 
   const qty = Math.max(1, Number(sel.qty) || 1);
   const ticketsSubtotal = Number(selectedMeta.price || 0) * qty;
-  const selectionReady = Boolean(selectedMeta.title && sel.date && sel.slotKey && qty);
+
+  // Check if the selected attraction has time slots disabled
+  const isTimeSlotsDisabled = useMemo(() => {
+    if (sel.itemType === 'attraction' && selectedAttraction) {
+      return selectedAttraction.time_slot_enabled === false;
+    }
+    // For combos, always show slots (combo slots cover time-slot-enabled attractions)
+    return false;
+  }, [sel.itemType, selectedAttraction]);
+
+  // Check if the selected item has booking stopped
+  const isBookingStopped = useMemo(() => {
+    if (sel.itemType === 'attraction' && selectedAttraction) {
+      return !!selectedAttraction.stop_booking;
+    }
+    if (sel.itemType === 'combo' && selectedCombo) {
+      return !!selectedCombo.stop_booking;
+    }
+    return false;
+  }, [sel.itemType, selectedAttraction, selectedCombo]);
+
+  // Selection is ready when we have title, date, qty AND either a slot key or time slots are disabled
+  const selectionReady = Boolean(
+    selectedMeta.title && sel.date && (sel.slotKey || isTimeSlotsDisabled) && qty && !isBookingStopped
+  );
 
   const cartTicketsTotal = useMemo(
     () =>
@@ -1219,7 +1252,9 @@ export default function Booking() {
 
   const handleDirectBuy = useCallback(() => {
     if (!selectionReady) {
-      alert('Please select a date, a time slot, and quantity first.');
+      alert(isTimeSlotsDisabled
+        ? 'Please select a date and quantity first.'
+        : 'Please select a date, a time slot, and quantity first.');
       return;
     }
 
@@ -1464,21 +1499,30 @@ export default function Booking() {
               setDrawerOpen(true);
             };
 
+            const isStopped = !!item.stop_booking;
+
             return (
               <div
                 key={id}
-                className={`bg-white rounded-3xl shadow-sm border px-4 sm:px-6 py-4 sm:py-5 flex items-center justify-between gap-4 transition-all ${isSelected
-                  ? 'border-sky-400 shadow-md'
-                  : 'border-gray-100 hover:border-sky-200'
+                className={`bg-white rounded-3xl shadow-sm border px-4 sm:px-6 py-4 sm:py-5 flex items-center justify-between gap-4 transition-all ${isStopped
+                  ? 'border-gray-200 opacity-70'
+                  : isSelected
+                    ? 'border-sky-400 shadow-md'
+                    : 'border-gray-100 hover:border-sky-200'
                   }`}
               >
                 <div className="flex items-center gap-4 min-w-0 flex-1">
-                  <div className="w-28 h-28 rounded-2xl overflow-hidden border border-gray-100 bg-sky-50 shrink-0">
+                  <div className="w-28 h-28 rounded-2xl overflow-hidden border border-gray-100 bg-sky-50 shrink-0 relative">
                     {image ? (
-                      <img src={image} alt={title} className="w-full h-full object-cover" />
+                      <img src={image} alt={title} className={`w-full h-full object-cover ${isStopped ? 'grayscale' : ''}`} />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-sky-400">
                         <ShoppingBag />
+                      </div>
+                    )}
+                    {isStopped && (
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-2xl">
+                        <span className="text-white text-xs font-bold bg-red-500 px-2 py-1 rounded-full">Unavailable</span>
                       </div>
                     )}
                   </div>
@@ -1486,9 +1530,35 @@ export default function Booking() {
                     <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1 truncate">
                       {title}
                     </h3>
-                    <p className="text-xs text-gray-500">
-                      Great for families • Flexible slots • Instant confirmation
-                    </p>
+                    {isStopped ? (
+                      <p className="text-xs text-red-500 font-medium">
+                        Booking temporarily unavailable
+                      </p>
+                    ) : (
+                      <div className="text-xs text-gray-500">
+                        <span className="line-clamp-2 inline">
+                          {item.short_description || item.subtitle || 'Instant confirmation • Best experience'}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSel((prev) => ({
+                              ...prev,
+                              itemType: sel.itemType,
+                              attractionId: sel.itemType === 'attraction' ? String(id) : '',
+                              comboId: sel.itemType === 'combo' ? String(id) : '',
+                              slotKey: '',
+                            }));
+                            setDetailsMainImage(image || null);
+                            setDrawerMode('details');
+                            setDrawerOpen(true);
+                          }}
+                          className="text-sky-600 font-semibold hover:underline ml-1"
+                        >
+                          read more
+                        </button>
+                      </div>
+                    )}
                     <button
                       type="button"
                       onClick={() => {
@@ -1523,12 +1593,15 @@ export default function Booking() {
                   <button
                     type="button"
                     onClick={onSelect}
-                    className={`px-6 py-2 rounded-full text-white text-sm font-semibold shadow-md active:scale-[0.98] transition-all ${isSelected
-                      ? 'bg-sky-700'
-                      : 'bg-sky-600 hover:bg-sky-700'
+                    disabled={isStopped}
+                    className={`px-6 py-2 rounded-full text-white text-sm font-semibold shadow-md active:scale-[0.98] transition-all ${isStopped
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : isSelected
+                        ? 'bg-sky-700'
+                        : 'bg-sky-600 hover:bg-sky-700'
                       }`}
                   >
-                    {isSelected ? 'Selected' : 'Select'}
+                    {isStopped ? 'Unavailable' : isSelected ? 'Selected' : 'Select'}
                   </button>
                 </div>
               </div>
@@ -1564,11 +1637,11 @@ export default function Booking() {
             const preview = previewOfferForSelection(offer, selectedMeta.price || 0, qty);
             return (
               <label
-                key={`offer-${id}`}
-                className={`flex items-start gap-3 rounded-2xl border px-3 py-3 cursor-pointer transition-all duration-200 ${String(selectedOfferId) === id
+                key={`offer - ${id} `}
+                className={`flex items - start gap - 3 rounded - 2xl border px - 3 py - 3 cursor - pointer transition - all duration - 200 ${String(selectedOfferId) === id
                   ? 'border-sky-500 bg-sky-50 shadow-sm'
                   : 'hover:border-gray-300'
-                  }`}
+                  } `}
               >
                 <input
                   type="radio"
@@ -1590,7 +1663,7 @@ export default function Booking() {
                       ) : null}
                     </div>
                     <span className="text-xs font-semibold text-sky-700 bg-sky-50 px-2 py-1 rounded-full">
-                      {preview ? `Save ₹${preview.totalDiscount.toFixed(0)}` : 'No discount'}
+                      {preview ? `Save ₹${preview.totalDiscount.toFixed(0)} ` : 'No discount'}
                     </span>
                   </div>
                   {preview && preview.totalDiscount > 0 && (
@@ -1795,7 +1868,7 @@ export default function Booking() {
       }
     } catch (err) {
       console.error('âŒ Payment initiation failed:', err);
-      alert(`Session Closed. please Signin Again`);
+      alert(`Session Closed.please Signin Again`);
     } finally {
       setPaymentLoading(false);
       setPaymentStartTime(null);
@@ -1821,8 +1894,8 @@ export default function Booking() {
               ].map((item) => (
                 <span
                   key={item.s}
-                  className={`transition-colors duration-300 ${step >= item.s ? 'text-sky-600 font-semibold' : ''
-                    }`}
+                  className={`transition - colors duration - 300 ${step >= item.s ? 'text-sky-600 font-semibold' : ''
+                    } `}
                 >
                   {item.label}
                 </span>
@@ -1831,7 +1904,7 @@ export default function Booking() {
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div
                 className="bg-sky-600 h-2 rounded-full transition-all duration-500 ease-out"
-                style={{ width: `${(step / 4) * 100}%` }}
+                style={{ width: `${(step / 4) * 100}% ` }}
               />
             </div>
           </div>
@@ -1989,7 +2062,7 @@ export default function Booking() {
                       </button>
                     )}
 
-                    <div className={`flex-1 ${isDesktop ? 'hidden' : ''}`}>
+                    <div className={`flex - 1 ${isDesktop ? 'hidden' : ''} `}>
                       <div className="text-base font-semibold text-gray-900 tabular-nums">₹{finalTotal}</div>
                     </div>
 
@@ -2005,7 +2078,7 @@ export default function Booking() {
                               ? totalAddonCount === 0 || !hasCartItems
                               : !hasCartItems && !selectionReady
                       }
-                      className={`ml-auto inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all active:scale-[0.98] ${(step === 4
+                      className={`ml - auto inline - flex items - center justify - center gap - 2 rounded - xl px - 4 py - 2.5 text - sm font - semibold transition - all active: scale - [0.98] ${(step === 4
                         ? creating?.status === 'loading' || paymentLoading || !hasCartItems
                         : step === 3
                           ? !otp.verified
@@ -2014,13 +2087,13 @@ export default function Booking() {
                             : !hasCartItems && !selectionReady)
                         ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                         : 'bg-sky-600 text-white shadow-md hover:bg-sky-700'
-                        }`}
+                        } `}
                     >
                       <span>
                         {step === 4
                           ? paymentLoading
                             ? 'Processing Payment...'
-                            : `Pay ₹${finalTotal}`
+                            : `Pay ₹${finalTotal} `
                           : step === 3
                             ? 'Continue'
                             : 'Next'}
@@ -2124,92 +2197,98 @@ export default function Booking() {
                               <button
                                 type="button"
                                 onClick={handleToday}
-                                className={`px-4 py-2 rounded-full text-xs font-medium border transition-colors ${sel.date === todayYMD()
+                                className={`px - 4 py - 2 rounded - full text - xs font - medium border transition - colors ${sel.date === todayYMD()
                                   ? 'bg-sky-600 text-white border-sky-600'
                                   : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
-                                  }`}
+                                  } `}
                               >
                                 Today
                               </button>
                               <button
                                 type="button"
                                 onClick={handleTomorrow}
-                                className={`px-4 py-2 rounded-full text-xs font-medium border transition-colors ${sel.date === dayjs().add(1, 'day').format('YYYY-MM-DD')
+                                className={`px - 4 py - 2 rounded - full text - xs font - medium border transition - colors ${sel.date === dayjs().add(1, 'day').format('YYYY-MM-DD')
                                   ? 'bg-sky-600 text-white border-sky-600'
                                   : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
-                                  }`}
+                                  } `}
                               >
                                 Tomorrow
                               </button>
                               <button
                                 type="button"
                                 onClick={onCalendarButtonClick}
-                                className={`px-4 py-2 rounded-full text-xs font-medium border transition-colors ${sel.date &&
+                                className={`px - 4 py - 2 rounded - full text - xs font - medium border transition - colors ${sel.date &&
                                   sel.date !== '' &&
                                   sel.date !== todayYMD() &&
                                   sel.date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
                                   ? 'bg-sky-600 text-white border-sky-600'
                                   : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
-                                  }`}
+                                  } `}
                               >
                                 {formatDateDisplay(sel.date)}
                               </button>
                             </div>
                           </div>
 
-                          <div className="space-y-2">
-                            <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                              Time slot
-                            </p>
-                            <div className="relative">
-                              <>
-                                <select
-                                  className="w-full p-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-sky-500 outline-none text-sm font-medium appearance-none cursor-pointer disabled:bg-gray-100 disabled:text-gray-400 transition-all hover:border-gray-300"
-                                  value={sel.slotKey}
-                                  onChange={(e) =>
-                                    setSel((st) => ({
-                                      ...st,
-                                      slotKey: e.target.value,
-                                    }))
-                                  }
-                                  disabled={(!sel.attractionId && !sel.comboId) || (slots.status === 'succeeded' && slots.items.length === 0)}
-                                >
-                                  <option value="">
-                                    {!sel.attractionId && !sel.comboId
-                                      ? 'Select a ticket above first'
-                                      : slots.status === 'loading'
-                                        ? 'Loading slots...'
-                                        : slots.status === 'failed'
-                                          ? 'Failed to load slots — try again'
-                                          : slots.items.length === 0
-                                            ? 'No slots available — try another date'
-                                            : 'Select a time slot'}
-                                  </option>
-                                  {slots.items.map((s, i) => {
-                                    const sid = getSlotKey(s, i);
-                                    const hasCapacity = slotHasCapacity(s);
-                                    const isAvailable = isSlotAvailable(s, sel.date);
-                                    const isDisabled = !hasCapacity || !isAvailable;
+                          {!isTimeSlotsDisabled ? (
+                            <div className="space-y-2">
+                              <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                Time slot
+                              </p>
+                              <div className="relative">
+                                <>
+                                  <select
+                                    className="w-full p-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-sky-500 outline-none text-sm font-medium appearance-none cursor-pointer disabled:bg-gray-100 disabled:text-gray-400 transition-all hover:border-gray-300"
+                                    value={sel.slotKey}
+                                    onChange={(e) =>
+                                      setSel((st) => ({
+                                        ...st,
+                                        slotKey: e.target.value,
+                                      }))
+                                    }
+                                    disabled={(!sel.attractionId && !sel.comboId) || (slots.status === 'succeeded' && slots.items.length === 0)}
+                                  >
+                                    <option value="">
+                                      {!sel.attractionId && !sel.comboId
+                                        ? 'Select a ticket above first'
+                                        : slots.status === 'loading'
+                                          ? 'Loading slots...'
+                                          : slots.status === 'failed'
+                                            ? 'Failed to load slots — try again'
+                                            : slots.items.length === 0
+                                              ? 'No slots available — try another date'
+                                              : 'Select a time slot'}
+                                    </option>
+                                    {slots.items.map((s, i) => {
+                                      const sid = getSlotKey(s, i);
+                                      const hasCapacity = slotHasCapacity(s);
+                                      const isAvailable = isSlotAvailable(s, sel.date);
+                                      const isDisabled = !hasCapacity || !isAvailable;
 
-                                    return (
-                                      <option key={sid} value={sid} disabled={isDisabled}>
-                                        {getSlotLabel(s)}{' '}
-                                        {!hasCapacity
-                                          ? '(Full)'
-                                          : !isAvailable
-                                            ? '(Not Available)'
-                                            : ''}
-                                      </option>
-                                    );
-                                  })}
-                                </select>
-                                <ChevronRight
-                                  size={16}
-                                  className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 rotate-90"
-                                />
-                              </>
+                                      return (
+                                        <option key={sid} value={sid} disabled={isDisabled}>
+                                          {getSlotLabel(s)}{' '}
+                                          {!hasCapacity
+                                            ? '(Full)'
+                                            : !isAvailable
+                                              ? '(Not Available)'
+                                              : ''}
+                                        </option>
+                                      );
+                                    })}
+                                  </select>
+                                  <ChevronRight
+                                    size={16}
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 rotate-90"
+                                  />
+                                </>
+                              </div>
                             </div>
-                          </div>
+                          ) : (
+                            <div className="bg-sky-50 border border-sky-100 rounded-xl p-3 text-center">
+                              <p className="text-xs text-sky-700 font-medium">No time slot needed — just pick your date and quantity above</p>
+                            </div>
+                          )}
 
                           <div className="space-y-2">
                             <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">
@@ -2355,8 +2434,8 @@ export default function Booking() {
                   <div
                     className="absolute bg-white rounded-2xl shadow-2xl border border-gray-200 p-4 w-80 max-h-[70vh] overflow-y-auto"
                     style={{
-                      top: calendarAnchorRect ? `${calendarAnchorRect.top}px` : '50%',
-                      left: calendarAnchorRect ? `${calendarAnchorRect.left - 160}px` : '50%',
+                      top: calendarAnchorRect ? `${calendarAnchorRect.top} px` : '50%',
+                      left: calendarAnchorRect ? `${calendarAnchorRect.left - 160} px` : '50%',
                       transform: calendarAnchorRect ? 'none' : 'translate(-50%, -50%)'
                     }}
                     onClick={(e) => e.stopPropagation()}
@@ -2394,7 +2473,7 @@ export default function Booking() {
                               ))}
                               {/* Empty cells for days before month starts */}
                               {Array.from({ length: startDay }).map((_, i) => (
-                                <div key={`empty-${i}`} className="p-2" />
+                                <div key={`empty - ${i} `} className="p-2" />
                               ))}
                               {/* Days of the month */}
                               {Array.from({ length: daysInMonth }).map((_, i) => {
@@ -2410,12 +2489,12 @@ export default function Booking() {
                                     onClick={() => handleDateSelect(dateStr)}
                                     disabled={isPast}
                                     className={`
-                                  p-2 rounded-lg text-sm font-medium transition-all duration-200
+p - 2 rounded - lg text - sm font - medium transition - all duration - 200
                                   ${isPast ? 'text-gray-300 cursor-not-allowed bg-gray-50' : ''}
                                   ${isSelected ? 'bg-sky-600 text-white shadow-md' : ''}
                                   ${!isPast && !isSelected ? 'hover:bg-sky-50 text-gray-700' : ''}
                                   ${isToday ? 'ring-2 ring-sky-300' : ''}
-                                `}
+`}
                                   >
                                     {date.date()}
                                   </button>

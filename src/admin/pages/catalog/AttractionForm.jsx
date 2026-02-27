@@ -14,7 +14,7 @@ export default function AttractionForm() {
   const [state, setState] = React.useState({
     status: isEdit ? 'loading' : 'idle',
     error: null,
-    form: { title: '', slug: '', image_url: '', image_alt: '', desktop_image_url: '', desktop_image_alt: '', base_price: 0, active: true, description: '', meta_title: '', short_description: '', faq_items: [], head_schema: '' }
+    form: { title: '', slug: '', image_url: '', image_alt: '', desktop_image_url: '', desktop_image_alt: '', base_price: 0, active: true, time_slot_enabled: true, stop_booking: false, description: '', meta_title: '', short_description: '', faq_items: [], head_schema: '' }
   });
   const [saving, setSaving] = React.useState(false);
 
@@ -36,6 +36,8 @@ export default function AttractionForm() {
             desktop_image_alt: a.desktop_image_alt || '',
             base_price: a.base_price || 0,
             active: !!a.active,
+            time_slot_enabled: a.time_slot_enabled !== false,
+            stop_booking: !!a.stop_booking,
             description: a.description || '',
             meta_title: a.meta_title || '',
             short_description: a.short_description || '',
@@ -111,6 +113,43 @@ export default function AttractionForm() {
           <div className="flex items-center gap-2">
             <input id="active" type="checkbox" checked={!!f.active} onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, active: e.target.checked } }))} />
             <label htmlFor="active" className="text-sm text-gray-700 dark:text-neutral-200">Active</label>
+          </div>
+
+          {/* Time Slot & Stop Booking Controls */}
+          <div className="md:col-span-2 mt-2 p-4 border border-gray-200 dark:border-neutral-700 rounded-lg bg-gray-50 dark:bg-neutral-800">
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-neutral-200 mb-3">Booking Settings</h3>
+            <div className="flex flex-wrap gap-6">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={!!f.time_slot_enabled}
+                  onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, time_slot_enabled: e.target.checked } }))}
+                  className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                />
+                <span className="text-sm text-gray-700 dark:text-neutral-200">Enable Time Slots</span>
+                <span className="text-xs text-gray-400">(uncheck for per-ticket pricing without hourly slots)</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={!!f.stop_booking}
+                  onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, stop_booking: e.target.checked } }))}
+                  className="w-4 h-4 rounded border-gray-300 text-red-600 focus:ring-red-500"
+                />
+                <span className="text-sm text-red-600 dark:text-red-400 font-medium">Stop Booking</span>
+                <span className="text-xs text-gray-400">(temporarily make this attraction unavailable for booking)</span>
+              </label>
+            </div>
+            {!f.time_slot_enabled && (
+              <p className="mt-2 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-3 py-1.5 rounded">
+                ⚠ Time slots disabled — customers will only select date and quantity (no hourly slots). Price is per ticket, not per hour.
+              </p>
+            )}
+            {f.stop_booking && (
+              <p className="mt-2 text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-3 py-1.5 rounded">
+                🛑 Booking is stopped — this attraction will show as "Unavailable" on the public booking page.
+              </p>
+            )}
           </div>
         </div>
 

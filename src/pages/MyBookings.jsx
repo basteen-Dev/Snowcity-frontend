@@ -73,42 +73,19 @@ const getDisplayTitle = (item) => {
   return item.item_title || item.attraction_title || 'Ticket';
 };
 
-// Get nice slot label
+// Get nice slot label — returns null if no time slot data exists (time slots disabled for this attraction)
 const getSlotDisplay = (item) => {
-  // Debug logging to see what data we actually have
-  console.log('🔍 DEBUG MyBookings item data:', {
-    booking_id: item.booking_id,
-    slot_start_time: item.slot_start_time,
-    slot_end_time: item.slot_end_time,
-    start_time: item.start_time,
-    end_time: item.end_time,
-    slot_label: item.slot_label,
-    booking_time: item.booking_time,
-    full_item: item
-  });
-
   // Try to get explicit times first
   const start = formatTime(item.slot_start_time || item.start_time);
   const end = formatTime(item.slot_end_time || item.end_time);
 
-  if (start && end) {
-    const result = `${start} - ${end}`;
-    console.log('🔍 DEBUG MyBookings using start/end times:', result);
-    return result;
-  }
-  if (start) {
-    console.log('🔍 DEBUG MyBookings using start time only:', start);
-    return start;
-  }
-  if (item.slot_label) {
-    console.log('🔍 DEBUG MyBookings using slot_label:', item.slot_label);
-    return item.slot_label;
-  }
+  if (start && end) return `${start} - ${end}`;
+  if (start) return start;
+  if (item.slot_label) return item.slot_label;
 
   // Fallback to booking_time if slot is missing
-  const fallback = formatTime(item.booking_time) || 'Slot Time';
-  console.log('🔍 DEBUG MyBookings using booking_time fallback:', fallback);
-  return fallback;
+  const fallback = formatTime(item.booking_time);
+  return fallback || null; // Return null instead of placeholder if no time data at all
 };
 
 /* ========== Component ========== */
@@ -295,39 +272,40 @@ export default function MyBookings() {
               <div key={order.id} className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden transition-all hover:shadow-md">
 
                 {/* Order Header (Click to Expand) */}
-                <div className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 cursor-pointer select-none" onClick={() => setExpandedOrder(isExpanded ? null : order.id)}>
-                  <div className="flex items-start gap-4">
-                    <div className={`p-3 rounded-full ${meta.tone === 'green' ? 'bg-green-50 text-green-600' : meta.tone === 'red' ? 'bg-red-50 text-red-600' : 'bg-yellow-50 text-yellow-600'}`}>
-                      <Icon size={24} />
+                <div
+                  className="p-4 sm:p-5 cursor-pointer select-none"
+                  onClick={() => setExpandedOrder(isExpanded ? null : order.id)}
+                >
+                  {/* Top row: icon + ref + pill + chevron */}
+                  <div className="flex items-center gap-3">
+                    <div className={`p-2.5 rounded-full shrink-0 ${meta.tone === 'green' ? 'bg-green-50 text-green-600' : meta.tone === 'red' ? 'bg-red-50 text-red-600' : 'bg-yellow-50 text-yellow-600'}`}>
+                      <Icon size={20} />
                     </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg font-bold text-gray-900">Order #{order.ref}</span>
-                        <Pill text={meta.label} tone={meta.tone} />
-                      </div>
-                      <div className="text-sm text-gray-500 mt-1">
-                        {dayjs(order.date).format('DD MMM YYYY • h:mm A')}
-                      </div>
-                      <div className="text-sm text-gray-600 mt-1">
-                        {order.itemCount || order.items.length} Item{(order.itemCount || order.items.length) !== 1 && 's'}
-                      </div>
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <span className="text-base sm:text-lg font-bold text-gray-900 font-mono tracking-wide truncate">{order.ref || `#${order.id}`}</span>
+                      <Pill text={meta.label} tone={meta.tone} />
+                    </div>
+                    <div className="text-gray-400 shrink-0">
+                      {isExpanded ? <ChevronUp size={22} /> : <ChevronDown size={22} />}
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between md:justify-end gap-6 w-full md:w-auto">
-                    <div className="text-right">
-                      <div className="text-xs text-gray-500 uppercase font-semibold mb-1">Total</div>
-                      <div className="text-2xl font-bold text-gray-900">{formatCurrency(order.calculatedTotal)}</div>
+                  {/* Bottom row: date + items + total */}
+                  <div className="mt-2 ml-[52px] flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+                    <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500 min-w-0">
+                      <span className="truncate">{dayjs(order.date).format('DD MMM YYYY • h:mm A')}</span>
+                      <span className="w-1 h-1 rounded-full bg-gray-300 shrink-0"></span>
+                      <span className="whitespace-nowrap">{order.itemCount || order.items.length} Item{(order.itemCount || order.items.length) !== 1 && 's'}</span>
                     </div>
-                    <div className="text-gray-400">
-                      {isExpanded ? <ChevronUp size={24} /> : <ChevronDown size={24} />}
+                    <div className="text-right shrink-0">
+                      <span className="text-lg sm:text-xl font-bold text-gray-900 rupee">{formatCurrency(order.calculatedTotal)}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Expanded Details (Order Items) */}
                 {isExpanded && (
-                  <div className="border-t border-gray-100 bg-gray-50/50 p-5 animate-slide-down">
+                  <div className="border-t border-gray-100 bg-gray-50/50 p-3 sm:p-5 animate-slide-down">
                     <h4 className="text-xs font-bold text-gray-500 uppercase mb-3">Order Items</h4>
                     <div className="space-y-3">
                       {(order.primaryItems && order.primaryItems.length ? order.primaryItems : order.items).map((item, idx) => {
@@ -335,17 +313,21 @@ export default function MyBookings() {
                         const itemTotal = Number(item.final_amount || item.total_amount || 0);
 
                         return (
-                          <div key={idx} className="bg-white p-4 rounded-lg border border-gray-200 flex flex-col md:flex-row md:items-center justify-between gap-2">
+                          <div key={idx} className="bg-white p-3 sm:p-4 rounded-lg border border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                             <div className="flex-1">
                               <div className="font-medium text-gray-800 text-base">
                                 {getDisplayTitle(item)}
                               </div>
-                              <div className="text-sm text-gray-500 mt-1 flex items-center gap-2">
+                              <div className="text-xs sm:text-sm text-gray-500 mt-1 flex flex-wrap items-center gap-1.5 sm:gap-2">
                                 <span>{dayjs(item.booking_date).format('DD MMM')}</span>
-                                <span className="w-1 h-1 rounded-full bg-gray-300"></span>
-                                <span>{slotStr}</span>
-                                <span className="w-1 h-1 rounded-full bg-gray-300"></span>
-                                <span>Qty: {item.quantity}</span>
+                                {slotStr && (
+                                  <>
+                                    <span className="w-1 h-1 rounded-full bg-gray-300 shrink-0"></span>
+                                    <span className="truncate max-w-[140px] sm:max-w-none">{slotStr}</span>
+                                  </>
+                                )}
+                                <span className="w-1 h-1 rounded-full bg-gray-300 shrink-0"></span>
+                                <span className="whitespace-nowrap">Qty: {item.quantity}</span>
                               </div>
 
                               {/* Display add-ons if present */}
@@ -395,7 +377,7 @@ export default function MyBookings() {
                                 </div>
                               )}
                             </div>
-                            <div className="font-bold text-gray-900">
+                            <div className="font-bold text-gray-900 rupee text-sm sm:text-base shrink-0">
                               {formatCurrency(itemTotal)}
                             </div>
                           </div>
@@ -404,14 +386,14 @@ export default function MyBookings() {
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="mt-6 flex flex-wrap gap-3 border-t border-gray-200 pt-4">
+                    <div className="mt-4 sm:mt-6 flex flex-wrap gap-2 sm:gap-3 border-t border-gray-200 pt-3 sm:pt-4">
                       {meta.label === 'Paid' && (
                         <button
                           onClick={async (e) => {
                             e.stopPropagation();
-                            window.open(`https://app.snowcity.blr/api/tickets/generated/ORDER_${order.ref}.pdf`, '_blank');
+                            window.open(`https://app.snowcityblr.com/api/tickets/generated/ORDER_${order.ref}.pdf`, '_blank');
                           }}
-                          className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                          className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-white border border-gray-300 rounded-lg text-xs sm:text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                         >
                           <FileText size={18} /> Download Ticket(s)
                         </button>
@@ -419,7 +401,7 @@ export default function MyBookings() {
 
                       <button
                         onClick={(e) => { e.stopPropagation(); onCheckStatus(order.id); }}
-                        className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                        className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-white border border-gray-300 rounded-lg text-xs sm:text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                       >
                         <RefreshCcw size={18} /> Check Status
                       </button>
@@ -427,7 +409,7 @@ export default function MyBookings() {
                       {canPay && !isRetry && (
                         <button
                           onClick={(e) => { e.stopPropagation(); setRetryOrder(order.id); }}
-                          className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm ml-auto"
+                          className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-blue-600 text-white rounded-lg text-xs sm:text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm sm:ml-auto"
                         >
                           <CreditCard size={18} /> Pay Now
                         </button>
@@ -436,7 +418,7 @@ export default function MyBookings() {
                       {meta.label === 'Failed' && (
                         <button
                           onClick={(e) => { e.stopPropagation(); handlePaymentFailure(order); }}
-                          className="flex items-center gap-2 px-4 py-2.5 bg-orange-600 text-white rounded-lg text-sm font-medium hover:bg-orange-700 transition-colors shadow-sm ml-auto"
+                          className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-orange-600 text-white rounded-lg text-xs sm:text-sm font-medium hover:bg-orange-700 transition-colors shadow-sm sm:ml-auto"
                         >
                           <RefreshCcw size={18} /> Try Again
                         </button>
