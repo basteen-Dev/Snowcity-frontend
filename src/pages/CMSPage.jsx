@@ -124,7 +124,7 @@ export default function CMSPage() {
                           <div className="text-sm text-white/80 mt-1">Tap to explore memories</div>
                           <Link
                             to="/gallery"
-                            className="mt-4 inline-flex items-center gap-2 rounded-full bg-sky-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg hover:bg-sky-700 transition-all duration-300"
+                            className="mt-4 inline-flex items-center gap-2 rounded-xl bg-sky-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg hover:bg-sky-700 transition-all duration-300"
                           >
                             View Full Gallery →
                           </Link>

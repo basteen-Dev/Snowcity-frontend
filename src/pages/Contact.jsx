@@ -38,8 +38,8 @@ export default function Contact() {
             <textarea className="w-full rounded-md border px-3 py-2" rows={5} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} />
           </div>
           <div className="flex gap-3">
-            <button type="submit" className="rounded-full bg-blue-600 text-white px-5 py-2">Send</button>
-            <a href={mailto} className="rounded-full border px-5 py-2">Open Email App</a>
+            <button type="submit" className="rounded-xl bg-blue-600 text-white px-5 py-2">Send</button>
+            <a href={mailto} className="rounded-xl border px-5 py-2">Open Email App</a>
           </div>
         </form>
 

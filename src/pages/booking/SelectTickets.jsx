@@ -182,7 +182,9 @@ export default function SelectTickets({
                   <button
                     type="button"
                     onClick={onSelect}
-                    className={`px-6 py-2 rounded-full text-white text-sm font-semibold shadow-md active:scale-[0.98] transition-all ${isSelected ? 'bg-sky-700' : 'bg-sky-600 hover:bg-sky-700'
+                    className={`px-6 py-2 rounded-xl text-sm font-semibold shadow-sm active:scale-[0.98] transition-all border ${isSelected
+                      ? 'bg-sky-600 border-sky-600 text-white'
+                      : 'bg-transparent border-sky-600 text-sky-600 hover:bg-sky-700 hover:border-sky-700 hover:text-white'
                       }`}
                   >
                     {isSelected ? 'Selected' : 'Select'}
@@ -206,9 +208,9 @@ export default function SelectTickets({
           <button
             type="button"
             onClick={handleToday}
-            className={`px-4 py-2 rounded-full text-xs sm:text-sm font-medium border transition-colors ${sel.date === todayYMD()
+            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-medium border transition-colors ${sel.date === todayYMD()
               ? 'bg-sky-600 text-white border-sky-600'
-              : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
+              : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300 hover:text-sky-600'
               }`}
           >
             Today
@@ -216,9 +218,9 @@ export default function SelectTickets({
           <button
             type="button"
             onClick={handleTomorrow}
-            className={`px-4 py-2 rounded-full text-xs sm:text-sm font-medium border transition-colors ${sel.date === dayjs().add(1, 'day').format('YYYY-MM-DD')
+            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-medium border transition-colors ${sel.date === dayjs().add(1, 'day').format('YYYY-MM-DD')
               ? 'bg-sky-600 text-white border-sky-600'
-              : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
+              : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300 hover:text-sky-600'
               }`}
           >
             Tomorrow
@@ -227,17 +229,17 @@ export default function SelectTickets({
             type="button"
             onClick={onCalendarButtonClick}
             ref={setCalendarAnchor}
-            className={`px-4 py-2 rounded-full text-xs sm:text-sm font-medium border transition-colors ${sel.date &&
+            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-medium border transition-colors ${sel.date &&
               sel.date !== '' &&
               sel.date !== todayYMD() &&
               sel.date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
               ? 'bg-sky-600 text-white border-sky-600'
-              : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
+              : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300 hover:text-sky-600'
               }`}
           >
             {sel.date && sel.date !== todayYMD() && sel.date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
               ? formatDateDisplay(sel.date)
-              : 'All Days'}
+              : 'More Dates'}
           </button>
         </div>
 

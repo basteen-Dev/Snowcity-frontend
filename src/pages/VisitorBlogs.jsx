@@ -174,7 +174,7 @@ export default function VisitorBlogs() {
                   <button
                     onClick={loadMore}
                     disabled={loadingMore}
-                    className="inline-flex items-center px-8 py-3 bg-blue-600 text-white font-semibold rounded-full hover:bg-blue-700 disabled:bg-blue-400 transition-all duration-200 shadow-lg hover:shadow-xl active:scale-95"
+                    className="inline-flex items-center px-8 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 disabled:bg-blue-400 transition-all duration-200 shadow-lg hover:shadow-xl active:scale-95"
                   >
                     {loadingMore ? (
                       <>

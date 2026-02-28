@@ -179,7 +179,7 @@ const StyledWrapper = styled.div`
   }
   
   .title:hover {
-    color: #003de6;
+    color: #007ACC;
   }
 
   .desc {
@@ -230,7 +230,7 @@ const StyledWrapper = styled.div`
     font-weight: 600;
     align-items: center;
     gap: 0.5rem;
-    background-color: #003de6;
+    background-color: #0099FF;
     padding: 0.6rem 1rem;
     border-radius: 0.75rem;
     transition: all 0.3s ease;
@@ -241,7 +241,7 @@ const StyledWrapper = styled.div`
   }
 
   .action:hover {
-    background-color: #002db3;
+    background-color: #007ACC;
     transform: scale(1.05);
   }
 

@@ -1600,11 +1600,11 @@ export default function Booking() {
                     type="button"
                     onClick={onSelect}
                     disabled={isStopped}
-                    className={`px-6 py-2 rounded-full text-white text-sm font-semibold shadow-md active:scale-[0.98] transition-all ${isStopped
-                      ? 'bg-gray-400 cursor-not-allowed'
+                    className={`px-6 py-2 rounded-xl text-sm font-semibold shadow-sm active:scale-[0.98] transition-all border ${isStopped
+                      ? 'bg-gray-400 border-gray-400 text-white cursor-not-allowed'
                       : isSelected
-                        ? 'bg-sky-700'
-                        : 'bg-sky-600 hover:bg-sky-700'
+                        ? 'bg-sky-600 border-sky-600 text-white'
+                        : 'bg-transparent border-sky-600 text-sky-600 hover:bg-sky-700 hover:border-sky-700 hover:text-white'
                       }`}
                   >
                     {isStopped ? 'Unavailable' : isSelected ? 'Selected' : 'Select'}
@@ -1718,10 +1718,10 @@ export default function Booking() {
   };
 
   const formatDateDisplay = (date) => {
-    if (!date) return 'All Days';
+    if (!date) return 'More Dates';
     const d = dayjs(date);
-    if (date === todayYMD()) return 'All Days';
-    if (date === dayjs().add(1, 'day').format('YYYY-MM-DD')) return 'All Days';
+    if (date === todayYMD()) return 'More Dates';
+    if (date === dayjs().add(1, 'day').format('YYYY-MM-DD')) return 'More Dates';
     return d.format('D MMM');
   };
 
@@ -2051,7 +2051,7 @@ export default function Booking() {
                       <button
                         type="button"
                         onClick={handleBack}
-                        className="p-2.5 rounded-full border border-gray-200 text-gray-700 hover:border-gray-300 active:scale-[0.98] transition-all flex items-center justify-center shadow-sm"
+                        className="p-2.5 rounded-xl border border-gray-200 text-gray-700 hover:border-gray-300 active:scale-[0.98] transition-all flex items-center justify-center shadow-sm"
                         title="Go back"
                       >
                         <ArrowLeft size={18} />
@@ -2062,15 +2062,13 @@ export default function Booking() {
                       <button
                         type="button"
                         onClick={handleNext}
-                        className="px-6 py-2.5 rounded-full border border-sky-200 text-sky-700 bg-sky-50 text-sm font-semibold transition-all active:scale-[0.98] shadow-sm"
+                        className="px-6 py-2.5 rounded-xl border border-sky-200 text-sky-700 bg-sky-50 text-sm font-semibold transition-all active:scale-[0.98] shadow-sm"
                       >
                         Skip
                       </button>
                     )}
 
-                    <div className={`flex - 1 ${isDesktop ? 'hidden' : ''} `}>
-                      <div className="text-base font-semibold text-gray-900 tabular-nums">₹{finalTotal}</div>
-                    </div>
+                    <div className={`flex-1 ${isDesktop ? 'hidden' : ''}`} />
 
                     <button
                       type="button"
@@ -2084,7 +2082,7 @@ export default function Booking() {
                               ? totalAddonCount === 0 || !hasCartItems
                               : !hasCartItems && !selectionReady
                       }
-                      className={`ml-auto inline-flex items-center justify-center gap-2 rounded-full px-6 py-2.5 text-sm font-semibold transition-all shadow-md active:scale-[0.98] ${(step === 4
+                      className={`ml-auto inline-flex items-center justify-center gap-2 rounded-xl px-6 py-2.5 text-sm font-semibold transition-all shadow-md active:scale-[0.98] ${(step === 4
                         ? creating?.status === 'loading' || paymentLoading || !hasCartItems
                         : step === 3
                           ? !otp.verified
@@ -2131,7 +2129,7 @@ export default function Booking() {
                       <button
                         type="button"
                         onClick={() => setDrawerOpen(false)}
-                        className="p-2 rounded-full hover:bg-gray-100 text-gray-500 flex-shrink-0"
+                        className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 flex-shrink-0"
                       >
                         <X size={20} />
                       </button>
@@ -2187,7 +2185,7 @@ export default function Booking() {
                             <button
                               type="button"
                               onClick={() => setDrawerMode('booking')}
-                              className="w-full px-6 py-3 rounded-full bg-sky-600 text-white font-semibold shadow-md hover:bg-sky-700 active:scale-[0.98] transition-all"
+                              className="w-full px-6 py-3 rounded-xl bg-sky-600 text-white font-semibold shadow-md hover:bg-sky-700 active:scale-[0.98] transition-all"
                             >
                               Book this
                             </button>
@@ -2203,9 +2201,9 @@ export default function Booking() {
                               <button
                                 type="button"
                                 onClick={handleToday}
-                                className={`px-4 py-2 rounded-full text-xs font-medium border transition-colors ${sel.date === todayYMD()
+                                className={`px-4 py-2 rounded-xl text-xs font-medium border transition-colors ${sel.date === todayYMD()
                                   ? 'bg-sky-600 text-white border-sky-600 shadow-sm'
-                                  : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
+                                  : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300 hover:text-sky-600'
                                   }`}
                               >
                                 Today
@@ -2213,9 +2211,9 @@ export default function Booking() {
                               <button
                                 type="button"
                                 onClick={handleTomorrow}
-                                className={`px-4 py-2 rounded-full text-xs font-medium border transition-colors ${sel.date === dayjs().add(1, 'day').format('YYYY-MM-DD')
+                                className={`px-4 py-2 rounded-xl text-xs font-medium border transition-colors ${sel.date === dayjs().add(1, 'day').format('YYYY-MM-DD')
                                   ? 'bg-sky-600 text-white border-sky-600 shadow-sm'
-                                  : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
+                                  : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300 hover:text-sky-600'
                                   }`}
                               >
                                 Tomorrow
@@ -2223,12 +2221,12 @@ export default function Booking() {
                               <button
                                 type="button"
                                 onClick={onCalendarButtonClick}
-                                className={`px-4 py-2 rounded-full text-xs font-medium border transition-colors ${sel.date &&
+                                className={`px-4 py-2 rounded-xl text-xs font-medium border transition-colors ${sel.date &&
                                   sel.date !== '' &&
                                   sel.date !== todayYMD() &&
                                   sel.date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
                                   ? 'bg-sky-600 text-white border-sky-600 shadow-sm'
-                                  : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
+                                  : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300 hover:text-sky-600'
                                   }`}
                               >
                                 {formatDateDisplay(sel.date)}
@@ -2345,7 +2343,7 @@ export default function Booking() {
                             type="button"
                             onClick={addSelectionToCart}
                             disabled={!selectionReady}
-                            className={`w-full px-2 py-1.5 rounded-full text-white font-bold shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 ${!selectionReady ? 'bg-gray-300 cursor-not-allowed' : 'bg-sky-600 hover:bg-sky-800'
+                            className={`w-full px-2 py-1.5 rounded-xl text-white font-bold shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 ${!selectionReady ? 'bg-gray-300 cursor-not-allowed' : 'bg-sky-600 hover:bg-sky-700'
                               }`}
                           >
                             <ShoppingCart size={20} />
@@ -2355,7 +2353,7 @@ export default function Booking() {
                             type="button"
                             onClick={handleDirectBuy}
                             disabled={!selectionReady}
-                            className="flex items-center gap-2 px-2 py-2 rounded-full bg-sky-600 text-white text-sm font-semibold shadow-md hover:bg-sky-700 active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                            className="flex items-center gap-2 px-2 py-2 rounded-xl bg-sky-600 text-white text-sm font-semibold shadow-md hover:bg-sky-700 active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                           >
                             <ShoppingBag size={20} />
                             <span>Buy</span>
@@ -2445,7 +2443,7 @@ export default function Booking() {
               {/* Custom Calendar Popup */}
               {showCalendar && (
                 <div
-                  className="fixed inset-0 z-[9999] flex"
+                  className="fixed inset-0 z-[9999] flex bg-black/10 backdrop-blur-sm"
                   onClick={() => setShowCalendar(false)}
                 >
                   <div className="flex-1" />

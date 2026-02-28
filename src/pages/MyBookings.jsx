@@ -282,7 +282,7 @@ export default function MyBookings() {
                       <Icon size={20} />
                     </div>
                     <div className="flex items-center gap-2 min-w-0 flex-1">
-                      <span className="text-base sm:text-lg font-bold text-gray-900 font-mono tracking-wide truncate">{order.ref || `#${order.id}`}</span>
+                      <span className="text-base sm:text-lg font-bold text-gray-900 tracking-wide truncate">{order.ref || `#${order.id}`}</span>
                       <Pill text={meta.label} tone={meta.tone} />
                     </div>
                     <div className="text-gray-400 shrink-0">
@@ -560,7 +560,7 @@ export default function MyBookings() {
                   <h4 className="font-bold text-red-800">Payment Failed</h4>
                 </div>
                 <p className="text-red-700 text-sm mb-3">
-                  Your payment for order <span className="font-mono font-bold">#{selectedOrder.ref}</span> could not be processed.
+                  Your payment for order <span className="font-bold">#{selectedOrder.ref}</span> could not be processed.
                   Please try again or contact support if the issue persists.
                 </p>
                 <div className="text-xs text-red-600 bg-red-100 rounded-lg p-2">

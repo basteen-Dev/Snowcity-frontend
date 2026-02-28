@@ -14,7 +14,7 @@ const resolveAssetUrl = (url) => {
   return url;
 };
 
-const FONT_WHITELIST = ['inter', 'opensans', 'poppins', 'roboto', 'serif', 'monospace'];
+const FONT_WHITELIST = ['inter', 'redhatdisplay'];
 const SIZE_WHITELIST = ['small', false, 'large', 'huge'];
 
 /**

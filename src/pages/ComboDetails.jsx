@@ -1053,19 +1053,19 @@ export default function ComboDetails() {
           <div className="absolute bottom-20 left-0 right-0 px-4 md:px-8 pointer-events-none">
             <div className="max-w-7xl mx-auto">
               {/* Badge */}
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-600/90 text-[10px] md:text-xs font-bold text-white uppercase tracking-widest backdrop-blur-sm mb-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0099FF]/90 text-[10px] md:text-xs font-bold text-white uppercase tracking-widest backdrop-blur-sm mb-4">
                 <span>Combo Deal</span>
                 {discountPercent > 0 && (
                   <span className="pl-2 border-l border-white/30">Save {discountPercent}%</span>
                 )}
               </div>
 
-              <h1 className="text-4xl md:text-6xl font-extrabold text-white tracking-tight drop-shadow-lg" style={{ fontFamily: 'Inter, sans-serif' }}>
+              <h1 className="text-3xl md:text-5xl font-extrabold text-white tracking-tight drop-shadow-lg">
                 {title}
               </h1>
 
               {subtitle && (
-                <p className="mt-4 text-gray-200 text-base md:text-xl max-w-2xl font-medium drop-shadow-md line-clamp-2">
+                <p className="mt-4 text-gray-200 text-sm md:text-lg max-w-2xl font-medium drop-shadow-md line-clamp-2">
                   {subtitle}
                 </p>
               )}
@@ -1085,8 +1085,8 @@ export default function ComboDetails() {
             {linkedGallery.items.length > 0 && (
               <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
                 <div className="p-6 md:p-8">
-                  <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                    <span className="w-2 h-6 bg-blue-600 rounded-full" />
+                  <h2 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
+                    <span className="w-2 h-6 bg-[#0099FF] rounded-full" />
                     Photo Gallery
                   </h2>
                   <GalleryGrid items={linkedGallery.items} />
@@ -1098,7 +1098,7 @@ export default function ComboDetails() {
             {normalizedAttractions.length > 0 && (
               <div className="pb-4">
                 <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                  <span className="w-2 h-6 bg-blue-600 rounded-full" />
+                  <span className="w-2 h-6 bg-[#0099FF] rounded-full" />
                   What's Included
                 </h2>
                 <div className="flex flex-nowrap gap-4 overflow-x-auto pb-6 -mx-1 px-1 scrollbar-hide">
@@ -1117,8 +1117,8 @@ export default function ComboDetails() {
                           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent p-5 flex flex-col justify-end">
-                          <span className="text-[10px] text-blue-400 font-bold uppercase tracking-wider mb-1">Experience {idx + 1}</span>
-                          <h3 className={`${isThree ? 'text-base' : 'text-lg'} font-bold text-white leading-tight line-clamp-1`}>{attr.title}</h3>
+                          <span className="text-[10px] text-[#0099FF] font-bold uppercase tracking-wider mb-1">Experience {idx + 1}</span>
+                          <h3 className={`${isThree ? 'text-sm' : 'text-base'} font-bold text-white leading-tight line-clamp-1`}>{attr.title}</h3>
                         </div>
                       </div>
                     );
@@ -1133,7 +1133,7 @@ export default function ComboDetails() {
                 <div className="pb-6 border-b border-gray-100">
                   <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Starting From</p>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-4xl font-black text-gray-900 rupee">{formatCurrency(comboPrice)}</span>
+                    <span className="text-3xl font-black text-gray-900 rupee">{formatCurrency(comboPrice)}</span>
                     <span className="text-gray-500 font-medium">/ person</span>
                   </div>
                   {hasBasePricing && discountPercent > 0 && (
@@ -1146,10 +1146,10 @@ export default function ComboDetails() {
 
                 <div className="space-y-6">
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-3">Select Date</label>
-                    <button onClick={onCalendarButtonClick} className="w-full flex items-center justify-between p-4 bg-gray-50 border border-gray-100 rounded-2xl hover:border-blue-400 transition-all font-semibold text-gray-900 shadow-inner">
+                    <label className="block text-xs font-bold text-gray-700 mb-3">Select Date</label>
+                    <button onClick={onCalendarButtonClick} className="w-full flex items-center justify-between p-4 bg-gray-50 border border-gray-100 rounded-xl hover:border-blue-400 transition-all font-semibold text-gray-900 shadow-inner">
                       <span className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
+                        <div className="w-8 h-8 rounded-lg bg-blue-50 text-[#0099FF] flex items-center justify-center">
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" /></svg>
                         </div>
                         {dayjs(date).format('DD MMM YYYY')}
@@ -1159,10 +1159,10 @@ export default function ComboDetails() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-3">Time Slot</label>
+                    <label className="block text-xs font-bold text-gray-700 mb-3">Time Slot</label>
                     {comboSlotInfoMessage && (
-                      <div className="mb-3 p-3 bg-blue-50 border border-blue-100 rounded-xl text-xs text-blue-700 font-medium flex items-start gap-2">
-                        <svg className="w-4 h-4 mt-0.5 flex-shrink-0 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                      <div className="mb-3 p-3 bg-blue-50 border border-blue-100 rounded-xl text-xs text-[#0099FF] font-medium flex items-start gap-2">
+                        <svg className="w-4 h-4 mt-0.5 flex-shrink-0 text-[#0099FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                         <span>{comboSlotInfoMessage}</span>
                       </div>
                     )}
@@ -1172,7 +1172,7 @@ export default function ComboDetails() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-3">Quantity</label>
+                    <label className="block text-xs font-bold text-gray-700 mb-3">Quantity</label>
                     <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
                       <button onClick={() => setQty(q => Math.max(1, q - 1))} className="w-10 h-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-xl font-bold text-gray-600 hover:bg-gray-50 shadow-sm">-</button>
                       <span className="text-xl font-black text-gray-900">{qty}</span>
@@ -1181,17 +1181,17 @@ export default function ComboDetails() {
                   </div>
 
                   {selectedSlot && (
-                    <div className="p-5 bg-blue-600 rounded-3xl text-white shadow-xl shadow-blue-200">
+                    <div className="p-5 bg-[#0099FF] rounded-3xl text-white shadow-xl shadow-[#0099FF]/20">
                       <div className="flex justify-between items-end mb-4">
                         <div>
                           <p className="text-[10px] font-black uppercase tracking-widest text-blue-200 mb-1">Total Payable</p>
-                          <p className="text-3xl font-black rupee">{formatCurrency(totalPrice)}</p>
+                          <p className="text-2xl font-black rupee">{formatCurrency(totalPrice)}</p>
                         </div>
                         <div className="text-right">
                           <p className="text-xs font-bold text-blue-100">{qty} {qty === 1 ? 'Ticket' : 'Tickets'}</p>
                         </div>
                       </div>
-                      <button onClick={() => onBook(selectedSlot, selectedSlotPricing)} disabled={isBookingStopped} className="w-full py-4 bg-white text-blue-600 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-blue-50 transition-all hover:scale-[1.02] active:scale-[0.98]">
+                      <button onClick={() => onBook(selectedSlot, selectedSlotPricing)} disabled={isBookingStopped} className="w-full py-4 bg-white text-[#0099FF] rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-white/90 transition-all hover:scale-[1.02] active:scale-[0.98]">
                         Secure My Spot
                       </button>
                     </div>
@@ -1204,7 +1204,7 @@ export default function ComboDetails() {
             {description && (
               <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 md:p-8">
                 <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                  <span className="w-2 h-6 bg-blue-600 rounded-full" />
+                  <span className="w-2 h-6 bg-[#0099FF] rounded-full" />
                   Experience Highlights
                 </h2>
                 <div className="prose prose-blue max-w-none text-gray-700">
@@ -1216,10 +1216,10 @@ export default function ComboDetails() {
                       .filter(s => s.length > 0)
                       .map((sentence, i) => (
                         <li key={i} className="flex items-start gap-4">
-                          <div className="mt-1 p-1 bg-blue-50 text-blue-600 rounded-lg">
+                          <div className="mt-1 p-1 bg-blue-50 text-[#0099FF] rounded-lg">
                             <Check className="w-4 h-4" />
                           </div>
-                          <span className="text-base md:text-lg leading-relaxed">{sentence}.</span>
+                          <span className="text-xs md:text-sm leading-relaxed">{sentence}.</span>
                         </li>
                       ))}
                   </ul>
@@ -1231,7 +1231,7 @@ export default function ComboDetails() {
             {combo?.faq_items?.length > 0 && (
               <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 md:p-8">
                 <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                  <span className="w-2 h-6 bg-blue-600 rounded-full" />
+                  <span className="w-2 h-6 bg-[#0099FF] rounded-full" />
                   Frequently Asked Questions
                 </h2>
                 <div className="space-y-3">
@@ -1241,7 +1241,7 @@ export default function ComboDetails() {
                         {faq.question}
                         <ChevronDown className="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" />
                       </summary>
-                      <div className="p-4 pt-0 text-gray-600 bg-gray-50/50 leading-relaxed text-sm md:text-base">
+                      <div className="p-4 pt-0 text-gray-600 bg-gray-50/50 leading-relaxed text-xs md:text-sm">
                         {faq.answer}
                       </div>
                     </details>
@@ -1254,10 +1254,10 @@ export default function ComboDetails() {
             <div id="availability" className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 md:p-8">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                 <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                  <span className="w-2 h-6 bg-blue-600 rounded-full" />
+                  <span className="w-2 h-6 bg-[#0099FF] rounded-full" />
                   Available Time Slots
                 </h2>
-                <div className="px-4 py-2 bg-blue-50 text-blue-700 rounded-2xl text-sm font-semibold border border-blue-100">
+                <div className="px-4 py-2 bg-blue-50 text-[#0099FF] rounded-2xl text-sm font-semibold border border-blue-100">
                   {dayjs(date).format('DD MMMM YYYY')}
                 </div>
               </div>
@@ -1289,11 +1289,11 @@ export default function ComboDetails() {
                         <div key={key} className={`p-4 rounded-2xl border transition-all ${isUnavailable ? 'opacity-60 bg-gray-50' : 'bg-white border-gray-100 hover:border-blue-500 hover:shadow-lg'}`}>
                           <div className="flex justify-between items-start mb-4">
                             <div>
-                              <p className="font-bold text-gray-900 text-lg">{labelTime(s)}</p>
+                              <p className="font-bold text-gray-900 text-base">{labelTime(s)}</p>
                               <p className="text-xs text-gray-500 mt-0.5">Capacity: {s.capacity} • {s.available} left</p>
                             </div>
                             <div className="text-right">
-                              <p className="text-xl font-bold text-blue-600 rupee">{formatCurrency(pricing.finalPrice)}</p>
+                              <p className="text-xl font-bold text-[#0099FF] rupee">{formatCurrency(pricing.finalPrice)}</p>
                               {pricing.originalPrice > pricing.finalPrice && (
                                 <p className="text-xs text-gray-400 line-through">{formatCurrency(pricing.originalPrice)}</p>
                               )}
@@ -1303,7 +1303,7 @@ export default function ComboDetails() {
                             type="button"
                             disabled={isUnavailable}
                             onClick={() => onBook(s, pricing)}
-                            className={`w-full py-3 rounded-xl font-bold text-sm transition-all ${isUnavailable ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm'}`}
+                            className={`w-full py-3 rounded-xl font-bold text-sm transition-all ${isUnavailable ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-[#0099FF] text-white hover:bg-[#007ACC] shadow-sm'}`}
                           >
                             {isUnavailable ? 'Unavailable' : 'Book This Slot'}
                           </button>
@@ -1315,11 +1315,11 @@ export default function ComboDetails() {
             </div>
 
             {/* Explore More card - Relocated to left column */}
-            <div className="mt-8 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-3xl p-8 text-white shadow-lg overflow-hidden relative group">
+            <div className="mt-8 bg-gradient-to-br from-[#0099FF] to-[#007ACC] rounded-3xl p-8 text-white shadow-lg overflow-hidden relative group">
               <div className="relative z-10">
-                <h3 className="text-xl font-bold mb-2">Explore More</h3>
+                <h3 className="text-lg font-bold mb-2">Explore More</h3>
                 <p className="text-sm text-blue-100 mb-6 font-medium">Check out our other amazing combo deals and save more on your visit!</p>
-                <Link to="/combos" className="inline-flex items-center gap-2 px-6 py-3 bg-white text-blue-600 rounded-2xl font-bold text-sm transition-all hover:px-8">
+                <Link to="/combos" className="inline-flex items-center gap-2 px-6 py-3 bg-white text-[#0099FF] rounded-xl font-bold text-sm transition-all hover:px-8">
                   Browse All Combos
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 8l4 4m0 0l-4 4m4-4H3" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" /></svg>
                 </Link>
@@ -1336,7 +1336,7 @@ export default function ComboDetails() {
               <div className="pb-6 border-b border-gray-100">
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Starting From</p>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-black text-gray-900 rupee">{formatCurrency(comboPrice)}</span>
+                  <span className="text-3xl font-black text-gray-900 rupee">{formatCurrency(comboPrice)}</span>
                   <span className="text-gray-500 font-medium">/ person</span>
                 </div>
                 {hasBasePricing && discountPercent > 0 && (
@@ -1352,13 +1352,13 @@ export default function ComboDetails() {
 
                 {/* Date Picker */}
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-3">Select Date</label>
+                  <label className="block text-xs font-bold text-gray-700 mb-3">Select Date</label>
                   <button
                     onClick={onCalendarButtonClick}
-                    className="w-full flex items-center justify-between p-4 bg-gray-50 border border-gray-100 rounded-2xl hover:border-blue-400 transition-all font-semibold text-gray-900 shadow-inner"
+                    className="w-full flex items-center justify-between p-4 bg-gray-50 border border-gray-100 rounded-xl hover:border-blue-400 transition-all font-semibold text-gray-900 shadow-inner"
                   >
                     <span className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
+                      <div className="w-8 h-8 rounded-xl bg-blue-50 text-[#0099FF] flex items-center justify-center">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" /></svg>
                       </div>
                       {dayjs(date).format('DD MMM YYYY')}
@@ -1369,7 +1369,7 @@ export default function ComboDetails() {
 
                 {/* Slot Selector */}
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-3">Time Slot</label>
+                  <label className="block text-xs font-bold text-gray-700 mb-3">Time Slot</label>
                   {comboSlotInfoMessage && (
                     <div className="mb-3 p-3 bg-blue-50 border border-blue-100 rounded-xl text-xs text-blue-700 font-medium flex items-start gap-2">
                       <svg className="w-4 h-4 mt-0.5 flex-shrink-0 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -1379,7 +1379,7 @@ export default function ComboDetails() {
                   <select
                     value={slotState.selectedKey}
                     onChange={(e) => setSlotState(s => ({ ...s, selectedKey: e.target.value }))}
-                    className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl font-semibold text-gray-900 outline-none focus:ring-2 focus:ring-blue-500/20"
+                    className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl font-semibold text-gray-900 outline-none focus:ring-2 focus:ring-blue-500/20"
                     disabled={slots.length === 0}
                   >
                     {!slots.length ? <option>No slots available</option> : <><option value="">Select a time</option>{slots.filter(s => isSlotBookableForDate(s, date)).map(s => <option key={buildSlotKey(s)} value={buildSlotKey(s)}>{labelTime(s)}</option>)}</>}
@@ -1388,8 +1388,8 @@ export default function ComboDetails() {
 
                 {/* Quantity */}
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-3">Quantity</label>
-                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                  <label className="block text-xs font-bold text-gray-700 mb-3">Quantity</label>
+                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100">
                     <button onClick={() => setQty(q => Math.max(1, q - 1))} className="w-10 h-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-xl font-bold text-gray-600 hover:bg-gray-50 shadow-sm">-</button>
                     <span className="text-xl font-black text-gray-900">{qty}</span>
                     <button onClick={() => setQty(q => q + 1)} className="w-10 h-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-xl font-bold text-gray-600 hover:bg-gray-50 shadow-sm">+</button>
@@ -1398,11 +1398,11 @@ export default function ComboDetails() {
 
                 {/* Summary Box */}
                 {selectedSlot && (
-                  <div className="p-5 bg-blue-600 rounded-3xl text-white shadow-xl shadow-blue-200">
+                  <div className="p-5 bg-[#0099FF] rounded-3xl text-white shadow-xl shadow-[#0099FF]/20">
                     <div className="flex justify-between items-end mb-4">
                       <div>
                         <p className="text-[10px] font-black uppercase tracking-widest text-blue-200 mb-1">Total Payable</p>
-                        <p className="text-3xl font-black rupee">{formatCurrency(totalPrice)}</p>
+                        <p className="text-2xl font-black rupee">{formatCurrency(totalPrice)}</p>
                       </div>
                       <div className="text-right">
                         <p className="text-xs font-bold text-blue-100">{qty} {qty === 1 ? 'Ticket' : 'Tickets'}</p>
@@ -1411,7 +1411,7 @@ export default function ComboDetails() {
                     <button
                       onClick={() => onBook(selectedSlot, selectedSlotPricing)}
                       disabled={isBookingStopped}
-                      className="w-full py-4 bg-white text-blue-600 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-blue-50 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                      className="w-full py-4 bg-white text-[#0099FF] rounded-xl font-black text-sm uppercase tracking-widest hover:bg-white/90 transition-all hover:scale-[1.02] active:scale-[0.98]"
                     >
                       Secure My Spot
                     </button>
@@ -1420,7 +1420,7 @@ export default function ComboDetails() {
 
                 {/* Help/Inquiry */}
                 <div className="text-center pt-2">
-                  <p className="text-xs text-gray-400 font-medium">Need help? <Link to="/contact" className="text-blue-600 font-bold hover:underline">Chat with us</Link></p>
+                  <p className="text-xs text-gray-400 font-medium">Need help? <Link to="/contact" className="text-[#0099FF] font-bold hover:underline">Chat with us</Link></p>
                 </div>
               </div>
             </div>
@@ -1436,8 +1436,8 @@ export default function ComboDetails() {
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setShowCalendar(false)}>
           <div className="bg-white rounded-[32px] w-full max-w-sm p-6 shadow-2xl scale-in-center overflow-hidden" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-gray-900">Select Date</h3>
-              <button onClick={() => setShowCalendar(false)} className="p-2 hover:bg-gray-100 rounded-full text-gray-400 transition-colors"><X className="w-6 h-6" /></button>
+              <h3 className="text-lg font-bold text-gray-900">Select Date</h3>
+              <button onClick={() => setShowCalendar(false)} className="p-2 hover:bg-gray-100 rounded-xl text-gray-400 transition-colors"><X className="w-6 h-6" /></button>
             </div>
 
             <div className="max-h-[60vh] overflow-y-auto pr-1 space-y-6">
@@ -1467,7 +1467,7 @@ export default function ComboDetails() {
                             key={i}
                             disabled={isPast}
                             onClick={() => handleDateSelect(dateStr)}
-                            className={`h-10 text-sm font-bold rounded-xl transition-all ${isPast ? 'text-gray-200 cursor-not-allowed' : isSelected ? 'bg-blue-600 text-white shadow-lg' : isToday ? 'text-blue-600 bg-blue-50 border border-blue-200' : 'text-gray-700 hover:bg-white hover:shadow-sm'}`}
+                            className={`h-10 text-sm font-bold rounded-xl transition-all ${isPast ? 'text-gray-200 cursor-not-allowed' : isSelected ? 'bg-[#0099FF] text-white shadow-lg' : isToday ? 'text-[#0099FF] bg-blue-50 border border-blue-200' : 'text-gray-700 hover:bg-white hover:shadow-sm'}`}
                           >
                             {dayNum}
                           </button>

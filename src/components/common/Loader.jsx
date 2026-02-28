@@ -88,7 +88,7 @@ const Dot = styled.div`
 
 const LoadingText = styled.p`
   margin: 0;
-  font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-weight: 500;
   color: #374151;
   font-size: 14px;

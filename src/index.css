@@ -6,7 +6,16 @@ html,
 body,
 #root {
   height: 100%;
-  font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+  font-family: 'Inter', sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: 'Red Hat Display', sans-serif;
 }
 
 html {
@@ -41,48 +50,20 @@ html {
 }
 
 body {
-  @apply font-sans antialiased;
+  @apply font-body antialiased;
   --premium-yellow: #facc15;
-  font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-display: swap;
 }
 
-/* Quill custom font classes */
-.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="inter"]::before,
-.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="inter"]::before,
-.ql-font-inter {
-  font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
-}
-
-.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="poppins"]::before,
-.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="poppins"]::before,
-.ql-font-poppins {
-  font-family: 'Poppins', 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-}
-
-.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="roboto"]::before,
-.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="roboto"]::before,
-.ql-font-roboto {
-  font-family: 'Roboto', 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+/* Updated Quill font classes */
+.ql-snow .ql-picker.ql-font .ql-picker-label::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item::before {
+  font-family: 'Inter', sans-serif;
 }
 
 .ql-snow .ql-picker.ql-font .ql-picker-label[data-value="serif"]::before,
-.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="serif"]::before,
-.ql-font-serif {
-  font-family: 'Georgia', 'Times New Roman', serif;
-}
-
-.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="monospace"]::before,
-.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="monospace"]::before,
-.ql-font-monospace {
-  font-family: 'JetBrains Mono', 'Fira Code', 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
-}
-
-.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="opensans"]::before,
-.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="opensans"]::before,
-.ql-font-opensans {
-  font-family: 'Open Sans', 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-}
+/* Default to body font */
 
 /* Quill font-size picker labels */
 .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="small"]::before,
@@ -122,19 +103,10 @@ body {
   content: 'Inter' !important;
 }
 
-.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="opensans"]::before,
-.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="opensans"]::before {
-  content: 'Open Sans' !important;
-}
-
-.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="poppins"]::before,
-.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="poppins"]::before {
-  content: 'Poppins' !important;
-}
-
-.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="roboto"]::before,
-.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="roboto"]::before {
-  content: 'Roboto' !important;
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="redhatdisplay"]::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="redhatdisplay"]::before {
+  content: 'Red Hat Display' !important;
+  font-family: 'Red Hat Display', sans-serif;
 }
 
 .ql-snow .ql-picker.ql-font .ql-picker-label[data-value="serif"]::before,
@@ -166,10 +138,10 @@ body {
 }
 
 .ql-editor blockquote {
-  border-left: 4px solid #0ea5e9;
+  border-left: 4px solid #0099FF;
   padding-left: 1em;
   margin: 1em 0;
-  color: #475569;
+  color: #6B7280;
   font-style: italic;
 }
 
@@ -187,28 +159,17 @@ body {
   word-break: break-word;
 }
 
-.cms-content .ql-font-inter {
-  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+.cms-content {
+  font-family: 'Inter', sans-serif;
 }
 
-.cms-content .ql-font-opensans {
-  font-family: 'Open Sans', 'Inter', ui-sans-serif, system-ui, sans-serif;
-}
-
-.cms-content .ql-font-poppins {
-  font-family: 'Poppins', 'Inter', ui-sans-serif, system-ui, sans-serif;
-}
-
-.cms-content .ql-font-roboto {
-  font-family: 'Roboto', 'Inter', ui-sans-serif, system-ui, sans-serif;
-}
-
-.cms-content .ql-font-serif {
-  font-family: 'Georgia', 'Times New Roman', serif;
-}
-
-.cms-content .ql-font-monospace {
-  font-family: 'JetBrains Mono', 'Fira Code', Menlo, monospace;
+.cms-content h1,
+.cms-content h2,
+.cms-content h3,
+.cms-content h4,
+.cms-content h5,
+.cms-content h6 {
+  font-family: 'Red Hat Display', sans-serif;
 }
 
 .cms-content .ql-size-small {
@@ -249,10 +210,10 @@ body {
 }
 
 .cms-content blockquote {
-  border-left: 4px solid #0ea5e9;
+  border-left: 4px solid #0099FF;
   padding-left: 1em;
   margin: 1em 0;
-  color: #475569;
+  color: #6B7280;
   font-style: italic;
 }
 
@@ -265,12 +226,12 @@ body {
 }
 
 .cms-content a {
-  color: #2563eb;
+  color: #0099FF;
   text-decoration: underline;
 }
 
 .cms-content a:hover {
-  color: #1d4ed8;
+  color: #007ACC;
 }
 
 .cms-content table {
@@ -327,7 +288,7 @@ body {
   position: absolute;
   left: 0;
   top: 0;
-  color: #003de6;
+  color: #0099FF;
   font-weight: bold;
   font-size: 1.2rem;
   line-height: 1;
@@ -344,7 +305,7 @@ body {
 }
 
 .richtext-preview {
-  font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+  font-family: 'Inter', sans-serif;
   border: 1px dashed rgba(148, 163, 184, 0.6);
   border-radius: 0.75rem;
   padding: 1rem;
@@ -586,8 +547,8 @@ body {
   height: 55px;
   border: 6px solid #e5e7eb;
   /* light grey background ring */
-  border-top: 6px solid #0073aa;
-  /* GST blue color */
+  border-top: 6px solid #0099FF;
+  /* Updated Primary color */
   border-radius: 50%;
   animation: gst-spin 0.9s linear infinite;
   margin: 0 auto;
@@ -712,7 +673,7 @@ section .shadow-lg {
   font-size: 10px;
   letter-spacing: 1.5px;
   text-transform: uppercase;
-  color: #64748b;
+  color: #6B7280;
   font-weight: 700;
   margin-bottom: 6px;
   opacity: 0.8;
@@ -721,14 +682,14 @@ section .shadow-lg {
 .exp-name {
   font-size: 24px;
   font-weight: 800;
-  color: #1e293b;
+  color: #111827;
   margin-bottom: 8px;
   line-height: 1.1;
 }
 
 .exp-desc {
   font-size: 15px;
-  color: #475569;
+  color: #6B7280;
   line-height: 1.5;
   margin-bottom: 24px;
   flex: 1;
@@ -755,18 +716,18 @@ section .shadow-lg {
 .exp-price {
   font-size: 26px;
   font-weight: 800;
-  color: #0f172a;
+  color: #111827;
 }
 
 .exp-price span {
   font-size: 13px;
-  color: #94a3b8;
+  color: #6B7280;
   font-weight: 500;
   margin-left: 2px;
 }
 
 .btn-book-exp {
-  background: #003de6;
+  background: #0099FF;
   color: white;
   font-size: 14px;
   font-weight: 800;
@@ -780,16 +741,16 @@ section .shadow-lg {
 }
 
 .btn-book-exp:hover {
-  background: #2563eb;
+  background: #007ACC;
   transform: scale(1.02);
 }
 
 .exp-card.featured .btn-book-exp {
-  background: #003de6;
+  background: #0099FF;
 }
 
 .exp-card.featured .btn-book-exp:hover {
-  background: #002db3;
+  background: #007ACC;
 }
 
 /* Swiper Pagination Customization */

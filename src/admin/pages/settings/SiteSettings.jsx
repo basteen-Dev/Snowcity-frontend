@@ -122,7 +122,7 @@ export default function SiteSettings() {
                             This schema is injected as a <code>&lt;script type="application/ld+json"&gt;</code> in the document head. Do not include the <code>&lt;script&gt;</code> tags yourself.
                         </p>
                         <textarea
-                            className="w-full rounded-md border border-gray-300 px-3 py-2 font-mono text-sm bg-gray-50 dark:bg-neutral-950 dark:border-neutral-700 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500"
+                            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm bg-gray-50 dark:bg-neutral-950 dark:border-neutral-700 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500"
                             rows={8}
                             value={f.organization_schema}
                             onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, organization_schema: e.target.value } }))}
@@ -140,7 +140,7 @@ export default function SiteSettings() {
                             Raw HTML for Google Analytics, Meta Pixel, or other global meta tags. Must include <code>&lt;script&gt;</code> or <code>&lt;meta&gt;</code> tags.
                         </p>
                         <textarea
-                            className="w-full rounded-md border border-gray-300 px-3 py-2 font-mono text-sm bg-gray-50 dark:bg-neutral-950 dark:border-neutral-700 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500"
+                            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm bg-gray-50 dark:bg-neutral-950 dark:border-neutral-700 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500"
                             rows={6}
                             value={f.head_schema}
                             onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, head_schema: e.target.value } }))}
@@ -158,7 +158,7 @@ export default function SiteSettings() {
                             Raw HTML for scripts that must be placed immediately after the opening body tag (e.g., Google Tag Manager no-script).
                         </p>
                         <textarea
-                            className="w-full rounded-md border border-gray-300 px-3 py-2 font-mono text-sm bg-gray-50 dark:bg-neutral-950 dark:border-neutral-700 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500"
+                            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm bg-gray-50 dark:bg-neutral-950 dark:border-neutral-700 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500"
                             rows={4}
                             value={f.body_schema}
                             onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, body_schema: e.target.value } }))}
@@ -176,7 +176,7 @@ export default function SiteSettings() {
                             Raw HTML for scripts that load at the end of the page. Must include <code>&lt;script&gt;</code> tags.
                         </p>
                         <textarea
-                            className="w-full rounded-md border border-gray-300 px-3 py-2 font-mono text-sm bg-gray-50 dark:bg-neutral-950 dark:border-neutral-700 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500"
+                            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm bg-gray-50 dark:bg-neutral-950 dark:border-neutral-700 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500"
                             rows={4}
                             value={f.footer_schema}
                             onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, footer_schema: e.target.value } }))}

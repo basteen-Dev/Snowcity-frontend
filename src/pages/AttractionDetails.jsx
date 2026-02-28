@@ -998,10 +998,7 @@ export default function AttractionDetails() {
 
         {/* Mobile Title - Rendered here for mobile only */}
         <div className="lg:hidden px-4 pt-6 pb-2">
-          <h1
-            className="text-3xl font-extrabold text-gray-900 tracking-tight"
-            style={{ fontFamily: 'Inter, sans-serif' }}
-          >
+          <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight">
             {title}
           </h1>
         </div>
@@ -1015,13 +1012,13 @@ export default function AttractionDetails() {
                 <div>
                   <div
                     className="text-[11px] uppercase tracking-wide text-gray-500 font-semibold"
-                    style={{ fontFamily: 'Inter, sans-serif' }}
+
                   >
                     price
                   </div>
                   <div
-                    className="text-lg font-semibold text-gray-900 rupee"
-                    style={{ fontFamily: 'Inter, sans-serif' }}
+                    className="text-base font-semibold text-gray-900 rupee"
+
                   >
                     {formatCurrency(baseUnitPrice || effectiveUnitPrice || 0)}
                   </div>
@@ -1030,13 +1027,13 @@ export default function AttractionDetails() {
                   <div>
                     <div
                       className="text-[11px] uppercase tracking-wide text-gray-500"
-                      style={{ fontFamily: 'Inter, sans-serif' }}
+
                     >
                       Offer price
                     </div>
                     <div
-                      className="text-2xl font-bold text-emerald-600 rupee"
-                      style={{ fontFamily: 'Inter, sans-serif' }}
+                      className="text-xl font-bold text-emerald-600 rupee"
+
                     >
                       {formatCurrency(effectiveUnitPrice || 0)}
                     </div>
@@ -1076,8 +1073,8 @@ export default function AttractionDetails() {
             {/* Date Selection */}
             <div className="space-y-3">
               <label
-                className="text-sm font-medium text-gray-700"
-                style={{ fontFamily: 'Inter, sans-serif' }}
+                className="text-xs font-medium text-gray-700"
+
               >
                 Select Date
               </label>
@@ -1085,22 +1082,22 @@ export default function AttractionDetails() {
                 <button
                   type="button"
                   onClick={handleToday}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${date === todayYMD()
-                    ? 'bg-[#003de6] text-white border-[#003de6]'
-                    : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
+                  className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${date === todayYMD()
+                    ? 'bg-[#0099FF] text-white border-[#0099FF]'
+                    : 'bg-white text-[#111827] border-gray-200 hover:border-[#007ACC]'
                     }`}
-                  style={{ fontFamily: 'Inter, sans-serif' }}
+
                 >
                   Today
                 </button>
                 <button
                   type="button"
                   onClick={handleTomorrow}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${date === dayjs().add(1, 'day').format('YYYY-MM-DD')
-                    ? 'bg-[#003de6] text-white border-[#003de6]'
-                    : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
+                  className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${date === dayjs().add(1, 'day').format('YYYY-MM-DD')
+                    ? 'bg-[#0099FF] text-white border-[#0099FF]'
+                    : 'bg-white text-[#111827] border-gray-200 hover:border-[#007ACC]'
                     }`}
-                  style={{ fontFamily: 'Inter, sans-serif' }}
+
                 >
                   Tomorrow
                 </button>
@@ -1109,13 +1106,13 @@ export default function AttractionDetails() {
                 <button
                   type="button"
                   onClick={onCalendarButtonClick}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${date &&
+                  className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${date &&
                     date !== todayYMD() &&
                     date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
-                    ? 'bg-[#003de6] text-white border-[#003de6]'
-                    : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
+                    ? 'bg-[#0099FF] text-white border-[#0099FF]'
+                    : 'bg-white text-[#111827] border-gray-200 hover:border-[#007ACC]'
                     }`}
-                  style={{ fontFamily: 'Inter, sans-serif' }}
+
                 >
                   {date &&
                     date !== todayYMD() &&
@@ -1130,8 +1127,8 @@ export default function AttractionDetails() {
             {!isTimeSlotDisabled && (
               <div className="space-y-3">
                 <label
-                  className="text-sm font-medium text-gray-700"
-                  style={{ fontFamily: 'Inter, sans-serif' }}
+                  className="text-xs font-medium text-gray-700"
+
                 >
                   Select Time Slot
                 </label>
@@ -1149,7 +1146,7 @@ export default function AttractionDetails() {
                     value={slotKey}
                     onChange={(e) => setSlotKey(e.target.value)}
                     disabled={!slots.items.length}
-                    style={{ fontFamily: 'Inter, sans-serif' }}
+
                   >
                     {!slots.items.length ? (
                       <option>No slots</option>
@@ -1195,15 +1192,15 @@ export default function AttractionDetails() {
             {/* Quantity Selection */}
             <div className="space-y-3">
               <label
-                className="text-sm font-medium text-gray-700"
-                style={{ fontFamily: 'Inter, sans-serif' }}
+                className="text-xs font-medium text-gray-700"
+
               >
                 Number of Tickets
               </label>
               <div className="flex items-center gap-3">
                 <button
                   type="button"
-                  className="w-7 h-7 text-sm rounded-full border border-gray-300 flex items-center justify-center"
+                  className="w-7 h-7 text-sm rounded-xl border border-gray-300 flex items-center justify-center"
                   onClick={() =>
                     setQty((prev) => Math.max(1, Number(prev || 1) - 1))
                   }
@@ -1215,12 +1212,12 @@ export default function AttractionDetails() {
                   min={1}
                   value={qty}
                   readOnly
-                  className="w-16 text-center border border-gray-300 rounded-lg px-2 py-1 text-sm bg-gray-50"
-                  style={{ fontFamily: 'Inter, sans-serif' }}
+                  className="w-16 text-center border border-gray-300 rounded-lg px-2 py-1 text-sm bg-gray-50 text-[#111827]"
+
                 />
                 <button
                   type="button"
-                  className="w-7 h-7 text-sm rounded-full border border-gray-300 flex items-center justify-center"
+                  className="w-7 h-7 text-sm rounded-xl border border-gray-300 flex items-center justify-center"
                   onClick={() =>
                     setQty((prev) => Math.max(1, Number(prev || 1) + 1))
                   }
@@ -1234,7 +1231,7 @@ export default function AttractionDetails() {
             {date && selectedSlotForBar && (
               <div className="mt-4 rounded-2xl border border-sky-100 bg-sky-50 px-4 py-3 text-sm flex flex-col gap-2">
                 <div className="flex items-center justify-between text-gray-700">
-                  <span className="font-semibold" style={{ fontFamily: 'Inter, sans-serif' }}>
+                  <span className="font-semibold">
                     Selection:
                   </span>
                   <span className="font-medium text-right">
@@ -1271,10 +1268,10 @@ export default function AttractionDetails() {
             {/* Book button */}
             <button
               type="button"
-              className="w-full inline-flex items-center justify-center rounded-xl bg-[#003de6] text-white px-6 py-2.5 text-sm font-semibold shadow-md hover:bg-[#002db3] disabled:opacity-60 disabled:cursor-not-allowed"
+              className="w-full inline-flex items-center justify-center rounded-xl bg-[#0099FF] text-white px-6 py-2.5 text-sm font-semibold shadow-md hover:bg-[#007ACC] disabled:opacity-60 disabled:cursor-not-allowed"
               disabled={isBookingStopped || !date || (!isTimeSlotDisabled && !selectedSlotForBar) || !effectiveUnitPrice}
               onClick={onBookNow}
-              style={{ fontFamily: 'Inter, sans-serif' }}
+
             >
               {barPrice ? (
                 <>
@@ -1292,8 +1289,8 @@ export default function AttractionDetails() {
         <section className="max-w-7xl mx-auto px-4 py-8 md:py-12 mt-0">
           <div className="mb-8 hidden lg:block">
             <h1
-              className="text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight"
-              style={{ fontFamily: 'Inter, sans-serif' }}
+              className="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight"
+
             >
               {title}
             </h1>
@@ -1308,7 +1305,7 @@ export default function AttractionDetails() {
                   {/* Short description */}
                   {shortDescription ? (
                     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 md:p-6">
-                      <ul className="space-y-3 list-none" style={{ fontFamily: 'Inter, sans-serif' }}>
+                      <ul className="space-y-3 list-none">
                         {shortDescription
                           .split('.')
                           .map((sentence) => sentence.trim())
@@ -1316,9 +1313,9 @@ export default function AttractionDetails() {
                           .map((sentence, idx) => (
                             <li key={idx} className="flex items-start gap-3 text-gray-700 font-medium">
                               <span className="flex-shrink-0 mt-1.5">
-                                <Check className="h-4 w-4 text-[#003de6]" strokeWidth={3} />
+                                <Check className="h-4 w-4 text-[#0099FF]" strokeWidth={3} />
                               </span>
-                              <span className="text-base md:text-lg leading-relaxed">{sentence}.</span>
+                              <span className="text-xs md:text-sm leading-relaxed">{sentence}.</span>
                             </li>
                           ))}
                       </ul>
@@ -1329,15 +1326,14 @@ export default function AttractionDetails() {
                   {a?.description ? (
                     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 md:p-6">
                       <h2
-                        className="text-xl font-semibold text-gray-900 mb-3"
+                        className="text-lg font-semibold text-gray-900 mb-3"
                         style={{
-                          fontFamily: 'Inter, sans-serif',
                           color: '#87CEEB',
                         }}
                       >
                         About this Experience
                       </h2>
-                      <ul className="space-y-3 list-none" style={{ fontFamily: 'Inter, sans-serif' }}>
+                      <ul className="space-y-3 list-none">
                         {a.description
                           .replace(/<[^>]*>/g, '') // Strip HTML tags
                           .split('.')
@@ -1346,9 +1342,9 @@ export default function AttractionDetails() {
                           .map((sentence, idx) => (
                             <li key={idx} className="flex items-start gap-3 text-gray-700">
                               <span className="flex-shrink-0 mt-1.5">
-                                <Check className="h-4 w-4 text-[#003de6]" strokeWidth={3} />
+                                <Check className="h-4 w-4 text-[#0099FF]" strokeWidth={3} />
                               </span>
-                              <span className="text-base md:text-lg leading-relaxed">{sentence}.</span>
+                              <span className="text-xs md:text-sm leading-relaxed">{sentence}.</span>
                             </li>
                           ))}
                       </ul>
@@ -1359,19 +1355,19 @@ export default function AttractionDetails() {
                   {a?.faq_items && a.faq_items.length > 0 ? (
                     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 md:p-6 mt-8">
                       <h2
-                        className="text-xl font-semibold text-gray-900 mb-4"
-                        style={{ fontFamily: 'Inter, sans-serif' }}
+                        className="text-lg font-semibold text-gray-900 mb-4"
+
                       >
                         Frequently Asked Questions
                       </h2>
                       <div className="space-y-4">
                         {a.faq_items.map((faq, idx) => (
                           <details key={idx} className="group border-b border-gray-100 pb-4 last:border-0 last:pb-0">
-                            <summary className="flex cursor-pointer items-center justify-between text-lg font-medium text-gray-900 marker:content-none [&::-webkit-details-marker]:hidden">
+                            <summary className="flex cursor-pointer items-center justify-between text-base font-medium text-gray-900 marker:content-none [&::-webkit-details-marker]:hidden">
                               {faq.question}
                               <ChevronDown className="h-5 w-5 text-gray-500 transition-transform group-open:rotate-180 flex-shrink-0 ml-4" />
                             </summary>
-                            <p className="mt-3 text-gray-700 whitespace-pre-line text-sm md:text-base leading-relaxed" style={{ fontFamily: 'Inter, sans-serif' }}>
+                            <p className="mt-3 text-gray-700 whitespace-pre-line text-xs md:text-sm leading-relaxed">
                               {faq.answer}
                             </p>
                           </details>
@@ -1385,7 +1381,7 @@ export default function AttractionDetails() {
                     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 md:p-6">
                       <Link
                         to={`/gallery?attraction=${numericAttrId}`}
-                        className="inline-flex items-center gap-2 text-sky-600 hover:text-sky-700 font-medium transition-colors"
+                        className="inline-flex items-center gap-2 text-[#0099FF] hover:text-[#007ACC] font-medium transition-colors"
                       >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -1407,13 +1403,13 @@ export default function AttractionDetails() {
                     <div>
                       <div
                         className="text-[11px] uppercase tracking-wide text-gray-500 font-semibold"
-                        style={{ fontFamily: 'Inter, sans-serif' }}
+
                       >
                         Base price
                       </div>
                       <div
-                        className="text-lg font-semibold text-gray-900 rupee"
-                        style={{ fontFamily: 'Inter, sans-serif' }}
+                        className="text-base font-semibold text-gray-900 rupee"
+
                       >
                         {formatCurrency(
                           baseUnitPrice || effectiveUnitPrice || 0,
@@ -1425,13 +1421,13 @@ export default function AttractionDetails() {
                       <div>
                         <div
                           className="text-[11px] uppercase tracking-wide text-gray-500"
-                          style={{ fontFamily: 'Inter, sans-serif' }}
+
                         >
                           Offer price
                         </div>
                         <div
-                          className="text-2xl font-bold text-emerald-600 rupee"
-                          style={{ fontFamily: 'Inter, sans-serif' }}
+                          className="text-xl font-bold text-emerald-600 rupee"
+
                         >
                           {formatCurrency(effectiveUnitPrice || 0)}
                         </div>
@@ -1475,8 +1471,8 @@ export default function AttractionDetails() {
                   {/* Date */}
                   <div className="space-y-2">
                     <label
-                      className="text-sm font-medium text-gray-700"
-                      style={{ fontFamily: 'Inter, sans-serif' }}
+                      className="text-xs font-medium text-gray-700"
+
                     >
                       Select Date
                     </label>
@@ -1484,35 +1480,35 @@ export default function AttractionDetails() {
                       <button
                         type="button"
                         onClick={handleToday}
-                        className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${date === todayYMD()
-                          ? 'bg-[#003de6] text-white border-[#003de6]'
-                          : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
+                        className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${date === todayYMD()
+                          ? 'bg-[#0099FF] text-white border-[#0099FF]'
+                          : 'bg-white text-[#111827] border-gray-200 hover:border-[#007ACC]'
                           }`}
-                        style={{ fontFamily: 'Inter, sans-serif' }}
+
                       >
                         Today
                       </button>
                       <button
                         type="button"
                         onClick={handleTomorrow}
-                        className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${date === dayjs().add(1, 'day').format('YYYY-MM-DD')
-                          ? 'bg-[#003de6] text-white border-[#003de6]'
-                          : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
+                        className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${date === dayjs().add(1, 'day').format('YYYY-MM-DD')
+                          ? 'bg-[#0099FF] text-white border-[#0099FF]'
+                          : 'bg-white text-[#111827] border-gray-200 hover:border-[#007ACC]'
                           }`}
-                        style={{ fontFamily: 'Inter, sans-serif' }}
+
                       >
                         Tomorrow
                       </button>
                       <button
                         type="button"
                         onClick={onCalendarButtonClick}
-                        className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${date &&
+                        className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${date &&
                           date !== todayYMD() &&
                           date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
-                          ? 'bg-[#003de6] text-white border-[#003de6]'
-                          : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
+                          ? 'bg-[#0099FF] text-white border-[#0099FF]'
+                          : 'bg-white text-[#111827] border-gray-200 hover:border-[#007ACC]'
                           }`}
-                        style={{ fontFamily: 'Inter, sans-serif' }}
+
                       >
                         {date &&
                           date !== todayYMD() &&
@@ -1527,8 +1523,8 @@ export default function AttractionDetails() {
                   {!isTimeSlotDisabled && (
                     <div className="space-y-2">
                       <label
-                        className="text-sm font-medium text-gray-700"
-                        style={{ fontFamily: 'Inter, sans-serif' }}
+                        className="text-xs font-medium text-gray-700"
+
                       >
                         Select Time Slot
                       </label>
@@ -1547,7 +1543,7 @@ export default function AttractionDetails() {
                           value={slotKey}
                           onChange={(e) => setSlotKey(e.target.value)}
                           disabled={!slots.items.length}
-                          style={{ fontFamily: 'Inter, sans-serif' }}
+
                         >
                           {!slots.items.length ? (
                             <option>No slots</option>
@@ -1593,8 +1589,8 @@ export default function AttractionDetails() {
                   {/* Qty */}
                   <div className="space-y-2">
                     <label
-                      className="text-sm font-medium text-gray-700"
-                      style={{ fontFamily: 'Inter, sans-serif' }}
+                      className="text-xs font-medium text-gray-700"
+
                     >
                       Number of Tickets
                     </label>
@@ -1617,7 +1613,7 @@ export default function AttractionDetails() {
                           setQty(Math.max(1, Number(e.target.value) || 1))
                         }
                         className="w-16 text-center border border-gray-300 rounded-lg px-2 py-1 text-sm"
-                        style={{ fontFamily: 'Inter, sans-serif' }}
+
                       />
 
                       <button
@@ -1636,7 +1632,7 @@ export default function AttractionDetails() {
                   {date && selectedSlotForBar && (
                     <div className="mt-4 rounded-2xl border border-sky-100 bg-sky-50 px-4 py-3 text-sm flex flex-col gap-2">
                       <div className="flex items-center justify-between text-gray-700">
-                        <span className="font-semibold" style={{ fontFamily: 'Inter, sans-serif' }}>
+                        <span className="font-semibold">
                           Selection:
                         </span>
                         <span className="font-medium">
@@ -1673,10 +1669,10 @@ export default function AttractionDetails() {
                   {/* Book button */}
                   <button
                     type="button"
-                    className="w-full inline-flex items-center justify-center rounded-xl bg-[#003de6] text-white px-6 py-2.5 text-sm font-semibold shadow-md hover:bg-[#002db3] disabled:opacity-60 disabled:cursor-not-allowed"
+                    className="w-full inline-flex items-center justify-center rounded-xl bg-[#0099FF] text-white px-6 py-2.5 text-sm font-semibold shadow-md hover:bg-[#007ACC] disabled:opacity-60 disabled:cursor-not-allowed"
                     disabled={isBookingStopped || !date || (!isTimeSlotDisabled && !selectedSlotForBar) || !effectiveUnitPrice}
                     onClick={onBookNow}
-                    style={{ fontFamily: 'Inter, sans-serif' }}
+
                   >
                     {barPrice ? (
                       <>
@@ -1694,8 +1690,8 @@ export default function AttractionDetails() {
                 {/* Helper links */}
                 <div className="space-y-3 text-sm">
                   <p
-                    className="text-gray-600"
-                    style={{ fontFamily: 'Inter, sans-serif' }}
+                    className="text-xs text-gray-600"
+
                   >
                     Slots and pricing may vary by date and time. Use the options
                     above to choose your preferred session.
@@ -1703,7 +1699,7 @@ export default function AttractionDetails() {
                   <Link
                     to="/attractions"
                     className="inline-flex items-center justify-center rounded-full border border-blue-100 text-blue-600 px-5 py-2.5 text-sm font-medium hover:bg-blue-50"
-                    style={{ fontFamily: 'Inter, sans-serif' }}
+
                   >
                     Explore other attractions
                   </Link>

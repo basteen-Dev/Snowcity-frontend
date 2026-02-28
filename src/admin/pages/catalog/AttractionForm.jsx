@@ -230,7 +230,7 @@ export default function AttractionForm() {
           <p className="text-sm text-gray-500 dark:text-neutral-400 mb-4">Paste your schema markup or custom scripts here. It will be added exactly as provided to the attraction page head.</p>
           <div>
             <textarea
-              className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-neutral-900 dark:text-neutral-100 font-mono text-sm"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-neutral-900 dark:text-neutral-100 text-sm"
               rows={10}
               value={f.head_schema || ''}
               onChange={(e) => setState(s => ({ ...s, form: { ...s.form, head_schema: e.target.value } }))}

@@ -62,7 +62,7 @@ export default function PaymentReturn() {
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">Order Confirmed!</h1>
             <p className="text-gray-600 mb-6 text-sm">
-              Thank you for your purchase. Your order <span className="font-mono font-medium text-gray-800 bg-gray-100 px-1 rounded">#{orderRef}</span> has been processed successfully.
+              Thank you for your purchase. Your order <span className="font-medium text-gray-800 bg-gray-100 px-1 rounded">#{orderRef}</span> has been processed successfully.
             </p>
           </>
         )}
@@ -75,7 +75,7 @@ export default function PaymentReturn() {
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">Payment Failed</h1>
             <p className="text-gray-600 mb-6 text-sm">
-              We couldn't complete your transaction for order <span className="font-mono font-medium text-gray-800 bg-gray-100 px-1 rounded">#{orderRef}</span>.
+              We couldn't complete your transaction for order <span className="font-medium text-gray-800 bg-gray-100 px-1 rounded">#{orderRef}</span>.
               {retryCount > 0 && <span className="text-red-600 font-medium">(Attempt {retryCount + 1})</span>}
             </p>
 
@@ -130,7 +130,7 @@ export default function PaymentReturn() {
               {uiState === 'pending' ? 'Payment Pending' : 'Verifying...'}
             </h1>
             <p className="text-gray-600 mb-6 text-sm">
-              Please wait while we check the status of your order <span className="font-mono font-medium text-gray-800">#{orderRef}</span>.
+              Please wait while we check the status of your order <span className="font-medium text-gray-800">#{orderRef}</span>.
             </p>
           </>
         )}

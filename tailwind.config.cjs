@@ -58,27 +58,34 @@ module.exports = {
         'glass-lg': '0 8px 32px 0 rgba(31, 38, 135, 0.5)',
       },
       fontFamily: {
-        // Global app font stack (DM Sans preferred, Poppins secondary)
-        sans: [
-          'DM Sans',
-          'Poppins',
-          'ui-sans-serif',
-          'system-ui',
-          '-apple-system',
-          'Segoe UI',
-          'Roboto',
-          'Helvetica Neue',
-          'Arial',
-          'Noto Sans',
-          'Apple Color Emoji',
-          'Segoe UI Emoji',
-          'Segoe UI Symbol'
-        ]
+        heading: ["Red Hat Display", "sans-serif"],
+        body: ["Inter", "sans-serif"],
       },
       colors: {
-        // Optional brand alias (use as text-brand / bg-brand)
+        // Updated Brand Color System
+        primary: {
+          DEFAULT: '#0099FF',
+          hover: '#007ACC',
+        },
         brand: {
-          DEFAULT: '#2563eb'
+          DEFAULT: '#0099FF',
+          hover: '#007ACC',
+        },
+        sky: {
+          50: '#f0f9ff',
+          100: '#e0f2fe',
+          200: '#bae6fd',
+          300: '#7dd3fc',
+          400: '#38bdf8',
+          500: '#0ea5e9',
+          600: '#0099FF', // Primary Brand Color
+          700: '#007ACC', // Hover Brand Color
+          800: '#005C99',
+          900: '#003D66',
+        },
+        text: {
+          dark: '#111827',
+          secondary: '#6B7280',
         }
       }
     }

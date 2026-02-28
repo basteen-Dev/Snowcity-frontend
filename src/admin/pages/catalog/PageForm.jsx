@@ -235,7 +235,7 @@ export default function PageForm() {
                   placeholder="my-custom-page"
                 />
                 <p className="mt-1 text-xs text-gray-500 dark:text-neutral-400">
-                  Live URL: <span className="font-mono text-blue-600 dark:text-blue-400">{window.location.origin}/{form.slug || 'slug'}</span>
+                  Live URL: <span className="text-blue-600 dark:text-blue-400">{window.location.origin}/{form.slug || 'slug'}</span>
                 </p>
               </div>
             </div>
@@ -509,7 +509,7 @@ export default function PageForm() {
             <p className="text-sm text-gray-500 dark:text-neutral-400 mb-4">Paste your schema markup or custom scripts here. It will be added exactly as provided to the page head.</p>
             <div>
               <textarea
-                className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-neutral-700 dark:text-neutral-100 font-mono text-sm"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-neutral-700 dark:text-neutral-100 text-sm"
                 rows={10}
                 value={form.head_schema || ''}
                 onChange={(e) => onChange({ head_schema: e.target.value })}

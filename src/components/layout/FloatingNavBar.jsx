@@ -129,10 +129,10 @@ export default function FloatingNavBar() {
   const navLinkTone = "text-gray-800 hover:text-sky-600 hover:bg-sky-50";
   const navLinkClass = `${navLinkBase} ${navLinkTone}`;
 
-  const signInButtonClass = "inline-flex items-center rounded-full border border-sky-400 px-5 py-2 text-sky-600 font-semibold bg-white hover:bg-sky-50 shadow-sm";
+  const signInButtonClass = "inline-flex items-center rounded-xl border border-sky-400 px-5 py-2 text-sky-600 font-semibold bg-white hover:bg-sky-50 shadow-sm";
 
   const bookTicketButtonClass =
-    "inline-flex items-center rounded-full px-6 py-2.5 text-sm font-bold bg-[#003de6] text-white hover:bg-[#002db3] shadow-md  hover:shadow-lg hover:scale-105 active:scale-95";
+    "inline-flex items-center rounded-xl px-6 py-2.5 text-sm font-bold bg-[#0099FF] text-white hover:bg-[#007ACC] shadow-md  hover:shadow-lg hover:scale-105 active:scale-95";
 
   const resetAuthState = React.useCallback(() => {
     setAuthForm({ name: "", email: "", phone: "" });
@@ -317,7 +317,7 @@ export default function FloatingNavBar() {
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-gray-900">Sign in to SnowCity</h3>
           <button
-            className="p-2 rounded-full bg-gray-100 text-gray-500"
+            className="p-2 rounded-xl bg-gray-100 text-gray-500"
             onClick={closeAuthModal}
           >
             ✕
@@ -425,7 +425,7 @@ export default function FloatingNavBar() {
             <div className="space-y-2">
               <div className="flex gap-3 items-center">
                 <input
-                  className="flex-1 p-3 rounded-xl border border-blue-200 focus:border-blue-500 outline-none text-center tracking-widest font-mono"
+                  className="flex-1 p-3 rounded-xl border border-blue-200 focus:border-blue-500 outline-none text-center tracking-widest"
                   maxLength={6}
                   inputMode="numeric"
                   pattern="[0-9]*"
@@ -464,7 +464,7 @@ export default function FloatingNavBar() {
           {authOtp.debug && (
             <div className="text-xs text-green-700 bg-green-50 border border-green-100 rounded-xl p-2">
               Testing OTP:{" "}
-              <span className="font-mono font-semibold">{authOtp.debug}</span>
+              <span className="font-semibold">{authOtp.debug}</span>
             </div>
           )}
           {authOtp.error && (
@@ -486,7 +486,7 @@ export default function FloatingNavBar() {
         ref={navRef}
         data-floating-nav
         className={`fixed z-[150] bg-white shadow-md border-gray-200
-          top-0 left-0 right-0 py-2 md:top-4 md:left-4 md:right-4 md:rounded-full md:border`}
+          top-0 left-0 right-0 py-2 md:top-4 md:left-4 md:right-4 md:rounded-xl md:border`}
         style={{
           transition: 'none !important',
           animation: 'none !important',
@@ -612,7 +612,7 @@ export default function FloatingNavBar() {
               {token && (
                 <div className="relative">
                   <button
-                    className="h-10 w-10 rounded-full flex items-center justify-center bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-blue-600 shadow-sm"
+                    className="h-10 w-10 rounded-xl flex items-center justify-center bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-blue-600 shadow-sm"
                     onClick={() => setProfileOpen((v) => !v)}
                     title={userName}
                   >
@@ -691,7 +691,7 @@ export default function FloatingNavBar() {
 
           {/* RIGHT: Book Button */}
           <button
-            className="inline-flex items-center rounded-full px-4 py-2 text-xs font-bold bg-[#003de6] text-white shadow-sm shrink-0"
+            className="inline-flex items-center rounded-xl px-4 py-2 text-xs font-bold bg-[#0099FF] text-white shadow-sm shrink-0"
             onClick={() => {
               setMobileOpen(false);
               sessionStorage.removeItem('snowcity_booking_state');

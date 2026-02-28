@@ -156,8 +156,8 @@ export default function ComboCard({ item }) {
 
         <div className="flex items-center justify-between mt-auto pt-4 border-t border-slate-100">
           <div>
-            <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Per Person</p>
-            <p className="text-xl font-extrabold text-[#1e3a8a]">{formatCurrency(comboDisplayPrice || 1299)}</p>
+            <p className="text-[10px] text-[#6B7280] uppercase font-bold tracking-wider">Per Person</p>
+            <p className="text-xl font-extrabold text-[#111827]">{formatCurrency(comboDisplayPrice || 1299)}</p>
           </div>
           <div
             onClick={(e) => {

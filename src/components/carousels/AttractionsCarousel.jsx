@@ -291,7 +291,7 @@ export default function AttractionsCarousel({ items = [] }) {
         <h2 className="text-4xl md:text-4xl font-black text-slate-900 tracking-tight uppercase leading-none">
           Experiences
         </h2>
-        <div className="w-20 h-1.5 bg-[#003de6] mx-auto mt-6 mb-8 rounded-full" />
+        <div className="w-20 h-1.5 bg-[#003de6] mx-auto mt-6 mb-8 rounded-xl" />
         <p className="text-gray-600 text-lg md:text-xl max-w-2xl mx-auto font-medium leading-relaxed">
           Discover our amazing collection of thrilling experiences and winter wonders.
         </p>
@@ -345,7 +345,7 @@ export default function AttractionsCarousel({ items = [] }) {
       <div className="relative z-10 flex justify-center mt-8">
         <Link
           to="/attractions"
-          className="inline-flex items-center gap-3 rounded-xl bg-[#003de6] text-white px-12 py-5 text-lg font-extrabold shadow-2xl hover:bg-[#002db3] hover:scale-105 transition-all duration-300 uppercase tracking-wider"
+          className="inline-flex items-center gap-3 rounded-xl bg-[#0099FF] text-white px-12 py-5 text-lg font-extrabold shadow-2xl hover:bg-[#007ACC] hover:scale-105 transition-all duration-300 uppercase tracking-wider"
         >
           View All Experiences
           <span className="text-xl" aria-hidden="true">→</span>
