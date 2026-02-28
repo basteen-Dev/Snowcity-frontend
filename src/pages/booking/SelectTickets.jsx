@@ -38,6 +38,8 @@ export default function SelectTickets({
   step,
   paymentLoading,
 }) {
+  const [expandedCardId, setExpandedCardId] = React.useState(null);
+
   const ProductList = () => {
     const activeTab = sel.itemType;
     const data = useMemo(() => {
@@ -136,27 +138,16 @@ export default function SelectTickets({
                     <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1 truncate">
                       {title}
                     </h3>
-                    <div className="text-xs text-gray-500">
-                      <span className="line-clamp-2 inline">
+                    <div className="text-xs text-gray-500 mt-1">
+                      <div className={expandedCardId === id ? "" : "line-clamp-1 break-words"}>
                         {item.short_description || item.subtitle || 'Instant confirmation • Best experience'}
-                      </span>
+                      </div>
                       <button
                         type="button"
-                        onClick={() => {
-                          setSel((prev) => ({
-                            ...prev,
-                            itemType: sel.itemType,
-                            attractionId: sel.itemType === 'attraction' ? String(id) : '',
-                            comboId: sel.itemType === 'combo' ? String(id) : '',
-                            slotKey: '',
-                          }));
-                          setDetailsMainImage(image || null);
-                          setDrawerMode('details');
-                          setDrawerOpen(true);
-                        }}
-                        className="text-sky-600 font-semibold hover:underline ml-1"
+                        onClick={() => setExpandedCardId(expandedCardId === id ? null : id)}
+                        className="text-sky-600 font-semibold hover:underline mt-1"
                       >
-                        read more
+                        {expandedCardId === id ? 'show less' : 'read more'}
                       </button>
                     </div>
                     <button

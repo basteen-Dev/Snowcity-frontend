@@ -173,7 +173,7 @@ export default function YourDetails({
                     <button
                         onClick={sendOTP}
                         disabled={otp.status === 'loading'}
-                        className="mt-6 w-full bg-sky-600 text-white py-3.5 rounded-xl font-semibold text-base shadow-sm hover:bg-sky-700 transition-all disabled:opacity-70 flex items-center justify-center gap-2"
+                        className="mt-6 w-full bg-sky-600 text-white py-3.5 rounded-full font-bold text-base shadow-md hover:bg-sky-700 transition-all disabled:opacity-70 flex items-center justify-center gap-2 active:scale-[0.98]"
                     >
                         {otp.status === 'loading' ? (
                             <>
@@ -209,7 +209,7 @@ export default function YourDetails({
                             <button
                                 onClick={verifyOTP}
                                 disabled={otp.status === 'loading' || otpCode.length < 6}
-                                className="bg-sky-600 text-white px-6 py-3 rounded-xl font-bold shadow-sm hover:bg-sky-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 w-full sm:w-auto justify-center"
+                                className="bg-sky-600 text-white px-8 py-3.5 rounded-full font-bold shadow-md hover:bg-sky-700 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 w-full sm:w-auto justify-center"
                             >
                                 {otp.status === 'loading' ? (
                                     <>
@@ -247,12 +247,11 @@ export default function YourDetails({
                     </div>
                 )}
 
-                {/* Back / Proceed buttons */}
                 <div className="flex gap-4 mt-8">
                     <button
                         type="button"
                         onClick={handleBack}
-                        className="px-6 py-3 border rounded-xl text-gray-700 hover:bg-gray-50 transition font-semibold"
+                        className="px-8 py-3.5 border rounded-full text-gray-700 hover:bg-gray-50 transition-all font-semibold shadow-sm"
                     >
                         Back
                     </button>
@@ -260,12 +259,12 @@ export default function YourDetails({
                         type="button"
                         onClick={handleNext}
                         disabled={!otp.verified}
-                        className={`px-6 py-3 rounded-xl font-semibold shadow-sm transition hover:-translate-y-0.5 ${!otp.verified
+                        className={`px-10 py-3.5 rounded-full font-bold shadow-md transition-all active:scale-[0.98] ${!otp.verified
                             ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                             : 'bg-sky-600 text-white hover:bg-sky-700'
                             }`}
                     >
-                        Proceed to Payment →
+                        Proceed to Payment
                     </button>
                 </div>
             </div>

@@ -162,6 +162,15 @@ const DynamicPricing = () => {
   };
 
   // Date-specific pricing functions
+  const toYMD = (dateString) => {
+    if (!dateString) return '';
+    const d = new Date(dateString);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   const loadDatePrices = async () => {
     if (!selectedItemId) {
       setDatePrices([]);
@@ -211,19 +220,21 @@ const DynamicPricing = () => {
   };
 
   const handleDateEdit = (datePrice) => {
+    const formattedDate = toYMD(datePrice.price_date);
     setEditingDatePrice(datePrice);
     setDateFormData({
-      selectedDates: [datePrice.price_date],
-      price_date: datePrice.price_date,
+      selectedDates: [formattedDate],
+      price_date: formattedDate,
       price: datePrice.price,
     });
     setShowDateForm(true);
   };
 
-  const handleDateDelete = async (date) => {
+  const handleDateDelete = async (dateStr) => {
     if (!confirm('Are you sure you want to delete this date price?')) return;
     try {
-      const endpoint = selectedItemType === 'attraction' ? A.attractionDatePricesByDate(selectedItemId, date) : A.comboDatePricesByDate(selectedItemId, date);
+      const formattedDate = toYMD(dateStr);
+      const endpoint = selectedItemType === 'attraction' ? A.attractionDatePricesByDate(selectedItemId, formattedDate) : A.comboDatePricesByDate(selectedItemId, formattedDate);
       await adminApi.delete(endpoint);
       loadDatePrices();
     } catch (error) {
@@ -338,7 +349,7 @@ const DynamicPricing = () => {
                 <input
                   type="text"
                   value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   className="w-full p-2 border rounded"
                   required
                 />
@@ -348,7 +359,7 @@ const DynamicPricing = () => {
                 <input
                   type="text"
                   value={formData.description}
-                  onChange={(e) => setFormData({...formData, description: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   className="w-full p-2 border rounded"
                 />
               </div>
@@ -359,7 +370,7 @@ const DynamicPricing = () => {
                 <label className="block text-sm font-medium mb-1">Target Type</label>
                 <select
                   value={formData.target_type}
-                  onChange={(e) => setFormData({...formData, target_type: e.target.value, target_id: ''})}
+                  onChange={(e) => setFormData({ ...formData, target_type: e.target.value, target_id: '' })}
                   className="w-full p-2 border rounded"
                 >
                   <option value="attraction">Attraction</option>
@@ -374,7 +385,7 @@ const DynamicPricing = () => {
                   </label>
                   <select
                     value={formData.target_id}
-                    onChange={(e) => setFormData({...formData, target_id: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, target_id: e.target.value })}
                     className="w-full p-2 border rounded"
                     required
                   >
@@ -388,7 +399,7 @@ const DynamicPricing = () => {
                 <input
                   type="checkbox"
                   checked={formData.active}
-                  onChange={(e) => setFormData({...formData, active: e.target.checked})}
+                  onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
                   className="mt-1"
                 />
               </div>
@@ -440,7 +451,7 @@ const DynamicPricing = () => {
                 <label className="block text-sm font-medium mb-1">Adjustment Type</label>
                 <select
                   value={formData.price_adjustment_type}
-                  onChange={(e) => setFormData({...formData, price_adjustment_type: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, price_adjustment_type: e.target.value })}
                   className="w-full p-2 border rounded"
                 >
                   <option value="fixed">Fixed Amount</option>
@@ -455,7 +466,7 @@ const DynamicPricing = () => {
                   type="number"
                   step="0.01"
                   value={formData.price_adjustment_value}
-                  onChange={(e) => setFormData({...formData, price_adjustment_value: parseFloat(e.target.value) || 0})}
+                  onChange={(e) => setFormData({ ...formData, price_adjustment_value: parseFloat(e.target.value) || 0 })}
                   className="w-full p-2 border rounded"
                   required
                 />
@@ -500,9 +511,9 @@ const DynamicPricing = () => {
                   <td className="px-4 py-3">{rule.name}</td>
                   <td className="px-4 py-3">
                     {rule.target_type === 'all' ? 'All' :
-                     rule.target_type === 'attraction' ?
-                       attractions.find(a => a.attraction_id === rule.target_id)?.title || `Attraction ${rule.target_id}` :
-                       combos.find(c => c.combo_id === rule.target_id)?.name || `Combo ${rule.target_id}`}
+                      rule.target_type === 'attraction' ?
+                        attractions.find(a => a.attraction_id === rule.target_id)?.title || `Attraction ${rule.target_id}` :
+                        combos.find(c => c.combo_id === rule.target_id)?.name || `Combo ${rule.target_id}`}
                   </td>
                   <td className="px-4 py-3">
                     {rule.date_ranges?.map((range, idx) => (
@@ -632,7 +643,7 @@ const DynamicPricing = () => {
                     type="number"
                     step="0.01"
                     value={dateFormData.price}
-                    onChange={(e) => setDateFormData({...dateFormData, price: parseFloat(e.target.value) || 0})}
+                    onChange={(e) => setDateFormData({ ...dateFormData, price: parseFloat(e.target.value) || 0 })}
                     className="w-full p-2 border rounded"
                     required
                   />

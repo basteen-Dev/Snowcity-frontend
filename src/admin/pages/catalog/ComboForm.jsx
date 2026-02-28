@@ -29,6 +29,7 @@ export default function ComboForm() {
       active: true,
       meta_title: '',
       short_description: '',
+      description: '',
       faq_items: [],
       head_schema: '',
       stop_booking: false
@@ -70,6 +71,7 @@ export default function ComboForm() {
           active: !!c.active,
           meta_title: c.meta_title || '',
           short_description: c.short_description || '',
+          description: c.description || '',
           faq_items: Array.isArray(c.faq_items) ? c.faq_items : [],
           head_schema: c.head_schema || '',
           stop_booking: !!c.stop_booking
@@ -134,6 +136,7 @@ export default function ComboForm() {
         active: !!f.active,
         meta_title: f.meta_title?.trim() || null,
         short_description: f.short_description?.trim() || null,
+        description: f.description?.trim() || null,
         faq_items: f.faq_items || [],
         head_schema: f.head_schema?.trim() || null,
         stop_booking: !!f.stop_booking
@@ -328,6 +331,18 @@ export default function ComboForm() {
             value={f.short_description}
             onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, short_description: e.target.value } }))}
             placeholder="Brief summary of the combo"
+          />
+        </div>
+
+        {/* Long Description */}
+        <div className="mb-4">
+          <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Long Description (HTML content)</label>
+          <textarea
+            className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200"
+            rows={6}
+            value={f.description}
+            onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, description: e.target.value } }))}
+            placeholder="Full detailed description for the combo page"
           />
         </div>
 

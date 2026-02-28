@@ -32,15 +32,29 @@ const getTieBreaker = (item) => String(item?.name ?? item?.title ?? '').toLowerC
 export const prioritizeSnowcityFirst = (items) => {
   if (!Array.isArray(items)) return [];
   return [...items].sort((a, b) => {
-    const aIsSnow = isSnowcityAttraction(a);
-    const bIsSnow = isSnowcityAttraction(b);
-    if (aIsSnow && !bIsSnow) return -1;
-    if (!aIsSnow && bIsSnow) return 1;
+    const aName = String(a?.name ?? a?.title ?? '').toLowerCase();
+    const bName = String(b?.name ?? b?.title ?? '').toLowerCase();
 
-    const aKey = getNumericSortKey(a);
-    const bKey = getNumericSortKey(b);
-    if (aKey !== bKey) return aKey - bKey;
+    const getRank = (name) => {
+      if (name.includes('snow park') || name.includes('snow city') || name.includes('snowpark') || name.includes('snowcity')) return 1;
+      if (name.includes('mad lab') || name.includes('madlab')) return 2;
+      return 3;
+    };
 
-    return getTieBreaker(a).localeCompare(getTieBreaker(b));
+    const aRank = getRank(aName);
+    const bRank = getRank(bName);
+
+    if (aRank !== bRank) return aRank - bRank;
+
+    // Secondary sort: By ID ascending
+    const aId = Number(a?.attraction_id || a?.id || 0);
+    const bId = Number(b?.attraction_id || b?.id || 0);
+
+    if (aId > 0 && bId > 0 && aId !== bId) {
+      return aId - bId;
+    }
+
+    // Tertiary sort: Keep it alphabetical
+    return aName.localeCompare(bName);
   });
 };

@@ -121,12 +121,11 @@ export default function Addons({
                     )}
                 </div>
 
-                {/* Back / Continue buttons (desktop) */}
                 <div className="hidden lg:flex items-center gap-6 mt-8">
                     <button
                         type="button"
                         onClick={handleBack}
-                        className="px-6 py-3 border rounded-xl text-gray-700 hover:bg-gray-50 transition font-semibold"
+                        className="px-8 py-3.5 border rounded-full text-gray-700 hover:bg-gray-50 transition-all font-semibold shadow-sm"
                     >
                         Back
                     </button>
@@ -134,14 +133,14 @@ export default function Addons({
                         <button
                             type="button"
                             onClick={handleNext}
-                            className="px-6 py-3 rounded-xl font-semibold shadow-sm transition hover:-translate-y-0.5 bg-sky-600 text-white hover:bg-sky-700"
+                            className="px-10 py-3.5 rounded-full font-bold shadow-md transition-all hover:bg-sky-700 active:scale-[0.98] bg-sky-600 text-white"
                         >
-                            Continue →
+                            Continue
                         </button>
                         <button
                             type="button"
                             onClick={handleNext}
-                            className="text-sm font-medium text-gray-400 hover:text-sky-600 transition underline underline-offset-4"
+                            className="text-sm font-semibold text-gray-400 hover:text-sky-600 transition-all underline underline-offset-4"
                         >
                             Skip Add-ons
                         </button>

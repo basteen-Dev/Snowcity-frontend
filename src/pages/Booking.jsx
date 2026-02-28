@@ -1173,6 +1173,22 @@ export default function Booking() {
     return computeOfferDiscount(selectedOffer, grossTotal);
   }, [selectedOffer, grossTotal]);
 
+  // Build info message about which attractions need time slot vs open entry for combinations
+  const comboSlotInfoMessage = useMemo(() => {
+    if (sel.itemType !== 'combo' || !selectedCombo || !Array.isArray(selectedCombo.attractions) || !selectedCombo.attractions.length) return null;
+    const slotEnabled = selectedCombo.attractions.filter(a => a.time_slot_enabled !== false);
+    const openEntry = selectedCombo.attractions.filter(a => a.time_slot_enabled === false);
+    if (!openEntry.length) return null; // All have time slots
+    const parts = [];
+    if (slotEnabled.length) {
+      parts.push(`Select time slot for ${slotEnabled.map(a => a.title).join(', ')}`);
+    }
+    if (openEntry.length) {
+      parts.push(`Open entry for ${openEntry.map(a => a.title).join(', ')} on selected date`);
+    }
+    return parts.join(' • ');
+  }, [sel.itemType, selectedCombo]);
+
   const couponApplied = couponDiscount > 0 && (coupon.code || coupon.data?.code);
   const finalTotal = Math.max(0, grossTotal - couponDiscount - selectedOfferDiscount);
 
@@ -1410,6 +1426,7 @@ export default function Booking() {
   };
 
   /* Product list with images */
+  const [expandedCardId, setExpandedCardId] = useState(null);
   const ProductList = () => {
     const activeTab = sel.itemType;
     const data = useMemo(() => {
@@ -1532,30 +1549,19 @@ export default function Booking() {
                     </h3>
                     {isStopped ? (
                       <p className="text-xs text-red-500 font-medium">
-                        Booking temporarily unavailable
+                        Booking temporarily unavailable online
                       </p>
                     ) : (
-                      <div className="text-xs text-gray-500">
-                        <span className="line-clamp-2 inline">
+                      <div className="text-xs text-gray-500 mt-1">
+                        <div className={expandedCardId === id ? "" : "line-clamp-1 break-words"}>
                           {item.short_description || item.subtitle || 'Instant confirmation • Best experience'}
-                        </span>
+                        </div>
                         <button
                           type="button"
-                          onClick={() => {
-                            setSel((prev) => ({
-                              ...prev,
-                              itemType: sel.itemType,
-                              attractionId: sel.itemType === 'attraction' ? String(id) : '',
-                              comboId: sel.itemType === 'combo' ? String(id) : '',
-                              slotKey: '',
-                            }));
-                            setDetailsMainImage(image || null);
-                            setDrawerMode('details');
-                            setDrawerOpen(true);
-                          }}
-                          className="text-sky-600 font-semibold hover:underline ml-1"
+                          onClick={() => setExpandedCardId(expandedCardId === id ? null : id)}
+                          className="text-sky-600 font-semibold hover:underline mt-1"
                         >
-                          read more
+                          {expandedCardId === id ? 'show less' : 'read more'}
                         </button>
                       </div>
                     )}
@@ -1878,7 +1884,7 @@ export default function Booking() {
   return (
     <>
       {/* Page wrapper: make sure everything sits under navbar; ensure Inter font */}
-      <div className="min-h-screen bg-gradient-to-b from-[#f5f8ff] to-white font-inter pt-24">
+      <div className="min-h-screen bg-gradient-to-b from-[#f5f8ff] to-white font-inter pt-14">
 
         <div className="max-w-7xl mx-auto px-6 py-10">
 
@@ -2045,7 +2051,7 @@ export default function Booking() {
                       <button
                         type="button"
                         onClick={handleBack}
-                        className="p-2.5 rounded-xl border border-gray-200 text-gray-700 hover:border-gray-300 active:scale-[0.98] transition-all flex items-center justify-center"
+                        className="p-2.5 rounded-full border border-gray-200 text-gray-700 hover:border-gray-300 active:scale-[0.98] transition-all flex items-center justify-center shadow-sm"
                         title="Go back"
                       >
                         <ArrowLeft size={18} />
@@ -2056,7 +2062,7 @@ export default function Booking() {
                       <button
                         type="button"
                         onClick={handleNext}
-                        className="px-4 py-2.5 rounded-xl border border-sky-200 text-sky-700 bg-sky-50 text-sm font-semibold transition-all active:scale-[0.98]"
+                        className="px-6 py-2.5 rounded-full border border-sky-200 text-sky-700 bg-sky-50 text-sm font-semibold transition-all active:scale-[0.98] shadow-sm"
                       >
                         Skip
                       </button>
@@ -2078,7 +2084,7 @@ export default function Booking() {
                               ? totalAddonCount === 0 || !hasCartItems
                               : !hasCartItems && !selectionReady
                       }
-                      className={`ml - auto inline - flex items - center justify - center gap - 2 rounded - xl px - 4 py - 2.5 text - sm font - semibold transition - all active: scale - [0.98] ${(step === 4
+                      className={`ml-auto inline-flex items-center justify-center gap-2 rounded-full px-6 py-2.5 text-sm font-semibold transition-all shadow-md active:scale-[0.98] ${(step === 4
                         ? creating?.status === 'loading' || paymentLoading || !hasCartItems
                         : step === 3
                           ? !otp.verified
@@ -2086,8 +2092,8 @@ export default function Booking() {
                             ? totalAddonCount === 0 || !hasCartItems
                             : !hasCartItems && !selectionReady)
                         ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                        : 'bg-sky-600 text-white shadow-md hover:bg-sky-700'
-                        } `}
+                        : 'bg-sky-600 text-white hover:bg-sky-700'
+                        }`}
                     >
                       <span>
                         {step === 4
@@ -2181,7 +2187,7 @@ export default function Booking() {
                             <button
                               type="button"
                               onClick={() => setDrawerMode('booking')}
-                              className="w-full px-4 py-3 rounded-xl bg-sky-600 text-white font-semibold"
+                              className="w-full px-6 py-3 rounded-full bg-sky-600 text-white font-semibold shadow-md hover:bg-sky-700 active:scale-[0.98] transition-all"
                             >
                               Book this
                             </button>
@@ -2197,33 +2203,33 @@ export default function Booking() {
                               <button
                                 type="button"
                                 onClick={handleToday}
-                                className={`px - 4 py - 2 rounded - full text - xs font - medium border transition - colors ${sel.date === todayYMD()
-                                  ? 'bg-sky-600 text-white border-sky-600'
+                                className={`px-4 py-2 rounded-full text-xs font-medium border transition-colors ${sel.date === todayYMD()
+                                  ? 'bg-sky-600 text-white border-sky-600 shadow-sm'
                                   : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
-                                  } `}
+                                  }`}
                               >
                                 Today
                               </button>
                               <button
                                 type="button"
                                 onClick={handleTomorrow}
-                                className={`px - 4 py - 2 rounded - full text - xs font - medium border transition - colors ${sel.date === dayjs().add(1, 'day').format('YYYY-MM-DD')
-                                  ? 'bg-sky-600 text-white border-sky-600'
+                                className={`px-4 py-2 rounded-full text-xs font-medium border transition-colors ${sel.date === dayjs().add(1, 'day').format('YYYY-MM-DD')
+                                  ? 'bg-sky-600 text-white border-sky-600 shadow-sm'
                                   : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
-                                  } `}
+                                  }`}
                               >
                                 Tomorrow
                               </button>
                               <button
                                 type="button"
                                 onClick={onCalendarButtonClick}
-                                className={`px - 4 py - 2 rounded - full text - xs font - medium border transition - colors ${sel.date &&
+                                className={`px-4 py-2 rounded-full text-xs font-medium border transition-colors ${sel.date &&
                                   sel.date !== '' &&
                                   sel.date !== todayYMD() &&
                                   sel.date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
-                                  ? 'bg-sky-600 text-white border-sky-600'
+                                  ? 'bg-sky-600 text-white border-sky-600 shadow-sm'
                                   : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
-                                  } `}
+                                  }`}
                               >
                                 {formatDateDisplay(sel.date)}
                               </button>
@@ -2231,10 +2237,16 @@ export default function Booking() {
                           </div>
 
                           {!isTimeSlotsDisabled ? (
-                            <div className="space-y-2">
+                            <div className="space-y-3">
                               <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">
                                 Time slot
                               </p>
+                              {comboSlotInfoMessage && (
+                                <div className="p-3 bg-blue-50 border border-blue-100 rounded-xl text-xs text-blue-700 font-medium flex items-start gap-2">
+                                  <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0 text-blue-500" />
+                                  <span>{comboSlotInfoMessage}</span>
+                                </div>
+                              )}
                               <div className="relative">
                                 <>
                                   <select
@@ -2286,7 +2298,7 @@ export default function Booking() {
                             </div>
                           ) : (
                             <div className="bg-sky-50 border border-sky-100 rounded-xl p-3 text-center">
-                              <p className="text-xs text-sky-700 font-medium">No time slot needed — just pick your date and quantity above</p>
+                              <p className="text-xs text-sky-700 font-medium">just pick your date and quantity above</p>
                             </div>
                           )}
 
@@ -2314,6 +2326,11 @@ export default function Booking() {
                           </div>
                         </>
                       )}
+                      {isBookingStopped && (
+                        <div className="mt-4 rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-sm text-center text-red-600 font-medium">
+                          Booking temporarily unavailable online
+                        </div>
+                      )}
                     </div>
 
                     <div className="relative">
@@ -2328,18 +2345,19 @@ export default function Booking() {
                             type="button"
                             onClick={addSelectionToCart}
                             disabled={!selectionReady}
-                            className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 text-xs font-semibold text-gray-700 hover:border-sky-300 disabled:opacity-40 disabled:cursor-not-allowed"
+                            className={`w-full px-2 py-1.5 rounded-full text-white font-bold shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 ${!selectionReady ? 'bg-gray-300 cursor-not-allowed' : 'bg-sky-600 hover:bg-sky-800'
+                              }`}
                           >
-                            <ShoppingCart size={16} />
-                            <span>Add to Cart</span>
+                            <ShoppingCart size={20} />
+                            {editingKey ? 'Update Item' : 'Add to Cart'}
                           </button>
                           <button
                             type="button"
                             onClick={handleDirectBuy}
                             disabled={!selectionReady}
-                            className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-sky-600 text-white text-sm font-semibold shadow-md hover:bg-sky-700 active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                            className="flex items-center gap-2 px-2 py-2 rounded-full bg-sky-600 text-white text-sm font-semibold shadow-md hover:bg-sky-700 active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                           >
-                            <ShoppingBag size={18} />
+                            <ShoppingBag size={20} />
                             <span>Buy</span>
                           </button>
                         </div>

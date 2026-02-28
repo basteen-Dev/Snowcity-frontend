@@ -84,8 +84,7 @@ export default function Home() {
   // item resolvers (Redux slices now handle hydration from localStorage)
   const bannerItems = banners.items || [];
   const attractionItems = React.useMemo(() => {
-    const items = attractions.items || [];
-    return [...items].sort((a, b) => (a.id || a.attraction_id || 0) - (b.id || b.attraction_id || 0));
+    return attractions.items || [];
   }, [attractions.items]);
   const comboItems = combos.items || [];
   const offerItems = offers.items || [];

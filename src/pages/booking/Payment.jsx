@@ -327,7 +327,7 @@ export default function Payment({
                 type="button"
                 onClick={onPlaceOrderAndPay}
                 disabled={creating?.status === 'loading' || paymentLoading || !hasCartItems}
-                className={`w-full py-4 rounded-xl transition-all shadow-lg font-bold text-lg flex items-center justify-center gap-2 ${creating?.status === 'loading' || paymentLoading || !hasCartItems
+                className={`w-full py-4 rounded-full transition-all shadow-lg font-bold text-lg flex items-center justify-center gap-2 active:scale-[0.98] ${creating?.status === 'loading' || paymentLoading || !hasCartItems
                     ? 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
                     : 'bg-green-600 text-white hover:bg-green-700'
                     }`}
@@ -352,7 +352,7 @@ export default function Payment({
                 type="button"
                 onClick={handleBack}
                 disabled={creating?.status === 'loading' || paymentLoading}
-                className="hidden md:flex items-center justify-center gap-2 w-full px-6 py-3 border rounded-xl text-gray-700 hover:bg-gray-50 transition font-semibold disabled:opacity-50"
+                className="hidden md:flex items-center justify-center gap-2 w-full px-8 py-3.5 border rounded-full text-gray-700 hover:bg-gray-50 transition-all font-bold shadow-sm active:scale-[0.98] disabled:opacity-50"
             >
                 Back
             </button>

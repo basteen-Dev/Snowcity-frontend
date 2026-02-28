@@ -361,7 +361,7 @@ export default function OfferForm() {
           target_id: rule.applies_to_all ? null : (rule.target_id === '' ? null : Number(rule.target_id)),
           slot_id: rule.slot_id === '' ? null : Number(rule.slot_id),
           rule_discount_value: rule.rule_discount_value === '' ? null : Number(rule.rule_discount_value),
-          priority: Number(rule.priority ?? 100),
+          priority: 100, // Fixed default, not user-configurable
           date_from: normalizeDate(rule.date_from),
           date_to: normalizeDate(rule.date_to),
           time_from: normalizeTime(rule.time_from),
@@ -588,7 +588,7 @@ export default function OfferForm() {
                     <input type="time" className="w-full rounded-md border px-3 py-2" value={rule.time_to || ''} onChange={(e) => updateRule(idx, { time_to: e.target.value })} />
                   </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs text-gray-500 mb-1">Slot Type</label>
                     <select className="w-full rounded-md border px-3 py-2" value={rule.slot_type || ''} onChange={(e) => updateRule(idx, { slot_type: e.target.value })}>
@@ -600,10 +600,6 @@ export default function OfferForm() {
                   <div>
                     <label className="block text-xs text-gray-500 mb-1">Slot ID</label>
                     <input type="number" className="w-full rounded-md border px-3 py-2" value={rule.slot_id ?? ''} onChange={(e) => updateRule(idx, { slot_id: e.target.value })} />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1">Priority</label>
-                    <input type="number" className="w-full rounded-md border px-3 py-2" value={rule.priority ?? 100} onChange={(e) => updateRule(idx, { priority: e.target.value })} />
                   </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">

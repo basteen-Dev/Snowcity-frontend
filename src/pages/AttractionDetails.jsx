@@ -2,7 +2,7 @@ import React from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import dayjs from 'dayjs';
-import { X, ChevronDown } from 'lucide-react';
+import { X, ChevronDown, Check } from 'lucide-react';
 import api from '../services/apiClient';
 import endpoints from '../services/endpoints';
 import Loader from '../components/common/Loader';
@@ -863,7 +863,7 @@ export default function AttractionDetails() {
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
-        <span>Booking is temporarily unavailable for this attraction.</span>
+        <span>Booking temporarily unavailable online</span>
       </div>
     </div>
   ) : null;
@@ -889,11 +889,11 @@ export default function AttractionDetails() {
   return (
     <>
       {/* Add pb-24 so fixed mobile bar doesn't overlap content */}
-      <div className="min-h-screen bg-gradient-to-b from-[#f5f8ff] to-white font-sans pb-24 lg:pb-0">
+      <div className="min-h-screen bg-gradient-to-b from-[#f5f8ff] to-white font-sans pt-14 lg:pt-0">
         {stoppedBanner}
         {/* HERO BANNER + GALLERY (Full Width) */}
         <section className="mt-0 bg-transparent">
-          <div className="max-w-6xl mx-auto px-4 pt-24">
+          <div className="max-w-6xl mx-auto px-4 pt-4 lg:pt-0">
             {/* Title removed from here */}
           </div>
 
@@ -1017,7 +1017,7 @@ export default function AttractionDetails() {
                     className="text-[11px] uppercase tracking-wide text-gray-500 font-semibold"
                     style={{ fontFamily: 'Inter, sans-serif' }}
                   >
-                    Base price
+                    price
                   </div>
                   <div
                     className="text-lg font-semibold text-gray-900 rupee"
@@ -1264,7 +1264,7 @@ export default function AttractionDetails() {
 
             {isBookingStopped && (
               <div className="mt-4 rounded-2xl border border-red-100 bg-red-50 px-3 py-2 text-sm text-center text-red-600 font-medium">
-                Booking for this attraction is currently unavailable.
+                Booking temporarily unavailable online
               </div>
             )}
 
@@ -1308,12 +1308,20 @@ export default function AttractionDetails() {
                   {/* Short description */}
                   {shortDescription ? (
                     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 md:p-6">
-                      <p
-                        className="text-gray-700 text-base md:text-lg"
-                        style={{ fontFamily: 'Inter, sans-serif' }}
-                      >
-                        {shortDescription}
-                      </p>
+                      <ul className="space-y-3 list-none" style={{ fontFamily: 'Inter, sans-serif' }}>
+                        {shortDescription
+                          .split('.')
+                          .map((sentence) => sentence.trim())
+                          .filter((sentence) => sentence.length > 0)
+                          .map((sentence, idx) => (
+                            <li key={idx} className="flex items-start gap-3 text-gray-700 font-medium">
+                              <span className="flex-shrink-0 mt-1.5">
+                                <Check className="h-4 w-4 text-[#003de6]" strokeWidth={3} />
+                              </span>
+                              <span className="text-base md:text-lg leading-relaxed">{sentence}.</span>
+                            </li>
+                          ))}
+                      </ul>
                     </div>
                   ) : null}
 
@@ -1327,13 +1335,23 @@ export default function AttractionDetails() {
                           color: '#87CEEB',
                         }}
                       >
-                        About this attraction
+                        About this Experience
                       </h2>
-                      <div
-                        className="prose prose-sm md:prose max-w-none text-gray-700 leading-relaxed text-left"
-                        style={{ fontFamily: 'Inter, sans-serif' }}
-                        dangerouslySetInnerHTML={{ __html: a.description }}
-                      />
+                      <ul className="space-y-3 list-none" style={{ fontFamily: 'Inter, sans-serif' }}>
+                        {a.description
+                          .replace(/<[^>]*>/g, '') // Strip HTML tags
+                          .split('.')
+                          .map((sentence) => sentence.trim())
+                          .filter((sentence) => sentence.length > 0)
+                          .map((sentence, idx) => (
+                            <li key={idx} className="flex items-start gap-3 text-gray-700">
+                              <span className="flex-shrink-0 mt-1.5">
+                                <Check className="h-4 w-4 text-[#003de6]" strokeWidth={3} />
+                              </span>
+                              <span className="text-base md:text-lg leading-relaxed">{sentence}.</span>
+                            </li>
+                          ))}
+                      </ul>
                     </div>
                   ) : null}
 
@@ -1567,7 +1585,7 @@ export default function AttractionDetails() {
                   {isTimeSlotDisabled && (
                     <div className="bg-sky-50 border border-sky-100 rounded-2xl p-4 text-center">
                       <p className="text-sm text-sky-700 font-medium">
-                        Open Entry attraction — no time slot selection required.
+                        Open Entry Experience — no time slot selection required.
                       </p>
                     </div>
                   )}
@@ -1648,7 +1666,7 @@ export default function AttractionDetails() {
 
                   {isBookingStopped && (
                     <div className="mt-4 rounded-2xl border border-red-100 bg-red-50 px-3 py-2 text-sm text-center text-red-600 font-medium">
-                      Booking is currently unavailable for this attraction.
+                      Booking temporarily unavailable online
                     </div>
                   )}
 
@@ -1700,57 +1718,7 @@ export default function AttractionDetails() {
           </div>
         </section>
 
-        {/* MOBILE FIXED PRICE BAR */}
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[70] border-t border-gray-200 bg-white/95 backdrop-blur">
-          <div className="max-w-6xl mx-auto px-4 py-3 pb-[calc(env(safe-area-inset-bottom)+12px)]">
-            <div className="flex items-center gap-3">
-              <div className="flex-1 min-w-0">
-                <div className="text-[11px] uppercase tracking-wide text-gray-500 font-semibold">
-                  {hasDiscount ? 'Offer price' : 'Base price'}
-                </div>
 
-                <div className="flex items-baseline gap-2">
-                  <div className="text-lg font-bold text-gray-900 rupee">
-                    {formatCurrency(
-                      hasDiscount
-                        ? effectiveUnitPrice || 0
-                        : baseUnitPrice || effectiveUnitPrice || 0,
-                    )}
-                  </div>
-
-                  {hasDiscount ? (
-                    <div className="text-sm text-gray-400 line-through rupee">
-                      {formatCurrency(baseUnitPrice || 0)}
-                    </div>
-                  ) : null}
-
-                  {hasDiscount ? (
-                    <div className="text-xs font-semibold text-emerald-600">
-                      Save {discountPercent}%
-                    </div>
-                  ) : null}
-                </div>
-
-                <div className="text-xs text-gray-500 truncate">
-                  {qtyNumber} ticket{qtyNumber > 1 ? 's' : ''} • Total{' '}
-                  <span className="rupee font-semibold text-gray-800">
-                    {formatCurrency(totalPrice || 0)}
-                  </span>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                className="shrink-0 inline-flex items-center justify-center rounded-xl bg-[#003de6] text-white px-5 py-2.5 text-sm font-semibold shadow-md hover:bg-[#002db3] disabled:opacity-60 disabled:cursor-not-allowed"
-                disabled={isBookingStopped || !date || (!isTimeSlotDisabled && !selectedSlotForBar) || !effectiveUnitPrice}
-                onClick={onBookNow}
-                style={{ fontFamily: 'Inter, sans-serif' }}
-              >
-                Book Now
-              </button>
-            </div>
-          </div>
-        </div>
 
         {/* Calendar Modal */}
         {
