@@ -290,14 +290,14 @@ export default function AdminSidebar({ collapsed, onClose }) {
           {!collapsed && (
             <div>
               <p className="text-sm font-semibold text-gray-900 dark:text-neutral-100">SnowCity Admin</p>
-              <span className={`inline-block text-[10px] font-medium px-2 py-0.5 rounded-full text-white bg-gradient-to-r ${roleBadge.color}`}>
+              <span className={`inline-block text-[10px] font-medium px-2 py-0.5 rounded-xl text-white bg-gradient-to-r ${roleBadge.color}`}>
                 {roleBadge.label}
               </span>
             </div>
           )}
         </div>
         <button
-          className="md:hidden rounded-full p-2 text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-800"
+          className="md:hidden rounded-xl p-2 text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-800"
           onClick={onClose}
           aria-label="Close navigation"
         >
@@ -372,7 +372,7 @@ export default function AdminSidebar({ collapsed, onClose }) {
                         {!collapsed && <span>{label}</span>}
                       </NavLink>
                       {isLinkActive(to, end) && !collapsed && (
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 h-1.5 w-1.5 rounded-full bg-emerald-400" aria-hidden="true" />
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 h-1.5 w-1.5 rounded-xl bg-emerald-400" aria-hidden="true" />
                       )}
                     </div>
                   ))}
@@ -393,7 +393,7 @@ export default function AdminSidebar({ collapsed, onClose }) {
             {canSeeBookings && (
               <Link
                 to="/admin/bookings"
-                className="inline-flex items-center justify-center rounded-full bg-white/10 px-3 py-1.5 text-xs font-semibold hover:bg-white/20"
+                className="inline-flex items-center justify-center rounded-xl bg-white/10 px-3 py-1.5 text-xs font-semibold hover:bg-white/20"
                 onClick={handleNavClick}
               >
                 Go to Bookings
@@ -401,7 +401,7 @@ export default function AdminSidebar({ collapsed, onClose }) {
             )}
             <a
               href="mailto:support@snowcity.com"
-              className="inline-flex items-center justify-center rounded-full bg-white text-slate-900 px-3 py-1.5 text-xs font-semibold"
+              className="inline-flex items-center justify-center rounded-xl bg-white text-slate-900 px-3 py-1.5 text-xs font-semibold"
             >
               Contact Support
             </a>

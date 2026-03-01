@@ -466,7 +466,7 @@ export default function OfferForm() {
               >
                 <div className="flex items-center justify-between text-xs uppercase tracking-wide text-gray-500">
                   <span>{tpl.badge}</span>
-                  <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">Template</span>
+                  <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-xl">Template</span>
                 </div>
                 <div className="mt-1 text-sm font-semibold text-gray-900 dark:text-neutral-100">{tpl.label}</div>
                 <p className="mt-1 text-xs text-gray-500 min-h-[32px]">{tpl.description}</p>
@@ -485,7 +485,7 @@ export default function OfferForm() {
                     <div className="text-xs text-gray-500">{formatRuleSummary(rule, resolveTargetLabel)}</div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] text-gray-600">
+                    <span className="inline-flex items-center rounded-xl border px-2 py-0.5 text-[11px] text-gray-600">
                       {rule.target_type === 'combo' ? 'Combo' : 'Attraction'}
                     </span>
                     <button type="button" onClick={() => removeRule(idx)} className="text-xs text-red-600">
@@ -708,7 +708,7 @@ export default function OfferForm() {
                       <label className="block text-xs text-gray-500 mb-1">Selected Dates</label>
                       <div className="flex flex-wrap gap-2">
                         {rule.specific_dates.map((d) => (
-                          <span key={`${idx}-date-${d}`} className="inline-flex items-center gap-1 text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full">
+                          <span key={`${idx}-date-${d}`} className="inline-flex items-center gap-1 text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-xl">
                             {new Date(d).toLocaleDateString()}
                             <button
                               type="button"

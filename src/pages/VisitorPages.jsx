@@ -7,7 +7,12 @@ import ErrorState from '../components/common/ErrorState';
 
 const toSlugUrl = (page) => {
   if (!page) return '#';
-  if (page.slug) return `/${page.slug}`;
+  if (page.slug) {
+    let slug = page.slug;
+    if (slug.startsWith('/page/')) slug = slug.substring(6);
+    else if (slug.startsWith('page/')) slug = slug.substring(5);
+    return `/${slug}`;
+  }
   if (page.page_id || page.id) return `/${page.page_id || page.id}`;
   return '#';
 };

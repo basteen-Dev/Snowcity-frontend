@@ -61,7 +61,7 @@ export default function GalleryViewer({ items = [], initialIndex = 0, onClose = 
         {onClose && (
           <button
             onClick={onClose}
-            className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors z-50 relative"
+            className="p-2 rounded-xl bg-white/10 hover:bg-white/20 transition-colors z-50 relative"
             aria-label="Close"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -77,7 +77,7 @@ export default function GalleryViewer({ items = [], initialIndex = 0, onClose = 
         <button
           onClick={goToPrevious}
           disabled={currentIndex === 0}
-          className="absolute left-4 z-10 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="absolute left-4 z-10 p-2 rounded-xl bg-white/10 hover:bg-white/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           aria-label="Previous"
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -108,7 +108,7 @@ export default function GalleryViewer({ items = [], initialIndex = 0, onClose = 
         <button
           onClick={goToNext}
           disabled={currentIndex === items.length - 1}
-          className="absolute right-4 z-10 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="absolute right-4 z-10 p-2 rounded-xl bg-white/10 hover:bg-white/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           aria-label="Next"
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -124,9 +124,9 @@ export default function GalleryViewer({ items = [], initialIndex = 0, onClose = 
             <button
               key={item.gallery_item_id || item.id || index}
               onClick={() => goToIndex(index)}
-              className={`w-8 h-8 rounded-full text-xs font-medium transition-all ${index === currentIndex
-                  ? 'bg-blue-600 text-white scale-110'
-                  : 'bg-white/20 text-white hover:bg-white/30'
+              className={`w-8 h-8 rounded-xl text-xs font-medium transition-all ${index === currentIndex
+                ? 'bg-blue-600 text-white scale-110'
+                : 'bg-white/20 text-white hover:bg-white/30'
                 }`}
               aria-label={`Go to item ${index + 1}`}
             >

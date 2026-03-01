@@ -57,7 +57,7 @@ export default function PaymentReturn() {
         {/* --- SUCCESS STATE --- */}
         {uiState === 'success' && (
           <>
-            <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-inner">
+            <div className="w-16 h-16 bg-green-100 text-green-600 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-inner">
               <CheckCircle size={32} strokeWidth={2.5} />
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">Order Confirmed!</h1>
@@ -70,7 +70,7 @@ export default function PaymentReturn() {
         {/* --- FAILED STATE --- */}
         {uiState === 'failed' && (
           <>
-            <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-inner">
+            <div className="w-16 h-16 bg-red-100 text-red-600 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-inner">
               <XCircle size={32} strokeWidth={2.5} />
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">Payment Failed</h1>
@@ -123,7 +123,7 @@ export default function PaymentReturn() {
         {/* --- PROCESSING / PENDING STATE --- */}
         {(uiState === 'processing' || uiState === 'pending') && (
           <>
-            <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center mx-auto mb-4">
               {uiState === 'pending' ? <AlertCircle size={32} /> : <Loader size={32} className="animate-spin" />}
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">

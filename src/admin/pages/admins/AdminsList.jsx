@@ -109,7 +109,7 @@ export default function AdminsList() {
                           return (
                             <span
                               key={display.key}
-                              className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ring-inset ${display.colorClass}`}
+                              className={`inline-flex items-center rounded-xl px-2.5 py-0.5 text-xs font-semibold ring-1 ring-inset ${display.colorClass}`}
                             >
                               {display.label}
                             </span>

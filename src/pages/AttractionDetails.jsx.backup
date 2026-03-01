@@ -616,7 +616,7 @@ export default function AttractionDetails() {
                           type="button"
                           disabled={disabled}
                           onClick={() => setSlotKey(sid)}
-                          className={`px-3 py-2 rounded-full border text-sm ${
+                          className={`px-3 py-2 rounded-xl border text-sm ${
                             disabled
                               ? 'opacity-50 cursor-not-allowed'
                               : selected
@@ -637,7 +637,7 @@ export default function AttractionDetails() {
 
               <div>
                 <label className="block text-sm text-gray-600 mb-1">Quantity</label>
-                <div className="inline-flex items-center rounded-full border overflow-hidden">
+                <div className="inline-flex items-center rounded-xl border overflow-hidden">
                   <button type="button" className="px-3 py-2 hover:bg-gray-50" onClick={() => setQty((q) => Math.max(1, Number(q) - 1))}>-</button>
                   <input type="number" min={1} className="w-16 text-center py-2" value={qty} onChange={(e) => setQty(Math.max(1, Number(e.target.value) || 1))} />
                   <button type="button" className="px-3 py-2 hover:bg-gray-50" onClick={() => setQty((q) => Math.max(1, Number(q) + 1))}>+</button>
@@ -645,7 +645,7 @@ export default function AttractionDetails() {
               </div>
 
               <button
-                className="w-full rounded-full bg-blue-600 text-white px-5 py-2 text-sm hover:bg-blue-700 disabled:opacity-50"
+                className="w-full rounded-xl bg-blue-600 text-white px-5 py-2 text-sm hover:bg-blue-700 disabled:opacity-50"
                 onClick={onBookNow}
                 disabled={!a || !date || !slotKey || !qty}
               >

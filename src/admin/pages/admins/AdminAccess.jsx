@@ -32,7 +32,7 @@ function ResourceSection({ title, items, sel, setSel, disabled }) {
       <div className="flex items-center justify-between gap-3 mb-3">
         <div className="font-medium text-gray-900 dark:text-neutral-100">{title}</div>
         <label className={[
-          'inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium transition-colors cursor-pointer',
+          'inline-flex items-center gap-2 rounded-xl border px-3 py-1 text-xs font-medium transition-colors cursor-pointer',
           hasAll ? 'bg-emerald-600 text-white border-emerald-600' : 'text-blue-600 border-blue-500 hover:bg-blue-50 dark:hover:bg-neutral-800',
           disabled ? 'opacity-60 cursor-not-allowed' : '',
         ].join(' ')}>

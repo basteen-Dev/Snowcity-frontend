@@ -28,8 +28,6 @@ html {
 
 /* Lock floating nav — prevent ANY shifts */
 [data-floating-nav] {
-  transform: none !important;
-  transition: none !important;
   will-change: auto;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
@@ -565,19 +563,6 @@ body {
   }
 }
 
-/* Remove visible borders inside page sections for a cleaner, modular look */
-section [class*="border"],
-section[class*="border"] {
-  border: none !important;
-  box-shadow: none !important;
-}
-
-/* Also reduce heavy outlines on cards within sections */
-section .shadow-2xl,
-section .shadow-xl,
-section .shadow-lg {
-  box-shadow: none !important;
-}
 
 /* Custom CSS Variables for exp-card styles */
 :root {

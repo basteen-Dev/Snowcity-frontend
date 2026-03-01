@@ -291,7 +291,6 @@ export default function AttractionsCarousel({ items = [] }) {
         <h2 className="text-4xl md:text-4xl font-black text-slate-900 tracking-tight uppercase leading-none">
           Experiences
         </h2>
-        <div className="w-20 h-1.5 bg-[#003de6] mx-auto mt-6 mb-8 rounded-xl" />
         <p className="text-gray-600 text-lg md:text-xl max-w-2xl mx-auto font-medium leading-relaxed">
           Discover our amazing collection of thrilling experiences and winter wonders.
         </p>
@@ -332,7 +331,7 @@ export default function AttractionsCarousel({ items = [] }) {
           {sortedItems.map((_, idx) => (
             <div
               key={idx}
-              className={`h-2 transition-all duration-300 rounded-full ${realIndex === idx
+              className={`h-2 transition-all duration-300 rounded-xl ${realIndex === idx
                 ? "w-8 bg-[#003de6]"
                 : "w-2 bg-gray-300"
                 }`}

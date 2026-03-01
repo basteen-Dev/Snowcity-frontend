@@ -117,7 +117,7 @@ export default function CMSPage() {
                       <div className="absolute inset-0 bg-gradient-to-br from-black/40 to-transparent" />
                       <div className="absolute inset-0 flex items-center justify-center">
                         <div className="text-center">
-                          <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-white/90 text-4xl text-slate-900 shadow-xl">
+                          <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-xl bg-white/90 text-4xl text-slate-900 shadow-xl">
                             📸
                           </div>
                           <div className="text-2xl font-semibold text-white">Gallery Highlights</div>
@@ -171,7 +171,7 @@ export default function CMSPage() {
                 <details key={idx} className="group bg-white border border-sky-100 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300">
                   <summary className="flex items-center justify-between cursor-pointer px-6 py-5 text-slate-800 font-semibold list-none [&::-webkit-details-marker]:hidden">
                     <span>{faq.question}</span>
-                    <span className="flex-shrink-0 ml-4 h-8 w-8 rounded-full bg-sky-50 flex items-center justify-center group-open:bg-sky-600 group-open:text-white transition-colors duration-300">
+                    <span className="flex-shrink-0 ml-4 h-8 w-8 rounded-xl bg-sky-50 flex items-center justify-center group-open:bg-sky-600 group-open:text-white transition-colors duration-300">
                       <svg className="w-5 h-5 group-open:rotate-180 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                       </svg>

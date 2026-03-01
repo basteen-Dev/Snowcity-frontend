@@ -107,7 +107,7 @@ function MiniPieChart({ data }) {
     );
   }
   const { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } = lib;
-  const palette = ['#60a5fa','#f59e0b','#10b981','#ef4444','#a78bfa','#f472b6'];
+  const palette = ['#60a5fa', '#f59e0b', '#10b981', '#ef4444', '#a78bfa', '#f472b6'];
   const series = Array.isArray(data) ? data.map((r) => ({ name: String(r.booking_status || r.name), value: Number(r.count || r.value || 0) })) : [];
   return (
     <div className="h-60 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl p-3">
@@ -236,20 +236,20 @@ export default function Overview() {
             <input type="date" className="rounded-md border px-3 py-2" value={state.to} onChange={(e) => setState((s) => ({ ...s, to: e.target.value }))} />
           </div>
           <div className="flex flex-wrap gap-2">
-            <button className="rounded-full border px-3 py-1.5 text-sm" onClick={() => setQuick('all')}>All Time</button>
-            <button className="rounded-full border px-3 py-1.5 text-sm" onClick={() => setQuick('today')}>Today</button>
-            <button className="rounded-full border px-3 py-1.5 text-sm" onClick={() => setQuick('tomorrow')}>Tomorrow</button>
-            <button className="rounded-full border px-3 py-1.5 text-sm" onClick={() => setQuick('week')}>This Week</button>
-            <button className="rounded-full bg-gray-900 text-white px-4 py-1.5 text-sm" onClick={reload}>Apply</button>
+            <button className="rounded-xl border px-3 py-1.5 text-sm" onClick={() => setQuick('all')}>All Time</button>
+            <button className="rounded-xl border px-3 py-1.5 text-sm" onClick={() => setQuick('today')}>Today</button>
+            <button className="rounded-xl border px-3 py-1.5 text-sm" onClick={() => setQuick('tomorrow')}>Tomorrow</button>
+            <button className="rounded-xl border px-3 py-1.5 text-sm" onClick={() => setQuick('week')}>This Week</button>
+            <button className="rounded-xl bg-gray-900 text-white px-4 py-1.5 text-sm" onClick={reload}>Apply</button>
           </div>
           <div className="flex gap-2 ml-auto">
             <a
-              className="rounded-full border px-3 py-1.5 text-sm"
+              className="rounded-xl border px-3 py-1.5 text-sm"
               href={urlWithQuery('/api/admin/analytics/report.csv', { type: 'bookings', from: state.from, to: state.to, attraction_id: state.attractionId || undefined })}
               target="_blank" rel="noopener noreferrer"
             >Download CSV</a>
             <a
-              className="rounded-full border px-3 py-1.5 text-sm"
+              className="rounded-xl border px-3 py-1.5 text-sm"
               href={urlWithQuery('/api/admin/analytics/report.pdf', { type: 'bookings', from: state.from, to: state.to, attraction_id: state.attractionId || undefined })}
               target="_blank" rel="noopener noreferrer"
             >PDF</a>
@@ -287,8 +287,8 @@ export default function Overview() {
                 <span>Paid</span>
                 <span>{formatCurrency(paidRevenue)}</span>
               </div>
-              <div className="h-2 rounded-full bg-gray-100 mt-2">
-                <div className="h-full rounded-full bg-emerald-500" style={{ width: `${paidPct}%` }} />
+              <div className="h-2 rounded-xl bg-gray-100 mt-2">
+                <div className="h-full rounded-xl bg-emerald-500" style={{ width: `${paidPct}%` }} />
               </div>
             </div>
             <div className="flex items-center justify-between text-sm text-gray-600">

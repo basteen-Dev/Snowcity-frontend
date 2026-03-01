@@ -192,9 +192,9 @@ export default function BlogsList() {
             title: 'Status',
             render: (row) =>
               row.active ? (
-                <span className="px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs">Published</span>
+                <span className="px-2 py-1 rounded-xl bg-green-100 text-green-700 text-xs">Published</span>
               ) : (
-                <span className="px-2 py-1 rounded-full bg-yellow-100 text-yellow-800 text-xs">Draft</span>
+                <span className="px-2 py-1 rounded-xl bg-yellow-100 text-yellow-800 text-xs">Draft</span>
               )
           },
           {

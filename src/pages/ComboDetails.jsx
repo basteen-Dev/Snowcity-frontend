@@ -21,7 +21,7 @@ import {
 } from '../utils/pricing';
 import { imgSrc } from '../utils/media';
 import dayjs from 'dayjs';
-import { X, ChevronDown, Check } from 'lucide-react';
+import { X, ChevronDown, Check, Calendar } from 'lucide-react';
 import usePageSeo from '../hooks/usePageSeo';
 
 /* ========= Small helpers / utilities ========= */
@@ -542,9 +542,9 @@ export default function ComboDetails() {
     const today = dayjs().format('YYYY-MM-DD');
     const tomorrow = dayjs().add(1, 'day').format('YYYY-MM-DD');
     return (value) => {
-      if (!value) return 'All Days';
-      if (value === today) return 'All Days';
-      if (value === tomorrow) return 'All Days';
+      if (!value) return 'More Dates';
+      if (value === today) return 'More Dates';
+      if (value === tomorrow) return 'More Dates';
       return dayjs(value).format('D MMM');
     };
   }, []);
@@ -1017,7 +1017,7 @@ export default function ComboDetails() {
                 <>
                   <button
                     onClick={(e) => { e.stopPropagation(); prevCarousel(); }}
-                    className="absolute left-6 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/30 text-white hover:bg-black/50 transition-all opacity-0 group-hover:opacity-100 backdrop-blur-sm"
+                    className="absolute left-6 top-1/2 -translate-y-1/2 p-3 rounded-xl bg-black/30 text-white hover:bg-black/50 transition-all opacity-0 group-hover:opacity-100 backdrop-blur-sm"
                   >
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -1025,7 +1025,7 @@ export default function ComboDetails() {
                   </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); nextCarousel(); }}
-                    className="absolute right-6 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/30 text-white hover:bg-black/50 transition-all opacity-0 group-hover:opacity-100 backdrop-blur-sm"
+                    className="absolute right-6 top-1/2 -translate-y-1/2 p-3 rounded-xl bg-black/30 text-white hover:bg-black/50 transition-all opacity-0 group-hover:opacity-100 backdrop-blur-sm"
                   >
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -1036,7 +1036,7 @@ export default function ComboDetails() {
                       <button
                         key={i}
                         onClick={(e) => { e.stopPropagation(); setCarouselIndex(i); }}
-                        className={`w-2.5 h-2.5 rounded-full transition-all ${i === carouselIndex ? 'bg-white scale-110' : 'bg-white/40 hover:bg-white/60'}`}
+                        className={`w-2.5 h-2.5 rounded-xl transition-all ${i === carouselIndex ? 'bg-white scale-110' : 'bg-white/40 hover:bg-white/60'}`}
                       />
                     ))}
                   </div>
@@ -1053,7 +1053,7 @@ export default function ComboDetails() {
           <div className="absolute bottom-20 left-0 right-0 px-4 md:px-8 pointer-events-none">
             <div className="max-w-7xl mx-auto">
               {/* Badge */}
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0099FF]/90 text-[10px] md:text-xs font-bold text-white uppercase tracking-widest backdrop-blur-sm mb-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-[#0099FF]/90 text-[10px] md:text-xs font-bold text-white uppercase tracking-widest backdrop-blur-sm mb-4">
                 <span>Combo Deal</span>
                 {discountPercent > 0 && (
                   <span className="pl-2 border-l border-white/30">Save {discountPercent}%</span>
@@ -1086,7 +1086,7 @@ export default function ComboDetails() {
               <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
                 <div className="p-6 md:p-8">
                   <h2 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
-                    <span className="w-2 h-6 bg-[#0099FF] rounded-full" />
+                    <span className="w-2 h-6 bg-[#0099FF] rounded-xl" />
                     Photo Gallery
                   </h2>
                   <GalleryGrid items={linkedGallery.items} />
@@ -1098,7 +1098,7 @@ export default function ComboDetails() {
             {normalizedAttractions.length > 0 && (
               <div className="pb-4">
                 <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                  <span className="w-2 h-6 bg-[#0099FF] rounded-full" />
+                  <span className="w-2 h-6 bg-[#0099FF] rounded-xl" />
                   What's Included
                 </h2>
                 <div className="flex flex-nowrap gap-4 overflow-x-auto pb-6 -mx-1 px-1 scrollbar-hide">
@@ -1146,16 +1146,29 @@ export default function ComboDetails() {
 
                 <div className="space-y-6">
                   <div>
-                    <label className="block text-xs font-bold text-gray-700 mb-3">Select Date</label>
-                    <button onClick={onCalendarButtonClick} className="w-full flex items-center justify-between p-4 bg-gray-50 border border-gray-100 rounded-xl hover:border-blue-400 transition-all font-semibold text-gray-900 shadow-inner">
-                      <span className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-blue-50 text-[#0099FF] flex items-center justify-center">
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" /></svg>
-                        </div>
-                        {dayjs(date).format('DD MMM YYYY')}
-                      </span>
-                      <ChevronDown className="w-5 h-5 text-gray-400" />
-                    </button>
+                    <label className="block text-xs font-bold text-gray-700 mb-3 text-left">Select Date</label>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={onCalendarButtonClick}
+                        className="flex-1 flex items-center justify-between p-4 bg-gray-50 border border-gray-100 rounded-xl hover:border-blue-400 transition-all font-semibold text-gray-900 shadow-inner"
+                      >
+                        <span className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-blue-50 text-[#0099FF] flex items-center justify-center">
+                            <Calendar size={20} />
+                          </div>
+                          {dayjs(date).format('DD MMM YYYY')}
+                        </span>
+                        <ChevronDown className="w-5 h-5 text-gray-400" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={onCalendarButtonClick}
+                        className="p-3.5 rounded-xl border border-gray-100 text-gray-600 hover:border-blue-400 hover:text-[#0099FF] transition-colors bg-gray-50 shadow-inner"
+                        title="Open Calendar"
+                      >
+                        <Calendar size={20} />
+                      </button>
+                    </div>
                   </div>
 
                   <div>
@@ -1172,11 +1185,23 @@ export default function ComboDetails() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-gray-700 mb-3">Quantity</label>
+                    <label className="block text-xs font-bold text-gray-700 mb-3 text-left">No. of tickets</label>
                     <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                      <button onClick={() => setQty(q => Math.max(1, q - 1))} className="w-10 h-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-xl font-bold text-gray-600 hover:bg-gray-50 shadow-sm">-</button>
+                      <button
+                        type="button"
+                        onClick={() => setQty((prev) => Math.max(1, Number(prev || 1) - 1))}
+                        className="w-10 h-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center hover:border-sky-300 active:scale-95 transition"
+                      >
+                        <Minus size={16} />
+                      </button>
                       <span className="text-xl font-black text-gray-900">{qty}</span>
-                      <button onClick={() => setQty(q => q + 1)} className="w-10 h-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-xl font-bold text-gray-600 hover:bg-gray-50 shadow-sm">+</button>
+                      <button
+                        type="button"
+                        onClick={() => setQty((prev) => Math.max(1, Number(prev || 1) + 1))}
+                        className="w-10 h-10 rounded-xl border border-sky-200 flex items-center justify-center active:scale-95 bg-sky-600 text-white shadow-sm"
+                      >
+                        <Plus size={16} />
+                      </button>
                     </div>
                   </div>
 
@@ -1204,7 +1229,7 @@ export default function ComboDetails() {
             {description && (
               <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 md:p-8">
                 <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                  <span className="w-2 h-6 bg-[#0099FF] rounded-full" />
+                  <span className="w-2 h-6 bg-[#0099FF] rounded-xl" />
                   Experience Highlights
                 </h2>
                 <div className="prose prose-blue max-w-none text-gray-700">
@@ -1231,7 +1256,7 @@ export default function ComboDetails() {
             {combo?.faq_items?.length > 0 && (
               <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 md:p-8">
                 <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                  <span className="w-2 h-6 bg-[#0099FF] rounded-full" />
+                  <span className="w-2 h-6 bg-[#0099FF] rounded-xl" />
                   Frequently Asked Questions
                 </h2>
                 <div className="space-y-3">
@@ -1254,7 +1279,7 @@ export default function ComboDetails() {
             <div id="availability" className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 md:p-8">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                 <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                  <span className="w-2 h-6 bg-[#0099FF] rounded-full" />
+                  <span className="w-2 h-6 bg-[#0099FF] rounded-xl" />
                   Available Time Slots
                 </h2>
                 <div className="px-4 py-2 bg-blue-50 text-[#0099FF] rounded-2xl text-sm font-semibold border border-blue-100">
@@ -1324,7 +1349,7 @@ export default function ComboDetails() {
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 8l4 4m0 0l-4 4m4-4H3" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" /></svg>
                 </Link>
               </div>
-              <div className="absolute top-0 right-0 -mr-12 -mt-12 w-48 h-48 bg-white/10 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-700" />
+              <div className="absolute top-0 right-0 -mr-12 -mt-12 w-48 h-48 bg-white/10 rounded-xl blur-3xl group-hover:scale-110 transition-transform duration-700" />
             </div>
           </div>
 
@@ -1352,19 +1377,29 @@ export default function ComboDetails() {
 
                 {/* Date Picker */}
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 mb-3">Select Date</label>
-                  <button
-                    onClick={onCalendarButtonClick}
-                    className="w-full flex items-center justify-between p-4 bg-gray-50 border border-gray-100 rounded-xl hover:border-blue-400 transition-all font-semibold text-gray-900 shadow-inner"
-                  >
-                    <span className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-xl bg-blue-50 text-[#0099FF] flex items-center justify-center">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" /></svg>
-                      </div>
-                      {dayjs(date).format('DD MMM YYYY')}
-                    </span>
-                    <ChevronDown className="w-5 h-5 text-gray-400" />
-                  </button>
+                  <label className="block text-xs font-bold text-gray-700 mb-3 text-left">Select Date</label>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={onCalendarButtonClick}
+                      className="flex-1 flex items-center justify-between p-4 bg-gray-50 border border-gray-100 rounded-xl hover:border-blue-400 transition-all font-semibold text-gray-900 shadow-inner"
+                    >
+                      <span className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-xl bg-blue-50 text-[#0099FF] flex items-center justify-center">
+                          <Calendar size={20} />
+                        </div>
+                        {dayjs(date).format('DD MMM YYYY')}
+                      </span>
+                      <ChevronDown className="w-5 h-5 text-gray-400" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={onCalendarButtonClick}
+                      className="p-3.5 rounded-xl border border-gray-100 text-gray-600 hover:border-blue-400 hover:text-[#0099FF] transition-colors bg-gray-50 shadow-inner"
+                      title="Open Calendar"
+                    >
+                      <Calendar size={20} />
+                    </button>
+                  </div>
                 </div>
 
                 {/* Slot Selector */}
@@ -1388,11 +1423,23 @@ export default function ComboDetails() {
 
                 {/* Quantity */}
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 mb-3">Quantity</label>
+                  <label className="block text-xs font-bold text-gray-700 mb-3 text-left">No. of tickets</label>
                   <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100">
-                    <button onClick={() => setQty(q => Math.max(1, q - 1))} className="w-10 h-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-xl font-bold text-gray-600 hover:bg-gray-50 shadow-sm">-</button>
+                    <button
+                      type="button"
+                      onClick={() => setQty((prev) => Math.max(1, Number(prev || 1) - 1))}
+                      className="w-10 h-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center hover:border-sky-300 active:scale-95 transition"
+                    >
+                      <Minus size={16} />
+                    </button>
                     <span className="text-xl font-black text-gray-900">{qty}</span>
-                    <button onClick={() => setQty(q => q + 1)} className="w-10 h-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-xl font-bold text-gray-600 hover:bg-gray-50 shadow-sm">+</button>
+                    <button
+                      type="button"
+                      onClick={() => setQty((prev) => Math.max(1, Number(prev || 1) + 1))}
+                      className="w-10 h-10 rounded-xl border border-sky-200 flex items-center justify-center active:scale-95 bg-sky-600 text-white shadow-sm"
+                    >
+                      <Plus size={16} />
+                    </button>
                   </div>
                 </div>
 
@@ -1431,45 +1478,76 @@ export default function ComboDetails() {
       {/* FOOTER PADDING */}
       <div className="h-16" />
 
-      {/* CALENDAR MODAL */}
       {showCalendar && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setShowCalendar(false)}>
-          <div className="bg-white rounded-[32px] w-full max-w-sm p-6 shadow-2xl scale-in-center overflow-hidden" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-bold text-gray-900">Select Date</h3>
-              <button onClick={() => setShowCalendar(false)} className="p-2 hover:bg-gray-100 rounded-xl text-gray-400 transition-colors"><X className="w-6 h-6" /></button>
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 sm:p-6"
+          onClick={() => setShowCalendar(false)}
+        >
+          <div
+            className="bg-white rounded-3xl shadow-2xl border border-gray-100 p-6 md:p-8 w-full max-w-6xl max-h-[90vh] overflow-y-auto md:overflow-y-visible"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h3 className="text-xl font-bold text-gray-900">Select Date</h3>
+                <p className="text-sm text-gray-500 mt-1">Pick your preferred visit date</p>
+              </div>
+              <button
+                onClick={() => setShowCalendar(false)}
+                className="p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-all border border-transparent hover:border-gray-200"
+              >
+                <X size={24} />
+              </button>
             </div>
 
-            <div className="max-h-[60vh] overflow-y-auto pr-1 space-y-6">
-              {[0, 1, 2].map(offset => {
-                const currentMonth = dayjs().add(offset, 'month');
-                const startDay = currentMonth.startOf('month').day();
-                const daysInMonth = currentMonth.daysInMonth();
-                const today = dayjs().format('YYYY-MM-DD');
+            <div className="flex flex-col md:flex-row gap-8 overflow-x-auto pb-4 md:pb-0 custom-scrollbar">
+              {/* Generate calendar for next 2 months */}
+              {[0, 1].map((monthOffset) => {
+                const currentDate = dayjs().add(monthOffset, 'month');
+                const monthStart = currentDate.startOf('month');
+                const monthEnd = currentDate.endOf('month');
+                const startDay = monthStart.day();
+                const daysInMonth = monthEnd.date();
+                const today = dayjs();
 
                 return (
-                  <div key={offset} className="bg-gray-50/50 rounded-2xl p-4 border border-gray-100">
-                    <p className="text-sm font-black text-gray-900 mb-4 tracking-wide uppercase">{currentMonth.format('MMMM YYYY')}</p>
-                    <div className="grid grid-cols-7 gap-1 text-center mb-2">
-                      {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => <div key={d} className="text-[10px] font-bold text-gray-400">{d}</div>)}
-                    </div>
-                    <div className="grid grid-cols-7 gap-1">
-                      {Array.from({ length: startDay }).map((_, i) => <div key={i} />)}
+                  <div key={monthOffset} className="flex-1 min-w-[280px]">
+                    <h4 className="text-base font-bold text-sky-700 mb-4 px-1">
+                      {currentDate.format('MMMM YYYY')}
+                    </h4>
+                    <div className="grid grid-cols-7 gap-1 text-xs">
+                      {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((day) => (
+                        <div key={day} className="text-center text-gray-400 font-bold py-2 uppercase tracking-wider">
+                          {day}
+                        </div>
+                      ))}
+                      {/* Empty cells for days before month starts */}
+                      {Array.from({ length: startDay }).map((_, i) => (
+                        <div key={`empty-${i}`} className="p-2" />
+                      ))}
+                      {/* Days of the month */}
                       {Array.from({ length: daysInMonth }).map((_, i) => {
-                        const dayNum = i + 1;
-                        const dateStr = currentMonth.date(dayNum).format('YYYY-MM-DD');
-                        const isPast = dayjs(dateStr).isBefore(dayjs(), 'day');
+                        const current = monthStart.date(i + 1);
+                        const dateStr = current.format('YYYY-MM-DD');
+                        const isPast = current.isBefore(today, 'day');
                         const isSelected = date === dateStr;
-                        const isToday = today === dateStr;
+                        const isToday = current.isSame(today, 'day');
 
                         return (
                           <button
                             key={i}
-                            disabled={isPast}
+                            type="button"
                             onClick={() => handleDateSelect(dateStr)}
-                            className={`h-10 text-sm font-bold rounded-xl transition-all ${isPast ? 'text-gray-200 cursor-not-allowed' : isSelected ? 'bg-[#0099FF] text-white shadow-lg' : isToday ? 'text-[#0099FF] bg-blue-50 border border-blue-200' : 'text-gray-700 hover:bg-white hover:shadow-sm'}`}
+                            disabled={isPast}
+                            className={`
+                              p-2.5 rounded-xl text-sm font-semibold transition-all duration-200
+                              ${isPast ? 'text-gray-300 cursor-not-allowed' : ''}
+                              ${isSelected ? 'bg-sky-600 text-white shadow-lg scale-110 z-10' : ''}
+                              ${!isPast && !isSelected ? 'hover:bg-sky-50 text-gray-700 hover:text-sky-700 hover:scale-105' : ''}
+                              ${isToday && !isSelected ? 'ring-2 ring-sky-100 text-sky-600' : ''}
+                            `}
                           >
-                            {dayNum}
+                            {current.date()}
                           </button>
                         );
                       })}

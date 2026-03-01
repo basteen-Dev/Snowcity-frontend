@@ -137,7 +137,7 @@ export default function InstagramFeed() {
               </div>
             </div>
           </div>
-          <div className="absolute top-3 right-3 w-8 h-8 bg-white/90 backdrop-blur rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="absolute top-3 right-3 w-8 h-8 bg-white/90 backdrop-blur rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
             <Instagram className="w-4 h-4 text-pink-600" />
           </div>
         </a>
@@ -161,7 +161,7 @@ export default function InstagramFeed() {
             href="https://instagram.com/snowcitybangalore"
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-full shadow-lg hover:shadow-xl transition"
+            className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition"
           >
             <Instagram className="w-5 h-5" />
             Follow us on Instagram

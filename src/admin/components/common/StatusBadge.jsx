@@ -32,7 +32,7 @@ export default function StatusBadge({ status, label, className = '' }) {
 
     return (
         <span
-            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ring-inset ${colors} ${className}`}
+            className={`inline-flex items-center rounded-xl px-2.5 py-0.5 text-xs font-semibold ring-1 ring-inset ${colors} ${className}`}
         >
             {display}
         </span>

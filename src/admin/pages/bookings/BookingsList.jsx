@@ -399,12 +399,12 @@ export default function BookingsList() {
           </div>
           <button
             onClick={() => setAutoSync(!autoSync)}
-            className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold border transition-all ${autoSync
+            className={`flex items-center gap-1.5 rounded-xl px-3 py-1 text-xs font-semibold border transition-all ${autoSync
               ? 'bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-900/20 dark:border-emerald-700 dark:text-emerald-400'
               : 'bg-gray-50 border-gray-200 text-gray-500 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-400'}`}
             title={autoSync ? 'Auto-sync ON (every 15s) — click to disable' : 'Auto-sync OFF — click to enable'}
           >
-            <span className={`inline-block w-2 h-2 rounded-full ${autoSync ? 'bg-emerald-500 animate-pulse' : 'bg-gray-400'}`} />
+            <span className={`inline-block w-2 h-2 rounded-xl ${autoSync ? 'bg-emerald-500 animate-pulse' : 'bg-gray-400'}`} />
             {autoSync ? 'Live' : 'Paused'}
           </button>
         </div>
@@ -413,7 +413,7 @@ export default function BookingsList() {
             <button
               key={range.key}
               onClick={() => applyQuickRange(range.key)}
-              className={`rounded-full px-3.5 py-1.5 text-xs font-semibold border transition-all ${activeRange === range.key
+              className={`rounded-xl px-3.5 py-1.5 text-xs font-semibold border transition-all ${activeRange === range.key
                 ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-transparent shadow-sm shadow-blue-500/20'
                 : 'border-gray-200 text-gray-600 hover:border-gray-400 hover:bg-gray-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800'}`}
             >
@@ -446,7 +446,7 @@ export default function BookingsList() {
             <Filter className="h-4 w-4" />
             Filters
             {activeFilterCount > 0 && (
-              <span className="bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+              <span className="bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-xl min-w-[18px] text-center">
                 {activeFilterCount}
               </span>
             )}
@@ -579,7 +579,7 @@ export default function BookingsList() {
                 Cancelled: 'bg-gray-100 text-gray-600 dark:bg-neutral-800 dark:text-neutral-400',
               };
               return (
-                <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${colors[status] || 'bg-gray-100 text-gray-600'}`}>
+                <span className={`inline-flex items-center rounded-xl px-2.5 py-0.5 text-xs font-semibold ${colors[status] || 'bg-gray-100 text-gray-600'}`}>
                   {status}
                 </span>
               );
@@ -598,7 +598,7 @@ export default function BookingsList() {
               };
               return (
                 <select
-                  className={`rounded-full px-2.5 py-1 text-xs font-semibold border cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-all ${colorMap[status] || 'border-gray-200 bg-gray-50 text-gray-600'} ${isUpdating ? 'opacity-50 pointer-events-none' : ''}`}
+                  className={`rounded-xl px-2.5 py-1 text-xs font-semibold border cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-all ${colorMap[status] || 'border-gray-200 bg-gray-50 text-gray-600'} ${isUpdating ? 'opacity-50 pointer-events-none' : ''}`}
                   value={status}
                   onClick={(e) => e.stopPropagation()}
                   onChange={(e) => { e.stopPropagation(); handleInlineStatusChange(r, e.target.value); }}

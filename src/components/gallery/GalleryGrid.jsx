@@ -56,7 +56,7 @@ export default function GalleryGrid({ items = [], className = "" }) {
                     />
                     {/* Video indicator */}
                     <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center">
+                      <div className="w-12 h-12 rounded-xl bg-white/90 flex items-center justify-center">
                         <svg className="w-6 h-6 text-gray-800 ml-1" fill="currentColor" viewBox="0 0 20 20">
                           <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
                         </svg>
@@ -76,7 +76,7 @@ export default function GalleryGrid({ items = [], className = "" }) {
                 )}
 
                 {/* Number overlay */}
-                <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/50 text-white text-xs flex items-center justify-center font-medium">
+                <div className="absolute top-2 right-2 w-6 h-6 rounded-xl bg-black/50 text-white text-xs flex items-center justify-center font-medium">
                   {index + 1}
                 </div>
 

@@ -64,7 +64,7 @@ export default function Attractions() {
           <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto font-medium leading-relaxed">
             Discover our complete collection of thrilling winter experiences and unforgettable adventures.
           </p>
-          <div className="w-20 h-1.5 bg-[#003de6] mx-auto mt-6 mb-8 rounded-full" />
+          <div className="w-20 h-1.5 bg-[#003de6] mx-auto mt-6 mb-8 rounded-xl" />
         </div>
 
         {/* Search and Stats */}
@@ -75,7 +75,7 @@ export default function Attractions() {
             </div>
             <div className="w-full sm:w-96">
               <input
-                className="w-full rounded-full border border-gray-300 px-6 py-3 text-gray-700 placeholder-gray-400 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all"
+                className="w-full rounded-xl border border-gray-300 px-6 py-3 text-gray-700 placeholder-gray-400 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all"
                 placeholder="Search attractions..."
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
@@ -103,7 +103,7 @@ export default function Attractions() {
             <p className="text-gray-600 text-lg max-w-xl mx-auto">
               Save more with our curated combo packages for multiple experiences.
             </p>
-            <div className="w-20 h-1.5 bg-[#003de6] mx-auto mt-6 rounded-full" />
+            <div className="w-20 h-1.5 bg-[#003de6] mx-auto mt-6 rounded-xl" />
           </div>
 
           {cStatus === 'loading' && !combos.length ? <Loader /> : null}

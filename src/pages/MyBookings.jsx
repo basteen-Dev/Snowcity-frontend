@@ -22,7 +22,7 @@ const Pill = ({ text, tone }) => {
     gray: 'bg-gray-100 text-gray-700 border-gray-200',
     blue: 'bg-blue-100 text-blue-700 border-blue-200'
   };
-  return <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${map[tone] || map.gray}`}>{text}</span>;
+  return <span className={`px-2.5 py-0.5 rounded-xl text-xs font-medium border ${map[tone] || map.gray}`}>{text}</span>;
 };
 
 const statusConfig = (status) => {
@@ -241,7 +241,7 @@ export default function MyBookings() {
           <button
             onClick={refresh}
             disabled={status === 'loading'}
-            className="p-2 rounded-full hover:bg-gray-100 text-gray-600 transition-colors"
+            className="p-2 rounded-xl hover:bg-gray-100 text-gray-600 transition-colors"
             title="Refresh List"
           >
             <RefreshCcw size={20} className={status === 'loading' ? 'animate-spin' : ''} />
@@ -278,7 +278,7 @@ export default function MyBookings() {
                 >
                   {/* Top row: icon + ref + pill + chevron */}
                   <div className="flex items-center gap-3">
-                    <div className={`p-2.5 rounded-full shrink-0 ${meta.tone === 'green' ? 'bg-green-50 text-green-600' : meta.tone === 'red' ? 'bg-red-50 text-red-600' : 'bg-yellow-50 text-yellow-600'}`}>
+                    <div className={`p-2.5 rounded-xl shrink-0 ${meta.tone === 'green' ? 'bg-green-50 text-green-600' : meta.tone === 'red' ? 'bg-red-50 text-red-600' : 'bg-yellow-50 text-yellow-600'}`}>
                       <Icon size={20} />
                     </div>
                     <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -294,7 +294,7 @@ export default function MyBookings() {
                   <div className="mt-2 ml-[52px] flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
                     <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500 min-w-0">
                       <span className="truncate">{dayjs(order.date).format('DD MMM YYYY • h:mm A')}</span>
-                      <span className="w-1 h-1 rounded-full bg-gray-300 shrink-0"></span>
+                      <span className="w-1 h-1 rounded-xl bg-gray-300 shrink-0"></span>
                       <span className="whitespace-nowrap">{order.itemCount || order.items.length} Item{(order.itemCount || order.items.length) !== 1 && 's'}</span>
                     </div>
                     <div className="text-right shrink-0">
@@ -322,11 +322,11 @@ export default function MyBookings() {
                                 <span>{dayjs(item.booking_date).format('DD MMM')}</span>
                                 {slotStr && (
                                   <>
-                                    <span className="w-1 h-1 rounded-full bg-gray-300 shrink-0"></span>
+                                    <span className="w-1 h-1 rounded-xl bg-gray-300 shrink-0"></span>
                                     <span className="truncate max-w-[140px] sm:max-w-none">{slotStr}</span>
                                   </>
                                 )}
-                                <span className="w-1 h-1 rounded-full bg-gray-300 shrink-0"></span>
+                                <span className="w-1 h-1 rounded-xl bg-gray-300 shrink-0"></span>
                                 <span className="whitespace-nowrap">Qty: {item.quantity}</span>
                               </div>
 
@@ -480,7 +480,7 @@ export default function MyBookings() {
                               <span className="text-sm font-bold text-gray-900">PayPhi</span>
                               <span className="text-xs text-gray-500 mt-1">All Methods</span>
                               {paymentGateway === 'payphi' && (
-                                <div className="mt-2 w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center">
+                                <div className="mt-2 w-5 h-5 rounded-xl bg-blue-600 flex items-center justify-center">
                                   <CheckCircle size={16} className="text-white" />
                                 </div>
                               )}
@@ -506,7 +506,7 @@ export default function MyBookings() {
                               <span className="text-sm font-bold text-gray-900">PhonePe</span>
                               <span className="text-xs text-gray-500 mt-1">UPI & More</span>
                               {paymentGateway === 'phonepe' && (
-                                <div className="mt-2 w-5 h-5 rounded-full bg-purple-600 flex items-center justify-center">
+                                <div className="mt-2 w-5 h-5 rounded-xl bg-purple-600 flex items-center justify-center">
                                   <CheckCircle size={16} className="text-white" />
                                 </div>
                               )}
@@ -547,7 +547,7 @@ export default function MyBookings() {
               <h3 className="text-xl font-bold text-gray-900">Payment Options</h3>
               <button
                 onClick={() => { setShowNewBooking(false); setSelectedOrder(null); }}
-                className="p-2 rounded-full hover:bg-gray-100 text-gray-500 transition-colors"
+                className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors"
               >
                 <ChevronUp size={20} className="rotate-45" />
               </button>

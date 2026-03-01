@@ -1,38 +1,10 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
 import { fetchBlogs } from '../features/blogs/blogsSlice';
 import Loader from '../components/common/Loader';
 import ErrorState from '../components/common/ErrorState';
-import { imgSrc } from '../utils/media';
 import Pagination from '../components/common/Pagination';
-
-const toBlogUrl = (blog) => {
-  if (!blog) return '#';
-  if (blog.slug) return `/${blog.slug}`;
-  if (blog.blog_id || blog.id) return `/${blog.blog_id || blog.id}`;
-  return '#';
-};
-
-// Helper function to estimate read time
-const getReadTime = (content) => {
-  if (!content) return '1 min read';
-  const wordsPerMinute = 200;
-  const words = content.replace(/<[^>]*>/g, '').split(/\s+/).length;
-  const minutes = Math.ceil(words / wordsPerMinute);
-  return `${minutes} min read`;
-};
-
-// Helper function to format date
-const formatDate = (dateString) => {
-  if (!dateString) return '';
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
-};
+import BlogCard from '../components/cards/BlogCard';
 
 export default function VisitorBlogs() {
   const dispatch = useDispatch();
@@ -87,78 +59,10 @@ export default function VisitorBlogs() {
 
         {items.length > 0 && (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-              {items.map((blog) => {
-                const cover = imgSrc(blog);
-                const readTime = getReadTime(blog.content);
-                const formattedDate = formatDate(blog.created_at);
-
-                return (
-                  <article
-                    key={blog.blog_id || blog.id || blog.slug + Math.random()}
-                    className="group bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-2"
-                  >
-                    <Link to={toBlogUrl(blog)} className="block">
-                      <div className="relative overflow-hidden">
-                        {cover ? (
-                          <img
-                            src={cover}
-                            alt={blog.title || 'Blog post'}
-                            className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-110"
-                            loading="lazy"
-                            decoding="async"
-                          />
-                        ) : (
-                          <div className="w-full h-48 bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center">
-                            <div className="text-blue-500 text-4xl">📝</div>
-                          </div>
-                        )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                      </div>
-
-                      <div className="p-6">
-                        <div className="flex items-center gap-2 text-xs text-gray-500 mb-3">
-                          {formattedDate && <span>{formattedDate}</span>}
-                          {formattedDate && readTime && <span>•</span>}
-                          <span>{readTime}</span>
-                        </div>
-
-                        <h2 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors duration-200 line-clamp-2 mb-3">
-                          {blog.title || 'Blog article'}
-                        </h2>
-
-                        {blog.author && (
-                          <p className="text-sm text-gray-600 mb-3">
-                            By <span className="font-medium">{blog.author}</span>
-                          </p>
-                        )}
-
-                        {(blog.short_description || blog.excerpt || blog.content) && (
-                          <p className="text-gray-600 text-sm leading-relaxed line-clamp-3 mb-4">
-                            {blog.short_description || blog.excerpt ||
-                              (blog.content ? blog.content.replace(/<[^>]*>/g, '').substring(0, 120) + '...' : '')}
-                          </p>
-                        )}
-
-                        <div className="flex items-center justify-between">
-                          <span className="inline-flex items-center text-sm font-medium text-blue-600 group-hover:text-blue-700 transition-colors">
-                            Read more
-                            <svg className="ml-1 w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                            </svg>
-                          </span>
-
-                          {blog.section_type && (
-                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                              {blog.section_type}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </Link>
-                  </article>
-                );
-              })}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12 items-stretch">
+              {items.map((blog) => (
+                <BlogCard key={blog.blog_id || blog.id || blog.slug} item={blog} />
+              ))}
             </div>
 
             {/* Pagination and Load More */}

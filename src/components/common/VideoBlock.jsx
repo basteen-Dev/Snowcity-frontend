@@ -59,7 +59,7 @@ export default function VideoBlock({ title = 'Experience Snowcity', src = 'https
               ) : null}
               <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors" />
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="h-16 w-16 rounded-full bg-white/90 text-red-600 shadow flex items-center justify-center">
+                <span className="h-16 w-16 rounded-xl bg-white/90 text-red-600 shadow flex items-center justify-center">
                   ▶
                 </span>
               </div>

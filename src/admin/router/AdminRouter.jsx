@@ -123,7 +123,7 @@ function RequireRole({ allowed, children }) {
 
   // Token exists but profile (roles) haven't loaded yet — show loader briefly
   if (token && !profileLoaded) {
-    return <div className="flex items-center justify-center py-20"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" /></div>;
+    return <div className="flex items-center justify-center py-20"><div className="animate-spin rounded-xl h-8 w-8 border-b-2 border-blue-600" /></div>;
   }
 
   const roleMap = { superadmin: isSuperAdmin, gm: isGM, staff: isStaff, editor: isEditor };

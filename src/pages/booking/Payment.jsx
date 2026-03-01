@@ -44,12 +44,12 @@ export default function Payment({
     return (
         <div className="space-y-5 max-w-lg mx-auto animate-in fade-in slide-in-from-right-8 duration-300 pb-20">
             {/* Order Items Card */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
                 <div className="px-5 py-4 bg-gradient-to-r from-gray-50 to-white border-b border-gray-100">
                     <h3 className="font-bold text-gray-900 flex items-center gap-2">
                         <ShoppingBag className="text-sky-600" size={18} />
                         Order Details
-                        <span className="ml-auto text-xs font-medium text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full">
+                        <span className="ml-auto text-xs font-medium text-gray-500 bg-gray-100 px-2.5 py-1 rounded-xl">
                             {cartItems.length} {cartItems.length === 1 ? 'item' : 'items'}
                         </span>
                     </h3>
@@ -204,7 +204,7 @@ export default function Payment({
                             <CreditCard className="text-sky-600" size={18} />
                             Payment Method
                         </h3>
-                        <span className="inline-flex items-center gap-1 text-[11px] text-emerald-700 bg-emerald-50 px-2 py-1 rounded-full font-medium border border-emerald-100">
+                        <span className="inline-flex items-center gap-1 text-[11px] text-emerald-700 bg-emerald-50 px-2 py-1 rounded-xl font-medium border border-emerald-100">
                             <Shield size={10} /> Secure
                         </span>
                     </div>
@@ -227,7 +227,7 @@ export default function Payment({
                             className="sr-only"
                         />
                         <div
-                            className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${paymentGateway === 'payphi' ? 'border-sky-500 bg-sky-500' : 'border-gray-300'
+                            className={`w-5 h-5 rounded-xl border-2 flex items-center justify-center shrink-0 transition-all ${paymentGateway === 'payphi' ? 'border-sky-500 bg-sky-500' : 'border-gray-300'
                                 }`}
                         >
                             {paymentGateway === 'payphi' && (
@@ -259,7 +259,7 @@ export default function Payment({
                             className="sr-only"
                         />
                         <div
-                            className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${paymentGateway === 'phonepe' ? 'border-purple-500 bg-purple-500' : 'border-gray-300'
+                            className={`w-5 h-5 rounded-xl border-2 flex items-center justify-center shrink-0 transition-all ${paymentGateway === 'phonepe' ? 'border-purple-500 bg-purple-500' : 'border-gray-300'
                                 }`}
                         >
                             {paymentGateway === 'phonepe' && (
@@ -322,19 +322,24 @@ export default function Payment({
                 </div>
             </div>
 
+            {/* Terms and Conditions Disclaimer */}
+            <p className="text-[11px] text-gray-500 text-center mb-3">
+                By continuing, you agree to the General Terms, Privacy Policy, and the Cancellation Policy.
+            </p>
+
             {/* Pay Button */}
             <button
                 type="button"
                 onClick={onPlaceOrderAndPay}
                 disabled={creating?.status === 'loading' || paymentLoading || !hasCartItems}
-                className={`w-full py-4 rounded-full transition-all shadow-lg font-bold text-lg flex items-center justify-center gap-2 active:scale-[0.98] ${creating?.status === 'loading' || paymentLoading || !hasCartItems
+                className={`w-full py-4 rounded-xl transition-all shadow-lg font-bold text-lg flex items-center justify-center gap-2 active:scale-[0.98] ${creating?.status === 'loading' || paymentLoading || !hasCartItems
                     ? 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
                     : 'bg-green-600 text-white hover:bg-green-700'
                     }`}
             >
                 {paymentLoading ? (
                     <>
-                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-xl animate-spin" />
                         Processing...
                     </>
                 ) : (
@@ -352,7 +357,7 @@ export default function Payment({
                 type="button"
                 onClick={handleBack}
                 disabled={creating?.status === 'loading' || paymentLoading}
-                className="hidden md:flex items-center justify-center gap-2 w-full px-8 py-3.5 border rounded-full text-gray-700 hover:bg-gray-50 transition-all font-bold shadow-sm active:scale-[0.98] disabled:opacity-50"
+                className="hidden md:flex items-center justify-center gap-2 w-full px-8 py-3.5 border rounded-xl text-gray-700 hover:bg-gray-50 transition-all font-bold shadow-sm active:scale-[0.98] disabled:opacity-50"
             >
                 Back
             </button>

@@ -204,7 +204,7 @@ export default function GalleryForm() {
                     {bulkPreviews.map((p, i) => (
                       <div key={p.url} className="relative group">
                         <img src={p.url} alt={p.name} className="w-full h-24 object-cover rounded-md border" />
-                        <button type="button" onClick={() => removeBulkFile(i)} className="absolute top-1 right-1 bg-white/80 text-xs rounded-full px-2 py-0.5">Remove</button>
+                        <button type="button" onClick={() => removeBulkFile(i)} className="absolute top-1 right-1 bg-white/80 text-xs rounded-xl px-2 py-0.5">Remove</button>
                       </div>
                     ))}
                   </div>

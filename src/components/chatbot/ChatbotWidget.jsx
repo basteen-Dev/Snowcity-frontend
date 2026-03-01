@@ -63,20 +63,19 @@ export default function ChatbotWidget() {
         <button
           type="button"
           onClick={toggle}
-          className="relative flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 to-purple-500 px-5 py-3 text-white shadow-2xl hover:scale-[1.02] transition"
+          className="relative flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-500 px-5 py-3 text-white shadow-2xl hover:scale-[1.02] transition"
           aria-expanded={isOpen}
         >
           <Ticket className="h-5 w-5" />
           <span className="font-semibold">Set Ticket</span>
           {status === 'thinking' && (
-            <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-amber-300 animate-pulse" />
+            <span className="absolute -top-1 -right-1 h-3 w-3 rounded-xl bg-amber-300 animate-pulse" />
           )}
         </button>
 
         <div
-          className={`w-[92vw] max-w-[420px] rounded-3xl border border-slate-200 bg-white shadow-2xl transition-all duration-300 overflow-hidden ${
-            isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 pointer-events-none translate-y-4'
-          }`}
+          className={`w-[92vw] max-w-[420px] rounded-3xl border border-slate-200 bg-white shadow-2xl transition-all duration-300 overflow-hidden ${isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 pointer-events-none translate-y-4'
+            }`}
         >
           <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 bg-slate-50">
             <div>
@@ -86,7 +85,7 @@ export default function ChatbotWidget() {
             <div className="flex items-center gap-1">
               <button
                 type="button"
-                className={`rounded-full p-2 text-slate-500 hover:text-slate-900 ${showTemp ? 'bg-white shadow' : ''}`}
+                className={`rounded-xl p-2 text-slate-500 hover:text-slate-900 ${showTemp ? 'bg-white shadow' : ''}`}
                 onClick={() => setShowTemp((v) => !v)}
                 aria-label="Adjust creativity"
               >
@@ -94,7 +93,7 @@ export default function ChatbotWidget() {
               </button>
               <button
                 type="button"
-                className="rounded-full p-2 text-slate-500 hover:text-slate-900"
+                className="rounded-xl p-2 text-slate-500 hover:text-slate-900"
                 onClick={() => setOpen(false)}
                 aria-label="Close chatbot"
               >
@@ -125,11 +124,10 @@ export default function ChatbotWidget() {
             {messages.map((msg) => (
               <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div
-                  className={`max-w-[85%] rounded-2xl px-3 py-2 shadow-sm ${
-                    msg.role === 'user'
+                  className={`max-w-[85%] rounded-2xl px-3 py-2 shadow-sm ${msg.role === 'user'
                       ? 'bg-blue-600 text-white rounded-br-sm'
                       : 'bg-slate-100 text-slate-900 rounded-bl-sm'
-                  }`}
+                    }`}
                 >
                   <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
                   <span
@@ -168,7 +166,7 @@ export default function ChatbotWidget() {
               <span>Agent can guide you to the booking form when ready.</span>
               <button
                 type="submit"
-                className="inline-flex items-center gap-1 rounded-full bg-blue-600 px-4 py-1.5 text-white text-sm font-semibold hover:bg-blue-500 disabled:opacity-50"
+                className="inline-flex items-center gap-1 rounded-xl bg-blue-600 px-4 py-1.5 text-white text-sm font-semibold hover:bg-blue-500 disabled:opacity-50"
                 disabled={status === 'thinking'}
               >
                 Send

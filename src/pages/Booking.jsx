@@ -11,7 +11,7 @@ import { getPrice, getBasePrice, getSlotUnitPrice, getSlotBasePrice } from '../u
 import { formatCurrency } from '../utils/formatters';
 import {
   X, Clock, ShoppingBag, ShoppingCart, Check, ChevronRight, Ticket,
-  User, Mail, Phone, ArrowRight, Plus, Minus, Trash2, Edit2, UserPlus, Globe, AlertCircle, ArrowLeft, CreditCard,
+  User, Mail, Phone, ArrowRight, Plus, Minus, Trash2, Edit2, UserPlus, Globe, AlertCircle, ArrowLeft, CreditCard, Calendar,
 } from 'lucide-react';
 
 import {
@@ -520,6 +520,8 @@ export default function Booking() {
   const [paymentStartTime, setPaymentStartTime] = useState(null);
   const [phonepeIframeVisible, setPhonepeIframeVisible] = useState(false);
   const [phonepeIframeUrl, setPhonepeIframeUrl] = useState('');
+  const [dynamicPricingDates, setDynamicPricingDates] = useState({});
+  const restoredFromSessionRef = useRef(false);
 
   const totalAddonCount = useMemo(() => {
     let count = 0;
@@ -558,6 +560,22 @@ export default function Booking() {
     const selectedDate = checkoutItem.date || '';
     const selectedSlot = checkoutItem.slot || {};
 
+    // ── Same-day blocking: offers only apply for future dates ──
+    if (selectedDate) {
+      const todayStr = dayjs().format('YYYY-MM-DD');
+      if (selectedDate <= todayStr) {
+        return null; // No offers for same-day or past bookings
+      }
+    }
+
+    // ── Dynamic Pricing Override: suppress offers on dates with dynamic pricing
+    if (selectedDate && targetId) {
+      const dpKey = `${targetType}:${targetId}:${selectedDate}`;
+      if (dynamicPricingDates[dpKey]) {
+        return null; // Dynamic pricing active — no offers
+      }
+    }
+
     let best = null;
     for (const offer of state.offers) {
       const rules = Array.isArray(offer.rules) ? offer.rules : [];
@@ -572,17 +590,17 @@ export default function Booking() {
           })
         )
           continue;
+        // Latest rule wins (no priority concept)
         if (
           !best ||
-          rule.priority > best.rule.priority ||
-          (rule.priority === best.rule.priority && rule.rule_id < best.rule.rule_id)
+          rule.rule_id > best.rule.rule_id
         ) {
           best = { offer, rule };
         }
       }
     }
     return best;
-  }, [state.offers, checkoutItem]);
+  }, [state.offers, checkoutItem, dynamicPricingDates]);
 
   useEffect(() => {
     const best = computeBestOffer();
@@ -663,6 +681,8 @@ export default function Booking() {
         sessionStorage.removeItem(BOOKING_SESSION_KEY);
         return;
       }
+      // Mark that we restored from session — prevents resetCart from wiping data
+      restoredFromSessionRef.current = true;
       // Restore cart items (reset first to prevent doubling on refresh)
       if (data.cartItems?.length) {
         dispatch(resetCart());
@@ -866,6 +886,11 @@ export default function Booking() {
   }, [dispatch, contact.email, contact.phone]);
 
   useEffect(() => {
+    // Skip resetCart if data was just restored from sessionStorage (i.e. browser refresh)
+    if (restoredFromSessionRef.current) {
+      restoredFromSessionRef.current = false;
+      return;
+    }
     if (!preselectAttrId && !preselectComboId) dispatch(resetCart());
   }, [dispatch, preselectAttrId || '', preselectComboId || '']);
 
@@ -959,6 +984,22 @@ export default function Booking() {
     if (key && date) {
       setSel((s) => ({ ...s, slotKey: sel.slotKey || '' }));
       fetchSlots({ itemType, attractionId, comboId, date });
+
+      // ── Dynamic Pricing Check: check if dynamic pricing exists for this date ──
+      const targetType = itemType === 'combo' ? 'combo' : 'attraction';
+      const dpKey = `${targetType}:${key}:${toYMD(date)}`;
+      if (dynamicPricingDates[dpKey] === undefined) {
+        api.get(endpoints.dynamicPricing.check(), {
+          params: { target_type: targetType, target_id: key, date: toYMD(date) },
+        })
+          .then((res) => {
+            const hasDp = !!(res?.hasDynamicPricing || res?.data?.hasDynamicPricing);
+            setDynamicPricingDates((prev) => ({ ...prev, [dpKey]: hasDp }));
+          })
+          .catch(() => {
+            // Silently ignore — default to no dynamic pricing
+          });
+      }
     } else {
       setSlots({ status: 'idle', items: [], error: null });
     }
@@ -1013,7 +1054,12 @@ export default function Booking() {
       const itemId = getComboId(selectedCombo);
 
       let appliedOffer = slotOffer || null;
-      if (!appliedOffer) {
+      // Same-day & dynamic pricing blocking
+      const todayStr = dayjs().format('YYYY-MM-DD');
+      const isSameOrPast = selectedDate && selectedDate <= todayStr;
+      const dpKey = `combo:${itemId}:${selectedDate}`;
+      const hasDynamicPricing = selectedDate && dynamicPricingDates[dpKey];
+      if (!appliedOffer && !isSameOrPast && !hasDynamicPricing) {
         appliedOffer = state.offers.find(
           (offer) =>
             (offer.rule_type === 'happy_hour' ||
@@ -1066,7 +1112,12 @@ export default function Booking() {
       const itemId = getAttrId(selectedAttraction);
 
       let appliedOffer = slotOffer || null;
-      if (!appliedOffer) {
+      // Same-day & dynamic pricing blocking
+      const todayStr = dayjs().format('YYYY-MM-DD');
+      const isSameOrPast = selectedDate && selectedDate <= todayStr;
+      const dpKey = `attraction:${itemId}:${selectedDate}`;
+      const hasDynamicPricing = selectedDate && dynamicPricingDates[dpKey];
+      if (!appliedOffer && !isSameOrPast && !hasDynamicPricing) {
         appliedOffer = state.offers.find(
           (offer) =>
             (offer.rule_type === 'happy_hour' ||
@@ -1101,6 +1152,7 @@ export default function Booking() {
     selectedSlot || null,
     sel.date || '',
     state.offers || [],
+    dynamicPricingDates,
   ]);
 
   useEffect(() => {
@@ -1389,9 +1441,9 @@ export default function Booking() {
             );
           })}
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-2">
+        <div className="w-full bg-gray-200 rounded-xl h-2">
           <div
-            className="bg-sky-600 h-2 rounded-full transition-all duration-500 ease-out"
+            className="bg-sky-600 h-2 rounded-xl transition-all duration-500 ease-out"
             style={{ width: `${(step / 4) * 100}%` }}
           />
         </div>
@@ -1539,7 +1591,7 @@ export default function Booking() {
                     )}
                     {isStopped && (
                       <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-2xl">
-                        <span className="text-white text-xs font-bold bg-red-500 px-2 py-1 rounded-full">Unavailable</span>
+                        <span className="text-white text-xs font-bold bg-red-500 px-2 py-1 rounded-xl">Unavailable</span>
                       </div>
                     )}
                   </div>
@@ -1668,7 +1720,7 @@ export default function Booking() {
                         </p>
                       ) : null}
                     </div>
-                    <span className="text-xs font-semibold text-sky-700 bg-sky-50 px-2 py-1 rounded-full">
+                    <span className="text-xs font-semibold text-sky-700 bg-sky-50 px-2 py-1 rounded-xl">
                       {preview ? `Save ₹${preview.totalDiscount.toFixed(0)} ` : 'No discount'}
                     </span>
                   </div>
@@ -1907,9 +1959,9 @@ export default function Booking() {
                 </span>
               ))}
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className="w-full bg-gray-200 rounded-xl h-2">
               <div
-                className="bg-sky-600 h-2 rounded-full transition-all duration-500 ease-out"
+                className="bg-sky-600 h-2 rounded-xl transition-all duration-500 ease-out"
                 style={{ width: `${(step / 4) * 100}% ` }}
               />
             </div>
@@ -1950,6 +2002,7 @@ export default function Booking() {
                   handleNext={handleNext}
                   step={step}
                   paymentLoading={paymentLoading}
+                  cartAddons={cartAddons}
                 />
               )}
 
@@ -1975,6 +2028,8 @@ export default function Booking() {
                   handleBack={handleBack}
                   hasCartItems={hasCartItems}
                   totalAddonCount={totalAddonCount}
+                  step={step}
+                  paymentLoading={paymentLoading}
                 />
               )}
 
@@ -2003,6 +2058,10 @@ export default function Booking() {
                   finalTotal={finalTotal}
                   totalAddonsCost={totalAddonsCost}
                   hasCartItems={hasCartItems}
+                  onEditCartItem={onEditCartItem}
+                  onRemoveCartItem={onRemoveCartItem}
+                  step={step}
+                  paymentLoading={paymentLoading}
                 />
               )}
 
@@ -2103,7 +2162,7 @@ export default function Booking() {
                             : 'Next'}
                       </span>
                       {step === 4 && paymentLoading && (
-                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                        <div className="animate-spin rounded-xl h-4 w-4 border-2 border-white border-t-transparent" />
                       )}
                       {step !== 4 || !paymentLoading ? <ArrowRight size={16} /> : null}
                     </button>
@@ -2120,7 +2179,7 @@ export default function Booking() {
                   <div className="flex-1 hidden md:block" onClick={() => setDrawerOpen(false)} />
                   <div className="w-full md:w-1/3 bg-white rounded-2xl  md:rounded-l-3xl shadow-2xl flex flex-col transform translate-y-0 transition-all h-[66vh] md:h-screen max-h-[66vh] md:max-h-screen md:mt-0">
                     <div className="md:hidden flex justify-center pt-2 pb-1">
-                      <div className="h-1.5 w-12 rounded-full bg-gray-300" />
+                      <div className="h-1.5 w-12 rounded-xl bg-gray-300" />
                     </div>
                     <div className="sticky top-0 z-10 flex items-center justify-between px-4 sm:px-6 pt-4 pb-2 border-b border-gray-100 bg-white rounded-tl-2xl  md:rounded-tl-3xl sm:rounded-tl-3xl">
                       <h2 className="text-base sm:text-lg font-semibold text-gray-900 pr-3 truncate">
@@ -2218,19 +2277,29 @@ export default function Booking() {
                               >
                                 Tomorrow
                               </button>
-                              <button
-                                type="button"
-                                onClick={onCalendarButtonClick}
-                                className={`px-4 py-2 rounded-xl text-xs font-medium border transition-colors ${sel.date &&
-                                  sel.date !== '' &&
-                                  sel.date !== todayYMD() &&
-                                  sel.date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
-                                  ? 'bg-sky-600 text-white border-sky-600 shadow-sm'
-                                  : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300 hover:text-sky-600'
-                                  }`}
-                              >
-                                {formatDateDisplay(sel.date)}
-                              </button>
+                              <div className="flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={onCalendarButtonClick}
+                                  className={`px-4 py-2 rounded-xl text-xs font-medium border transition-colors ${sel.date &&
+                                    sel.date !== '' &&
+                                    sel.date !== todayYMD() &&
+                                    sel.date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
+                                    ? 'bg-sky-600 text-white border-sky-600 shadow-sm'
+                                    : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300 hover:text-sky-600'
+                                    }`}
+                                >
+                                  {formatDateDisplay(sel.date)}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={onCalendarButtonClick}
+                                  className="p-2 rounded-xl border border-gray-200 text-gray-600 hover:border-sky-300 hover:text-sky-600 transition-colors bg-white shadow-sm"
+                                  title="Open Calendar"
+                                >
+                                  <Calendar size={16} />
+                                </button>
+                              </div>
                             </div>
                           </div>
 
@@ -2275,13 +2344,20 @@ export default function Booking() {
                                       const isAvailable = isSlotAvailable(s, sel.date);
                                       const isDisabled = !hasCapacity || !isAvailable;
 
+                                      const fallbackUnitPrice = sel.itemType === 'combo'
+                                        ? toAmount(getComboDisplayPrice(selectedCombo))
+                                        : toAmount(getPrice(selectedAttraction) || selectedAttraction?.price || selectedAttraction?.base_price || selectedAttraction?.amount || 0);
+
+                                      const pricingBase = getSlotUnitPrice(s, fallbackUnitPrice) || fallbackUnitPrice || 0;
+
                                       return (
                                         <option key={sid} value={sid} disabled={isDisabled}>
-                                          {getSlotLabel(s)}{' '}
+                                          {getSlotLabel(s)}
+                                          {pricingBase ? ` • ${formatCurrency(pricingBase)}` : ''}
                                           {!hasCapacity
-                                            ? '(Full)'
+                                            ? ' (Full)'
                                             : !isAvailable
-                                              ? '(Not Available)'
+                                              ? ' (Not Available)'
                                               : ''}
                                         </option>
                                       );
@@ -2422,7 +2498,7 @@ export default function Booking() {
                       ) : (
                         <div className="w-full h-full rounded-xl bg-gray-50 border border-gray-200 flex items-center justify-center">
                           <div className="text-center">
-                            <div className="animate-spin rounded-full h-8 w-8 border-2 border-purple-600 border-t-transparent mx-auto mb-4" />
+                            <div className="animate-spin rounded-xl h-8 w-8 border-2 border-purple-600 border-t-transparent mx-auto mb-4" />
                             <p className="text-gray-600">Loading payment page...</p>
                           </div>
                         </div>
@@ -2443,32 +2519,29 @@ export default function Booking() {
               {/* Custom Calendar Popup */}
               {showCalendar && (
                 <div
-                  className="fixed inset-0 z-[9999] flex bg-black/10 backdrop-blur-sm"
+                  className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 sm:p-6"
                   onClick={() => setShowCalendar(false)}
                 >
-                  <div className="flex-1" />
                   <div
-                    className="absolute bg-white rounded-2xl shadow-2xl border border-gray-200 p-4 w-80 max-h-[70vh] overflow-y-auto"
-                    style={{
-                      top: calendarAnchorRect ? `${calendarAnchorRect.top} px` : '50%',
-                      left: calendarAnchorRect ? `${calendarAnchorRect.left - 160} px` : '50%',
-                      transform: calendarAnchorRect ? 'none' : 'translate(-50%, -50%)'
-                    }}
+                    className="bg-white rounded-3xl shadow-2xl border border-gray-100 p-6 md:p-8 w-full max-w-6xl max-h-[90vh] overflow-y-auto md:overflow-y-visible"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-base font-semibold text-gray-900">Select Date</h3>
+                    <div className="flex items-center justify-between mb-8">
+                      <div>
+                        <h3 className="text-xl font-bold text-gray-900">Select Date</h3>
+                        <p className="text-sm text-gray-500 mt-1">Pick your preferred visit date</p>
+                      </div>
                       <button
                         onClick={() => setShowCalendar(false)}
-                        className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 transition-colors"
+                        className="p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-all border border-transparent hover:border-gray-200"
                       >
-                        <X size={18} />
+                        <X size={24} />
                       </button>
                     </div>
 
-                    <div className="space-y-3">
-                      {/* Generate calendar for next 3 months */}
-                      {[0, 1, 2].map((monthOffset) => {
+                    <div className="flex flex-col md:flex-row gap-8 overflow-x-auto pb-4 md:pb-0 custom-scrollbar">
+                      {/* Generate calendar for next 2 months */}
+                      {[0, 1].map((monthOffset) => {
                         const currentDate = dayjs().add(monthOffset, 'month');
                         const monthStart = currentDate.startOf('month');
                         const monthEnd = currentDate.endOf('month');
@@ -2477,19 +2550,19 @@ export default function Booking() {
                         const today = dayjs();
 
                         return (
-                          <div key={monthOffset} className="border border-gray-100 rounded-xl p-3 bg-white">
-                            <h4 className="text-sm font-semibold text-gray-700 mb-3">
+                          <div key={monthOffset} className="flex-1 min-w-[280px]">
+                            <h4 className="text-base font-bold text-sky-700 mb-4 px-1">
                               {currentDate.format('MMMM YYYY')}
                             </h4>
                             <div className="grid grid-cols-7 gap-1 text-xs">
                               {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((day) => (
-                                <div key={day} className="text-center text-gray-400 font-medium py-2">
+                                <div key={day} className="text-center text-gray-400 font-bold py-2 uppercase tracking-wider">
                                   {day}
                                 </div>
                               ))}
                               {/* Empty cells for days before month starts */}
                               {Array.from({ length: startDay }).map((_, i) => (
-                                <div key={`empty - ${i} `} className="p-2" />
+                                <div key={`empty-${i}`} className="p-2" />
                               ))}
                               {/* Days of the month */}
                               {Array.from({ length: daysInMonth }).map((_, i) => {
@@ -2505,12 +2578,12 @@ export default function Booking() {
                                     onClick={() => handleDateSelect(dateStr)}
                                     disabled={isPast}
                                     className={`
-p - 2 rounded - lg text - sm font - medium transition - all duration - 200
-                                  ${isPast ? 'text-gray-300 cursor-not-allowed bg-gray-50' : ''}
-                                  ${isSelected ? 'bg-sky-600 text-white shadow-md' : ''}
-                                  ${!isPast && !isSelected ? 'hover:bg-sky-50 text-gray-700' : ''}
-                                  ${isToday ? 'ring-2 ring-sky-300' : ''}
-`}
+                                      p-2.5 rounded-xl text-sm font-semibold transition-all duration-200
+                                      ${isPast ? 'text-gray-300 cursor-not-allowed' : ''}
+                                      ${isSelected ? 'bg-sky-600 text-white shadow-lg scale-110 z-10' : ''}
+                                      ${!isPast && !isSelected ? 'hover:bg-sky-50 text-gray-700 hover:text-sky-700 hover:scale-105' : ''}
+                                      ${isToday && !isSelected ? 'ring-2 ring-sky-100 text-sky-600' : ''}
+                                    `}
                                   >
                                     {date.date()}
                                   </button>
@@ -2526,8 +2599,8 @@ p - 2 rounded - lg text - sm font - medium transition - all duration - 200
               )}
             </div>
           </div>
-        </div>
-      </div>
+        </div >
+      </div >
     </>
   );
 }

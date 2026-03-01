@@ -62,10 +62,10 @@ const bookingMatchesSlot = (booking = {}, slot = {}) => {
 const comboBadge = (booking) => {
   if (!booking) return null;
   if (booking.item_type === 'Combo' && !booking.parent_booking_id) {
-    return <span className="inline-flex items-center rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-700">Combo parent</span>;
+    return <span className="inline-flex items-center rounded-xl bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-700">Combo parent</span>;
   }
   if (booking.parent_booking_id) {
-    return <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700">Combo child</span>;
+    return <span className="inline-flex items-center rounded-xl bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700">Combo child</span>;
   }
   return null;
 };
@@ -91,7 +91,7 @@ export default function ComboSlotList() {
         const data = await adminApi.get('/api/admin/combos', { active: true });
         const list = Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : [];
         setCombos(list);
-        
+
         // Auto-select combo if provided in URL
         const urlComboId = searchParams.get('combo_id');
         if (urlComboId) {
@@ -109,7 +109,7 @@ export default function ComboSlotList() {
     console.log('📋 comboId type:', typeof comboId);
     console.log('📋 startDate:', startDate);
     console.log('📋 endDate:', endDate);
-    
+
     // Better validation for comboId
     if (!comboId || comboId === 'undefined' || comboId === 'null' || comboId === '' || isNaN(Number(comboId))) {
       console.log('❌ Invalid or missing comboId:', comboId);
@@ -117,7 +117,7 @@ export default function ComboSlotList() {
       setErr('Please select a combo to view slots.');
       return;
     }
-    
+
     console.log('✅ comboId is valid, making API call');
     try {
       setLoading(true);
@@ -141,7 +141,7 @@ export default function ComboSlotList() {
       console.error('❌ Error response:', e.response);
       console.error('❌ Error status:', e.response?.status);
       console.error('❌ Error data:', e.response?.data);
-      
+
       if (e.response?.status === 400) {
         setErr('Invalid combo ID. Please select a valid combo.');
       } else {
@@ -152,21 +152,21 @@ export default function ComboSlotList() {
     }
   }
 
-  React.useEffect(() => { 
+  React.useEffect(() => {
     console.log('🔄 ComboSlotList useEffect triggered');
     console.log('📋 Current comboId:', comboId);
     console.log('📋 Dependencies changed:', { comboId, startDate, endDate });
-    
+
     // Better validation for comboId
     if (comboId && comboId !== 'undefined' && comboId !== 'null' && comboId !== '' && !isNaN(Number(comboId))) {
       console.log('✅ comboId is valid, calling load()');
-      load(); 
+      load();
     } else {
       console.log('❌ No valid comboId, skipping load()');
       setRows([]);
       setErr('Please select a combo to view slots.');
     }
-    /* eslint-disable-next-line */ 
+    /* eslint-disable-next-line */
   }, [comboId, startDate, endDate]);
 
   React.useEffect(() => {
@@ -191,7 +191,7 @@ export default function ComboSlotList() {
       alert('Dynamic slots cannot be deleted. They are generated automatically based on calendar.');
       return;
     }
-    
+
     if (!window.confirm('Delete this combo slot?')) return;
     try {
       await adminApi.delete(`/api/admin/combo-slots/${id}`);
@@ -301,8 +301,8 @@ export default function ComboSlotList() {
           </thead>
           <tbody>
             {visibleRows.map((r) => (
-              <tr 
-                key={r.combo_slot_id} 
+              <tr
+                key={r.combo_slot_id}
                 className="border-t dark:border-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-800 cursor-pointer"
                 onClick={() => onSlotClick(r)}
               >
@@ -317,8 +317,8 @@ export default function ComboSlotList() {
                 <td className="px-3 py-2 text-right">{r.price == null ? '-' : `₹ ${Number(r.price).toLocaleString()}`}</td>
                 <td className="px-3 py-2">{r.available ? 'Yes' : 'No'}</td>
                 <td className="px-3 py-2 text-right space-x-2">
-                  <button 
-                    className="px-2 py-1 rounded-md border text-xs" 
+                  <button
+                    className="px-2 py-1 rounded-md border text-xs"
                     onClick={(e) => {
                       e.stopPropagation();
                       nav(`/admin/catalog/combo-slots/${r.combo_slot_id}`);
@@ -326,8 +326,8 @@ export default function ComboSlotList() {
                   >
                     Edit
                   </button>
-                  <button 
-                    className="px-2 py-1 rounded-md border text-xs" 
+                  <button
+                    className="px-2 py-1 rounded-md border text-xs"
                     onClick={(e) => {
                       e.stopPropagation();
                       onDelete(r.combo_slot_id);
@@ -379,7 +379,7 @@ export default function ComboSlotList() {
           <div className="bg-white dark:bg-neutral-900 rounded-lg p-6 max-w-4xl w-full max-h-[80vh] overflow-auto">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold">Slot Details & Bookings</h2>
-              <button 
+              <button
                 onClick={closeSlotDetails}
                 className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
               >
@@ -441,12 +441,11 @@ export default function ComboSlotList() {
                           </td>
                           <td className="px-3 py-2">
                             <div className="flex flex-col gap-1">
-                              <span className={`px-2 py-1 text-xs rounded ${
-                                booking.booking_status === 'Confirmed' || booking.booking_status === 'Booked' ? 'bg-green-100 text-green-800' :
-                                booking.booking_status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
-                                booking.booking_status === 'Cancelled' ? 'bg-red-100 text-red-800' :
-                                'bg-gray-100 text-gray-800'
-                              }`}>
+                              <span className={`px-2 py-1 text-xs rounded ${booking.booking_status === 'Confirmed' || booking.booking_status === 'Booked' ? 'bg-green-100 text-green-800' :
+                                  booking.booking_status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
+                                    booking.booking_status === 'Cancelled' ? 'bg-red-100 text-red-800' :
+                                      'bg-gray-100 text-gray-800'
+                                }`}>
                                 {booking.booking_status || 'Unknown'}
                               </span>
                               {comboBadge(booking)}

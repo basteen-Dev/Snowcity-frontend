@@ -14,7 +14,7 @@ const RANGES = [
   { key: 'thisMonth', label: 'This Month', get: () => ({ from: dayjs().startOf('month').format('YYYY-MM-DD'), to: dayjs().endOf('month').format('YYYY-MM-DD') }) },
 ];
 
-const COLORS = ['#2563eb','#10b981','#f59e0b','#ef4444','#8b5cf6','#14b8a6','#e11d48','#22c55e','#f97316','#3b82f6'];
+const COLORS = ['#2563eb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#14b8a6', '#e11d48', '#22c55e', '#f97316', '#3b82f6'];
 
 const metricConfig = [
   { key: 'total_bookings', label: 'Confirmed Bookings', accent: 'from-blue-500 to-indigo-600', formatter: (v) => Number(v || 0).toLocaleString(), note: 'Paid orders' },
@@ -114,7 +114,7 @@ export default function Dashboard() {
               <button
                 key={r.key}
                 onClick={() => setRangeKey(r.key)}
-                className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${rangeKey === r.key ? 'bg-gray-900 text-white border-gray-900' : 'border-gray-200 text-gray-700 hover:border-gray-400'}`}
+                className={`px-3 py-1.5 rounded-xl text-sm border transition-colors ${rangeKey === r.key ? 'bg-gray-900 text-white border-gray-900' : 'border-gray-200 text-gray-700 hover:border-gray-400'}`}
               >
                 {r.label}
               </button>
@@ -123,7 +123,7 @@ export default function Dashboard() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setRangeKey('customMonth')}
-              className={`px-3 py-1.5 rounded-full text-sm border ${rangeKey === 'customMonth' ? 'bg-gray-900 text-white border-gray-900' : 'border-gray-200 text-gray-700 hover:border-gray-400'}`}
+              className={`px-3 py-1.5 rounded-xl text-sm border ${rangeKey === 'customMonth' ? 'bg-gray-900 text-white border-gray-900' : 'border-gray-200 text-gray-700 hover:border-gray-400'}`}
             >
               Month
             </button>
@@ -139,7 +139,7 @@ export default function Dashboard() {
               <button
                 key={`trend-${fmt.ext}`}
                 type="button"
-                className="px-3 py-1.5 rounded-full border text-sm disabled:opacity-50"
+                className="px-3 py-1.5 rounded-xl border text-sm disabled:opacity-50"
                 onClick={handleDownload('trend', fmt.ext)}
                 disabled={downloading}
               >
@@ -150,7 +150,7 @@ export default function Dashboard() {
               <button
                 key={`attr-${fmt.ext}`}
                 type="button"
-                className="px-3 py-1.5 rounded-full border text-sm disabled:opacity-50"
+                className="px-3 py-1.5 rounded-xl border text-sm disabled:opacity-50"
                 onClick={handleDownload('top-attractions', fmt.ext)}
                 disabled={downloading}
               >
@@ -201,8 +201,8 @@ export default function Dashboard() {
                 <span>Paid</span>
                 <span>{formatCurrency(paid)}</span>
               </div>
-              <div className="h-2 rounded-full bg-gray-100">
-                <div className="h-full rounded-full bg-emerald-500" style={{ width: `${paidPct}%` }} />
+              <div className="h-2 rounded-xl bg-gray-100">
+                <div className="h-full rounded-xl bg-emerald-500" style={{ width: `${paidPct}%` }} />
               </div>
             </div>
             <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
@@ -236,8 +236,8 @@ export default function Dashboard() {
                     <span>{idx + 1}. {attr.title}</span>
                     <span>{numberFmt(attr.bookings)} bookings</span>
                   </div>
-                  <div className="h-2 rounded-full bg-gray-100 mt-2">
-                    <div className="h-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-500" style={{ width: `${progress}%` }} />
+                  <div className="h-2 rounded-xl bg-gray-100 mt-2">
+                    <div className="h-full rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500" style={{ width: `${progress}%` }} />
                   </div>
                   <div className="flex items-center justify-between text-xs text-gray-500 mt-1">
                     <span>People: {numberFmt(attr.people)}</span>

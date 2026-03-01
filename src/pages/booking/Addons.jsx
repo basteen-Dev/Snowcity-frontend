@@ -1,6 +1,6 @@
-import React from 'react';
 import { ShoppingBag, ArrowRight, ArrowLeft, Plus, Minus } from 'lucide-react';
 import dayjs from 'dayjs';
+import OrderDetailsBox from './OrderDetailsBox';
 
 /**
  * Addons Component (Step 2 of Booking)
@@ -26,6 +26,8 @@ export default function Addons({
     handleBack,
     hasCartItems,
     totalAddonCount,
+    step,
+    paymentLoading,
 }) {
     return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 items-start mt-4">
@@ -37,7 +39,7 @@ export default function Addons({
                             <button
                                 key={item.key}
                                 onClick={() => dispatch(setActiveCartItem(item.key))}
-                                className={`px-4 py-2 rounded-full border text-sm font-medium transition-all whitespace-nowrap ${item.key === activeItemKey
+                                className={`px-4 py-2 rounded-xl border text-sm font-medium transition-all whitespace-nowrap ${item.key === activeItemKey
                                     ? 'bg-sky-600 text-white border-sky-600 shadow-sm'
                                     : 'bg-white text-gray-600 border-gray-200 hover:border-sky-200'
                                     }`}
@@ -101,7 +103,7 @@ export default function Addons({
                                             onClick={() =>
                                                 handleAddonQuantityChange(addonId, Math.max(0, quantity - 1), addon)
                                             }
-                                            className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center hover:border-sky-300 active:scale-95 transition"
+                                            className="w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center hover:border-sky-300 active:scale-95 transition"
                                         >
                                             <Minus size={14} />
                                         </button>
@@ -110,7 +112,7 @@ export default function Addons({
                                         </span>
                                         <button
                                             onClick={() => handleAddonQuantityChange(addonId, quantity + 1, addon)}
-                                            className="w-9 h-9 rounded-full border border-sky-200 flex items-center justify-center active:scale-95 bg-sky-600 text-white shadow-sm"
+                                            className="w-9 h-9 rounded-xl border border-sky-200 flex items-center justify-center active:scale-95 bg-sky-600 text-white shadow-sm"
                                         >
                                             <Plus size={14} />
                                         </button>
@@ -125,7 +127,7 @@ export default function Addons({
                     <button
                         type="button"
                         onClick={handleBack}
-                        className="px-8 py-3.5 border rounded-full text-gray-700 hover:bg-gray-50 transition-all font-semibold shadow-sm"
+                        className="px-8 py-3.5 border rounded-xl text-gray-700 hover:bg-gray-50 transition-all font-semibold shadow-sm"
                     >
                         Back
                     </button>
@@ -133,7 +135,7 @@ export default function Addons({
                         <button
                             type="button"
                             onClick={handleNext}
-                            className="px-10 py-3.5 rounded-full font-bold shadow-md transition-all hover:bg-sky-700 active:scale-[0.98] bg-sky-600 text-white"
+                            className="px-10 py-3.5 rounded-xl font-bold shadow-md transition-all hover:bg-sky-700 active:scale-[0.98] bg-sky-600 text-white"
                         >
                             Continue
                         </button>
@@ -149,78 +151,17 @@ export default function Addons({
             </div>
 
             {/* RIGHT: Order summary */}
-            <div>
-                <div className="bg-white p-6 rounded-2xl shadow-xl sticky top-[180px]">
-                    <h3 className="font-semibold text-lg mb-4">Your Booking</h3>
-
-                    {!hasCartItems ? (
-                        <div className="flex flex-col items-center justify-center text-center py-8">
-                            <div className="w-14 h-14 rounded-full bg-sky-50 flex items-center justify-center mb-3">
-                                <ShoppingBag className="text-sky-600" />
-                            </div>
-                            <p className="text-sm text-gray-600 mb-1">
-                                The product you choose will be displayed here
-                            </p>
-                            <p className="text-xs text-gray-400">Select a ticket and add to your order</p>
-                        </div>
-                    ) : (
-                        <div className="space-y-3 mb-4 max-h-72 overflow-y-auto custom-scrollbar pr-1">
-                            {cartItems.map((item) => {
-                                const itemAddonsMap = cartAddons.get(item.key) || new Map();
-                                const itemAddons = Array.from(itemAddonsMap.values()).filter(
-                                    (a) => Number(a.quantity) > 0
-                                );
-                                return (
-                                    <div
-                                        key={item.key}
-                                        className="flex justify-between gap-3 text-sm border-b border-gray-100 pb-3 last:border-0 last:pb-0"
-                                    >
-                                        <div className="min-w-0">
-                                            <div className="font-semibold text-gray-900 line-clamp-2">
-                                                {item.title || item.meta?.title ||
-                                                    (item.item_type === 'combo'
-                                                        ? item.combo?.title || item.combo?.name || item.combo?.combo_name || `Combo #${item.combo_id}`
-                                                        : item.attraction?.title || item.attraction?.name || `Attraction #${item.attraction_id}`)}
-                                            </div>
-                                            <div className="text-xs text-gray-500 mt-1">
-                                                {item.quantity} ticket(s) •{' '}
-                                                {item.dateLabel || dayjs(item.booking_date).format('D MMMM YYYY') || item.booking_date}
-                                                {item.slotLabel ? ` • ${item.slotLabel}` : ''}
-                                            </div>
-                                            <div className="flex gap-3 mt-1">
-                                                <button type="button" onClick={() => onEditCartItem(item)} className="text-[11px] text-sky-700 hover:underline">Edit</button>
-                                                <button type="button" onClick={() => onRemoveCartItem(item.key)} className="text-[11px] text-red-500 hover:underline">Remove</button>
-                                            </div>
-                                            {itemAddons.length > 0 && (
-                                                <div className="mt-2 text-xs text-gray-600">
-                                                    <div className="font-medium text-gray-700 mb-1">Add-ons</div>
-                                                    {itemAddons.map((a) => (
-                                                        <div key={a.addon_id} className="flex items-center justify-between text-sm text-gray-600">
-                                                            <div className="truncate">{a.name} <span className="text-xs text-gray-400">x{a.quantity}</span></div>
-                                                            <div className="tabular-nums">₹{(Number(a.price || 0) * Number(a.quantity || 0)).toFixed(0)}</div>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div className="text-right">
-                                            <div className="font-semibold text-gray-900 tabular-nums">
-                                                ₹{(item.unitPrice * item.quantity).toFixed(0)}
-                                            </div>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    )}
-
-                    <hr className="my-4" />
-                    <div className="flex justify-between font-semibold text-lg">
-                        <span>Total</span>
-                        <span className="tabular-nums">₹{finalTotal.toFixed(0)}</span>
-                    </div>
-                </div>
-            </div>
+            <OrderDetailsBox
+                cartItems={cartItems}
+                hasCartItems={hasCartItems}
+                onEditCartItem={onEditCartItem}
+                onRemoveCartItem={onRemoveCartItem}
+                finalTotal={finalTotal}
+                handleNext={handleNext}
+                step={step}
+                paymentLoading={paymentLoading}
+                cartAddons={cartAddons}
+            />
         </div>
     );
 }

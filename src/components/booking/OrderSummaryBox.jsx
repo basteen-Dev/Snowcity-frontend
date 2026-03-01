@@ -22,7 +22,7 @@ export default function OrderSummaryBox({
   discountAmount = 0,
   taxAmount = 0,
   hasCartItems = false,
-  onContinue = () => {},
+  onContinue = () => { },
   disabled = false,
 }) {
   // Calculate add-ons total for this cart
@@ -45,7 +45,7 @@ export default function OrderSummaryBox({
 
       {!hasCartItems ? (
         <div className="flex flex-col items-center justify-center text-center py-8">
-          <div className="w-14 h-14 rounded-full bg-sky-50 flex items-center justify-center mb-3">
+          <div className="w-14 h-14 rounded-xl bg-sky-50 flex items-center justify-center mb-3">
             <ShoppingBag className="text-sky-600" />
           </div>
           <p className="text-sm text-gray-600 mb-1">The product you choose will be displayed here</p>
@@ -70,7 +70,7 @@ export default function OrderSummaryBox({
                     {item.dateLabel || dayjs(item.booking_date).format('DD MMM YYYY')}
                     {item.slotLabel ? ` • ${item.slotLabel}` : ''}
                   </div>
-                  
+
                   {/* Show add-ons for this item */}
                   {((cartAddons.get(item.key) || new Map()).size || 0) > 0 && (
                     <div className="text-xs text-gray-400 mt-2 space-y-1">
@@ -109,11 +109,11 @@ export default function OrderSummaryBox({
                     </div>
                   )}
                   <div className="text-xs text-green-700 mt-1">
-                    {appliedOffer.discount_type === 'percent' 
+                    {appliedOffer.discount_type === 'percent'
                       ? `${appliedOffer.discount_percent}% discount`
                       : appliedOffer.discount_type === 'amount'
-                      ? `Save ${formatCurrency(appliedOffer.discount_value)}`
-                      : 'Special offer'
+                        ? `Save ${formatCurrency(appliedOffer.discount_value)}`
+                        : 'Special offer'
                     }
                   </div>
                 </div>
@@ -162,11 +162,10 @@ export default function OrderSummaryBox({
               type="button"
               disabled={disabled || !hasCartItems}
               onClick={onContinue}
-              className={`w-full flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition-all ${
-                disabled || !hasCartItems
+              className={`w-full flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold transition-all ${disabled || !hasCartItems
                   ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                   : 'bg-sky-600 text-white shadow-md hover:bg-sky-700 active:scale-[0.98]'
-              }`}
+                }`}
             >
               <span>Continue</span>
               <ArrowRight size={18} />

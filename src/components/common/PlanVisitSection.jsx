@@ -8,25 +8,25 @@ const planItems = [
     icon: Clock,
     title: 'Park Timings',
     description: '10:15 am to 8:00 pm | Every day',
-    href: '/page/Visitors%20Info'
+    href: '/park-timing'
   },
   {
     icon: MapPin,
     title: 'Getting There',
     description: 'Easy metro & bus connectivity',
-    href: '/page/location'
+    href: '/getting-here'
   },
   {
     icon: Shield,
     title: 'Safety Guidelines',
     description: 'What to wear, what to expect',
-    href: '/page/safety'
+    href: '/safety'
   },
   {
     icon: HelpCircle,
     title: 'FAQs',
     description: 'Answers to popular questions',
-    href: '/page/faq'
+    href: '/faqs'
   }
 ];
 
@@ -69,7 +69,7 @@ export default function PlanVisitSection() {
                   className="group flex h-full flex-col items-center rounded-2xl border border-blue-50 bg-white p-6 text-center shadow-lg transition hover:shadow-2xl"
                 >
                   <motion.div
-                    className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-yellow-400 text-slate-900 shadow-md"
+                    className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-xl bg-yellow-400 text-slate-900 shadow-md"
                     whileHover={{ rotate: 360, scale: 1.1 }}
                     transition={{ duration: 0.6 }}
                   >

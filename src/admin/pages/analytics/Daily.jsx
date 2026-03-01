@@ -64,7 +64,7 @@ export default function Daily() {
         const params = { from, to };
         if (selectedAttraction) params.attraction_id = selectedAttraction;
         if (selectedCombo) params.combo_id = selectedCombo;
-        
+
         const rows = await adminApi.get('/api/admin/analytics/daily', params);
         setData(Array.isArray(rows) ? rows : []);
       } catch (error) {
@@ -93,12 +93,12 @@ export default function Daily() {
         acc.total_discounts += Number(row.total_discounts || 0);
         return acc;
       },
-      { 
-        completed_bookings: 0, 
-        pending_bookings: 0, 
-        total_bookings: 0, 
-        total_people: 0, 
-        revenue: 0, 
+      {
+        completed_bookings: 0,
+        pending_bookings: 0,
+        total_bookings: 0,
+        total_people: 0,
+        revenue: 0,
         pending_revenue: 0,
         slots_used: 0,
         hours_booked: 0,
@@ -135,7 +135,7 @@ export default function Daily() {
             <button
               key={r.key}
               onClick={() => applyRange(r.key)}
-              className={`rounded-full border px-3 py-1 text-xs font-semibold ${rangeKey === r.key ? 'bg-gray-900 text-white border-gray-900' : 'border-gray-200 text-gray-600'}`}
+              className={`rounded-xl border px-3 py-1 text-xs font-semibold ${rangeKey === r.key ? 'bg-gray-900 text-white border-gray-900' : 'border-gray-200 text-gray-600'}`}
             >
               {r.label}
             </button>
@@ -144,10 +144,10 @@ export default function Daily() {
         <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-3">
           <input type="datetime-local" className="rounded-lg border px-3 py-2 text-sm" value={dayjs(from).format('YYYY-MM-DDTHH:mm')} onChange={(e) => setFrom(dayjs(e.target.value).toISOString())} />
           <input type="datetime-local" className="rounded-lg border px-3 py-2 text-sm" value={dayjs(to).format('YYYY-MM-DDTHH:mm')} onChange={(e) => setTo(dayjs(e.target.value).toISOString())} />
-          
-          <select 
-            className="rounded-lg border px-3 py-2 text-sm" 
-            value={selectedAttraction} 
+
+          <select
+            className="rounded-lg border px-3 py-2 text-sm"
+            value={selectedAttraction}
             onChange={(e) => {
               setSelectedAttraction(e.target.value);
               setSelectedCombo(''); // Clear combo when attraction is selected
@@ -158,10 +158,10 @@ export default function Daily() {
               <option key={attraction.id} value={attraction.id}>{attraction.name}</option>
             ))}
           </select>
-          
-          <select 
-            className="rounded-lg border px-3 py-2 text-sm" 
-            value={selectedCombo} 
+
+          <select
+            className="rounded-lg border px-3 py-2 text-sm"
+            value={selectedCombo}
             onChange={(e) => {
               setSelectedCombo(e.target.value);
               setSelectedAttraction(''); // Clear attraction when combo is selected
@@ -172,7 +172,7 @@ export default function Daily() {
               <option key={combo.id} value={combo.id}>{combo.name}</option>
             ))}
           </select>
-          
+
           <a href={csvUrl} className="rounded-lg border px-3 py-2 text-sm text-center flex items-center justify-center">Download CSV</a>
         </div>
         {loading && <div className="text-sm text-gray-500">Loading data...</div>}
@@ -218,8 +218,8 @@ export default function Daily() {
             </thead>
             <tbody>
               {data.map((row, index) => (
-                <tr 
-                  key={index} 
+                <tr
+                  key={index}
                   className={`border-b border-gray-100 hover:bg-gray-50 cursor-pointer ${selectedItem === row ? 'bg-blue-50' : ''}`}
                   onClick={() => setSelectedItem(selectedItem === row ? null : row)}
                 >
@@ -273,24 +273,24 @@ export default function Daily() {
         <SectionCard title={`Slot-wise Revenue Analysis - ${selectedItem.name} (${dayjs(selectedItem.booking_date).format('MMM DD, YYYY')})`}>
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-              <Stat 
-                label="Base Price per Slot" 
-                value={formatCurrency(selectedItem.base_price || 0)} 
+              <Stat
+                label="Base Price per Slot"
+                value={formatCurrency(selectedItem.base_price || 0)}
               />
-              <Stat 
-                label="Total Potential Revenue" 
-                value={formatCurrency(selectedItem.slot_hour_data.reduce((sum, slot) => sum + (slot.potential_revenue || 0), 0))} 
+              <Stat
+                label="Total Potential Revenue"
+                value={formatCurrency(selectedItem.slot_hour_data.reduce((sum, slot) => sum + (slot.potential_revenue || 0), 0))}
               />
-              <Stat 
-                label="Actual Revenue" 
-                value={formatCurrency(selectedItem.revenue)} 
+              <Stat
+                label="Actual Revenue"
+                value={formatCurrency(selectedItem.revenue)}
               />
-              <Stat 
-                label="Revenue Lost to Offers" 
-                value={formatCurrency(selectedItem.total_discounts)} 
+              <Stat
+                label="Revenue Lost to Offers"
+                value={formatCurrency(selectedItem.total_discounts)}
               />
             </div>
-            
+
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
@@ -310,7 +310,7 @@ export default function Daily() {
                   {selectedItem.slot_hour_data.map((slot, index) => (
                     <tr key={index} className="border-b border-gray-100">
                       <td className="py-2 px-2">
-                        {slot.start_time ? dayjs(slot.start_time).format('HH:mm') : `${slot.hour}:00`} - 
+                        {slot.start_time ? dayjs(slot.start_time).format('HH:mm') : `${slot.hour}:00`} -
                         {slot.end_time ? dayjs(slot.end_time).format('HH:mm') : `${(slot.hour + 1) % 24}:00`}
                       </td>
                       <td className="py-2 px-2 text-right">{slot.completed_bookings}</td>
@@ -334,12 +334,12 @@ export default function Daily() {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={selectedItem.slot_hour_data}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                  <XAxis 
-                    dataKey="hour" 
+                  <XAxis
+                    dataKey="hour"
                     tickFormatter={(v) => `${v}:00`}
                   />
                   <YAxis tickFormatter={(v) => `₹${v.toLocaleString()}`} />
-                  <Tooltip 
+                  <Tooltip
                     labelFormatter={(v) => `${v}:00 - ${(v + 1) % 24}:00`}
                     formatter={(value, name) => [formatCurrency(value), name]}
                   />
@@ -362,7 +362,7 @@ export default function Daily() {
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
               <XAxis dataKey="booking_date" tickFormatter={(v) => dayjs(v).format('MM-DD')} />
               <YAxis tickFormatter={(v) => `₹${v.toLocaleString()}`} />
-              <Tooltip 
+              <Tooltip
                 labelFormatter={(v) => dayjs(v).format('YYYY-MM-DD')}
                 formatter={(value, name) => [name === 'revenue' ? formatCurrency(value) : value, name]}
               />

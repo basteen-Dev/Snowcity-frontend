@@ -40,7 +40,7 @@ export default function FilterBar({
                 >
                     {loading ? (
                         <>
-                            <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                            <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-xl animate-spin" />
                             Applying…
                         </>
                     ) : (

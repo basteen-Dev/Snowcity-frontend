@@ -24,7 +24,7 @@ const SummaryCard = ({ icon, label, value, note, accent = 'from-blue-500 to-indi
             </div>
             {icon && <div className="p-2.5 rounded-xl bg-gray-50 dark:bg-neutral-800 text-gray-400">{icon}</div>}
         </div>
-        <div className={`absolute -bottom-6 -right-6 w-24 h-24 rounded-full bg-gradient-to-r ${accent} opacity-5 group-hover:opacity-10 transition-opacity`} />
+        <div className={`absolute -bottom-6 -right-6 w-24 h-24 rounded-xl bg-gradient-to-r ${accent} opacity-5 group-hover:opacity-10 transition-opacity`} />
     </div>
 );
 
@@ -180,7 +180,7 @@ export default function BookingsAnalytics() {
                         <button
                             key={range.key}
                             onClick={() => applyQuickRange(range.key)}
-                            className={`rounded-full px-3.5 py-1.5 text-xs font-semibold border transition-all ${activeRange === range.key
+                            className={`rounded-xl px-3.5 py-1.5 text-xs font-semibold border transition-all ${activeRange === range.key
                                 ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-transparent shadow-sm shadow-blue-500/20'
                                 : 'border-gray-200 text-gray-600 hover:border-gray-400 hover:bg-gray-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800'}`}
                         >

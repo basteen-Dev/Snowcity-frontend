@@ -601,7 +601,7 @@ export default function RichText({ value, onChange, placeholder = 'Type here…'
           className="pointer-events-none absolute z-10"
           style={{ left: dragHint.left, top: Math.max(0, dragHint.top) }}
         >
-          <div className="rounded-full bg-gray-900/80 text-white text-xs px-3 py-1 shadow">
+          <div className="rounded-xl bg-gray-900/80 text-white text-xs px-3 py-1 shadow">
             Drag image to reposition
           </div>
         </div>

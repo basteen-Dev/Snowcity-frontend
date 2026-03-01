@@ -101,7 +101,7 @@ export default function Blog() {
             {b.section_type && (
               <>
                 <span>•</span>
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                <span className="inline-flex items-center px-2 py-1 rounded-xl text-xs font-medium bg-blue-100 text-blue-800">
                   {b.section_type}
                 </span>
               </>

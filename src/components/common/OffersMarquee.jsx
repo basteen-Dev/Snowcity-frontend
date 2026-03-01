@@ -69,7 +69,7 @@ export default function OffersMarquee({ items }) {
                 <div className="flex items-center gap-2">
                   <span className="font-semibold text-sm sm:text-base text-sky-900">{promo.label}</span>
                   {promo.badge ? (
-                    <span className="text-[11px] uppercase font-bold bg-sky-100 text-sky-800 px-2 py-0.5 rounded-full border border-sky-300">
+                    <span className="text-[11px] uppercase font-bold bg-sky-100 text-sky-800 px-2 py-0.5 rounded-xl border border-sky-300">
                       {promo.badge}
                     </span>
                   ) : null}

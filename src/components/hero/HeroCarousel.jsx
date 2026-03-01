@@ -175,7 +175,7 @@ export default function HeroCarousel({ banners = [], waveColor = "#0b1a33" }) {
                     <div className="flex justify-start">
                       <a
                         href={href}
-                        className="group relative inline-flex items-center justify-center rounded-full px-7 py-3 sm:px-10 sm:py-3.5 text-[10px] sm:text-[12px] font-bold tracking-[0.2em] uppercase text-white bg-transparent border border-white/40 shadow-xl transition-all duration-300 hover:border-white/80 hover:bg-white/5"
+                        className="group relative inline-flex items-center justify-center rounded-xl px-7 py-3 sm:px-10 sm:py-3.5 text-[10px] sm:text-[12px] font-bold tracking-[0.2em] uppercase text-white bg-transparent border border-white/40 shadow-xl transition-all duration-300 hover:border-white/80 hover:bg-white/5"
                       >
                         <span>EXPLORE NOW</span>
                         <svg className="ml-2 w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">

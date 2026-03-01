@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { AlertCircle, Globe, ChevronRight, RefreshCw } from 'lucide-react';
+import OrderDetailsBox from './OrderDetailsBox';
 
 /**
  * YourDetails Component (Step 3 of Booking)
@@ -29,6 +30,10 @@ export default function YourDetails({
     finalTotal = 0,
     totalAddonsCost = 0,
     hasCartItems = false,
+    onEditCartItem,
+    onRemoveCartItem,
+    step,
+    paymentLoading,
 }) {
     const [resendCooldown, setResendCooldown] = useState(0);
     const cooldownRef = useRef(null);
@@ -173,15 +178,15 @@ export default function YourDetails({
                     <button
                         onClick={sendOTP}
                         disabled={otp.status === 'loading'}
-                        className="mt-6 w-full bg-sky-600 text-white py-3.5 rounded-full font-bold text-base shadow-md hover:bg-sky-700 transition-all disabled:opacity-70 flex items-center justify-center gap-2 active:scale-[0.98]"
+                        className="mt-6 w-full bg-sky-600 text-white py-3.5 rounded-xl font-bold text-base shadow-md hover:bg-sky-700 transition-all disabled:opacity-70 flex items-center justify-center gap-2 active:scale-[0.98]"
                     >
                         {otp.status === 'loading' ? (
                             <>
-                                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-xl animate-spin" />
                                 <span>Sending...</span>
                             </>
                         ) : (
-                            'Send OTP Verification'
+                            'Verify Mobile'
                         )}
                     </button>
                 ) : (
@@ -209,11 +214,11 @@ export default function YourDetails({
                             <button
                                 onClick={verifyOTP}
                                 disabled={otp.status === 'loading' || otpCode.length < 6}
-                                className="bg-sky-600 text-white px-8 py-3.5 rounded-full font-bold shadow-md hover:bg-sky-700 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 w-full sm:w-auto justify-center"
+                                className="bg-sky-600 text-white px-8 py-3.5 rounded-xl font-bold shadow-md hover:bg-sky-700 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 w-full sm:w-auto justify-center"
                             >
                                 {otp.status === 'loading' ? (
                                     <>
-                                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-xl animate-spin" />
                                         <span>Verifying...</span>
                                     </>
                                 ) : otp.verified ? (
@@ -251,49 +256,24 @@ export default function YourDetails({
                     <button
                         type="button"
                         onClick={handleBack}
-                        className="px-8 py-3.5 border rounded-full text-gray-700 hover:bg-gray-50 transition-all font-semibold shadow-sm"
+                        className="px-8 py-3.5 border rounded-xl text-gray-700 hover:bg-gray-50 transition-all font-semibold shadow-sm"
                     >
                         Back
-                    </button>
-                    <button
-                        type="button"
-                        onClick={handleNext}
-                        disabled={!otp.verified}
-                        className={`px-10 py-3.5 rounded-full font-bold shadow-md transition-all active:scale-[0.98] ${!otp.verified
-                            ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                            : 'bg-sky-600 text-white hover:bg-sky-700'
-                            }`}
-                    >
-                        Proceed to Payment
                     </button>
                 </div>
             </div>
 
             {/* RIGHT: Booking Summary */}
-            <div className="lg:sticky lg:top-[180px]">
-                <div className="bg-white p-6 rounded-2xl shadow-xl">
-                    <h3 className="font-semibold text-lg mb-4">Your Booking</h3>
-
-                    <div className="space-y-3 text-sm">
-                        <div className="flex justify-between">
-                            <span className="text-gray-600">Tickets</span>
-                            <span className="font-semibold tabular-nums">₹{ticketsTotal.toLocaleString()}</span>
-                        </div>
-                        {totalAddonsCost > 0 && (
-                            <div className="flex justify-between">
-                                <span className="text-gray-600">Add-ons</span>
-                                <span className="font-semibold tabular-nums">₹{totalAddonsCost.toLocaleString()}</span>
-                            </div>
-                        )}
-                    </div>
-
-                    <hr className="my-4" />
-                    <div className="flex justify-between font-semibold text-lg">
-                        <span>Total</span>
-                        <span className="tabular-nums">₹{finalTotal.toLocaleString()}</span>
-                    </div>
-                </div>
-            </div>
+            <OrderDetailsBox
+                cartItems={cartItems}
+                hasCartItems={hasCartItems}
+                onEditCartItem={onEditCartItem}
+                onRemoveCartItem={onRemoveCartItem}
+                finalTotal={finalTotal}
+                handleNext={handleNext}
+                step={step}
+                paymentLoading={paymentLoading}
+            />
         </div>
     );
 }

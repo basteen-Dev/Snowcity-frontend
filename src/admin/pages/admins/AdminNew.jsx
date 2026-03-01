@@ -153,12 +153,12 @@ export default function AdminNew() {
                       : 'border-gray-200 dark:border-neutral-700 hover:border-blue-300 dark:hover:border-neutral-500',
                   ].join(' ')}
                 >
-                  <div className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold text-white bg-gradient-to-r ${conf.color} mb-2`}>
+                  <div className={`inline-flex items-center px-2 py-0.5 rounded-xl text-xs font-semibold text-white bg-gradient-to-r ${conf.color} mb-2`}>
                     {conf.label}
                   </div>
                   <p className="text-xs text-gray-500 dark:text-neutral-400">{conf.desc}</p>
                   {selected && (
-                    <div className="absolute top-3 right-3 h-5 w-5 rounded-full bg-blue-500 flex items-center justify-center">
+                    <div className="absolute top-3 right-3 h-5 w-5 rounded-xl bg-blue-500 flex items-center justify-center">
                       <svg className="h-3 w-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>

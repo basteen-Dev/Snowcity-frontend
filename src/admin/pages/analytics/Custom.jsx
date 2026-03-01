@@ -72,7 +72,7 @@ export default function Custom() {
             <button
               key={r.key}
               onClick={() => applyQuickRange(r.key)}
-              className={`rounded-full border px-3 py-1 text-xs font-semibold ${rangeKey === r.key ? 'bg-gray-900 text-white border-gray-900' : 'border-gray-200 text-gray-600'}`}
+              className={`rounded-xl border px-3 py-1 text-xs font-semibold ${rangeKey === r.key ? 'bg-gray-900 text-white border-gray-900' : 'border-gray-200 text-gray-600'}`}
             >
               {r.label}
             </button>

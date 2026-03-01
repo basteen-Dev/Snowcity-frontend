@@ -138,8 +138,8 @@ export default function Home() {
       <section className="relative overflow-hidden pt-0">
         {/* Subtle background gradients */}
         <div className="pointer-events-none absolute inset-0 -z-10">
-          <div className="absolute -top-32 -left-24 h-64 w-64 rounded-full bg-cyan-400/20 blur-3xl" />
-          <div className="absolute -top-10 right-[-5rem] h-80 w-80 rounded-full bg-blue-500/20 blur-3xl" />
+          <div className="absolute -top-32 -left-24 h-64 w-64 rounded-xl bg-cyan-400/20 blur-3xl" />
+          <div className="absolute -top-10 right-[-5rem] h-80 w-80 rounded-xl bg-blue-500/20 blur-3xl" />
           <div className="absolute bottom-[-6rem] left-1/2 h-80 w-[36rem] -translate-x-1/2 bg-gradient-to-r from-sky-500/25 via-indigo-500/15 to-purple-500/25 blur-3xl" />
         </div>
 
@@ -203,9 +203,7 @@ export default function Home() {
               ) : blogItems.length ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {blogItems.slice(0, 3).map((blog) => (
-                    <div key={blog.blog_id ?? blog.id ?? blog.slug} className="group">
-                      <BlogCard item={blog} />
-                    </div>
+                    <BlogCard key={blog.blog_id ?? blog.id ?? blog.slug} item={blog} />
                   ))}
                 </div>
               ) : (

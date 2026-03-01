@@ -79,10 +79,10 @@ const bookingMatchesSlot = (booking = {}, slot = {}) => {
 const comboBadge = (booking) => {
   if (!booking) return null;
   if (booking.item_type === 'Combo' && !booking.parent_booking_id) {
-    return <span className="inline-flex items-center rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-700 mr-2">Combo parent</span>;
+    return <span className="inline-flex items-center rounded-xl bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-700 mr-2">Combo parent</span>;
   }
   if (booking.parent_booking_id) {
-    return <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700 mr-2">Combo child</span>;
+    return <span className="inline-flex items-center rounded-xl bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700 mr-2">Combo child</span>;
   }
   return null;
 };
@@ -136,7 +136,7 @@ export default function AttractionSlotList() {
         const data = await adminApi.get('/api/admin/attractions', { active: true });
         const list = Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : [];
         setAttractions(list);
-        
+
         // Auto-select attraction if provided in URL
         const urlAttractionId = searchParams.get('attraction_id');
         if (urlAttractionId && list.find(a => (a.attraction_id || a.id) === Number(urlAttractionId))) {
@@ -154,7 +154,7 @@ export default function AttractionSlotList() {
     console.log('📋 attractionId type:', typeof attractionId);
     console.log('📋 startDate:', startDate);
     console.log('📋 endDate:', endDate);
-    
+
     // Better validation for attractionId
     if (!normalizedAttractionId) {
       console.log('❌ Invalid or missing attractionId:', attractionId);
@@ -162,7 +162,7 @@ export default function AttractionSlotList() {
       setErr('Please select an attraction to view slots.');
       return;
     }
-    
+
     console.log('✅ attractionId is valid, making API call');
     setLoading(true);
     setErr('');
@@ -186,7 +186,7 @@ export default function AttractionSlotList() {
       console.error('❌ Error response:', e.response);
       console.error('❌ Error status:', e.response?.status);
       console.error('❌ Error data:', e.response?.data);
-      
+
       if (e.response?.status === 400) {
         setErr('Invalid attraction ID. Please select a valid attraction.');
       } else {
@@ -197,21 +197,21 @@ export default function AttractionSlotList() {
     }
   };
 
-  React.useEffect(() => { 
+  React.useEffect(() => {
     console.log('🔄 AttractionSlotList useEffect triggered');
     console.log('📋 Current attractionId:', attractionId);
     console.log('📋 Dependencies changed:', { attractionId, startDate, endDate });
-    
+
     // Better validation for attractionId
     if (normalizedAttractionId) {
       console.log('✅ attractionId is valid, calling load()');
-      load(); 
+      load();
     } else {
       console.log('❌ No valid attractionId, skipping load()');
       setRows([]);
       setErr('Please select an attraction to view slots.');
     }
-    /* eslint-disable-next-line */ 
+    /* eslint-disable-next-line */
   }, [normalizedAttractionId, startDate, endDate]);
 
   React.useEffect(() => {
@@ -292,7 +292,7 @@ export default function AttractionSlotList() {
       alert('Dynamic slots cannot be deleted. They are generated automatically based on calendar.');
       return;
     }
-    
+
     if (!window.confirm('Delete this attraction slot?')) return;
     try {
       await adminApi.delete(`/api/admin/attraction-slots/${id}`);
@@ -496,7 +496,7 @@ export default function AttractionSlotList() {
                   <td className="px-3 py-2">{slot.attraction_name || attractionName(slot.attraction_id)}</td>
                   <td className="px-3 py-2">
                     <span className="inline-flex items-center gap-2">
-                      {row.variant !== 'slot' && <span className="h-1.5 w-1.5 rounded-full bg-gray-400" aria-hidden="true" />}
+                      {row.variant !== 'slot' && <span className="h-1.5 w-1.5 rounded-xl bg-gray-400" aria-hidden="true" />}
                       {row.variantLabel}
                     </span>
                   </td>
@@ -567,7 +567,7 @@ export default function AttractionSlotList() {
           <div className="bg-white dark:bg-neutral-900 rounded-lg p-6 max-w-4xl w-full max-h-[80vh] overflow-auto">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold">Slot Details & Bookings</h2>
-              <button 
+              <button
                 onClick={closeSlotDetails}
                 className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
               >
@@ -629,12 +629,11 @@ export default function AttractionSlotList() {
                           </td>
                           <td className="px-3 py-2">
                             <div className="flex flex-col gap-1">
-                              <span className={`px-2 py-1 text-xs rounded ${
-                                booking.booking_status === 'Confirmed' || booking.booking_status === 'Booked' ? 'bg-green-100 text-green-800' :
-                                booking.booking_status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
-                                booking.booking_status === 'Cancelled' ? 'bg-red-100 text-red-800' :
-                                'bg-gray-100 text-gray-800'
-                              }`}>
+                              <span className={`px-2 py-1 text-xs rounded ${booking.booking_status === 'Confirmed' || booking.booking_status === 'Booked' ? 'bg-green-100 text-green-800' :
+                                  booking.booking_status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
+                                    booking.booking_status === 'Cancelled' ? 'bg-red-100 text-red-800' :
+                                      'bg-gray-100 text-gray-800'
+                                }`}>
                                 {booking.booking_status || 'Unknown'}
                               </span>
                               {comboBadge(booking)}

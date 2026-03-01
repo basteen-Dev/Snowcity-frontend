@@ -141,7 +141,7 @@ export default function ConversionDashboard() {
                             key={r.label}
                             onClick={() => setRangeIdx(i)}
                             className={[
-                                'px-3 py-1.5 rounded-full text-xs font-semibold transition-all',
+                                'px-3 py-1.5 rounded-xl text-xs font-semibold transition-all',
                                 i === rangeIdx
                                     ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/30'
                                     : 'bg-gray-100 dark:bg-neutral-800 text-gray-600 dark:text-neutral-300 hover:bg-gray-200 dark:hover:bg-neutral-700',
@@ -152,7 +152,7 @@ export default function ConversionDashboard() {
                     ))}
                     <button
                         onClick={load}
-                        className="p-2 rounded-full bg-gray-100 dark:bg-neutral-800 text-gray-600 dark:text-neutral-300 hover:bg-gray-200 dark:hover:bg-neutral-700"
+                        className="p-2 rounded-xl bg-gray-100 dark:bg-neutral-800 text-gray-600 dark:text-neutral-300 hover:bg-gray-200 dark:hover:bg-neutral-700"
                         title="Refresh"
                     >
                         <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
@@ -270,7 +270,7 @@ export default function ConversionDashboard() {
                                                 <td className="py-3 px-4 font-medium text-gray-900 dark:text-white">
                                                     <div className="flex items-center gap-2">
                                                         <span
-                                                            className="h-2.5 w-2.5 rounded-full shrink-0"
+                                                            className="h-2.5 w-2.5 rounded-xl shrink-0"
                                                             style={{ backgroundColor: COLORS[i % COLORS.length] }}
                                                         />
                                                         {row.source || 'direct'}
@@ -280,11 +280,11 @@ export default function ConversionDashboard() {
                                                 <td className="py-3 px-4 text-gray-700 dark:text-neutral-300">{fmtNum(row.bookings)}</td>
                                                 <td className="py-3 px-4 font-semibold text-gray-900 dark:text-white">{fmtCurr(row.revenue)}</td>
                                                 <td className="py-3 px-4">
-                                                    <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-bold ${row.conversion_rate >= 10
-                                                            ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
-                                                            : row.conversion_rate >= 5
-                                                                ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-                                                                : 'bg-gray-100 text-gray-700 dark:bg-neutral-800 dark:text-neutral-400'
+                                                    <span className={`inline-flex px-2 py-0.5 rounded-xl text-xs font-bold ${row.conversion_rate >= 10
+                                                        ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                                                        : row.conversion_rate >= 5
+                                                            ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                                                            : 'bg-gray-100 text-gray-700 dark:bg-neutral-800 dark:text-neutral-400'
                                                         }`}>
                                                         {row.conversion_rate}%
                                                     </span>
@@ -294,11 +294,11 @@ export default function ConversionDashboard() {
                                                 </td>
                                                 <td className="py-3 px-4">
                                                     {row.roas != null ? (
-                                                        <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-bold ${row.roas >= 3
-                                                                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
-                                                                : row.roas >= 1
-                                                                    ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-                                                                    : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                                                        <span className={`inline-flex px-2 py-0.5 rounded-xl text-xs font-bold ${row.roas >= 3
+                                                            ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                                                            : row.roas >= 1
+                                                                ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                                                                : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
                                                             }`}>
                                                             {row.roas}x
                                                         </span>
@@ -320,7 +320,7 @@ export default function ConversionDashboard() {
                         action={
                             <button
                                 onClick={() => setShowAddSpend(!showAddSpend)}
-                                className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/30 hover:shadow-xl transition-all"
+                                className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/30 hover:shadow-xl transition-all"
                             >
                                 <Plus className="h-3.5 w-3.5" />
                                 Add Spend

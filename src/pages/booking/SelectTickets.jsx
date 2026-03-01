@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { ShoppingBag, ChevronRight, ArrowRight } from 'lucide-react';
+import { ShoppingBag, ChevronRight, ArrowRight, Calendar } from 'lucide-react';
 import dayjs from 'dayjs';
 import OrderDetailsBox from './OrderDetailsBox';
 
@@ -37,6 +37,7 @@ export default function SelectTickets({
   handleNext,
   step,
   paymentLoading,
+  cartAddons,
 }) {
   const [expandedCardId, setExpandedCardId] = React.useState(null);
 
@@ -225,22 +226,32 @@ export default function SelectTickets({
           >
             Tomorrow
           </button>
-          <button
-            type="button"
-            onClick={onCalendarButtonClick}
-            ref={setCalendarAnchor}
-            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-medium border transition-colors ${sel.date &&
-              sel.date !== '' &&
-              sel.date !== todayYMD() &&
-              sel.date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
-              ? 'bg-sky-600 text-white border-sky-600'
-              : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300 hover:text-sky-600'
-              }`}
-          >
-            {sel.date && sel.date !== todayYMD() && sel.date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
-              ? formatDateDisplay(sel.date)
-              : 'More Dates'}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={onCalendarButtonClick}
+              ref={setCalendarAnchor}
+              className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-medium border transition-colors ${sel.date &&
+                sel.date !== '' &&
+                sel.date !== todayYMD() &&
+                sel.date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
+                ? 'bg-sky-600 text-white border-sky-600'
+                : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300 hover:text-sky-600'
+                }`}
+            >
+              {sel.date && sel.date !== todayYMD() && sel.date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
+                ? formatDateDisplay(sel.date)
+                : 'More Dates'}
+            </button>
+            <button
+              type="button"
+              onClick={onCalendarButtonClick}
+              className="p-2 rounded-xl border border-gray-200 text-gray-600 hover:border-sky-300 hover:text-sky-600 transition-colors bg-white shadow-sm"
+              title="Open Calendar"
+            >
+              <Calendar size={18} />
+            </button>
+          </div>
         </div>
 
         <ProductList />
@@ -256,6 +267,7 @@ export default function SelectTickets({
         handleNext={handleNext}
         step={step}
         paymentLoading={paymentLoading}
+        cartAddons={cartAddons}
       />
     </div>
   );

@@ -485,19 +485,16 @@ export default function FloatingNavBar() {
       <nav
         ref={navRef}
         data-floating-nav
-        className={`fixed z-[150] bg-white shadow-md border-gray-200
-          top-0 left-0 right-0 py-2 md:top-4 md:left-4 md:right-4 md:rounded-xl md:border`}
+        className={`fixed z-[150] bg-white shadow-md border-gray-200 transition-all duration-300
+          top-0 left-0 right-0 py-2 
+          ${isHome && !scrolled
+            ? "md:top-4 md:rounded-xl"
+            : "md:top-0 md:rounded-t-none md:rounded-b-xl"} 
+          md:left-4 md:right-4 md:border`}
         style={{
-          transition: 'none !important',
-          animation: 'none !important',
-          transform: 'none !important',
           backfaceVisibility: 'hidden',
           WebkitBackfaceVisibility: 'hidden',
           willChange: 'auto',
-          left: '0 !important',
-          right: '0 !important',
-          top: '0 !important',
-          width: '100% !important'
         }}
       >
 
@@ -525,13 +522,6 @@ export default function FloatingNavBar() {
                 {menuOpen === "attr" && (
                   <div className="absolute right-0 top-full mt-2 w-64 rounded-lg border border-gray-200 bg-white shadow-lg p-2 z-[110]" style={{ boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)' }}>
                     <div className="max-h-72 overflow-y-auto">
-                      <Link
-                        to="/attractions"
-                        className="block px-4 py-2.5 text-sm text-gray-800 hover:bg-sky-100 rounded-lg transition-all duration-200 font-medium"
-                        onClick={() => setMenuOpen(null)}
-                      >
-                        All Attractions
-                      </Link>
                       {topAttractions.map((a, idx) => {
                         const attrId = getAttrId(a);
                         const label = a?.name || a?.title || "Attraction";
@@ -547,6 +537,13 @@ export default function FloatingNavBar() {
                           </Link>
                         );
                       })}
+                      <Link
+                        to="/attractions"
+                        className="block px-4 py-2.5 text-sm text-gray-800 hover:bg-sky-100 rounded-lg transition-all duration-200 font-medium"
+                        onClick={() => setMenuOpen(null)}
+                      >
+                        All Attractions
+                      </Link>
                     </div>
                   </div>
                 )}
@@ -580,20 +577,15 @@ export default function FloatingNavBar() {
               {/* Visitor Guide */}
               <div className="relative">
                 <button className={navLinkClass} onClick={() => toggleMenu("guide")}>
-                  PLAN VISIT <ChevronDown className={`inline w-4 h-4 transition-transform duration-300 ${menuOpen === 'guide' ? 'rotate-180' : ''}`} />
+                  VISIT <ChevronDown className={`inline w-4 h-4 transition-transform duration-300 ${menuOpen === 'guide' ? 'rotate-180' : ''}`} />
                 </button>
                 {menuOpen === "guide" && (
                   <div className="absolute right-0 top-full mt-2 w-64 rounded-lg border border-gray-200 bg-white shadow-lg p-2 z-[110]" style={{ boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)' }}>
-                    {guidePages.map((p, idx) => (
-                      <Link
-                        key={idx}
-                        to={`/${p.slug || p.id}`}
-                        className="block px-4 py-2.5 text-sm text-gray-800 hover:bg-sky-100 rounded-lg transition-all duration-200 font-medium"
-                        onClick={() => setMenuOpen(null)}
-                      >
-                        {p.title || p.name}
-                      </Link>
-                    ))}
+                    <Link to="/park-timing" className="block px-4 py-2.5 text-sm text-gray-800 hover:bg-sky-100 rounded-lg transition-all duration-200 font-medium" onClick={() => setMenuOpen(null)}>Park Timing</Link>
+                    <Link to="/getting-here" className="block px-4 py-2.5 text-sm text-gray-800 hover:bg-sky-100 rounded-lg transition-all duration-200 font-medium" onClick={() => setMenuOpen(null)}>Getting Here</Link>
+                    <Link to="/faqs" className="block px-4 py-2.5 text-sm text-gray-800 hover:bg-sky-100 rounded-lg transition-all duration-200 font-medium" onClick={() => setMenuOpen(null)}>FAQS</Link>
+                    <Link to="/safety" className="block px-4 py-2.5 text-sm text-gray-800 hover:bg-sky-100 rounded-lg transition-all duration-200 font-medium" onClick={() => setMenuOpen(null)}>Safety Guidelines</Link>
+                    <Link to="/cancellation-policy" className="block px-4 py-2.5 text-sm text-gray-800 hover:bg-sky-100 rounded-lg transition-all duration-200 font-medium" onClick={() => setMenuOpen(null)}>Cancellation Policy</Link>
                   </div>
                 )}
               </div>
@@ -764,19 +756,14 @@ export default function FloatingNavBar() {
 
             <details className="group">
               <summary className="cursor-pointer py-3 px-4 text-black hover:text-gray-800 font-semibold transition-all duration-200 rounded-lg hover:bg-gray-100 list-none">
-                <BookOpen className="w-5 h-5 inline mr-3 text-blue-600" /> Visitor Guide
+                <BookOpen className="w-5 h-5 inline mr-3 text-blue-600" /> Visit
               </summary>
               <div className="pl-4 space-y-1 mt-2 pb-3 border-t border-sky-400/20 pt-3">
-                {guidePages.map((p, idx) => (
-                  <Link
-                    key={idx}
-                    to={`/page/${p.slug || p.id}`}
-                    className="block py-2 pl-4 text-gray-700 hover:text-black font-medium hover:bg-gray-50 rounded-lg transition-all duration-200"
-                    onClick={() => setMobileOpen(false)}
-                  >
-                    • {p.title || p.name}
-                  </Link>
-                ))}
+                <Link to="/park-timing" className="block py-2 pl-4 text-gray-700 hover:text-black font-medium hover:bg-gray-50 rounded-lg transition-all duration-200" onClick={() => setMobileOpen(false)}>• Park Timing</Link>
+                <Link to="/getting-here" className="block py-2 pl-4 text-gray-700 hover:text-black font-medium hover:bg-gray-50 rounded-lg transition-all duration-200" onClick={() => setMobileOpen(false)}>• Getting Here</Link>
+                <Link to="/faqs" className="block py-2 pl-4 text-gray-700 hover:text-black font-medium hover:bg-gray-50 rounded-lg transition-all duration-200" onClick={() => setMobileOpen(false)}>• FAQS</Link>
+                <Link to="/safety" className="block py-2 pl-4 text-gray-700 hover:text-black font-medium hover:bg-gray-50 rounded-lg transition-all duration-200" onClick={() => setMobileOpen(false)}>• Safety Guidelines</Link>
+                <Link to="/cancellation-policy" className="block py-2 pl-4 text-gray-700 hover:text-black font-medium hover:bg-gray-50 rounded-lg transition-all duration-200" onClick={() => setMobileOpen(false)}>• Cancellation Policy</Link>
               </div>
             </details>
 
@@ -801,7 +788,7 @@ export default function FloatingNavBar() {
                 <details className="group">
                   <summary className="cursor-pointer py-3 px-4 text-black font-semibold rounded-lg hover:bg-gray-100 list-none flex items-center justify-between">
                     <div className="flex items-center">
-                      <div className="h-8 w-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold mr-3">
+                      <div className="h-8 w-8 rounded-xl bg-blue-600 text-white flex items-center justify-center text-sm font-bold mr-3">
                         {initial}
                       </div>
                       <div>

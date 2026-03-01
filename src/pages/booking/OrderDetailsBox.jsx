@@ -15,15 +15,16 @@ export default function OrderDetailsBox({
     handleNext,
     step,
     paymentLoading,
+    cartAddons,
 }) {
     return (
         <div className="lg:sticky lg:top-[180px]">
-            <div className="bg-white p-6 rounded-2xl shadow-xl">
+            <div className="bg-white p-6 rounded-xl shadow-xl">
                 <h3 className="font-semibold text-lg mb-4">Your Booking</h3>
 
                 {!hasCartItems ? (
                     <div className="flex flex-col items-center justify-center text-center py-8">
-                        <div className="w-14 h-14 rounded-full bg-sky-50 flex items-center justify-center mb-3">
+                        <div className="w-14 h-14 rounded-xl bg-sky-50 flex items-center justify-center mb-3">
                             <ShoppingBag className="text-sky-600" />
                         </div>
                         <p className="text-sm text-gray-600 mb-1">The product you choose will be displayed here</p>
@@ -64,9 +65,23 @@ export default function OrderDetailsBox({
 
                                         {offerTitle && (
                                             <div className="mt-1.5 flex items-center gap-1.5">
-                                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100">
+                                                <span className="inline-flex items-center px-2 py-0.5 rounded-xl text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100">
                                                     🏷️ {offerTitle}
                                                 </span>
+                                            </div>
+                                        )}
+
+                                        {/* Render addons if cartAddons is provided */}
+                                        {cartAddons && cartAddons.has(item.key) && (
+                                            <div className="mt-2 space-y-1">
+                                                {Array.from(cartAddons.get(item.key).values())
+                                                    .filter(a => Number(a.quantity) > 0)
+                                                    .map((addon, idx) => (
+                                                        <div key={idx} className="flex justify-between text-[11px] text-gray-500 italic">
+                                                            <span>{addon.name} x{addon.quantity}</span>
+                                                            <span>₹{(Number(addon.price) * Number(addon.quantity)).toFixed(0)}</span>
+                                                        </div>
+                                                    ))}
                                             </div>
                                         )}
 

@@ -101,7 +101,7 @@ export default function CombosCarousel({ items = [] }) {
                         {sortedItems.map((_, idx) => (
                             <div
                                 key={idx}
-                                className={`h-2 transition-all duration-300 rounded-full ${realIndex === idx
+                                className={`h-2 transition-all duration-300 rounded-xl ${realIndex === idx
                                     ? "w-8 bg-white"
                                     : "w-2 bg-white/30"
                                     }`}

@@ -37,7 +37,7 @@ const statusBadge = (status, type = 'booking') => {
     Failed: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
   };
   return (
-    <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${colors[status] || 'bg-gray-100 text-gray-600'}`}>
+    <span className={`inline-flex items-center rounded-xl px-3 py-1 text-xs font-semibold ${colors[status] || 'bg-gray-100 text-gray-600'}`}>
       {status || '—'}
     </span>
   );
@@ -142,7 +142,7 @@ export default function BookingDetails() {
   if (current.status === 'loading' && !b) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+        <div className="animate-spin rounded-xl h-8 w-8 border-b-2 border-blue-600" />
       </div>
     );
   }
@@ -199,9 +199,9 @@ export default function BookingDetails() {
           {/* Status update dropdown */}
           <select
             className={`rounded-xl border px-3 py-2 text-sm font-semibold cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-all ${bookingStatus === 'Redeemed' ? 'border-emerald-300 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-700'
-                : bookingStatus === 'Cancelled' ? 'border-gray-300 bg-gray-50 text-gray-600 dark:bg-neutral-800 dark:text-neutral-400 dark:border-neutral-600'
-                  : bookingStatus === 'Expired' ? 'border-orange-300 bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-700'
-                    : 'border-blue-300 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-700'
+              : bookingStatus === 'Cancelled' ? 'border-gray-300 bg-gray-50 text-gray-600 dark:bg-neutral-800 dark:text-neutral-400 dark:border-neutral-600'
+                : bookingStatus === 'Expired' ? 'border-orange-300 bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-700'
+                  : 'border-blue-300 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-700'
               } ${statusUpdating ? 'opacity-50 pointer-events-none' : ''}`}
             value={bookingStatus}
             onChange={async (e) => {
@@ -296,7 +296,7 @@ export default function BookingDetails() {
                   onClick={() => toggleItem(item.booking_id)}
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className={`w-2 h-2 rounded-full shrink-0 ${item.booking_status === 'Redeemed' ? 'bg-emerald-500' : item.booking_status === 'Cancelled' ? 'bg-red-400' : 'bg-blue-500'}`} />
+                    <div className={`w-2 h-2 rounded-xl shrink-0 ${item.booking_status === 'Redeemed' ? 'bg-emerald-500' : item.booking_status === 'Cancelled' ? 'bg-red-400' : 'bg-blue-500'}`} />
                     <div className="min-w-0">
                       <div className="text-sm font-semibold text-gray-900 dark:text-neutral-100 truncate">
                         {item.item_title}
@@ -448,7 +448,7 @@ export default function BookingDetails() {
                   return (
                     <div key={log.log_id || idx} className="flex gap-4 relative py-3">
                       {/* Icon */}
-                      <div className={`w-6 h-6 rounded-full ${color} flex items-center justify-center shrink-0 z-10 shadow-sm`}>
+                      <div className={`w-6 h-6 rounded-xl ${color} flex items-center justify-center shrink-0 z-10 shadow-sm`}>
                         <EventIcon size={12} className="text-white" />
                       </div>
                       {/* Content */}

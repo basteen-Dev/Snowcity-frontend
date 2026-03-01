@@ -120,6 +120,9 @@ const endpoints = {
     list: () => '/api/offers',
     byId: (id) => `/api/offers/${encodeSeg(id)}`
   },
+  dynamicPricing: {
+    check: () => '/api/dynamic-pricing/check',
+  },
   banners: {
     list: () => '/api/banners',
     byId: (id) => `/api/banners/${encodeSeg(id)}`

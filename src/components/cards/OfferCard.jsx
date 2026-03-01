@@ -45,7 +45,7 @@ export default function OfferCard({ item }) {
       {/* Offer tag */}
       <span
         className="
-          absolute top-4 left-4 z-10 rounded-full bg-white/85 px-4 py-1
+          absolute top-4 left-4 z-10 rounded-xl bg-white/85 px-4 py-1
           text-xs font-semibold text-slate-900 backdrop-blur
         "
       >
@@ -54,7 +54,7 @@ export default function OfferCard({ item }) {
 
       {/* Price badge */}
       {price > 0 ? (
-        <div className="absolute top-4 right-4 z-10 rounded-full bg-sky-400 px-4 py-1.5 text-xs font-semibold text-white">
+        <div className="absolute top-4 right-4 z-10 rounded-xl bg-sky-400 px-4 py-1.5 text-xs font-semibold text-white">
           {formatCurrency(price)}
           {hasSale ? <span className="ml-1 text-sky-200">-{discountPercent}%</span> : null}
         </div>
@@ -85,7 +85,7 @@ export default function OfferCard({ item }) {
             to={bookHref || '/offers'}
             onClick={stop}
             className="
-              rounded-full bg-[#003de6] px-8 py-2.5
+              rounded-xl bg-[#003de6] px-8 py-2.5
               text-sm font-bold text-white
               shadow-lg transition-all
               hover:bg-[#002db3]

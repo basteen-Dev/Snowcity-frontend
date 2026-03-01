@@ -2,7 +2,7 @@ import React from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import dayjs from 'dayjs';
-import { X, ChevronDown, Check } from 'lucide-react';
+import { X, ChevronDown, Check, Calendar, Plus, Minus } from 'lucide-react';
 import api from '../services/apiClient';
 import endpoints from '../services/endpoints';
 import Loader from '../components/common/Loader';
@@ -962,7 +962,7 @@ export default function AttractionDetails() {
                         draggable="false"
                       />
 
-                      <div className="absolute bottom-3 right-3 bg-black/60 text-white text-xs px-2 py-1 rounded-full">
+                      <div className="absolute bottom-3 right-3 bg-black/60 text-white text-xs px-2 py-1 rounded-xl">
                         {galleryViewerItems.length > 1 ? (
                           <>1 / {galleryViewerItems.length}</>
                         ) : null}
@@ -1103,23 +1103,32 @@ export default function AttractionDetails() {
                 </button>
 
                 {/* All Days (calendar) */}
-                <button
-                  type="button"
-                  onClick={onCalendarButtonClick}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${date &&
-                    date !== todayYMD() &&
-                    date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
-                    ? 'bg-[#0099FF] text-white border-[#0099FF]'
-                    : 'bg-white text-[#111827] border-gray-200 hover:border-[#007ACC]'
-                    }`}
-
-                >
-                  {date &&
-                    date !== todayYMD() &&
-                    date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
-                    ? dayjs(date).format('D MMM')
-                    : 'All Days'}
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={onCalendarButtonClick}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${date &&
+                      date !== todayYMD() &&
+                      date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
+                      ? 'bg-[#0099FF] text-white border-[#0099FF]'
+                      : 'bg-white text-[#111827] border-gray-200 hover:border-[#007ACC]'
+                      }`}
+                  >
+                    {date &&
+                      date !== todayYMD() &&
+                      date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
+                      ? dayjs(date).format('D MMM')
+                      : 'More Dates'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={onCalendarButtonClick}
+                    className="p-1.5 rounded-xl border border-gray-200 text-gray-600 hover:border-[#007ACC] hover:text-[#007ACC] transition-colors bg-white shadow-sm"
+                    title="Open Calendar"
+                  >
+                    <Calendar size={14} />
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -1193,36 +1202,30 @@ export default function AttractionDetails() {
             <div className="space-y-3">
               <label
                 className="text-xs font-medium text-gray-700"
-
               >
-                Number of Tickets
+                No. of tickets
               </label>
               <div className="flex items-center gap-3">
                 <button
                   type="button"
-                  className="w-7 h-7 text-sm rounded-xl border border-gray-300 flex items-center justify-center"
+                  className="w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center hover:border-sky-300 active:scale-95 transition"
                   onClick={() =>
                     setQty((prev) => Math.max(1, Number(prev || 1) - 1))
                   }
                 >
-                  -
+                  <Minus size={14} />
                 </button>
-                <input
-                  type="number"
-                  min={1}
-                  value={qty}
-                  readOnly
-                  className="w-16 text-center border border-gray-300 rounded-lg px-2 py-1 text-sm bg-gray-50 text-[#111827]"
-
-                />
+                <span className="w-6 text-center font-semibold text-gray-800 tabular-nums">
+                  {qty}
+                </span>
                 <button
                   type="button"
-                  className="w-7 h-7 text-sm rounded-xl border border-gray-300 flex items-center justify-center"
+                  className="w-9 h-9 rounded-xl border border-sky-200 flex items-center justify-center active:scale-95 bg-sky-600 text-white shadow-sm"
                   onClick={() =>
                     setQty((prev) => Math.max(1, Number(prev || 1) + 1))
                   }
                 >
-                  +
+                  <Plus size={14} />
                 </button>
               </div>
             </div>
@@ -1499,23 +1502,32 @@ export default function AttractionDetails() {
                       >
                         Tomorrow
                       </button>
-                      <button
-                        type="button"
-                        onClick={onCalendarButtonClick}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${date &&
-                          date !== todayYMD() &&
-                          date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
-                          ? 'bg-[#0099FF] text-white border-[#0099FF]'
-                          : 'bg-white text-[#111827] border-gray-200 hover:border-[#007ACC]'
-                          }`}
-
-                      >
-                        {date &&
-                          date !== todayYMD() &&
-                          date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
-                          ? dayjs(date).format('D MMM')
-                          : 'All Days'}
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={onCalendarButtonClick}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${date &&
+                            date !== todayYMD() &&
+                            date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
+                            ? 'bg-[#0099FF] text-white border-[#0099FF]'
+                            : 'bg-white text-[#111827] border-gray-200 hover:border-[#007ACC]'
+                            }`}
+                        >
+                          {date &&
+                            date !== todayYMD() &&
+                            date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
+                            ? dayjs(date).format('D MMM')
+                            : 'More Dates'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={onCalendarButtonClick}
+                          className="p-1.5 rounded-xl border border-gray-200 text-gray-600 hover:border-[#007ACC] hover:text-[#007ACC] transition-colors bg-white shadow-sm"
+                          title="Open Calendar"
+                        >
+                          <Calendar size={14} />
+                        </button>
+                      </div>
                     </div>
                   </div>
 
@@ -1590,40 +1602,30 @@ export default function AttractionDetails() {
                   <div className="space-y-2">
                     <label
                       className="text-xs font-medium text-gray-700"
-
                     >
-                      Number of Tickets
+                      No. of tickets
                     </label>
                     <div className="flex items-center gap-3">
                       <button
                         type="button"
-                        className="w-8 h-8 text-sm rounded-full border border-gray-300 flex items-center justify-center"
+                        className="w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center hover:border-sky-300 active:scale-95 transition"
                         onClick={() =>
                           setQty((prev) => Math.max(1, Number(prev || 1) - 1))
                         }
                       >
-                        -
+                        <Minus size={14} />
                       </button>
-
-                      <input
-                        type="number"
-                        min={1}
-                        value={qty}
-                        onChange={(e) =>
-                          setQty(Math.max(1, Number(e.target.value) || 1))
-                        }
-                        className="w-16 text-center border border-gray-300 rounded-lg px-2 py-1 text-sm"
-
-                      />
-
+                      <span className="w-6 text-center font-semibold text-gray-800 tabular-nums">
+                        {qty}
+                      </span>
                       <button
                         type="button"
-                        className="w-8 h-8 text-sm rounded-full border border-gray-300 flex items-center justify-center"
+                        className="w-9 h-9 rounded-xl border border-sky-200 flex items-center justify-center active:scale-95 bg-sky-600 text-white shadow-sm"
                         onClick={() =>
                           setQty((prev) => Math.max(1, Number(prev || 1) + 1))
                         }
                       >
-                        +
+                        <Plus size={14} />
                       </button>
                     </div>
                   </div>
@@ -1698,7 +1700,7 @@ export default function AttractionDetails() {
                   </p>
                   <Link
                     to="/attractions"
-                    className="inline-flex items-center justify-center rounded-full border border-blue-100 text-blue-600 px-5 py-2.5 text-sm font-medium hover:bg-blue-50"
+                    className="inline-flex items-center justify-center rounded-xl border border-blue-100 text-blue-600 px-5 py-2.5 text-sm font-medium hover:bg-blue-50"
 
                   >
                     Explore other attractions
@@ -1717,115 +1719,87 @@ export default function AttractionDetails() {
 
 
         {/* Calendar Modal */}
-        {
-          showCalendar && (
+        {showCalendar && (
+          <div
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 sm:p-6"
+            onClick={() => setShowCalendar(false)}
+          >
             <div
-              className="fixed inset-0 z-[80] flex"
-              onClick={() => setShowCalendar(false)}
+              className="bg-white rounded-3xl shadow-2xl border border-gray-100 p-6 md:p-8 w-full max-w-6xl max-h-[90vh] overflow-y-auto md:overflow-y-visible"
+              onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex-1" />
-              <div
-                className="absolute bg-white rounded-2xl shadow-2xl border border-gray-200 p-4 w-80 max-h-[70vh] overflow-y-auto"
-                style={{
-                  top: calendarAnchorRect ? `${calendarAnchorRect.top}px` : '50%',
-                  left: calendarAnchorRect
-                    ? `${calendarAnchorRect.left - 160}px`
-                    : '50%',
-                  transform: calendarAnchorRect ? 'none' : 'translate(-50%, -50%)',
-                }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-base font-semibold text-gray-900">
-                    Select Date
-                  </h3>
-                  <button
-                    type="button"
-                    onClick={() => setShowCalendar(false)}
-                    className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 transition-colors"
-                  >
-                    <X size={18} />
-                  </button>
+              <div className="flex items-center justify-between mb-8">
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900">Select Date</h3>
+                  <p className="text-sm text-gray-500 mt-1">Pick your preferred visit date</p>
                 </div>
+                <button
+                  onClick={() => setShowCalendar(false)}
+                  className="p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-all border border-transparent hover:border-gray-200"
+                >
+                  <X size={24} />
+                </button>
+              </div>
 
-                <div className="space-y-3">
-                  {[0, 1, 2].map((monthOffset) => {
-                    const currentDate = dayjs().add(monthOffset, 'month');
-                    const monthStart = currentDate.startOf('month');
-                    const monthEnd = currentDate.endOf('month');
-                    const startDay = monthStart.day();
-                    const daysInMonth = monthEnd.date();
-                    const today = dayjs();
+              <div className="flex flex-col md:flex-row gap-8 overflow-x-auto pb-4 md:pb-0 custom-scrollbar">
+                {/* Generate calendar for next 2 months */}
+                {[0, 1].map((monthOffset) => {
+                  const currentDate = dayjs().add(monthOffset, 'month');
+                  const monthStart = currentDate.startOf('month');
+                  const monthEnd = currentDate.endOf('month');
+                  const startDay = monthStart.day();
+                  const daysInMonth = monthEnd.date();
+                  const today = dayjs();
 
-                    return (
-                      <div
-                        key={monthOffset}
-                        className="border border-gray-100 rounded-xl p-3 bg-white"
-                      >
-                        <h4 className="text-sm font-semibold text-gray-700 mb-3">
-                          {currentDate.format('MMMM YYYY')}
-                        </h4>
+                  return (
+                    <div key={monthOffset} className="flex-1 min-w-[280px]">
+                      <h4 className="text-base font-bold text-sky-700 mb-4 px-1">
+                        {currentDate.format('MMMM YYYY')}
+                      </h4>
+                      <div className="grid grid-cols-7 gap-1 text-xs">
+                        {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((day) => (
+                          <div key={day} className="text-center text-gray-400 font-bold py-2 uppercase tracking-wider">
+                            {day}
+                          </div>
+                        ))}
+                        {/* Empty cells for days before month starts */}
+                        {Array.from({ length: startDay }).map((_, i) => (
+                          <div key={`empty-${i}`} className="p-2" />
+                        ))}
+                        {/* Days of the month */}
+                        {Array.from({ length: daysInMonth }).map((_, i) => {
+                          const current = monthStart.date(i + 1);
+                          const dateStr = current.format('YYYY-MM-DD');
+                          const isPast = current.isBefore(today, 'day');
+                          const isSelected = date === dateStr;
+                          const isToday = current.isSame(today, 'day');
 
-                        <div className="grid grid-cols-7 gap-1 text-xs">
-                          {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day) => (
-                            <div
-                              key={day}
-                              className="text-center text-gray-400 font-medium py-2"
+                          return (
+                            <button
+                              key={i}
+                              type="button"
+                              onClick={() => handleDateSelect(dateStr)}
+                              disabled={isPast}
+                              className={`
+                                p-2.5 rounded-xl text-sm font-semibold transition-all duration-200
+                                ${isPast ? 'text-gray-300 cursor-not-allowed' : ''}
+                                ${isSelected ? 'bg-sky-600 text-white shadow-lg scale-110 z-10' : ''}
+                                ${!isPast && !isSelected ? 'hover:bg-sky-50 text-gray-700 hover:text-sky-700 hover:scale-105' : ''}
+                                ${isToday && !isSelected ? 'ring-2 ring-sky-100 text-sky-600' : ''}
+                              `}
                             >
-                              {day}
-                            </div>
-                          ))}
-
-                          {Array.from({ length: startDay }).map((_, idx) => (
-                            <div key={`empty-${idx}`} className="p-2" />
-                          ))}
-
-                          {Array.from({ length: daysInMonth }).map((_, idx) => {
-                            const current = monthStart.date(idx + 1);
-                            const dateStr = current.format('YYYY-MM-DD');
-                            const isPast = current.isBefore(today, 'day');
-                            const isSelected = date === dateStr;
-                            const isToday = current.isSame(today, 'day');
-
-                            return (
-                              <button
-                                key={dateStr}
-                                type="button"
-                                onClick={() => handleDateSelect(dateStr)}
-                                disabled={isPast}
-                                className={`
-                              p-2 rounded-lg text-sm font-medium transition-all duration-200
-                              ${isPast
-                                    ? 'text-gray-300 cursor-not-allowed bg-gray-50'
-                                    : ''
-                                  }
-                              ${isSelected
-                                    ? 'bg-sky-600 text-white shadow-sm scale-105'
-                                    : ''
-                                  }
-                              ${!isPast && !isSelected
-                                    ? 'hover:bg-sky-50 text-gray-700 hover:text-sky-700'
-                                    : ''
-                                  }
-                              ${isToday && !isSelected
-                                    ? 'bg-sky-100 text-sky-700 font-semibold border border-sky-200'
-                                    : ''
-                                  }
-                            `}
-                              >
-                                {idx + 1}
-                              </button>
-                            );
-                          })}
-                        </div>
+                              {current.date()}
+                            </button>
+                          );
+                        })}
                       </div>
-                    );
-                  })}
-                </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
-          )
-        }
+          </div>
+        )}
 
         {/* Gallery Viewer - uses only actual gallery images */}
         {
