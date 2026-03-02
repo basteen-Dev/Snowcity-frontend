@@ -39,12 +39,19 @@ html {
     top: 0 !important;
     left: 0 !important;
     right: 0 !important;
-    width: 100vw !important;
+    width: 100% !important;
     margin: 0 !important;
     border-radius: 0 !important;
-    transition: none !important;
-    animation: none !important;
+    transition: background-color 0.5s ease, backdrop-filter 0.5s ease !important;
   }
+}
+
+.liquid-glass {
+  background-color: rgba(255, 255, 255, 0.72) !important;
+  backdrop-filter: blur(25px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(25px) saturate(180%) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.3) !important;
 }
 
 body {

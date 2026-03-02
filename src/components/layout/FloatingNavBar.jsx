@@ -485,16 +485,18 @@ export default function FloatingNavBar() {
       <nav
         ref={navRef}
         data-floating-nav
-        className={`fixed z-[150] bg-white shadow-md border-gray-200 transition-all duration-300
+        className={`fixed z-[150] transition-all duration-500 ease-in-out
           top-0 left-0 right-0 py-2 
-          ${isHome && !scrolled
-            ? "md:top-4 md:rounded-xl"
-            : "md:top-0 md:rounded-t-none md:rounded-b-xl"} 
-          md:left-4 md:right-4 md:border`}
+          ${scrolled
+            ? "bg-white md:bg-white/80 md:backdrop-blur-xl border-b shadow-lg md:top-0 md:rounded-b-2xl md:border"
+            : (isHome
+              ? "bg-white md:bg-white/50  shadow-sm md:top-2 md:rounded-2xl md:border"
+              : "bg-white md:bg-white/70  shadow-md md:top-0 md:rounded-b-xl md:border")} 
+          md:left-4 md:right-4 border-white/20`}
         style={{
           backfaceVisibility: 'hidden',
           WebkitBackfaceVisibility: 'hidden',
-          willChange: 'auto',
+          willChange: 'transform, background-color, backdrop-filter',
         }}
       >
 
@@ -852,7 +854,7 @@ export default function FloatingNavBar() {
             </div>
           </div>
         )}
-      </nav>
+      </nav >
       {authModal}
     </>
   );
