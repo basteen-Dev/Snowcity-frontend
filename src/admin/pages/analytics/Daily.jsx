@@ -168,7 +168,7 @@ export default function Daily() {
           >
             <option value="">All Attractions</option>
             {attractions.map(attraction => (
-              <option key={attraction.id} value={attraction.id}>{attraction.name}</option>
+              <option key={attraction.attraction_id} value={attraction.attraction_id}>{attraction.title}</option>
             ))}
           </select>
 
@@ -182,7 +182,7 @@ export default function Daily() {
           >
             <option value="">All Combos</option>
             {combos.map(combo => (
-              <option key={combo.id} value={combo.id}>{combo.name}</option>
+              <option key={combo.combo_id} value={combo.combo_id}>{combo.name}</option>
             ))}
           </select>
 

@@ -130,13 +130,13 @@ export default function HeroCarousel({ banners = [], waveColor = "#0b1a33" }) {
                     return (
                         <SwiperSlide key={uniqueKey}>
                             <div className="relative w-full">
-                                <div className="w-full">
+                                <div className="w-full aspect-[4/5] sm:aspect-auto overflow-hidden">
                                     <picture>
                                         <source media="(max-width: 767px)" srcSet={mobileImg} />
                                         <img
                                             src={desktopImg}
                                             alt={b?.web_image_alt || title || "Banner"}
-                                            className="w-full h-auto block"
+                                            className="w-full h-full sm:h-auto object-cover sm:object-contain block"
                                             loading={idx === 0 ? "eager" : "lazy"}
                                             fetchPriority={idx === 0 ? "high" : "auto"}
                                             decoding="async"
