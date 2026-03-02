@@ -471,6 +471,17 @@ export default function Booking() {
   const hasCartItems = cartItems.length > 0;
   const activeKey = cart?.activeKey;
 
+  // Sync guest details if logged in
+  useEffect(() => {
+    if (hasToken && auth.user && (!contact.name || !contact.email || !contact.phone)) {
+      dispatch(setContact({
+        name: auth.user.name || contact.name,
+        email: auth.user.email || contact.email,
+        phone: auth.user.phone || contact.phone
+      }));
+    }
+  }, [hasToken, auth.user, dispatch]);
+
   const checkoutItem = useMemo(() => {
     if (!cartItems.length) return null;
     if (activeKey) {
