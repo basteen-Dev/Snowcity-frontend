@@ -488,10 +488,10 @@ export default function FloatingNavBar() {
         className={`fixed z-[150] transition-all duration-500 ease-in-out
           top-0 left-0 right-0 py-2 
           ${scrolled
-            ? "bg-white md:bg-white/80 md:backdrop-blur-xl border-b shadow-lg md:top-0 md:rounded-b-2xl md:border"
+            ? "bg-[#ffffffcc] md:backdrop-blur-xl border-b shadow-lg md:top-0 md:rounded-b-2xl md:border"
             : (isHome
-              ? "bg-white md:bg-white/50  shadow-sm md:top-2 md:rounded-2xl md:border"
-              : "bg-white md:bg-white/70  shadow-md md:top-0 md:rounded-b-xl md:border")} 
+              ? "bg-[#ffffffcc] shadow-sm md:top-2 md:rounded-2xl md:border"
+              : "bg-[#ffffffcc] shadow-md md:top-0 md:rounded-b-xl md:border")} 
           md:left-4 md:right-4 border-white/20`}
         style={{
           backfaceVisibility: 'hidden',

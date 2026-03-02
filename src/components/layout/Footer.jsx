@@ -9,7 +9,7 @@ import { prioritizeSnowcityFirst } from "../../utils/attractions";
  * Footer Header Component with Accent Underline
  */
 const FooterHeader = ({ children }) => (
-  <div className="relative mb-6">
+  <div className="relative mb-4">
     <h4 className="text-[#0099FF] font-normal uppercase tracking-normal text-[12px] leading-[16px]">
       {children}
     </h4>
@@ -104,7 +104,7 @@ export default function Footer() {
     };
   }, []);
 
-  const linkClass = "text-[15px] leading-[20px] font-light hover:text-[#0099FF] transition-colors text-gray-700";
+  const linkClass = "text-[12px] uppercase tracking-wider leading-[20px] font-normal hover:text-[#0099FF] transition-colors text-gray-700";
 
   return (
     <footer ref={footerRef} className="relative bg-gradient-to-t from-[#f5f9ff] to-white mt-0 overflow-hidden">
@@ -112,11 +112,11 @@ export default function Footer() {
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-[260px] z-10 pointer-events-none" />
 
       {/* FOOTER CONTENT */}
-      <div className="relative z-30 max-w-[1440px] mx-auto px-6 md:px-12 pt-16 pb-6 mt-6">
+      <div className="relative z-30 max-w-[1440px] mx-auto px-6 md:px-12 pt-8 pb-6 mt-0">
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 lg:gap-8 text-gray-700">
 
           {/* COLUMN 1: BRAND & CONTACT */}
-          <div className="space-y-6">
+          <div className="space-y-4">
             <Link to="/" className="inline-block">
               <img src={Logo} alt="SnowCity" className="h-16 w-auto object-contain" width={120} height={64} />
             </Link>
@@ -140,7 +140,7 @@ export default function Footer() {
             </div>
 
             {/* Social Icons */}
-            <div className="flex items-center gap-5 pt-2">
+            <div className="flex items-center gap-5 pt-1">
               <a href="#" className="text-[#1877F2] hover:scale-110 transition-transform">
                 <svg viewBox="0 0 24 24" className="w-6 h-6 fill-current"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" /></svg>
               </a>
@@ -157,7 +157,7 @@ export default function Footer() {
             {/* COLUMN 2: EXPERIENCES */}
             <div>
               <FooterHeader>Experiences</FooterHeader>
-              <ul className="space-y-3 pt-2">
+              <ul className="space-y-1 pt-2">
                 {topAttractions.map((a, i) => (
                   <li key={i}>
                     <Link to={a.slug ? `/${a.slug}` : `/attractions/${a.id}`} className={linkClass}>
@@ -171,7 +171,7 @@ export default function Footer() {
             {/* COLUMN 3: TICKETS */}
             <div>
               <FooterHeader>Tickets</FooterHeader>
-              <ul className="space-y-3 pt-2">
+              <ul className="space-y-1 pt-2">
                 <li><Link to="/tickets-offers" className={linkClass}>Buy tickets</Link></li>
                 <li><Link to="/combos" className={linkClass}>Combo Deals</Link></li>
                 <li><Link to="/offers" className={linkClass}>Offers</Link></li>
@@ -183,7 +183,7 @@ export default function Footer() {
             {/* COLUMN 4: VISIT */}
             <div>
               <FooterHeader>Visit</FooterHeader>
-              <ul className="space-y-3 pt-2">
+              <ul className="space-y-1 pt-2">
                 <li><Link to="/park-timing" className={linkClass}>Park Timing</Link></li>
                 <li><Link to="/getting-here" className={linkClass}>Getting Here</Link></li>
                 <li><Link to="/faqs" className={linkClass}>FAQS</Link></li>
@@ -195,7 +195,7 @@ export default function Footer() {
             {/* COLUMN 5: INFORMATION */}
             <div>
               <FooterHeader>Information</FooterHeader>
-              <ul className="space-y-3 pt-2">
+              <ul className="space-y-1 pt-2">
                 <li><Link to="/about-us" className={linkClass}>About Snowcity</Link></li>
                 <li><Link to="/contact" className={linkClass}>Contact Us</Link></li>
                 <li><Link to="/blog" className={linkClass}>Blog</Link></li>
@@ -207,7 +207,7 @@ export default function Footer() {
         </div>
 
         {/* COPYRIGHT */}
-        <div className="mt-16 pt-8 border-t border-[#0099FF] text-center">
+        <div className="mt-8 pt-8 border-t border-[#0099FF] text-center">
           <p className="text-xs text-gray-500 font-medium tracking-normal">
             Copyright 2026 © Bengaluru Leisure Private Limited. All Rights Reserved.
           </p>
