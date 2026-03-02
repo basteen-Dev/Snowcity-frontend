@@ -588,7 +588,7 @@ export default function FloatingNavBar() {
                     <Link to="/getting-here" className="block px-4 py-2.5 text-sm text-gray-800 hover:bg-sky-100 rounded-lg transition-all duration-200 font-medium" onClick={() => setMenuOpen(null)}>Getting Here</Link>
                     <Link to="/faqs" className="block px-4 py-2.5 text-sm text-gray-800 hover:bg-sky-100 rounded-lg transition-all duration-200 font-medium" onClick={() => setMenuOpen(null)}>FAQS</Link>
                     <Link to="/safety" className="block px-4 py-2.5 text-sm text-gray-800 hover:bg-sky-100 rounded-lg transition-all duration-200 font-medium" onClick={() => setMenuOpen(null)}>Safety Guidelines</Link>
-                    <Link to="/cancellation-policy" className="block px-4 py-2.5 text-sm text-gray-800 hover:bg-sky-100 rounded-lg transition-all duration-200 font-medium" onClick={() => setMenuOpen(null)}>Cancellation Policy</Link>
+
                   </div>
                 )}
               </div>
@@ -767,7 +767,6 @@ export default function FloatingNavBar() {
                 <Link to="/getting-here" className="block py-2 pl-4 text-gray-700 hover:text-black font-medium hover:bg-gray-50 rounded-lg transition-all duration-200" onClick={() => setMobileOpen(false)}>• Getting Here</Link>
                 <Link to="/faqs" className="block py-2 pl-4 text-gray-700 hover:text-black font-medium hover:bg-gray-50 rounded-lg transition-all duration-200" onClick={() => setMobileOpen(false)}>• FAQS</Link>
                 <Link to="/safety" className="block py-2 pl-4 text-gray-700 hover:text-black font-medium hover:bg-gray-50 rounded-lg transition-all duration-200" onClick={() => setMobileOpen(false)}>• Safety Guidelines</Link>
-                <Link to="/cancellation-policy" className="block py-2 pl-4 text-gray-700 hover:text-black font-medium hover:bg-gray-50 rounded-lg transition-all duration-200" onClick={() => setMobileOpen(false)}>• Cancellation Policy</Link>
               </div>
             </details>
 
