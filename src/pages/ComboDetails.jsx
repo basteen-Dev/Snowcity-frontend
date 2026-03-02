@@ -570,12 +570,10 @@ export default function ComboDetails() {
           : [];
       setSlots(list);
 
-      // auto-select first bookable slot for the date
-      const firstBookable =
-        list.find((slot) => isSlotBookableForDate(slot, date)) || list[0] || null;
+      // Remove auto-selection and set selectedKey to empty string
       setSlotState({
         status: 'loaded',
-        selectedKey: firstBookable ? buildSlotKey(firstBookable) : '',
+        selectedKey: '',
       });
     } catch (e) {
       setSlotErr(e?.message || 'Failed to load slots');
@@ -726,13 +724,16 @@ export default function ComboDetails() {
     if (!normalizedAttractions.length) return null;
     const slotEnabled = normalizedAttractions.filter(a => a.time_slot_enabled !== false);
     const openEntry = normalizedAttractions.filter(a => a.time_slot_enabled === false);
-    if (!openEntry.length) return null; // All attractions have time slots - no special message needed
+    if (!openEntry.length) return null;
     const parts = [];
     if (slotEnabled.length) {
       parts.push(`Select time slot for ${slotEnabled.map(a => a.title).join(', ')}`);
     }
     if (openEntry.length) {
-      parts.push(`Open entry for ${openEntry.map(a => a.title).join(', ')} on selected date`);
+      if (slotEnabled.length === 0) {
+        return 'Open Entry Experience — no time slot selection required.';
+      }
+      parts.push(`Open Entry for ${openEntry.map(a => a.title).join(', ')} (no slot required)`);
     }
     return parts.join(' • ');
   }, [normalizedAttractions]);
@@ -835,7 +836,9 @@ export default function ComboDetails() {
       const unitBeforeOffer = getSlotUnitPrice(slot, fallbackUnit);
       const originalPrice = getSlotBasePrice(slot, fallbackBase);
       const basePrice = unitBeforeOffer || originalPrice || 0;
-      const bestOffer = comboId
+      // When dynamic pricing is active for this date, skip all offers
+      const isDPActive = slot?.dynamic_pricing_active || slot?.pricing?.dynamic_pricing_active;
+      const bestOffer = (comboId && !isDPActive)
         ? findBestOfferForSelection(offers.items, {
           targetType: 'combo',
           targetId: comboId,
@@ -963,7 +966,7 @@ export default function ComboDetails() {
       qty: String(q),
     });
     sessionStorage.removeItem('snowcity_booking_state');
-    navigate(`/booking?${params.toString()}`);
+    navigate(`/tickets-offers?${params.toString()}`);
   };
 
   /* ========= Render ========= */
@@ -1049,25 +1052,12 @@ export default function ComboDetails() {
             </div>
           )}
 
-          {/* Title & Info Overlay - Inside Hero */}
-          <div className="absolute bottom-20 left-0 right-0 px-4 md:px-8 pointer-events-none">
-            <div className="max-w-7xl mx-auto">
-              {/* Badge */}
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-[#0099FF]/90 text-[10px] md:text-xs font-bold text-white uppercase tracking-widest backdrop-blur-sm mb-4">
-                <span>Combo Deal</span>
-                {discountPercent > 0 && (
-                  <span className="pl-2 border-l border-white/30">Save {discountPercent}%</span>
-                )}
-              </div>
-
-              <h1 className="text-3xl md:text-5xl font-extrabold text-white tracking-tight drop-shadow-lg">
-                {title}
-              </h1>
-
-              {subtitle && (
-                <p className="mt-4 text-gray-200 text-sm md:text-lg max-w-2xl font-medium drop-shadow-md line-clamp-2">
-                  {subtitle}
-                </p>
+          {/* HERO BANNER + GALLERY (Full Width) */}
+          <div className="mt-6 flex justify-center">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-[#0099FF]/90 text-[10px] md:text-xs font-bold text-white uppercase tracking-widest backdrop-blur-sm">
+              <span>Combo Deal</span>
+              {discountPercent > 0 && (
+                <span className="pl-2 border-l border-white/30">Save {discountPercent}%</span>
               )}
             </div>
           </div>
@@ -1145,65 +1135,76 @@ export default function ComboDetails() {
                 </div>
 
                 <div className="space-y-6">
-                  <div>
-                    <label className="block text-xs font-bold text-gray-700 mb-3 text-left">Select Date</label>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={onCalendarButtonClick}
-                        className="flex-1 flex items-center justify-between p-4 bg-gray-50 border border-gray-100 rounded-xl hover:border-blue-400 transition-all font-semibold text-gray-900 shadow-inner"
-                      >
-                        <span className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-blue-50 text-[#0099FF] flex items-center justify-center">
-                            <Calendar size={20} />
-                          </div>
-                          {dayjs(date).format('DD MMM YYYY')}
-                        </span>
-                        <ChevronDown className="w-5 h-5 text-gray-400" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={onCalendarButtonClick}
-                        className="p-3.5 rounded-xl border border-gray-100 text-gray-600 hover:border-blue-400 hover:text-[#0099FF] transition-colors bg-gray-50 shadow-inner"
-                        title="Open Calendar"
-                      >
-                        <Calendar size={20} />
-                      </button>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-gray-700 mb-3">Time Slot</label>
-                    {comboSlotInfoMessage && (
-                      <div className="mb-3 p-3 bg-blue-50 border border-blue-100 rounded-xl text-xs text-[#0099FF] font-medium flex items-start gap-2">
-                        <svg className="w-4 h-4 mt-0.5 flex-shrink-0 text-[#0099FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                        <span>{comboSlotInfoMessage}</span>
+                  {!isBookingStopped && (
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 mb-3 text-left">Select Date</label>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={onCalendarButtonClick}
+                          className="flex-1 flex items-center justify-between p-4 bg-gray-50 border border-gray-100 rounded-xl hover:border-blue-400 transition-all font-semibold text-gray-900 shadow-inner"
+                        >
+                          <span className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-lg bg-blue-50 text-[#0099FF] flex items-center justify-center">
+                              <Calendar size={20} />
+                            </div>
+                            {dayjs(date).format('DD MMM YYYY')}
+                          </span>
+                          <ChevronDown className="w-5 h-5 text-gray-400" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={onCalendarButtonClick}
+                          className="p-3.5 rounded-xl border border-gray-100 text-gray-600 hover:border-blue-400 hover:text-[#0099FF] transition-colors bg-gray-50 shadow-inner"
+                          title="Open Calendar"
+                        >
+                          <Calendar size={20} />
+                        </button>
                       </div>
-                    )}
-                    <select value={slotState.selectedKey} onChange={(e) => setSlotState(s => ({ ...s, selectedKey: e.target.value }))} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl font-semibold text-gray-900 outline-none focus:ring-2 focus:ring-blue-500/20" disabled={slots.length === 0}>
-                      {!slots.length ? <option>No slots available</option> : <><option value="">Select a time</option>{slots.filter(s => isSlotBookableForDate(s, date)).map(s => <option key={buildSlotKey(s)} value={buildSlotKey(s)}>{labelTime(s)}</option>)}</>}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-gray-700 mb-3 text-left">No. of tickets</label>
-                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                      <button
-                        type="button"
-                        onClick={() => setQty((prev) => Math.max(1, Number(prev || 1) - 1))}
-                        className="w-10 h-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center hover:border-sky-300 active:scale-95 transition"
-                      >
-                        <Minus size={16} />
-                      </button>
-                      <span className="text-xl font-black text-gray-900">{qty}</span>
-                      <button
-                        type="button"
-                        onClick={() => setQty((prev) => Math.max(1, Number(prev || 1) + 1))}
-                        className="w-10 h-10 rounded-xl border border-sky-200 flex items-center justify-center active:scale-95 bg-sky-600 text-white shadow-sm"
-                      >
-                        <Plus size={16} />
-                      </button>
                     </div>
-                  </div>
+                  )}
+
+                  {!isBookingStopped && (
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 mb-3">Time Slot</label>
+                      {comboSlotInfoMessage && (
+                        <div className="mb-3 p-3 bg-blue-50 border border-blue-100 rounded-xl text-xs text-[#0099FF] font-medium flex items-start gap-2">
+                          <svg className="w-4 h-4 mt-0.5 flex-shrink-0 text-[#0099FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                          <span>{comboSlotInfoMessage}</span>
+                        </div>
+                      )}
+                      <select
+                        className="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-sky-500 outline-none text-base font-medium appearance-none cursor-pointer"
+                        value={slotState.selectedKey}
+                        onChange={(e) => setSlotState(s => ({ ...s, selectedKey: e.target.value }))}
+                      >
+                        <option value="">Select the ticket</option>
+                        {slots.filter(s => isSlotBookableForDate(s, date)).map(s => <option key={buildSlotKey(s)} value={buildSlotKey(s)}>{labelTime(s)}</option>)}
+                      </select>
+                    </div>
+                  )}
+
+                  {!isBookingStopped && (
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 mb-3 text-left">No. of tickets</label>
+                      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                        <button
+                          type="button"
+                          onClick={() => setQty((prev) => Math.max(1, Number(prev || 1) - 1))}
+                          className="w-10 h-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center hover:border-sky-300 active:scale-95 transition"
+                        >
+                          <Minus size={16} />
+                        </button>
+                        <span className="text-xl font-black text-gray-900">{qty}</span>
+                        <button
+                          type="button"
+                          onClick={() => setQty((prev) => Math.max(1, Number(prev || 1) + 1))}
+                          className="w-10 h-10 rounded-xl border border-sky-200 flex items-center justify-center active:scale-95 bg-sky-600 text-white shadow-sm"
+                        >
+                          <Plus size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  )}
 
                   {selectedSlot && (
                     <div className="p-5 bg-[#0099FF] rounded-3xl text-white shadow-xl shadow-[#0099FF]/20">
@@ -1326,9 +1327,12 @@ export default function ComboDetails() {
                           </div>
                           <button
                             type="button"
-                            disabled={isUnavailable}
                             onClick={() => onBook(s, pricing)}
-                            className={`w-full py-3 rounded-xl font-bold text-sm transition-all ${isUnavailable ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-[#0099FF] text-white hover:bg-[#007ACC] shadow-sm'}`}
+                            disabled={isUnavailable || (slots.length > 0 && !selectedSlot)}
+                            className={`w-full py-3 rounded-xl font-bold text-sm transition-all ${isUnavailable || (slots.length > 0 && !selectedSlot)
+                              ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                              : 'bg-[#0099FF] text-white hover:bg-[#007ACC] shadow-sm'
+                              }`}
                           >
                             {isUnavailable ? 'Unavailable' : 'Book This Slot'}
                           </button>
@@ -1376,72 +1380,78 @@ export default function ComboDetails() {
               <div className="space-y-6">
 
                 {/* Date Picker */}
-                <div>
-                  <label className="block text-xs font-bold text-gray-700 mb-3 text-left">Select Date</label>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={onCalendarButtonClick}
-                      className="flex-1 flex items-center justify-between p-4 bg-gray-50 border border-gray-100 rounded-xl hover:border-blue-400 transition-all font-semibold text-gray-900 shadow-inner"
-                    >
-                      <span className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-xl bg-blue-50 text-[#0099FF] flex items-center justify-center">
-                          <Calendar size={20} />
-                        </div>
-                        {dayjs(date).format('DD MMM YYYY')}
-                      </span>
-                      <ChevronDown className="w-5 h-5 text-gray-400" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={onCalendarButtonClick}
-                      className="p-3.5 rounded-xl border border-gray-100 text-gray-600 hover:border-blue-400 hover:text-[#0099FF] transition-colors bg-gray-50 shadow-inner"
-                      title="Open Calendar"
-                    >
-                      <Calendar size={20} />
-                    </button>
+                {!isBookingStopped && (
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 mb-3 text-left">Select Date</label>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={onCalendarButtonClick}
+                        className="flex-1 flex items-center justify-between p-4 bg-gray-50 border border-gray-100 rounded-xl hover:border-blue-400 transition-all font-semibold text-gray-900 shadow-inner"
+                      >
+                        <span className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-xl bg-blue-50 text-[#0099FF] flex items-center justify-center">
+                            <Calendar size={20} />
+                          </div>
+                          {dayjs(date).format('DD MMM YYYY')}
+                        </span>
+                        <ChevronDown className="w-5 h-5 text-gray-400" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={onCalendarButtonClick}
+                        className="p-3.5 rounded-xl border border-gray-100 text-gray-600 hover:border-blue-400 hover:text-[#0099FF] transition-colors bg-gray-50 shadow-inner"
+                        title="Open Calendar"
+                      >
+                        <Calendar size={20} />
+                      </button>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Slot Selector */}
-                <div>
-                  <label className="block text-xs font-bold text-gray-700 mb-3">Time Slot</label>
-                  {comboSlotInfoMessage && (
-                    <div className="mb-3 p-3 bg-blue-50 border border-blue-100 rounded-xl text-xs text-blue-700 font-medium flex items-start gap-2">
-                      <svg className="w-4 h-4 mt-0.5 flex-shrink-0 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                      <span>{comboSlotInfoMessage}</span>
-                    </div>
-                  )}
-                  <select
-                    value={slotState.selectedKey}
-                    onChange={(e) => setSlotState(s => ({ ...s, selectedKey: e.target.value }))}
-                    className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl font-semibold text-gray-900 outline-none focus:ring-2 focus:ring-blue-500/20"
-                    disabled={slots.length === 0}
-                  >
-                    {!slots.length ? <option>No slots available</option> : <><option value="">Select a time</option>{slots.filter(s => isSlotBookableForDate(s, date)).map(s => <option key={buildSlotKey(s)} value={buildSlotKey(s)}>{labelTime(s)}</option>)}</>}
-                  </select>
-                </div>
+                {!isBookingStopped && (
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 mb-3">Time Slot</label>
+                    {comboSlotInfoMessage && (
+                      <div className="mb-3 p-3 bg-blue-50 border border-blue-100 rounded-xl text-xs text-blue-700 font-medium flex items-start gap-2">
+                        <svg className="w-4 h-4 mt-0.5 flex-shrink-0 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        <span>{comboSlotInfoMessage}</span>
+                      </div>
+                    )}
+                    <select
+                      className="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-sky-500 outline-none text-base font-medium appearance-none cursor-pointer"
+                      value={slotState.selectedKey}
+                      onChange={(e) => setSlotState(s => ({ ...s, selectedKey: e.target.value }))}
+                    >
+                      <option value="">Select the ticket</option>
+                      {slots.filter(s => isSlotBookableForDate(s, date)).map(s => <option key={buildSlotKey(s)} value={buildSlotKey(s)}>{labelTime(s)}</option>)}
+                    </select>
+                  </div>
+                )}
 
                 {/* Quantity */}
-                <div>
-                  <label className="block text-xs font-bold text-gray-700 mb-3 text-left">No. of tickets</label>
-                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100">
-                    <button
-                      type="button"
-                      onClick={() => setQty((prev) => Math.max(1, Number(prev || 1) - 1))}
-                      className="w-10 h-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center hover:border-sky-300 active:scale-95 transition"
-                    >
-                      <Minus size={16} />
-                    </button>
-                    <span className="text-xl font-black text-gray-900">{qty}</span>
-                    <button
-                      type="button"
-                      onClick={() => setQty((prev) => Math.max(1, Number(prev || 1) + 1))}
-                      className="w-10 h-10 rounded-xl border border-sky-200 flex items-center justify-center active:scale-95 bg-sky-600 text-white shadow-sm"
-                    >
-                      <Plus size={16} />
-                    </button>
+                {!isBookingStopped && (
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 mb-3 text-left">No. of tickets</label>
+                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100">
+                      <button
+                        type="button"
+                        onClick={() => setQty((prev) => Math.max(1, Number(prev || 1) - 1))}
+                        className="w-10 h-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center hover:border-sky-300 active:scale-95 transition"
+                      >
+                        <Minus size={16} />
+                      </button>
+                      <span className="text-xl font-black text-gray-900">{qty}</span>
+                      <button
+                        type="button"
+                        onClick={() => setQty((prev) => Math.max(1, Number(prev || 1) + 1))}
+                        className="w-10 h-10 rounded-xl border border-sky-200 flex items-center justify-center active:scale-95 bg-sky-600 text-white shadow-sm"
+                      >
+                        <Plus size={16} />
+                      </button>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Summary Box */}
                 {selectedSlot && (
@@ -1473,10 +1483,10 @@ export default function ComboDetails() {
             </div>
           </aside>
         </div>
-      </section>
+      </section >
 
       {/* FOOTER PADDING */}
-      <div className="h-16" />
+      < div className="h-16" />
 
       {showCalendar && (
         <div
@@ -1558,16 +1568,19 @@ export default function ComboDetails() {
             </div>
           </div>
         </div>
-      )}
+      )
+      }
 
       {/* GALLERY VIEWER */}
-      {viewerIndex !== null && linkedGallery.items.length > 0 && (
-        <GalleryViewer
-          items={linkedGallery.items}
-          initialIndex={viewerIndex}
-          onClose={() => setViewerIndex(null)}
-        />
-      )}
-    </div>
+      {
+        viewerIndex !== null && linkedGallery.items.length > 0 && (
+          <GalleryViewer
+            items={linkedGallery.items}
+            initialIndex={viewerIndex}
+            onClose={() => setViewerIndex(null)}
+          />
+        )
+      }
+    </div >
   );
 }

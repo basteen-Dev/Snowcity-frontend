@@ -19,7 +19,7 @@ export default function Split() {
 
   React.useEffect(() => {
     (async () => {
-      const out = await adminApi.get('/api/admin/analytics/split', { from, to, group_by: groupBy });
+      const out = await adminApi.get('/api/admin/analytics/split', { params: { from, to, group_by: groupBy } });
       setRows(Array.isArray(out?.data) ? out.data : (Array.isArray(out) ? out : []));
     })();
   }, [from, to, groupBy]);

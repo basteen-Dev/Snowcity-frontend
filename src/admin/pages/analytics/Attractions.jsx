@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 import adminApi from '../../services/adminApi';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 
-const COLORS = ['#2563eb','#10b981','#f59e0b','#ef4444','#8b5cf6','#14b8a6','#e11d48','#22c55e','#f97316','#3b82f6'];
+const COLORS = ['#2563eb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#14b8a6', '#e11d48', '#22c55e', '#f97316', '#3b82f6'];
 
 export default function Attractions() {
   const [from, setFrom] = React.useState(dayjs().subtract(30, 'day').startOf('day').toISOString());
@@ -13,7 +13,7 @@ export default function Attractions() {
 
   React.useEffect(() => {
     (async () => {
-      const rows = await adminApi.get('/api/admin/analytics/attractions-breakdown', { from, to, limit: 50 });
+      const rows = await adminApi.get('/api/admin/analytics/attractions-breakdown', { params: { from, to, limit: 50 } });
       setData(Array.isArray(rows) ? rows : []);
     })();
   }, [from, to]);

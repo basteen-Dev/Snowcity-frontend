@@ -325,7 +325,7 @@ export default function AttractionCard({ item, featured = false }) {
                 stop(e);
                 e.preventDefault();
                 sessionStorage.removeItem('snowcity_booking_state');
-                navigate(attrId ? `/booking?attraction_id=${attrId}&type=attraction&openDrawer=true` : '/booking');
+                navigate(attrId ? `/tickets-offers?attraction_id=${attrId}&type=attraction&openDrawer=true` : '/tickets-offers');
               }}
               className="action"
             >

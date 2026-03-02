@@ -21,7 +21,7 @@ export default function PagesList() {
       setErr('');
       const params = { q, page, limit };
       if (active) params.active = active; // only send if user picked
-      const res = await adminApi.get('/api/admin/pages', params);
+      const res = await adminApi.get('/api/admin/pages', { params });
       const list = Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : []);
       const meta = res?.meta || null;
       setRows(list);

@@ -16,7 +16,7 @@ export default function OfferCard({ item }) {
   const unit = getUnitLabel(item);
 
   const attractionId = item?.attraction_id || item?.attraction?.id || null;
-  const bookHref = attractionId ? `/booking?attraction_id=${attractionId}` : null;
+  const bookHref = attractionId ? `/tickets-offers?attraction_id=${attractionId}` : null;
 
   const stop = (e) => e.stopPropagation();
 

@@ -10,7 +10,7 @@ import { prioritizeSnowcityFirst } from "../../utils/attractions";
  */
 const FooterHeader = ({ children }) => (
   <div className="relative mb-6">
-    <h4 className="text-[#0099FF] font-normal uppercase tracking-normal text-[15px] leading-[16px]">
+    <h4 className="text-[#0099FF] font-normal uppercase tracking-normal text-[12px] leading-[16px]">
       {children}
     </h4>
     <div className="absolute -bottom-2 left-0 w-12 h-[2px] bg-[#0099FF]" />
@@ -123,7 +123,7 @@ export default function Footer() {
             <div className="space-y-4">
               <div className="flex items-start gap-3">
                 <MapPin className="w-5 h-5 text-[#0099FF] shrink-0 mt-0.5" />
-                <p className="text-[15px] leading-[20px] font-light">
+                <p className="text-[12px] leading-[15px] font-light">
                   Jayamahal Road, Fun World Complex, JC Nagar, Bengaluru, Karnataka 560006
                 </p>
               </div>
@@ -135,7 +135,7 @@ export default function Footer() {
               </div>
               <div className="flex items-center gap-3">
                 <Phone className="w-5 h-5 text-[#0099FF] shrink-0" />
-                <p className="text-[15px] leading-[20px] font-medium text-gray-900">+91 78295 50000</p>
+                <p className="text-[12px] leading-[15px] font-medium text-gray-900">+91 78295 50000</p>
               </div>
             </div>
 
@@ -172,11 +172,11 @@ export default function Footer() {
             <div>
               <FooterHeader>Tickets</FooterHeader>
               <ul className="space-y-3 pt-2">
-                <li><Link to="/booking" className={linkClass}>Buy tickets</Link></li>
+                <li><Link to="/tickets-offers" className={linkClass}>Buy tickets</Link></li>
                 <li><Link to="/combos" className={linkClass}>Combo Deals</Link></li>
                 <li><Link to="/offers" className={linkClass}>Offers</Link></li>
                 <li><Link to="/bulk-booking" className={linkClass}>Bulk Booking</Link></li>
-                <li><Link to="/booking" className={linkClass}>Birthday Parties</Link></li>
+                <li><Link to="/tickets-offers" className={linkClass}>Birthday Parties</Link></li>
               </ul>
             </div>
 

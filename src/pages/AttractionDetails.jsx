@@ -539,9 +539,10 @@ export default function AttractionDetails() {
       setSlots({ status: 'succeeded', items: list, error: null });
 
       // auto select first available slot
-      const firstAvailable =
-        list.find((s) => isSlotAvailable(s, date)) || list[0] || null;
-      setSlotKey(firstAvailable ? getSlotKey(firstAvailable, 0) : '');
+      // const firstAvailable = 
+      //   list.find((s) => isSlotAvailable(s, date)) || list[0] || null;
+      // setSlotKey(firstAvailable ? getSlotKey(firstAvailable, 0) : '');
+      setSlotKey('');
     } catch (err) {
       if (err?.canceled) return;
       setSlots({
@@ -725,6 +726,9 @@ export default function AttractionDetails() {
   const bestOffer = React.useMemo(() => {
     if (!selectedSlot || !a || !offers.items.length || hasBackendOffer)
       return null;
+    // When dynamic pricing is active for this date, skip all offers
+    if (selectedSlot?.dynamic_pricing_active || selectedSlot?.pricing?.dynamic_pricing_active)
+      return null;
     const basePrice = unitBeforeOffer || baseUnitPrice || 0;
     if (!basePrice) return null;
     const attractionId = getAttrId(a);
@@ -830,7 +834,7 @@ export default function AttractionDetails() {
       qty: String(sanitizedQty),
     });
     sessionStorage.removeItem('snowcity_booking_state');
-    navigate(`/booking?${params.toString()}`);
+    navigate(`/tickets-offers?${params.toString()}`);
   };
 
   const isInitialLoading = details.status === 'loading' && !a;
@@ -893,9 +897,6 @@ export default function AttractionDetails() {
         {stoppedBanner}
         {/* HERO BANNER + GALLERY (Full Width) */}
         <section className="mt-0 bg-transparent">
-          <div className="max-w-6xl mx-auto px-4 pt-4 lg:pt-0">
-            {/* Title removed from here */}
-          </div>
 
           {/* Banner card - Full Width Block */}
           <div className="w-full bg-gray-100 border-y border-gray-200">
@@ -1071,74 +1072,67 @@ export default function AttractionDetails() {
             </div>
 
             {/* Date Selection */}
-            <div className="space-y-3">
-              <label
-                className="text-xs font-medium text-gray-700"
-
-              >
-                Select Date
-              </label>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={handleToday}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${date === todayYMD()
-                    ? 'bg-[#0099FF] text-white border-[#0099FF]'
-                    : 'bg-white text-[#111827] border-gray-200 hover:border-[#007ACC]'
-                    }`}
-
-                >
-                  Today
-                </button>
-                <button
-                  type="button"
-                  onClick={handleTomorrow}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${date === dayjs().add(1, 'day').format('YYYY-MM-DD')
-                    ? 'bg-[#0099FF] text-white border-[#0099FF]'
-                    : 'bg-white text-[#111827] border-gray-200 hover:border-[#007ACC]'
-                    }`}
-
-                >
-                  Tomorrow
-                </button>
-
-                {/* All Days (calendar) */}
-                <div className="flex items-center gap-2">
+            {!isBookingStopped && (
+              <div className="space-y-3">
+                <label className="text-xs font-medium text-gray-700">
+                  Select Date
+                </label>
+                <div className="flex flex-wrap gap-2">
                   <button
                     type="button"
-                    onClick={onCalendarButtonClick}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${date &&
-                      date !== todayYMD() &&
-                      date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
+                    onClick={handleToday}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${date === todayYMD()
                       ? 'bg-[#0099FF] text-white border-[#0099FF]'
                       : 'bg-white text-[#111827] border-gray-200 hover:border-[#007ACC]'
                       }`}
                   >
-                    {date &&
-                      date !== todayYMD() &&
-                      date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
-                      ? dayjs(date).format('D MMM')
-                      : 'More Dates'}
+                    Today
                   </button>
                   <button
                     type="button"
-                    onClick={onCalendarButtonClick}
-                    className="p-1.5 rounded-xl border border-gray-200 text-gray-600 hover:border-[#007ACC] hover:text-[#007ACC] transition-colors bg-white shadow-sm"
-                    title="Open Calendar"
+                    onClick={handleTomorrow}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${date === dayjs().add(1, 'day').format('YYYY-MM-DD')
+                      ? 'bg-[#0099FF] text-white border-[#0099FF]'
+                      : 'bg-white text-[#111827] border-gray-200 hover:border-[#007ACC]'
+                      }`}
                   >
-                    <Calendar size={14} />
+                    Tomorrow
                   </button>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={onCalendarButtonClick}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${date &&
+                        date !== todayYMD() &&
+                        date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
+                        ? 'bg-[#0099FF] text-white border-[#0099FF]'
+                        : 'bg-white text-[#111827] border-gray-200 hover:border-[#007ACC]'
+                        }`}
+                    >
+                      {date &&
+                        date !== todayYMD() &&
+                        date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
+                        ? dayjs(date).format('D MMM')
+                        : 'More Dates'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={onCalendarButtonClick}
+                      className="p-1.5 rounded-xl border border-gray-200 text-gray-600 hover:border-[#007ACC] hover:text-[#007ACC] transition-colors bg-white shadow-sm"
+                      title="Open Calendar"
+                    >
+                      <Calendar size={14} />
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
             {/* Time Slot Selection */}
-            {!isTimeSlotDisabled && (
+            {!isBookingStopped && !isTimeSlotDisabled && (
               <div className="space-y-3">
-                <label
-                  className="text-xs font-medium text-gray-700"
-
-                >
+                <label className="text-xs font-medium text-gray-700">
                   Select Time Slot
                 </label>
                 {slots.status === 'loading' ? (
@@ -1155,7 +1149,6 @@ export default function AttractionDetails() {
                     value={slotKey}
                     onChange={(e) => setSlotKey(e.target.value)}
                     disabled={!slots.items.length}
-
                   >
                     {!slots.items.length ? (
                       <option>No slots</option>
@@ -1193,42 +1186,42 @@ export default function AttractionDetails() {
             {isTimeSlotDisabled && (
               <div className="bg-sky-50 border border-sky-100 rounded-xl p-3">
                 <p className="text-xs text-sky-700 font-medium text-center">
-                  Duration-free entry: Date selection only.
+                  Open Entry Experience — no time slot selection required.
                 </p>
               </div>
             )}
 
             {/* Quantity Selection */}
-            <div className="space-y-3">
-              <label
-                className="text-xs font-medium text-gray-700"
-              >
-                No. of tickets
-              </label>
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  className="w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center hover:border-sky-300 active:scale-95 transition"
-                  onClick={() =>
-                    setQty((prev) => Math.max(1, Number(prev || 1) - 1))
-                  }
-                >
-                  <Minus size={14} />
-                </button>
-                <span className="w-6 text-center font-semibold text-gray-800 tabular-nums">
-                  {qty}
-                </span>
-                <button
-                  type="button"
-                  className="w-9 h-9 rounded-xl border border-sky-200 flex items-center justify-center active:scale-95 bg-sky-600 text-white shadow-sm"
-                  onClick={() =>
-                    setQty((prev) => Math.max(1, Number(prev || 1) + 1))
-                  }
-                >
-                  <Plus size={14} />
-                </button>
+            {!isBookingStopped && (
+              <div className="space-y-3">
+                <label className="text-xs font-medium text-gray-700">
+                  No. of tickets
+                </label>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    className="w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center hover:border-sky-300 active:scale-95 transition"
+                    onClick={() =>
+                      setQty((prev) => Math.max(1, Number(prev || 1) - 1))
+                    }
+                  >
+                    <Minus size={14} />
+                  </button>
+                  <span className="w-6 text-center font-semibold text-gray-800 tabular-nums">
+                    {qty}
+                  </span>
+                  <button
+                    type="button"
+                    className="w-9 h-9 rounded-xl border border-sky-200 flex items-center justify-center active:scale-95 bg-sky-600 text-white shadow-sm"
+                    onClick={() =>
+                      setQty((prev) => Math.max(1, Number(prev || 1) + 1))
+                    }
+                  >
+                    <Plus size={14} />
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Subtotal / total */}
             {date && selectedSlotForBar && (
@@ -1331,7 +1324,7 @@ export default function AttractionDetails() {
                       <h2
                         className="text-lg font-semibold text-gray-900 mb-3"
                         style={{
-                          color: '#87CEEB',
+                          color: '#111827',
                         }}
                       >
                         About this Experience
@@ -1408,7 +1401,7 @@ export default function AttractionDetails() {
                         className="text-[11px] uppercase tracking-wide text-gray-500 font-semibold"
 
                       >
-                        Base price
+                        price
                       </div>
                       <div
                         className="text-base font-semibold text-gray-900 rupee"
@@ -1472,72 +1465,66 @@ export default function AttractionDetails() {
                 {/* Booking controls (desktop) */}
                 <div className="space-y-5">
                   {/* Date */}
-                  <div className="space-y-2">
-                    <label
-                      className="text-xs font-medium text-gray-700"
-
-                    >
-                      Select Date
-                    </label>
-                    <div className="flex flex-wrap gap-2">
-                      <button
-                        type="button"
-                        onClick={handleToday}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${date === todayYMD()
-                          ? 'bg-[#0099FF] text-white border-[#0099FF]'
-                          : 'bg-white text-[#111827] border-gray-200 hover:border-[#007ACC]'
-                          }`}
-
-                      >
-                        Today
-                      </button>
-                      <button
-                        type="button"
-                        onClick={handleTomorrow}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${date === dayjs().add(1, 'day').format('YYYY-MM-DD')
-                          ? 'bg-[#0099FF] text-white border-[#0099FF]'
-                          : 'bg-white text-[#111827] border-gray-200 hover:border-[#007ACC]'
-                          }`}
-
-                      >
-                        Tomorrow
-                      </button>
-                      <div className="flex items-center gap-2">
+                  {!isBookingStopped && (
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium text-gray-700">
+                        Select Date
+                      </label>
+                      <div className="flex flex-wrap gap-2">
                         <button
                           type="button"
-                          onClick={onCalendarButtonClick}
-                          className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${date &&
-                            date !== todayYMD() &&
-                            date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
+                          onClick={handleToday}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${date === todayYMD()
                             ? 'bg-[#0099FF] text-white border-[#0099FF]'
                             : 'bg-white text-[#111827] border-gray-200 hover:border-[#007ACC]'
                             }`}
                         >
-                          {date &&
-                            date !== todayYMD() &&
-                            date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
-                            ? dayjs(date).format('D MMM')
-                            : 'More Dates'}
+                          Today
                         </button>
                         <button
                           type="button"
-                          onClick={onCalendarButtonClick}
-                          className="p-1.5 rounded-xl border border-gray-200 text-gray-600 hover:border-[#007ACC] hover:text-[#007ACC] transition-colors bg-white shadow-sm"
-                          title="Open Calendar"
+                          onClick={handleTomorrow}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${date === dayjs().add(1, 'day').format('YYYY-MM-DD')
+                            ? 'bg-[#0099FF] text-white border-[#0099FF]'
+                            : 'bg-white text-[#111827] border-gray-200 hover:border-[#007ACC]'
+                            }`}
                         >
-                          <Calendar size={14} />
+                          Tomorrow
                         </button>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={onCalendarButtonClick}
+                            className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${date &&
+                              date !== todayYMD() &&
+                              date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
+                              ? 'bg-[#0099FF] text-white border-[#0099FF]'
+                              : 'bg-white text-[#111827] border-gray-200 hover:border-[#007ACC]'
+                              }`}
+                          >
+                            {date &&
+                              date !== todayYMD() &&
+                              date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
+                              ? dayjs(date).format('D MMM')
+                              : 'More Dates'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={onCalendarButtonClick}
+                            className="p-1.5 rounded-xl border border-gray-200 text-gray-600 hover:border-[#007ACC] hover:text-[#007ACC] transition-colors bg-white shadow-sm"
+                            title="Open Calendar"
+                          >
+                            <Calendar size={14} />
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Slot */}
-                  {!isTimeSlotDisabled && (
+                  {!isBookingStopped && !isTimeSlotDisabled && (
                     <div className="space-y-2">
-                      <label
-                        className="text-xs font-medium text-gray-700"
-
-                      >
+                      <label className="text-xs font-medium text-gray-700">
                         Select Time Slot
                       </label>
 
@@ -1551,17 +1538,16 @@ export default function AttractionDetails() {
                         />
                       ) : (
                         <select
-                          className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-900 outline-none"
+                          className="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-sky-500 outline-none text-base font-medium appearance-none cursor-pointer"
                           value={slotKey}
                           onChange={(e) => setSlotKey(e.target.value)}
                           disabled={!slots.items.length}
-
                         >
+                          <option value="">Select the ticket</option>
                           {!slots.items.length ? (
-                            <option>No slots</option>
+                            <option disabled>No slots available</option>
                           ) : (
                             <>
-                              {!slotKey && <option value="">Select slot</option>}
                               {slots.items
                                 .filter((s) => isSlotAvailable(s, date))
                                 .map((s, i) => {
@@ -1599,36 +1585,36 @@ export default function AttractionDetails() {
                   )}
 
                   {/* Qty */}
-                  <div className="space-y-2">
-                    <label
-                      className="text-xs font-medium text-gray-700"
-                    >
-                      No. of tickets
-                    </label>
-                    <div className="flex items-center gap-3">
-                      <button
-                        type="button"
-                        className="w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center hover:border-sky-300 active:scale-95 transition"
-                        onClick={() =>
-                          setQty((prev) => Math.max(1, Number(prev || 1) - 1))
-                        }
-                      >
-                        <Minus size={14} />
-                      </button>
-                      <span className="w-6 text-center font-semibold text-gray-800 tabular-nums">
-                        {qty}
-                      </span>
-                      <button
-                        type="button"
-                        className="w-9 h-9 rounded-xl border border-sky-200 flex items-center justify-center active:scale-95 bg-sky-600 text-white shadow-sm"
-                        onClick={() =>
-                          setQty((prev) => Math.max(1, Number(prev || 1) + 1))
-                        }
-                      >
-                        <Plus size={14} />
-                      </button>
+                  {!isBookingStopped && (
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium text-gray-700">
+                        No. of tickets
+                      </label>
+                      <div className="flex items-center gap-3">
+                        <button
+                          type="button"
+                          className="w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center hover:border-sky-300 active:scale-95 transition"
+                          onClick={() =>
+                            setQty((prev) => Math.max(1, Number(prev || 1) - 1))
+                          }
+                        >
+                          <Minus size={14} />
+                        </button>
+                        <span className="w-6 text-center font-semibold text-gray-800 tabular-nums">
+                          {qty}
+                        </span>
+                        <button
+                          type="button"
+                          className="w-9 h-9 rounded-xl border border-sky-200 flex items-center justify-center active:scale-95 bg-sky-600 text-white shadow-sm"
+                          onClick={() =>
+                            setQty((prev) => Math.max(1, Number(prev || 1) + 1))
+                          }
+                        >
+                          <Plus size={14} />
+                        </button>
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Subtotal / total */}
                   {date && selectedSlotForBar && (
@@ -1672,7 +1658,7 @@ export default function AttractionDetails() {
                   <button
                     type="button"
                     className="w-full inline-flex items-center justify-center rounded-xl bg-[#0099FF] text-white px-6 py-2.5 text-sm font-semibold shadow-md hover:bg-[#007ACC] disabled:opacity-60 disabled:cursor-not-allowed"
-                    disabled={isBookingStopped || !date || (!isTimeSlotDisabled && !selectedSlotForBar) || !effectiveUnitPrice}
+                    disabled={isBookingStopped || !date || (!isTimeSlotDisabled && !slotKey) || !effectiveUnitPrice}
                     onClick={onBookNow}
 
                   >

@@ -222,7 +222,7 @@ export default function MyBookings() {
         }))
       }));
     }
-    navigate('/booking');
+    navigate('/tickets-offers');
   };
 
   const handlePaymentFailure = (order) => {

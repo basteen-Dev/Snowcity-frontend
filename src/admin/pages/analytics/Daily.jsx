@@ -21,6 +21,19 @@ const SectionCard = ({ title, subtitle, children }) => (
   </div>
 );
 
+const normalizeOptionList = (res) => {
+  if (!res) return [];
+  if (Array.isArray(res)) return res;
+  if (Array.isArray(res.data)) return res.data;
+  if (Array.isArray(res.items)) return res.items;
+  if (Array.isArray(res.results)) return res.results;
+  if (res.data && Array.isArray(res.data.items)) return res.data.items;
+  if (res.data && Array.isArray(res.data.results)) return res.data.results;
+  if (res.data && Array.isArray(res.data.data)) return res.data.data;
+  if (res.meta && Array.isArray(res.meta.data)) return res.meta.data;
+  return [];
+};
+
 const Stat = ({ label, value, subtitle }) => (
   <div className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
     <p className="text-xs text-gray-500 uppercase font-semibold">{label}</p>
@@ -49,8 +62,8 @@ export default function Daily() {
           adminApi.get('/api/admin/attractions'),
           adminApi.get('/api/admin/combos')
         ]);
-        setAttractions(Array.isArray(attractionsData) ? attractionsData : []);
-        setCombos(Array.isArray(combosData) ? combosData : []);
+        setAttractions(normalizeOptionList(attractionsData));
+        setCombos(normalizeOptionList(combosData));
       } catch (error) {
         console.error('Error fetching attractions/combos:', error);
       }
@@ -65,7 +78,7 @@ export default function Daily() {
         if (selectedAttraction) params.attraction_id = selectedAttraction;
         if (selectedCombo) params.combo_id = selectedCombo;
 
-        const rows = await adminApi.get('/api/admin/analytics/daily', params);
+        const rows = await adminApi.get('/api/admin/analytics/daily', { params });
         setData(Array.isArray(rows) ? rows : []);
       } catch (error) {
         console.error('Error fetching analytics:', error);

@@ -7,7 +7,7 @@ const testimonials = [
     name: 'Priya Sharma',
     rating: 5,
     comment: 'Amazing experience! The Snow Park was absolutely wonderful. My kids loved every moment. Highly recommended for families!',
-    date: 'Oct 2024',
+    date: 'Oct 2025',
     avatar: '👩'
   },
   {
@@ -15,7 +15,7 @@ const testimonials = [
     name: 'Rahul Mehta',
     rating: 5,
     comment: 'Best theme park in Bangalore! The Eyelusion show was mind-blowing. Great value for money and super clean facilities.',
-    date: 'Oct 2024',
+    date: 'Oct 2025',
     avatar: '👨'
   },
   {
@@ -23,7 +23,7 @@ const testimonials = [
     name: 'Anita Desai',
     rating: 5,
     comment: "Visited with friends and had a blast! Devil's Dark House was thrilling. Staff was very helpful and friendly.",
-    date: 'Sep 2024',
+    date: 'Sep 2025',
     avatar: '👩'
   },
   {
@@ -31,7 +31,7 @@ const testimonials = [
     name: 'Karthik Kumar',
     rating: 4,
     comment: 'Great experience overall! The arcade games section is fantastic. Perfect weekend outing with the family.',
-    date: 'Sep 2024',
+    date: 'Sep 2025',
     avatar: '👨'
   },
   {
@@ -39,7 +39,7 @@ const testimonials = [
     name: 'Sneha Reddy',
     rating: 5,
     comment: 'Absolutely loved the AR Zoo! Such an innovative concept. My children were amazed and we spent hours there.',
-    date: 'Aug 2024',
+    date: 'Aug 2025',
     avatar: '👩'
   },
   {
@@ -47,7 +47,7 @@ const testimonials = [
     name: 'Amit Singh',
     rating: 5,
     comment: 'Fantastic place for all ages! Clean, well-maintained, and lots of fun activities. Will definitely visit again!',
-    date: 'Aug 2024',
+    date: 'Aug 2025',
     avatar: '👨'
   }
 ];
@@ -92,21 +92,21 @@ export default function Testimonials() {
         </motion.div>
       </div>
 
-      <div className="relative flex overflow-hidden">
+      <div className="relative flex overflow-hidden md:mx-4">
         <div className="flex whitespace-nowrap animate-testimonials-marquee py-4">
           {doubledTestimonials.map((testimonial, idx) => (
             <div
               key={`${testimonial.id}-${idx}`}
               className="inline-flex flex-col w-[350px] mx-4 p-8 rounded-2xl border border-sky-200 bg-white/40 backdrop-blur-sm shadow-lg whitespace-normal transition-all duration-300 hover:bg-white/60 hover:border-sky-300"
             >
-              <div className="mb-6 flex items-center gap-1">
+              <div className="mb-6 flex items-center justify-center gap-1">
                 {[...Array(5)].map((_, i) => (
                   <StarIcon key={i} filled={i < testimonial.rating} />
                 ))}
               </div>
 
-              <div className="relative flex-1 mb-8">
-                <div className="absolute -top-4 -left-3 opacity-20 text-sky-300">
+              <div className="relative flex-1 mb-8 text-center">
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 opacity-20 text-sky-300">
                   <QuoteIcon />
                 </div>
                 <p className="relative z-10 text-sky-900 leading-relaxed italic font-medium">
@@ -114,14 +114,9 @@ export default function Testimonials() {
                 </p>
               </div>
 
-              <div className="mt-auto flex items-center gap-4 border-t border-sky-100 pt-6">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-sky-50 text-2xl border border-sky-200 shadow-inner shrink-0">
-                  {testimonial.avatar}
-                </div>
-                <div className="overflow-hidden">
-                  <div className="font-bold text-sky-900 text-lg truncate">{testimonial.name}</div>
-                  <div className="text-xs text-sky-600 font-semibold uppercase tracking-wider">{testimonial.date}</div>
-                </div>
+              <div className="mt-auto border-t border-sky-100 pt-6 text-center">
+                <div className="font-bold text-sky-900 text-lg">{testimonial.name}</div>
+                <div className="text-xs text-sky-600 font-semibold uppercase tracking-wider">{testimonial.date}</div>
               </div>
             </div>
           ))}

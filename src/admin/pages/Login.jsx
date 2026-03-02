@@ -2,6 +2,7 @@ import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { adminLogin } from '../features/auth/adminAuthThunks';
 import { Navigate, Link } from 'react-router-dom';
+import Logo from "../../assets/images/Logo.webp";
 
 export default function Login() {
   const dispatch = useDispatch();
@@ -27,12 +28,11 @@ export default function Login() {
       <div className="w-full max-w-md">
         {/* Logo/Brand */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-xl mb-4">
-            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-            </svg>
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Admin Portal</h1>
+          <img
+            src={Logo}
+            alt="Snow City"
+            className="h-20 w-auto mx-auto mb-4 object-contain"
+          />
           <p className="text-gray-600 dark:text-gray-400 mt-1">Sign in to your account</p>
         </div>
 
@@ -96,7 +96,7 @@ export default function Login() {
         {/* Footer */}
         <div className="text-center mt-8">
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            © 2024 SnowCity. All rights reserved.
+            © 2026 SnowCity. All rights reserved.
           </p>
         </div>
       </div>

@@ -51,7 +51,7 @@ export default function FloatingNavBar() {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
-  const isBookingPage = location.pathname.startsWith("/booking");
+  const isBookingPage = location.pathname.startsWith("/tickets-offers");
   const isHome = location.pathname === "/";
   const attractions = useSelector((s) => s.attractions.items || []);
   const pathSlug = location.pathname.slice(1).split('/')[0];
@@ -557,19 +557,20 @@ export default function FloatingNavBar() {
                 {menuOpen === "offers" && (
                   <div className="absolute right-0 top-full mt-2 w-56 rounded-lg border border-gray-200 bg-white shadow-lg p-2 z-[110]" style={{ boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)' }}>
                     <Link
-                      to="/offers"
-                      className="block px-4 py-2.5 text-sm text-gray-800 hover:bg-sky-100 rounded-lg transition-all duration-200 font-medium"
-                      onClick={() => setMenuOpen(null)}
-                    >
-                      All Offers
-                    </Link>
-                    <Link
                       to="/combos"
                       className="block px-4 py-2.5 text-sm text-gray-800 hover:bg-sky-100 rounded-lg transition-all duration-200 font-medium"
                       onClick={() => setMenuOpen(null)}
                     >
                       Combo Deals
                     </Link>
+                    <Link
+                      to="/offers"
+                      className="block px-4 py-2.5 text-sm text-gray-800 hover:bg-sky-100 rounded-lg transition-all duration-200 font-medium"
+                      onClick={() => setMenuOpen(null)}
+                    >
+                      All Offers
+                    </Link>
+
                   </div>
                 )}
               </div>
@@ -596,7 +597,7 @@ export default function FloatingNavBar() {
               {!token}
               <button
                 className={bookTicketButtonClass}
-                onClick={() => { sessionStorage.removeItem('snowcity_booking_state'); navigate('/booking'); }}
+                onClick={() => { sessionStorage.removeItem('snowcity_booking_state'); navigate('/tickets-offers'); }}
               >
                 <Ticket className="w-5 h-5 mr-2" /> BUY TICKETS
               </button>
@@ -687,10 +688,10 @@ export default function FloatingNavBar() {
             onClick={() => {
               setMobileOpen(false);
               sessionStorage.removeItem('snowcity_booking_state');
-              navigate('/booking');
+              navigate('/tickets-offers');
             }}
           >
-            <Ticket className="w-4 h-4 mr-1" /> Book
+            <Ticket className="w-4 h-4 mr-1" /> BUY
           </button>
         </div>
 
@@ -738,19 +739,20 @@ export default function FloatingNavBar() {
               </summary>
               <div className="pl-4 space-y-1 mt-2 pb-3 border-t border-sky-400/20 pt-3">
                 <Link
-                  to="/offers"
-                  className="block py-2 pl-4 text-gray-700 hover:text-black font-medium hover:bg-gray-50 rounded-lg transition-all duration-200"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  • All Offers
-                </Link>
-                <Link
                   to="/combos"
                   className="block py-2 pl-4 text-gray-700 hover:text-black font-medium hover:bg-gray-50 rounded-lg transition-all duration-200"
                   onClick={() => setMobileOpen(false)}
                 >
                   • Combo Deals
                 </Link>
+                <Link
+                  to="/offers"
+                  className="block py-2 pl-4 text-gray-700 hover:text-black font-medium hover:bg-gray-50 rounded-lg transition-all duration-200"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  • All Offers
+                </Link>
+
               </div>
             </details>
 
@@ -842,7 +844,7 @@ export default function FloatingNavBar() {
                 onClick={() => {
                   setMobileOpen(false);
                   sessionStorage.removeItem('snowcity_booking_state');
-                  navigate("/booking");
+                  navigate("/tickets-offers");
                 }}
               >
                 <Ticket className="w-5 h-5" /> Book Tickets

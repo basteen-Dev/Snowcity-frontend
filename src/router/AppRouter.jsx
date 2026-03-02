@@ -91,7 +91,7 @@ export default function AppRouter() {
             <Route path="/combos" element={<Combos />} />
             <Route path="/combos/:id" element={<ComboDetails />} />
             <Route path="/contact" element={<Contact />} />
-            <Route path="/booking" element={<Booking />} />
+            <Route path="/tickets-offers" element={<Booking />} />
             <Route path="/gallery" element={<Gallery />} />
             <Route path="/blog" element={<VisitorBlogs />} />
             <Route path="/visitor-guide/pages" element={<VisitorPages />} />

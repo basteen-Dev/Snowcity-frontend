@@ -12,7 +12,7 @@ export default function Views() {
   React.useEffect(() => {
     (async () => {
       // Data is already scoped by server permission guard; this is a view-only wrapper.
-      const rows = await adminApi.get('/api/admin/analytics/daily', { from, to });
+      const rows = await adminApi.get('/api/admin/analytics/daily', { params: { from, to } });
       setData(Array.isArray(rows) ? rows : []);
     })();
   }, [from, to]);

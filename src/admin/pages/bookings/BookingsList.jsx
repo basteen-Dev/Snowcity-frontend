@@ -134,7 +134,7 @@ export default function BookingsList() {
   // Auto-sync: poll every 15s for new bookings
   React.useEffect(() => {
     // Initial load
-    dispatch(listAdminBookings({ page: 1, limit: rowsPerPage }));
+    dispatch(listAdminBookings({ ...buildQuery(), page: 1, limit: rowsPerPage }));
 
     if (!autoSync) return;
 
@@ -245,18 +245,20 @@ export default function BookingsList() {
   };
 
   const handleSearchChange = (field, value) => {
-    setFilters((prev) => ({ ...prev, [field]: value }));
-    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
-    searchTimerRef.current = setTimeout(() => {
-      const next = { ...filters, [field]: value };
-      const clean = {};
-      Object.entries(next).forEach(([k, v]) => {
-        if (v === undefined || v === null) return;
-        if (typeof v === 'string' && v.trim() === '') return;
-        clean[k] = v;
-      });
-      dispatch(listAdminBookings({ ...clean, page: 1, limit: rowsPerPage }));
-    }, 400);
+    setFilters((prev) => {
+      const next = { ...prev, [field]: value };
+      if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+      searchTimerRef.current = setTimeout(() => {
+        const clean = {};
+        Object.entries(next).forEach(([k, v]) => {
+          if (v === undefined || v === null) return;
+          if (typeof v === 'string' && v.trim() === '') return;
+          clean[k] = v;
+        });
+        dispatch(listAdminBookings({ ...clean, page: 1, limit: rowsPerPage }));
+      }, 400);
+      return next;
+    });
   };
 
   React.useEffect(() => {
@@ -545,7 +547,7 @@ export default function BookingsList() {
 
       {/* ── Table ── */}
       <AdminTable
-        keyField="order_id"
+        keyField="booking_id"
         columns={[
           { key: 'order_ref', title: 'ID', tdClass: 'whitespace-nowrap font-medium', render: (r) => r.order_ref || r.booking_ref || '—' },
           { key: 'booking_date', title: 'Date', tdClass: 'whitespace-nowrap', render: (r) => r.booking_date ? dayjs(r.booking_date).format('DD MMM, YYYY') : '—' },
@@ -593,7 +595,6 @@ export default function BookingsList() {
               const colorMap = {
                 Booked: 'border-blue-300 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-700',
                 Redeemed: 'border-emerald-300 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-700',
-                Expired: 'border-orange-300 bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-700',
                 Cancelled: 'border-gray-300 bg-gray-50 text-gray-600 dark:bg-neutral-800 dark:text-neutral-400 dark:border-neutral-600',
               };
               return (
@@ -606,7 +607,6 @@ export default function BookingsList() {
                 >
                   <option value="Booked">Booked</option>
                   <option value="Redeemed">Redeemed</option>
-                  <option value="Expired">Expired</option>
                   <option value="Cancelled">Cancelled</option>
                 </select>
               );
@@ -616,7 +616,7 @@ export default function BookingsList() {
             key: '_actions', title: '', tdClass: 'w-10', render: (r) => (
               <ActionMenu
                 row={r}
-                onView={(r) => navigate(`/admin/bookings/${r.order_id || r.booking_id || r.id}`)}
+                onView={(r) => navigate(`/admin/bookings/${r.booking_id || r.id}`)}
                 onWhatsApp={handleResendWhatsApp}
                 onEmail={handleResendEmail}
                 onDownload={handleDownloadTicket}
@@ -625,7 +625,7 @@ export default function BookingsList() {
           },
         ]}
         rows={rows}
-        onRowClick={(r) => navigate(`/admin/bookings/${r.order_id || r.booking_id || r.id}`)}
+        onRowClick={(r) => navigate(`/admin/bookings/${r.booking_id || r.id}`)}
         empty={list.status === 'loading' ? 'Loading…' : 'No bookings found'}
       />
 

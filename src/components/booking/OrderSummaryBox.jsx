@@ -5,7 +5,7 @@
  */
 
 import React, { useMemo } from 'react';
-import { ShoppingBag, Gift, Percent, ArrowRight, Plus, Package, Tag, Sparkles, CheckCircle, Info, Star } from 'lucide-react';
+import { Ticket, ShoppingBag, Gift, Percent, ArrowRight, Plus, Package, Tag, Sparkles, CheckCircle, Info, Star } from 'lucide-react';
 import { formatCurrency } from '../utils/formatters';
 import dayjs from 'dayjs';
 
@@ -46,10 +46,10 @@ export default function OrderSummaryBox({
       {!hasCartItems ? (
         <div className="flex flex-col items-center justify-center text-center py-8">
           <div className="w-14 h-14 rounded-xl bg-sky-50 flex items-center justify-center mb-3">
-            <ShoppingBag className="text-sky-600" />
+            <Ticket className="text-sky-600" />
           </div>
-          <p className="text-sm text-gray-600 mb-1">The product you choose will be displayed here</p>
-          <p className="text-xs text-gray-400">Select a ticket and add to your order</p>
+          <p className="text-sm text-gray-900 font-bold mb-1">Let's build your adventure</p>
+          <p className="text-xs text-gray-500">Pick an attraction to begin your booking.</p>
         </div>
       ) : (
         <>
@@ -163,8 +163,8 @@ export default function OrderSummaryBox({
               disabled={disabled || !hasCartItems}
               onClick={onContinue}
               className={`w-full flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold transition-all ${disabled || !hasCartItems
-                  ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                  : 'bg-sky-600 text-white shadow-md hover:bg-sky-700 active:scale-[0.98]'
+                ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                : 'bg-sky-600 text-white shadow-md hover:bg-sky-700 active:scale-[0.98]'
                 }`}
             >
               <span>Continue</span>

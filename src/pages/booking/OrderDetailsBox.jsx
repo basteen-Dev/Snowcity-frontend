@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShoppingBag, ArrowRight } from 'lucide-react';
+import { Ticket, ArrowRight } from 'lucide-react';
 import dayjs from 'dayjs';
 
 /**
@@ -25,10 +25,10 @@ export default function OrderDetailsBox({
                 {!hasCartItems ? (
                     <div className="flex flex-col items-center justify-center text-center py-8">
                         <div className="w-14 h-14 rounded-xl bg-sky-50 flex items-center justify-center mb-3">
-                            <ShoppingBag className="text-sky-600" />
+                            <Ticket className="text-sky-600" />
                         </div>
-                        <p className="text-sm text-gray-600 mb-1">The product you choose will be displayed here</p>
-                        <p className="text-xs text-gray-400">Select a ticket and add to your order</p>
+                        <p className="text-sm text-gray-900 font-semibold mb-1">Let's build your adventure</p>
+                        <p className="text-xs text-gray-500">Pick an attraction to begin your booking.</p>
                     </div>
                 ) : (
                     <div className="space-y-3 mb-4 max-h-72 overflow-y-auto custom-scrollbar pr-1">

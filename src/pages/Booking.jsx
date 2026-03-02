@@ -2068,6 +2068,7 @@ export default function Booking() {
               {/* STEP 4: Summary */}
               {step === 4 && (
                 <Payment
+                  contact={contact}
                   OfferSelector={OfferSelector}
                   paymentGateway={paymentGateway}
                   setPaymentGateway={setPaymentGateway}
@@ -2370,34 +2371,36 @@ export default function Booking() {
                                 </>
                               </div>
                             </div>
-                          ) : (
+                          ) : !isBookingStopped && (
                             <div className="bg-sky-50 border border-sky-100 rounded-xl p-3 text-center">
-                              <p className="text-xs text-sky-700 font-medium">just pick your date and quantity above</p>
+                              <p className="text-xs text-sky-700 font-medium">Choose your Date of visit and No of tickets.</p>
                             </div>
                           )}
 
-                          <div className="space-y-2">
-                            <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                              Quantity
-                            </p>
-                            <div className="flex items-center gap-4 bg-gray-50 rounded-xl p-1.5 border border-gray-200 w-fit">
-                              <button
-                                onClick={() => setSel((s) => ({ ...s, qty: Math.max(1, s.qty - 1) }))}
-                                className="w-9 h-9 flex items-center justify-center rounded-lg bg-white text-gray-600 shadow-sm hover:text-sky-700 active:scale-95 transition"
-                              >
-                                <Minus size={16} />
-                              </button>
-                              <span className="font-bold text-lg w-8 text-center text-gray-800 tabular-nums">
-                                {sel.qty}
-                              </span>
-                              <button
-                                onClick={() => setSel((s) => ({ ...s, qty: Math.max(1, s.qty + 1) }))}
-                                className="w-9 h-9 flex items-center justify-center rounded-lg bg-sky-600 text-white shadow-md hover:bg-sky-700 active:scale-95 transition"
-                              >
-                                <Plus size={16} />
-                              </button>
+                          {!isBookingStopped && (
+                            <div className="space-y-2">
+                              <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                Quantity
+                              </p>
+                              <div className="flex items-center gap-4 bg-gray-50 rounded-xl p-1.5 border border-gray-200 w-fit">
+                                <button
+                                  onClick={() => setSel((s) => ({ ...s, qty: Math.max(1, s.qty - 1) }))}
+                                  className="w-9 h-9 flex items-center justify-center rounded-lg bg-white text-gray-600 shadow-sm hover:text-sky-700 active:scale-95 transition"
+                                >
+                                  <Minus size={16} />
+                                </button>
+                                <span className="font-bold text-lg w-8 text-center text-gray-800 tabular-nums">
+                                  {sel.qty}
+                                </span>
+                                <button
+                                  onClick={() => setSel((s) => ({ ...s, qty: Math.max(1, s.qty + 1) }))}
+                                  className="w-9 h-9 flex items-center justify-center rounded-lg bg-sky-600 text-white shadow-md hover:bg-sky-700 active:scale-95 transition"
+                                >
+                                  <Plus size={16} />
+                                </button>
+                              </div>
                             </div>
-                          </div>
+                          )}
                         </>
                       )}
                       {isBookingStopped && (
@@ -2407,36 +2410,38 @@ export default function Booking() {
                       )}
                     </div>
 
-                    <div className="relative">
-                      <div className="absolute inset-x-0 top-0 h-4 bg-gradient-to-t from-white via-white/70 to-transparent pointer-events-none" />
-                      <div className="px-4 sm:px-6 py-3 border-t border-gray-100 bg-white flex items-center justify-between gap-3">
-                        <div>
-                          <div className="text-[11px] uppercase tracking-wide text-gray-500 font-semibold">Subtotal</div>
-                          <div className="text-lg font-bold text-sky-700 tabular-nums">₹{ticketsSubtotal.toFixed(0)}</div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <button
-                            type="button"
-                            onClick={addSelectionToCart}
-                            disabled={!selectionReady}
-                            className={`w-full px-2 py-1.5 rounded-xl text-white font-bold shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 ${!selectionReady ? 'bg-gray-300 cursor-not-allowed' : 'bg-sky-600 hover:bg-sky-700'
-                              }`}
-                          >
-                            <ShoppingCart size={20} />
-                            {editingKey ? 'Update Item' : 'Add to Cart'}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={handleDirectBuy}
-                            disabled={!selectionReady}
-                            className="flex items-center gap-2 px-2 py-2 rounded-xl bg-sky-600 text-white text-sm font-semibold shadow-md hover:bg-sky-700 active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                          >
-                            <ShoppingBag size={20} />
-                            <span>Buy</span>
-                          </button>
+                    {!isBookingStopped && (
+                      <div className="relative">
+                        <div className="absolute inset-x-0 top-0 h-4 bg-gradient-to-t from-white via-white/70 to-transparent pointer-events-none" />
+                        <div className="px-4 sm:px-6 py-3 border-t border-gray-100 bg-white flex items-center justify-between gap-3">
+                          <div>
+                            <div className="text-[11px] uppercase tracking-wide text-gray-500 font-semibold">Subtotal</div>
+                            <div className="text-lg font-bold text-sky-700 tabular-nums">₹{ticketsSubtotal.toFixed(0)}</div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={addSelectionToCart}
+                              disabled={!selectionReady}
+                              className={`w-full px-2 py-1.5 rounded-xl text-white font-bold shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 ${!selectionReady ? 'bg-gray-300 cursor-not-allowed' : 'bg-sky-600 hover:bg-sky-700'
+                                }`}
+                            >
+                              <ShoppingCart size={20} />
+                              {editingKey ? 'Update Item' : 'Add to Cart'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={handleDirectBuy}
+                              disabled={!selectionReady}
+                              className="flex items-center gap-2 px-2 py-2 rounded-xl bg-sky-600 text-white text-sm font-semibold shadow-md hover:bg-sky-700 active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                            >
+                              <ShoppingBag size={20} />
+                              <span>Buy</span>
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 </div>
               )}

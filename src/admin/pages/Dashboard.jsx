@@ -74,13 +74,13 @@ export default function Dashboard() {
       if (from) params.from = from;
       if (to) params.to = to;
 
-      const overview = await adminApi.get('/api/admin/analytics/overview', params);
+      const overview = await adminApi.get('/api/admin/analytics/overview', { params });
       setSummary(overview?.summary || overview);
 
-      const t = await adminApi.get('/api/admin/analytics/trend', { ...params, granularity: 'day' });
+      const t = await adminApi.get('/api/admin/analytics/trend', { params: { ...params, granularity: 'day' } });
       setTrend(Array.isArray(t) ? t : (t?.data || []));
 
-      const topA = await adminApi.get('/api/admin/analytics/top-attractions', { ...params, limit: 10 });
+      const topA = await adminApi.get('/api/admin/analytics/top-attractions', { params: { ...params, limit: 10 } });
       setAttractions(Array.isArray(topA) ? topA : (topA?.data || []));
     } finally {
       setLoading(false);

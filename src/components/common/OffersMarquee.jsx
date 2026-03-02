@@ -62,7 +62,7 @@ export default function OffersMarquee({ items }) {
           {[...promos, ...promos, ...promos].map((promo, idx) => (
             <div
               key={`${promo.id}-${idx}`}
-              className="inline-flex items-center mx-6 px-4 py-2  backdrop-blur-sm border border-sky-200 rounded-2xl shadow-lg text-sky-900"
+              className="inline-flex items-center mx-6 text-sky-900"
             >
               <span className="text-xl mr-3">{promo.icon}</span>
               <div className="flex flex-col text-left">

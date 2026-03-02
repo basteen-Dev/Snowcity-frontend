@@ -37,7 +37,7 @@ export default function Custom() {
 
   React.useEffect(() => {
     (async () => {
-      const rows = await adminApi.get('/api/admin/analytics/trend', { from, to, granularity });
+      const rows = await adminApi.get('/api/admin/analytics/trend', { params: { from, to, granularity } });
       setData(Array.isArray(rows) ? rows : []);
     })();
   }, [from, to, granularity]);

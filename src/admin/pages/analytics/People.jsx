@@ -36,7 +36,7 @@ export default function People() {
 
   React.useEffect(() => {
     (async () => {
-      const rows = await adminApi.get('/api/admin/analytics/daily', { from, to });
+      const rows = await adminApi.get('/api/admin/analytics/daily', { params: { from, to } });
       const withAvg = (rows || []).map((r) => ({ ...r, avg_people_per_booking: r.bookings ? (r.people || 0) / r.bookings : 0 }));
       setData(withAvg);
     })();

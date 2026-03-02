@@ -7,7 +7,7 @@ function hhmm(ss) {
   // "HH:MM:SS" -> "HH:MM"
   if (!ss) return '';
   const [h, m] = String(ss).split(':');
-  return `${h?.padStart(2,'0')}:${m?.padStart(2,'0')}`;
+  return `${h?.padStart(2, '0')}:${m?.padStart(2, '0')}`;
 }
 function to12h(hhmm) {
   // '14:00' -> '02.00pm', '09:30' -> '09.30am'
@@ -18,7 +18,7 @@ function to12h(hhmm) {
   const ap = h >= 12 ? 'pm' : 'am';
   let hr = h % 12;
   if (hr === 0) hr = 12;
-  return `${String(hr).padStart(2,'0')}.${String(m).padStart(2,'0')}${ap}`;
+  return `${String(hr).padStart(2, '0')}.${String(m).padStart(2, '0')}${ap}`;
 }
 
 export default function ComboSlotForm() {
@@ -42,7 +42,7 @@ export default function ComboSlotForm() {
 
   React.useEffect(() => {
     (async () => {
-      const data = await adminApi.get('/api/admin/combos', { active: true });
+      const data = await adminApi.get('/api/admin/combos', { params: { active: true } });
       const list = Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : [];
       setCombos(list);
     })();
