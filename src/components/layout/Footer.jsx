@@ -104,7 +104,7 @@ export default function Footer() {
     };
   }, []);
 
-  const linkClass = "text-[12px] uppercase tracking-wider leading-[20px] font-normal hover:text-[#0099FF] transition-colors text-gray-700";
+  const linkClass = "text-[12px] tracking-wider leading-[20px] font-normal hover:text-[#0099FF] transition-colors text-gray-700";
 
   return (
     <footer ref={footerRef} className="relative bg-gradient-to-t from-[#f5f9ff] to-white mt-0 overflow-hidden">
