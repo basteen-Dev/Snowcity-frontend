@@ -177,8 +177,8 @@ export default function YourDetails({
                 {!otp.sent ? (
                     <button
                         onClick={sendOTP}
-                        disabled={otp.status === 'loading'}
-                        className="mt-6 w-full bg-sky-600 text-white py-3.5 rounded-xl font-bold text-base shadow-md hover:bg-sky-700 transition-all disabled:opacity-70 flex items-center justify-center gap-2 active:scale-[0.98]"
+                        disabled={otp.status === 'loading' || !hasCartItems}
+                        className="mt-6 w-full bg-sky-600 text-white py-3.5 rounded-xl font-bold text-base shadow-md hover:bg-sky-700 transition-all disabled:opacity-70 disabled:bg-gray-200 disabled:text-gray-400 disabled:shadow-none flex items-center justify-center gap-2 active:scale-[0.98]"
                     >
                         {otp.status === 'loading' ? (
                             <>
@@ -213,8 +213,8 @@ export default function YourDetails({
                             />
                             <button
                                 onClick={verifyOTP}
-                                disabled={otp.status === 'loading' || otpCode.length < 6}
-                                className="bg-sky-600 text-white px-8 py-3.5 rounded-xl font-bold shadow-md hover:bg-sky-700 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 w-full sm:w-auto justify-center"
+                                disabled={otp.status === 'loading' || otpCode.length < 6 || !hasCartItems}
+                                className="bg-sky-600 text-white px-8 py-3.5 rounded-xl font-bold shadow-md hover:bg-sky-700 transition-all active:scale-[0.98] disabled:opacity-50 disabled:bg-gray-200 disabled:text-gray-400 disabled:shadow-none disabled:cursor-not-allowed flex items-center gap-2 w-full sm:w-auto justify-center"
                             >
                                 {otp.status === 'loading' ? (
                                     <>

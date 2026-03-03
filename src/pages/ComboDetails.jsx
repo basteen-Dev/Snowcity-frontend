@@ -545,7 +545,7 @@ export default function ComboDetails() {
       if (!value) return 'More Dates';
       if (value === today) return 'More Dates';
       if (value === tomorrow) return 'More Dates';
-      return dayjs(value).format('D MMM');
+      return dayjs(value).format('DD-MMM-YYYY');
     };
   }, []);
 

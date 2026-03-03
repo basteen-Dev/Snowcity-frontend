@@ -102,7 +102,7 @@ export default function Payment({
                                                 {item.booking_date && dayjs && (
                                                     <span className="inline-flex items-center gap-1 text-xs text-gray-500">
                                                         <Calendar size={11} className="text-gray-400" />
-                                                        {dayjs(item.booking_date).format('D MMM YYYY')}
+                                                        {dayjs(item.booking_date).format('DD-MMM-YYYY')}
                                                     </span>
                                                 )}
                                                 {item.slotLabel && (

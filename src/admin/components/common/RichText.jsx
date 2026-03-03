@@ -52,8 +52,12 @@ export default function RichText({ value, onChange, placeholder = 'Type here…'
   // ── Modal states ──
   const [altModal, setAltModal] = React.useState(null); // { file: File, resolve }
   const [ytModal, setYtModal] = React.useState(false);
-  const [ytUrl, setYtUrl] = React.useState('');
+  const [imageAltEdit, setImageAltEdit] = React.useState('');
   const [btnModal, setBtnModal] = React.useState(false);
+  const [accModal, setAccModal] = React.useState(false);
+  const [accTitle, setAccTitle] = React.useState('');
+  const [accContent, setAccContent] = React.useState('');
+  const [ytUrl, setYtUrl] = React.useState('');
   const [btnText, setBtnText] = React.useState('');
   const [btnLink, setBtnLink] = React.useState('');
   const [btnPadding, setBtnPadding] = React.useState('10px 24px');
@@ -61,10 +65,24 @@ export default function RichText({ value, onChange, placeholder = 'Type here…'
   const [btnBg, setBtnBg] = React.useState('#2563eb');
   const [btnColor, setBtnColor] = React.useState('#ffffff');
   const [btnRadius, setBtnRadius] = React.useState('8px');
-  const [accModal, setAccModal] = React.useState(false);
-  const [accTitle, setAccTitle] = React.useState('');
-  const [accContent, setAccContent] = React.useState('');
-  const [imageAltEdit, setImageAltEdit] = React.useState('');
+
+  // ── Insertion Handlers (Move to top) ──
+  const handleYouTubeInsert = React.useCallback(() => {
+    setYtUrl('');
+    setYtModal(true);
+  }, []);
+
+  const handleButtonInsert = React.useCallback(() => {
+    setBtnText('');
+    setBtnLink('');
+    setBtnModal(true);
+  }, []);
+
+  const handleAccordionInsert = React.useCallback(() => {
+    setAccTitle('');
+    setAccContent('');
+    setAccModal(true);
+  }, []);
 
   React.useEffect(() => {
     let mounted = true;
@@ -175,11 +193,6 @@ export default function RichText({ value, onChange, placeholder = 'Type here…'
     }
   };
 
-  // ── YouTube embed ──
-  const handleYouTubeInsert = React.useCallback(() => {
-    setYtUrl('');
-    setYtModal(true);
-  }, []);
 
   const confirmYouTube = () => {
     const quill = quillRef.current?.getEditor?.();
@@ -210,7 +223,7 @@ export default function RichText({ value, onChange, placeholder = 'Type here…'
     setYtUrl('');
   };
 
-  // ── Button insert ──
+
   const confirmButton = () => {
     const quill = quillRef.current?.getEditor?.();
     if (!quill || !btnText.trim() || !btnLink.trim()) { setBtnModal(false); return; }
@@ -224,11 +237,6 @@ export default function RichText({ value, onChange, placeholder = 'Type here…'
     setBtnModal(false);
   };
 
-  const handleAccordionInsert = React.useCallback(() => {
-    setAccTitle('');
-    setAccContent('');
-    setAccModal(true);
-  }, []);
 
   const confirmAccordion = () => {
     const quill = quillRef.current?.getEditor?.();

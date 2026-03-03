@@ -1290,7 +1290,7 @@ export default function Booking() {
       booking_time:
         selectedSlot?.start_time || selectedSlot?.startTime || selectedSlot?.slot_start_time || null,
       unitPrice: selectedMeta.price || 0,
-      dateLabel: toYMD(sel.date),
+      dateLabel: dayjs(sel.date).format('DD-MMM-YYYY'),
       slot_id: item_type === 'Attraction' ? slotId : null,
       combo_slot_id: item_type === 'Combo' ? slotId : null,
       attraction_id: item_type === 'Attraction' ? getAttrId(selectedAttraction) : null,
@@ -1785,7 +1785,7 @@ export default function Booking() {
     const d = dayjs(date);
     if (date === todayYMD()) return 'More Dates';
     if (date === dayjs().add(1, 'day').format('YYYY-MM-DD')) return 'More Dates';
-    return d.format('D MMM');
+    return d.format('DD-MMM-YYYY');
   };
 
   const onOpenDrawerForSelected = () => {

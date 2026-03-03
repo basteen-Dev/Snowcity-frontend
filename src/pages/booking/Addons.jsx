@@ -135,14 +135,22 @@ export default function Addons({
                         <button
                             type="button"
                             onClick={handleNext}
-                            className="px-10 py-3.5 rounded-xl font-bold shadow-md transition-all hover:bg-sky-700 active:scale-[0.98] bg-sky-600 text-white"
+                            disabled={!hasCartItems}
+                            className={`px-10 py-3.5 rounded-xl font-bold shadow-md transition-all active:scale-[0.98] ${!hasCartItems
+                                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
+                                    : 'bg-sky-600 text-white hover:bg-sky-700'
+                                }`}
                         >
                             Continue
                         </button>
                         <button
                             type="button"
                             onClick={handleNext}
-                            className="text-sm font-semibold text-gray-400 hover:text-sky-600 transition-all underline underline-offset-4"
+                            disabled={!hasCartItems}
+                            className={`text-sm font-semibold transition-all underline underline-offset-4 ${!hasCartItems
+                                    ? 'text-gray-300 cursor-not-allowed no-underline'
+                                    : 'text-gray-400 hover:text-sky-600'
+                                }`}
                         >
                             Skip Add-ons
                         </button>
