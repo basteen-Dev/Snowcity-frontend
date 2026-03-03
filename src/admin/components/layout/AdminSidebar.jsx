@@ -26,6 +26,7 @@ import {
   Boxes,
   Tag,
   Layers,
+  Megaphone,
 } from 'lucide-react';
 import { useAdminRole } from '../../hooks/useAdminRole';
 
@@ -92,7 +93,7 @@ export default function AdminSidebar({ collapsed, onClose }) {
       sections.push({
         key: 'Dashboard',
         label: 'Overview',
-        items: [{ to: '/admin', end: true, label: 'Executive Dashboard', icon: LayoutDashboard }],
+        items: [{ to: '/admin', end: true, label: 'Dashboard', icon: LayoutDashboard }],
       });
     }
 
@@ -148,6 +149,7 @@ export default function AdminSidebar({ collapsed, onClose }) {
           { to: '/admin/catalog/combos', label: 'Combos', icon: Boxes },
           { to: '/admin/catalog/addons', label: 'Add-ons', icon: Gift },
           { to: '/admin/catalog/offers', label: 'Offers', icon: BadgePercent },
+          { to: '/admin/catalog/announcements', label: 'Announcements', icon: Megaphone },
           { to: '/admin/catalog/dynamic-pricing', label: 'Dynamic Pricing', icon: DollarSign },
           { to: '/admin/catalog/coupons', label: 'Coupons', icon: Ticket },
           { to: '/admin/catalog/banners', label: 'Banners', icon: ImageIcon },
@@ -165,6 +167,7 @@ export default function AdminSidebar({ collapsed, onClose }) {
           { to: '/admin/catalog/attractions', label: 'Attractions', icon: Gift },
           { to: '/admin/catalog/combos', label: 'Combos', icon: Boxes },
           { to: '/admin/catalog/offers', label: 'Offers', icon: BadgePercent },
+          { to: '/admin/catalog/announcements', label: 'Announcements', icon: Megaphone },
           { to: '/admin/catalog/dynamic-pricing', label: 'Dynamic Pricing', icon: DollarSign },
         ],
       });
@@ -177,6 +180,7 @@ export default function AdminSidebar({ collapsed, onClose }) {
           { to: '/admin/catalog/attractions', label: 'Attractions', icon: Gift },
           { to: '/admin/catalog/combos', label: 'Combos', icon: Boxes },
           { to: '/admin/catalog/addons', label: 'Add-ons', icon: Gift },
+          { to: '/admin/catalog/announcements', label: 'Announcements', icon: Megaphone },
           { to: '/admin/catalog/banners', label: 'Banners', icon: ImageIcon },
           { to: '/admin/catalog/gallery', label: 'Gallery', icon: ImageIcon },
           { to: '/admin/catalog/pages', label: 'Pages', icon: FileText },

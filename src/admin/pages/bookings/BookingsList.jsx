@@ -472,7 +472,7 @@ export default function BookingsList() {
               </select>
               <select className={selectClasses} value={filters.booking_status} onChange={(e) => handleSelectChange('booking_status', e.target.value)}>
                 <option value="">Booking: All</option>
-                <option>Booked</option><option>Redeemed</option><option>Expired</option><option>Cancelled</option>
+                <option>Booked</option><option>Redeemed</option><option>Expired</option>
               </select>
               <select className={selectClasses} value={filters.item_type} onChange={(e) => handleSelectChange('item_type', e.target.value)}>
                 <option value="">Item Type: All</option>
@@ -492,7 +492,7 @@ export default function BookingsList() {
               <select className={selectClasses} value={filters.combo_id} onChange={(e) => handleSelectChange('combo_id', e.target.value)} disabled={options.status === 'loading'}>
                 <option value="">{options.status === 'loading' ? 'Loading…' : 'All Combos'}</option>
                 {options.status === 'succeeded' && (options.combos || []).map((c) => (
-                  <option key={c.combo_id || c.id} value={c.combo_id || c.id}>{c.title || c.name || `Combo #${c.combo_id || c.id}`}</option>
+                  <option key={c.combo_id || c.id} value={c.combo_id || c.id}>{c.name || c.title || `Combo #${c.combo_id || c.id}`}</option>
                 ))}
               </select>
               <select className={selectClasses} value={filters.offer_id} onChange={(e) => handleSelectChange('offer_id', e.target.value)} disabled={options.status === 'loading'}>
@@ -595,7 +595,6 @@ export default function BookingsList() {
               const colorMap = {
                 Booked: 'border-blue-300 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-700',
                 Redeemed: 'border-emerald-300 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-700',
-                Cancelled: 'border-gray-300 bg-gray-50 text-gray-600 dark:bg-neutral-800 dark:text-neutral-400 dark:border-neutral-600',
               };
               return (
                 <select
@@ -607,7 +606,6 @@ export default function BookingsList() {
                 >
                   <option value="Booked">Booked</option>
                   <option value="Redeemed">Redeemed</option>
-                  <option value="Cancelled">Cancelled</option>
                 </select>
               );
             }

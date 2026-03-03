@@ -30,7 +30,6 @@ const statusBadge = (status, type = 'booking') => {
   const colors = {
     Booked: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
     Redeemed: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
-    Cancelled: 'bg-gray-100 text-gray-600 dark:bg-neutral-800 dark:text-neutral-400',
     Completed: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
     Pending: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
     Failed: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
@@ -162,7 +161,7 @@ export default function BookingDetails() {
   const orderRef = b.order_ref || b.booking_ref || `#${id}`;
   const user = b.user || {};
   const payment = b.payment || {};
-  const items = b.items || [];
+  const items = (b.items || []).filter(it => !it.parent_booking_id);
   const activity = b.activity || [];
   const bookingDate = b.booking_date;
   const bookingStatus = b.booking_status || items[0]?.booking_status || '—';
@@ -197,9 +196,8 @@ export default function BookingDetails() {
           {/* Status update dropdown */}
           <select
             className={`rounded-xl border px-3 py-2 text-sm font-semibold cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-all ${bookingStatus === 'Redeemed' ? 'border-emerald-300 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-700'
-              : bookingStatus === 'Cancelled' ? 'border-gray-300 bg-gray-50 text-gray-600 dark:bg-neutral-800 dark:text-neutral-400 dark:border-neutral-600'
-                : bookingStatus === 'Expired' ? 'border-orange-300 bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-700'
-                  : 'border-blue-300 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-700'
+              : bookingStatus === 'Expired' ? 'border-orange-300 bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-700'
+                : 'border-blue-300 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-700'
               } ${statusUpdating ? 'opacity-50 pointer-events-none' : ''}`}
             value={bookingStatus}
             onChange={async (e) => {
@@ -223,14 +221,7 @@ export default function BookingDetails() {
           >
             <option value="Booked">Booked</option>
             <option value="Redeemed">Redeemed</option>
-            <option value="Cancelled">Cancelled</option>
           </select>
-          <button
-            onClick={() => dispatch(cancelAdminBooking({ id }))}
-            className="rounded-xl border border-red-200 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition dark:border-red-800 dark:hover:bg-red-900/20"
-          >
-            <XCircle size={14} className="inline mr-1" /> Cancel
-          </button>
           <button
             onClick={() => dispatch(getAdminBooking({ id }))}
             className="rounded-xl border border-gray-200 px-4 py-2 text-sm hover:bg-gray-50 transition dark:border-neutral-700 dark:hover:bg-neutral-800"
@@ -468,6 +459,6 @@ export default function BookingDetails() {
           )}
         </div>
       </Card>
-    </div>
+    </div >
   );
 }

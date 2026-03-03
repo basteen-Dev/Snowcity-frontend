@@ -117,93 +117,94 @@ export default function OffersList() {
         </select>
       </FilterBar>
 
-      <AdminTable
-        keyField="offer_id"
-        columns={[
-          {
-            key: 'image_url',
-            title: 'Image',
-            render: (row) => (
-              <img
-                src={imgSrc(row)}
-                alt={row.title || 'Offer'}
-                className="w-10 h-10 object-cover rounded-lg shadow-sm border border-gray-200 dark:border-neutral-700"
-                onError={(e) => { e.target.src = '/placeholder-image.png'; }}
-              />
-            )
-          },
-          { key: 'title', title: 'Title' },
-          {
-            key: 'discount_summary',
-            title: 'Discount',
-            render: (row) => {
-              if ((row.rule_type || '').toLowerCase() === 'buy_x_get_y') {
-                const r = Array.isArray(row.rules) && row.rules[0] ? row.rules[0] : null;
-                if (!r) return 'Buy X get Y';
-                const buyQty = r.buy_qty || 1;
-                const getQty = r.get_qty || 1;
-                const getType = (r.get_target_type || 'attraction');
-                const getId = r.get_target_id || '';
-                const discountType = r.get_discount_type || '';
-                const discountVal = r.get_discount_value || '';
-                const targetLabel = getType + (getId ? ` #${getId}` : '');
-                if (!discountType) return `Buy ${buyQty} get ${getQty} ${targetLabel} (Free)`;
-                if (discountType === 'amount') return `Buy ${buyQty} get ${getQty} ${targetLabel} (₹${discountVal})`;
-                return `Buy ${buyQty} get ${getQty} ${targetLabel} (${discountVal}%)`;
+      <div className="mt-8">
+        <AdminTable
+          keyField="offer_id"
+          columns={[
+            {
+              key: 'image_url',
+              title: 'Image',
+              render: (row) => (
+                <img
+                  src={imgSrc(row)}
+                  alt={row.title || 'Offer'}
+                  className="w-10 h-10 object-cover rounded-lg shadow-sm border border-gray-200 dark:border-neutral-700"
+                  onError={(e) => { e.target.src = '/placeholder-image.png'; }}
+                />
+              )
+            },
+            { key: 'title', title: 'Title' },
+            {
+              key: 'discount_summary',
+              title: 'Discount',
+              render: (row) => {
+                if ((row.rule_type || '').toLowerCase() === 'buy_x_get_y') {
+                  const r = Array.isArray(row.rules) && row.rules[0] ? row.rules[0] : null;
+                  if (!r) return 'Buy X get Y';
+                  const buyQty = r.buy_qty || 1;
+                  const getQty = r.get_qty || 1;
+                  const getType = (r.get_target_type || 'attraction');
+                  const getId = r.get_target_id || '';
+                  const discountType = r.get_discount_type || '';
+                  const discountVal = r.get_discount_value || '';
+                  const targetLabel = getType + (getId ? ` #${getId}` : '');
+                  if (!discountType) return `Buy ${buyQty} get ${getQty} ${targetLabel} (Free)`;
+                  if (discountType === 'amount') return `Buy ${buyQty} get ${getQty} ${targetLabel} (₹${discountVal})`;
+                  return `Buy ${buyQty} get ${getQty} ${targetLabel} (${discountVal}%)`;
+                }
+                const type = (row.discount_type || 'percent').toLowerCase();
+                const value = Number(row.discount_value ?? row.discount_percent ?? 0);
+                if (!value) return '—';
+                return type === 'amount' ? `₹${value}` : `${value}%`;
               }
-              const type = (row.discount_type || 'percent').toLowerCase();
-              const value = Number(row.discount_value ?? row.discount_percent ?? 0);
-              if (!value) return '—';
-              return type === 'amount' ? `₹${value}` : `${value}%`;
+            },
+            { key: 'rule_type', title: 'Rule' },
+            { key: 'valid_from', title: 'From' },
+            { key: 'valid_to', title: 'To' },
+            {
+              title: 'Status',
+              render: (row) => <StatusBadge status={row?.active ? 'active' : 'inactive'} />
+            },
+            {
+              key: '__actions',
+              title: 'Actions',
+              render: (row) => (
+                <div className="flex items-center gap-1.5">
+                  <button
+                    className={`rounded-lg px-2.5 py-1 text-xs font-medium transition-colors ${row.active ? 'border border-red-200 text-red-600 hover:bg-red-50 dark:border-red-800 dark:hover:bg-red-900/20' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
+                    onClick={(e) => toggleActive(row, e)}
+                  >
+                    {row.active ? 'Deactivate' : 'Activate'}
+                  </button>
+                  <button
+                    className="rounded-lg border border-gray-300 dark:border-neutral-700 px-2.5 py-1 text-xs font-medium text-gray-700 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors"
+                    onClick={(e) => viewSlots(row, e)}
+                  >
+                    Slots
+                  </button>
+                  <button
+                    className="rounded-lg border border-red-200 dark:border-red-800 px-2.5 py-1 text-xs font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                    onClick={(e) => remove(row, e)}
+                  >
+                    Delete
+                  </button>
+                </div>
+              )
             }
-          },
-          { key: 'rule_type', title: 'Rule' },
-          { key: 'valid_from', title: 'From' },
-          { key: 'valid_to', title: 'To' },
-          {
-            key: 'active',
-            title: 'Status',
-            render: (row) => <StatusBadge status={row?.active ? 'active' : 'inactive'} />
-          },
-          {
-            key: '__actions',
-            title: 'Actions',
-            render: (row) => (
-              <div className="flex items-center gap-1.5">
-                <button
-                  className={`rounded-lg px-2.5 py-1 text-xs font-medium transition-colors ${row.active ? 'border border-red-200 text-red-600 hover:bg-red-50 dark:border-red-800 dark:hover:bg-red-900/20' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
-                  onClick={(e) => toggleActive(row, e)}
-                >
-                  {row.active ? 'Deactivate' : 'Activate'}
-                </button>
-                <button
-                  className="rounded-lg border border-gray-300 dark:border-neutral-700 px-2.5 py-1 text-xs font-medium text-gray-700 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors"
-                  onClick={(e) => viewSlots(row, e)}
-                >
-                  Slots
-                </button>
-                <button
-                  className="rounded-lg border border-red-200 dark:border-red-800 px-2.5 py-1 text-xs font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                  onClick={(e) => remove(row, e)}
-                >
-                  Delete
-                </button>
-              </div>
-            )
-          }
-        ]}
-        rows={state.items}
-        onRowClick={(row) => navigate(`/admin/catalog/offers/${row.offer_id || row.id}`)}
-        empty={state.status === 'loading' ? 'Loading…' : 'No offers found'}
-      />
+          ]}
+          rows={state.items}
+          onRowClick={(row) => navigate(`/admin/catalog/offers/${row.offer_id || row.id}`)}
+          empty={state.status === 'loading' ? 'Loading…' : 'No offers found'}
+        />
 
-      <TablePagination
-        count={totalCount}
-        page={state.page}
-        rowsPerPage={state.limit}
-        onPageChange={(p) => load(p)}
-        onRowsPerPageChange={(l) => { setState((s) => ({ ...s, limit: l })); setTimeout(() => load(1), 0); }}
-      />
+        <TablePagination
+          count={totalCount}
+          page={state.page}
+          rowsPerPage={state.limit}
+          onPageChange={(p) => load(p)}
+          onRowsPerPageChange={(l) => { setState((s) => ({ ...s, limit: l })); setTimeout(() => load(1), 0); }}
+        />
+      </div>
 
       {/* Slot Inspector Modal */}
       {slotInspector.open && (

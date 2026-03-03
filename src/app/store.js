@@ -11,6 +11,7 @@ import blogsReducer from '../features/blogs/blogsSlice';
 import bookingsReducer from '../features/bookings/bookingsSlice';
 import addonsReducer from '../features/addons/addonsSlice';
 import galleryReducer from '../features/gallery/gallerySlice';
+import announcementsReducer from '../features/announcements/announcementsSlice';
 
 import { setAuthHandlers, setAuthToken } from '../services/apiClient';
 
@@ -96,7 +97,8 @@ export const store = configureStore({
     blogs: blogsReducer,
     bookings: bookingsReducer,
     addons: addonsReducer,
-    gallery: galleryReducer
+    gallery: galleryReducer,
+    announcements: announcementsReducer
   },
   preloadedState,
   middleware: (getDefault) =>

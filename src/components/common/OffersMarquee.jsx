@@ -67,7 +67,10 @@ export default function OffersMarquee({ items }) {
               <span className="text-xl mr-3">{promo.icon}</span>
               <div className="flex flex-col text-left">
                 <div className="flex items-center gap-2">
-                  <span className="font-semibold text-sm sm:text-base text-sky-900">{promo.label}</span>
+                  <span
+                    className="font-semibold text-sm sm:text-base text-sky-900"
+                    dangerouslySetInnerHTML={{ __html: promo.label }}
+                  />
                   {promo.badge ? (
                     <span className="text-[11px] uppercase font-bold bg-sky-100 text-sky-800 px-2 py-0.5 rounded-xl border border-sky-300">
                       {promo.badge}
@@ -92,6 +95,10 @@ export default function OffersMarquee({ items }) {
         }
         .animate-offers-marquee {
           animation: offersMarquee 25s linear infinite;
+        }
+        .animate-offers-marquee p {
+          margin: 0 !important;
+          display: inline !important;
         }
       `}</style>
     </section>

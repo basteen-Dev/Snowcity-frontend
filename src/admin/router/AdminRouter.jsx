@@ -33,6 +33,7 @@ const AddonForm = lazy(() => import('../pages/catalog/AddonForm'));
 
 const OffersList = lazy(() => import('../pages/catalog/OffersList'));
 const OfferForm = lazy(() => import('../pages/catalog/OfferForm'));
+const AnnouncementsList = lazy(() => import('../pages/catalog/AnnouncementsList'));
 
 
 const CouponsList = lazy(() => import('../pages/catalog/CouponsList'));
@@ -258,6 +259,7 @@ export default function AdminRouter() {
               <OfferForm />
             </RequireRole>
           } />
+          <Route path="catalog/announcements" element={<AnnouncementsList />} />
 
           {/* Dynamic Pricing — SuperAdmin + GM + Staff */}
           <Route path="catalog/dynamic-pricing" element={

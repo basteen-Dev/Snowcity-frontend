@@ -160,8 +160,8 @@ body {
 /* These styles ensure CMS content renders exactly like the editor */
 .cms-content {
   overflow-wrap: break-word;
-  word-wrap: break-word;
-  word-break: break-word;
+  word-break: normal;
+  white-space: normal;
 }
 
 .cms-content {

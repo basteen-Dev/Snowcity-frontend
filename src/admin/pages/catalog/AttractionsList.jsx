@@ -18,8 +18,6 @@ export default function AttractionsList() {
     status: 'idle',
     items: [],
     error: null,
-    q: '',
-    active: '',
     page: 1,
     limit: 20,
     meta: null,
@@ -31,7 +29,7 @@ export default function AttractionsList() {
     setState((s) => ({ ...s, status: 'loading', error: null, page }));
     try {
       const res = await adminApi.get(A.attractions(), {
-        params: { q: state.q || undefined, active: state.active || undefined, page, limit: state.limit }
+        params: { page, limit: state.limit }
       });
       const items = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
       setState((s) => ({ ...s, status: 'succeeded', items, meta: res?.meta || null, page }));
@@ -115,23 +113,6 @@ export default function AttractionsList() {
 
       {!state.reorder ? (
         <>
-          <FilterBar onApply={() => load(1)} onReset={() => { setState((s) => ({ ...s, q: '', active: '' })); setTimeout(() => load(1), 0); }} loading={state.status === 'loading'}>
-            <input
-              className="w-full rounded-lg border border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 text-sm dark:text-neutral-200 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-              placeholder="Search by title…"
-              value={state.q}
-              onChange={(e) => setState((s) => ({ ...s, q: e.target.value }))}
-            />
-            <select
-              className="w-full rounded-lg border border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 text-sm dark:text-neutral-200 focus:ring-1 focus:ring-blue-500"
-              value={state.active}
-              onChange={(e) => setState((s) => ({ ...s, active: e.target.value }))}
-            >
-              <option value="">Status: All</option>
-              <option value="true">Active</option>
-              <option value="false">Inactive</option>
-            </select>
-          </FilterBar>
 
           <AdminTable
             keyField="attraction_id"

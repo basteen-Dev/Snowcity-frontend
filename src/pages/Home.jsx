@@ -9,6 +9,7 @@ import { fetchOffers } from '../features/offers/offersSlice';
 import { fetchCoupons } from '../features/coupons/couponsSlice';
 import { fetchPages } from '../features/pages/pagesSlice';
 import { fetchBlogs } from '../features/blogs/blogsSlice';
+import { fetchActiveAnnouncements } from '../features/announcements/announcementsSlice';
 
 import HeroCarousel from '../components/hero/HeroCarousel';
 import AttractionsCarousel from '../components/carousels/AttractionsCarousel';
@@ -17,7 +18,6 @@ import OffersMarquee from '../components/common/OffersMarquee';
 import PlanVisitSection from '../components/common/PlanVisitSection';
 import Testimonials from '../components/common/Testimonials';
 import VideoBlock from '../components/common/VideoBlock';
-import InstagramFeed from '../components/common/InstagramFeed';
 import BlogCard from '../components/cards/BlogCard';
 import AttractionCard from '../components/cards/AttractionCard';
 import ComboCard from '../components/cards/ComboCard';
@@ -53,6 +53,7 @@ export default function Home() {
   const coupons = useSelector((s) => s.coupons);
   const pages = useSelector((s) => s.pages);
   const blogs = useSelector((s) => s.blogs);
+  const announcements = useSelector((s) => s.announcements);
 
   // explicitly manage SEO for the home page
   usePageSeo({
@@ -75,6 +76,7 @@ export default function Home() {
         dispatch(fetchCoupons({ active: true, limit: 100 }));
         dispatch(fetchPages());
         dispatch(fetchBlogs());
+        dispatch(fetchActiveAnnouncements());
       });
     });
     return () => (typeof id === 'number' ? clearTimeout(id) : window.cancelIdleCallback?.(id));
@@ -94,15 +96,15 @@ export default function Home() {
 
   const marqueeItems = React.useMemo(() => {
     const entries = [];
-    if (offerItems?.length) {
-      offerItems.forEach((offer) => {
-        const label = offer.name || offer.title || `Offer`;
-        const discount = offer.discount_percent || offer.discountPercent;
-        const short = offer.short_description || offer.subtitle || offer.description || '';
-        const value = discount ? `Save ${discount}%` : offer.discount_value ? `Flat ₹${offer.discount_value} off` : '';
-        entries.push([label, value, short].filter(Boolean).join(' • '));
+
+    // 1. Standalone Dedicated Announcements (Priority)
+    if (announcements.items?.length) {
+      announcements.items.forEach(ann => {
+        if (ann.content?.trim()) entries.push(ann.content.trim());
       });
     }
+
+    // 2. Coupons (existing logic)
     if (couponItems?.length) {
       couponItems.forEach((coupon) => {
         const code = (coupon.code || '').toString().toUpperCase();
@@ -125,7 +127,7 @@ export default function Home() {
       });
     }
     return entries;
-  }, [offerItems, couponItems]);
+  }, [announcements.items, couponItems]);
 
   // brand colors (still used for HeroCarousel waveColor)
   const arcticTop = "#0b1a33";      // deep arctic blue
@@ -228,10 +230,6 @@ export default function Home() {
           <PlanVisitSection />
         </LazyVisible>
 
-        {/* Instagram */}
-        <LazyVisible minHeight={240} placeholder={<div className="py-6" />}>
-          <InstagramFeed />
-        </LazyVisible>
 
         {/* Marquee animation styles */}
         <style>{`

@@ -14,8 +14,8 @@ const statusCopy = {
     desc: 'Please stay on this page while we generate your ticket.',
   },
   success: {
-    title: 'Payment Successful',
-    desc: 'Your booking is confirmed. Download your ticket below or visit My Bookings anytime.',
+    title: 'Booking Confirmed!',
+    desc: 'Download your ticket below or visit My Bookings anytime.',
   },
 };
 
@@ -135,8 +135,8 @@ export default function PaymentSuccess() {
           <div className="mx-auto w-20 h-20 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 shadow-inner">
             <CheckCircle size={42} strokeWidth={2.2} />
           </div>
-          <h1 className="text-3xl font-semibold text-slate-900 mt-6">Payment Successful</h1>
-          <p className="text-slate-600 mt-2 text-base">
+          <h1 className="text-3xl font-bold text-slate-900 mt-6 bg-yellow-100 inline-block px-4 py-1 rounded-lg">Booking Confirmed!</h1>
+          <p className="text-slate-600 mt-4 text-base">
             Your booking ID is <strong>{bookingId || cartRef}</strong>.
             <br />
             We are generating your tickets and will send them to your email shortly.
@@ -206,14 +206,14 @@ export default function PaymentSuccess() {
 
         <div className="mt-8 p-4 rounded-2xl bg-slate-50 text-left flex flex-col gap-3 text-sm text-slate-600">
           <div className="flex flex-wrap gap-3 text-xs uppercase tracking-wide text-slate-400">
-            <span>Order Ref: <strong className="text-slate-700">{cartRef || booking?.order_ref || '—'}</strong></span>
+            <span>Booking Id: <strong className="text-slate-700">{cartRef || booking?.order_ref || '—'}</strong></span>
             {bookingId && <span>Booking ID: <strong className="text-slate-700">{bookingId}</strong></span>}
             {tranCtx && <span>Txn ID: <strong className="text-slate-700">{tranCtx}</strong></span>}
           </div>
           <div className="flex items-center gap-3 text-sm">
             <PhoneCall size={18} className="text-blue-500" />
             <div>
-              Need help? Reach us at <a href="tel:+919159520237" className="text-blue-600 font-medium">+91 91595 20237</a> or write to <a href="mailto:bookings@snowcity.com" className="text-blue-600 font-medium">bookings@snowcity.com</a>.
+              Need help? Reach us at <a href="tel:+917829550000" className="text-blue-600 font-medium">+91 78295 50000</a> or write to <a href="mailto:info@snowcityblr.com" className="text-blue-600 font-medium">info@snowcityblr.com</a>.
             </div>
           </div>
         </div>
