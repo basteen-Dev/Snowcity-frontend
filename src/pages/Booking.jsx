@@ -2148,7 +2148,7 @@ export default function Booking() {
                         step === 4
                           ? creating?.status === 'loading' || paymentLoading || !hasCartItems
                           : step === 3
-                            ? !otp.verified
+                            ? !otp.verified || !hasCartItems
                             : step === 2
                               ? totalAddonCount === 0 || !hasCartItems
                               : !hasCartItems && !selectionReady
@@ -2156,7 +2156,7 @@ export default function Booking() {
                       className={`ml-auto inline-flex items-center justify-center gap-2 rounded-xl px-6 py-2.5 text-sm font-semibold transition-all shadow-md active:scale-[0.98] ${(step === 4
                         ? creating?.status === 'loading' || paymentLoading || !hasCartItems
                         : step === 3
-                          ? !otp.verified
+                          ? !otp.verified || !hasCartItems
                           : step === 2
                             ? totalAddonCount === 0 || !hasCartItems
                             : !hasCartItems && !selectionReady)
