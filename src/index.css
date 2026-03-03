@@ -280,6 +280,201 @@ body {
   text-align: justify;
 }
 
+/* ── Full Quill & Blog Content Styling ── */
+.blog-content {
+  max-width: 850px;
+  margin: auto;
+  font-family: 'Inter', sans-serif;
+  line-height: 1.8;
+  font-size: 17px;
+  color: #1f2937;
+}
+
+.blog-content h1,
+.blog-content h2,
+.blog-content h3 {
+  font-family: 'Red Hat Display', sans-serif;
+  font-weight: 800;
+  color: #111827;
+  line-height: 1.25;
+  margin-top: 3rem;
+  margin-bottom: 1.5rem;
+}
+
+.blog-content h1 {
+  font-size: 2.75rem;
+}
+
+.blog-content h2 {
+  font-size: 2.15rem;
+}
+
+.blog-content h3 {
+  font-size: 1.6rem;
+}
+
+.blog-content p {
+  margin-bottom: 1.5rem;
+}
+
+/* Handle empty lines correctly (Quill's <p><br></p>) */
+.blog-content p:empty,
+.blog-content p br:only-child {
+  margin-bottom: 0.75rem;
+}
+
+.blog-content ul,
+.blog-content ol {
+  margin-bottom: 1.5rem;
+  padding-left: 1.5rem;
+}
+
+.blog-content li {
+  margin-bottom: 0.5rem;
+}
+
+/* Quill Alignment Classes (Legacy/Backup support) */
+.blog-content .ql-align-center {
+  text-align: center;
+}
+
+.blog-content .ql-align-right {
+  text-align: right;
+}
+
+.blog-content .ql-align-justify {
+  text-align: justify;
+}
+
+/* Quill Font Sizes */
+.blog-content .ql-size-small {
+  font-size: 0.85em;
+}
+
+.blog-content .ql-size-large {
+  font-size: 1.5em;
+}
+
+.blog-content .ql-size-huge {
+  font-size: 2.5em;
+}
+
+/* Quill Indents */
+.blog-content .ql-indent-1 {
+  padding-left: 3rem;
+}
+
+.blog-content .ql-indent-2 {
+  padding-left: 6rem;
+}
+
+.blog-content .ql-indent-3 {
+  padding-left: 9rem;
+}
+
+.blog-content img {
+  max-width: 100%;
+  height: auto !important;
+  border-radius: 12px;
+  margin: 2.5rem auto;
+  display: block;
+}
+
+/* Accordion / Details styling */
+.cms-accordion {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  margin: 1.5rem 0;
+  overflow: hidden;
+  background: white;
+  transition: all 0.3s ease;
+}
+
+.cms-accordion[open] {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border-color: #d1d5db;
+}
+
+.cms-accordion summary {
+  padding: 1.25rem;
+  background: #f9fafb;
+  font-weight: 700;
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  outline: none;
+  user-select: none;
+}
+
+.cms-accordion summary::-webkit-details-marker {
+  display: none;
+}
+
+.cms-accordion summary::after {
+  content: "+";
+  font-size: 1.5rem;
+  font-weight: 300;
+  color: #6b7280;
+  transition: transform 0.3s ease;
+}
+
+.cms-accordion[open] summary::after {
+  content: "−";
+  transform: rotate(180deg);
+}
+
+.cms-accordion .cms-accordion-content {
+  padding: 1.25rem;
+  border-top: 1px solid #f1f5f9;
+  line-height: 1.6;
+  color: #4b5563;
+}
+
+/* Author Section Styling */
+.author-card {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  padding: 2rem;
+  background: #f9fafb;
+  border-radius: 24px;
+  margin-top: 4rem;
+  border: 1px solid #f1f5f9;
+}
+
+.author-image {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 4px solid white;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.author-info h4 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #111827;
+  margin-bottom: 0.5rem;
+}
+
+.author-info p {
+  font-size: 0.95rem;
+  color: #6b7280;
+  line-height: 1.6;
+}
+
+@media (max-width: 640px) {
+  .author-card {
+    flex-direction: column;
+    text-align: center;
+    gap: 1.25rem;
+  }
+}
+
 /* Force list styling even for plain paragraphs if requested */
 .cms-list-style p {
   position: relative;

@@ -18,6 +18,8 @@ export default function BlogForm() {
     title: '',
     slug: '',
     author: '',
+    author_image_url: '',
+    author_description: '',
     active: true,
     image_url: '',
     image_alt: '',
@@ -219,7 +221,31 @@ export default function BlogForm() {
                 />
               </div>
             </div>
-            <div className="mt-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 pt-6 border-t border-gray-100 dark:border-neutral-700">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">
+                  Author Profile Image
+                </label>
+                <ImageUploader
+                  value={form.author_image_url}
+                  onChange={(url) => onChange({ author_image_url: url })}
+                  folder="authors"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">
+                  Author Bio / Description
+                </label>
+                <textarea
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-neutral-700 dark:text-neutral-100"
+                  rows={4}
+                  value={form.author_description || ''}
+                  onChange={(e) => onChange({ author_description: e.target.value })}
+                  placeholder="A short bio about the author..."
+                />
+              </div>
+            </div>
+            <div className="mt-6">
               <label className="inline-flex items-center">
                 <input
                   type="checkbox"

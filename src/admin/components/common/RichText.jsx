@@ -56,6 +56,14 @@ export default function RichText({ value, onChange, placeholder = 'Type here…'
   const [btnModal, setBtnModal] = React.useState(false);
   const [btnText, setBtnText] = React.useState('');
   const [btnLink, setBtnLink] = React.useState('');
+  const [btnPadding, setBtnPadding] = React.useState('10px 24px');
+  const [btnMargin, setBtnMargin] = React.useState('1rem 0');
+  const [btnBg, setBtnBg] = React.useState('#2563eb');
+  const [btnColor, setBtnColor] = React.useState('#ffffff');
+  const [btnRadius, setBtnRadius] = React.useState('8px');
+  const [accModal, setAccModal] = React.useState(false);
+  const [accTitle, setAccTitle] = React.useState('');
+  const [accContent, setAccContent] = React.useState('');
   const [imageAltEdit, setImageAltEdit] = React.useState('');
 
   React.useEffect(() => {
@@ -68,15 +76,24 @@ export default function RichText({ value, onChange, placeholder = 'Type here…'
           const EditorComponent = mod2.default || mod2;
           const QuillCtor = mod2.Quill || window.Quill;
           if (QuillCtor && !fontSetupRef.current) {
+            // Use inline styles instead of classes for alignment and size for better portability
+            const AlignStyle = QuillCtor.import('attributors/style/align');
+            QuillCtor.register(AlignStyle, true);
+
+            const SizeStyle = QuillCtor.import('attributors/style/size');
+            SizeStyle.whitelist = SIZE_WHITELIST;
+            QuillCtor.register(SizeStyle, true);
+
+            const ColorStyle = QuillCtor.import('attributors/style/color');
+            QuillCtor.register(ColorStyle, true);
+
+            const BackgroundStyle = QuillCtor.import('attributors/style/background');
+            QuillCtor.register(BackgroundStyle, true);
+
             const Font = QuillCtor.import?.('formats/font');
             if (Font) {
               Font.whitelist = FONT_WHITELIST;
               QuillCtor.register(Font, true);
-            }
-            const Size = QuillCtor.import?.('formats/size');
-            if (Size) {
-              Size.whitelist = SIZE_WHITELIST;
-              QuillCtor.register(Size, true);
             }
             fontSetupRef.current = true;
           }
@@ -194,22 +211,42 @@ export default function RichText({ value, onChange, placeholder = 'Type here…'
   };
 
   // ── Button insert ──
-  const handleButtonInsert = React.useCallback(() => {
-    setBtnText('');
-    setBtnLink('');
-    setBtnModal(true);
-  }, []);
-
   const confirmButton = () => {
     const quill = quillRef.current?.getEditor?.();
     if (!quill || !btnText.trim() || !btnLink.trim()) { setBtnModal(false); return; }
 
     const range = quill.getSelection(true);
     const insertAt = range ? range.index : quill.getLength();
-    const buttonHtml = `<p><a href="${btnLink.trim()}" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:10px 24px;background:linear-gradient(135deg,#2563eb,#4f46e5);color:#fff;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">${btnText.trim()}</a></p>`;
+    const style = `display:inline-block;padding:${btnPadding};margin:${btnMargin};background:${btnBg};color:${btnColor};border-radius:${btnRadius};text-decoration:none;font-weight:600;font-size:14px;`;
+    const buttonHtml = `<p><a href="${btnLink.trim()}" target="_blank" rel="noopener noreferrer" style="${style}">${btnText.trim()}</a></p>`;
     quill.clipboard.dangerouslyPasteHTML(insertAt, buttonHtml, 'user');
     quill.setSelection(insertAt + 1);
     setBtnModal(false);
+  };
+
+  const handleAccordionInsert = React.useCallback(() => {
+    setAccTitle('');
+    setAccContent('');
+    setAccModal(true);
+  }, []);
+
+  const confirmAccordion = () => {
+    const quill = quillRef.current?.getEditor?.();
+    if (!quill || !accTitle.trim()) { setAccModal(false); return; }
+
+    const range = quill.getSelection(true);
+    const insertAt = range ? range.index : quill.getLength();
+    // Using a structured div for styling parity
+    const accordionHtml = `
+      <details class="cms-accordion" style="border:1px solid #e5e7eb; border-radius:12px; margin:1rem 0; overflow:hidden;">
+        <summary style="padding:1rem; background:#f9fafb; font-weight:600; cursor:pointer; list-style:none;">${accTitle.trim()}</summary>
+        <div class="cms-accordion-content" style="padding:1rem; border-top:1px solid #e5e7eb;">${accContent.trim() || 'Content goes here...'}</div>
+      </details>
+      <p><br></p>
+    `;
+    quill.clipboard.dangerouslyPasteHTML(insertAt, accordionHtml, 'user');
+    quill.setSelection(insertAt + 2);
+    setAccModal(false);
   };
 
   const insertImageUrl = React.useCallback(async (url) => {
@@ -453,6 +490,29 @@ export default function RichText({ value, onChange, placeholder = 'Type here…'
 
   return (
     <div ref={wrapperRef} className="richtext space-y-2 relative">
+      <style>{`
+        .ql-editor { 
+          min-height: ${height}px; 
+          font-family: 'Inter', sans-serif;
+          font-size: 16px;
+          line-height: 1.8;
+          color: #1f2937;
+        }
+        /* Match frontend paragraph spacing exactly to prevent "too much space" surprises */
+        .ql-editor p { margin-bottom: 1.5rem !important; }
+        .ql-editor h1, .ql-editor h2, .ql-editor h3 {
+          font-family: 'Red Hat Display', sans-serif;
+          font-weight: 800;
+          color: #111827;
+          margin-top: 2.5rem !important;
+          margin-bottom: 1.25rem !important;
+        }
+        .ql-editor h1 { font-size: 2.5rem; }
+        .ql-editor h2 { font-size: 2.0rem; }
+        .ql-editor h3 { font-size: 1.5rem; }
+        .ql-editor ul, .ql-editor ol { margin-bottom: 1.5rem; }
+        .ql-tooltip { z-index: 10000 !important; }
+      `}</style>
       {Array.isArray(gallery) && gallery.length ? (
         <div className="rounded-md border p-2 flex gap-2 overflow-x-auto mb-2 bg-white dark:bg-neutral-800">
           {gallery.map((url, i) => (
@@ -495,6 +555,14 @@ export default function RichText({ value, onChange, placeholder = 'Type here…'
             title="Insert styled button with link"
           >
             ⬡ Button
+          </button>
+          <button
+            type="button"
+            onClick={handleAccordionInsert}
+            className="px-2 py-1 rounded-md border border-green-300 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 text-xs font-medium"
+            title="Insert Accordion / FAQ"
+          >
+            ± Accordion
           </button>
         </div>
         <button
@@ -688,10 +756,6 @@ export default function RichText({ value, onChange, placeholder = 'Type here…'
       {btnModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => setBtnModal(false)}>
           <div className="bg-white dark:bg-neutral-800 rounded-2xl shadow-2xl p-6 w-full max-w-md mx-4" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-base font-semibold text-gray-900 dark:text-neutral-100 mb-1">Insert Button</h3>
-            <p className="text-xs text-gray-500 dark:text-neutral-400 mb-3">
-              Add a styled CTA button with a link.
-            </p>
             <div className="space-y-3 mb-3">
               <input
                 type="text"
@@ -704,16 +768,71 @@ export default function RichText({ value, onChange, placeholder = 'Type here…'
               <input
                 type="url"
                 className="w-full px-3 py-2 rounded-xl border border-gray-300 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-100 text-sm"
-                placeholder="Link URL (e.g. https://snowcity.com/book)"
+                placeholder="Link URL"
                 value={btnLink}
                 onChange={(e) => setBtnLink(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && confirmButton()}
               />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[10px] uppercase font-bold text-gray-400">Padding</label>
+                  <input
+                    type="text"
+                    className="w-full px-3 py-1.5 rounded-lg border text-xs dark:bg-neutral-700"
+                    value={btnPadding}
+                    onChange={(e) => setBtnPadding(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] uppercase font-bold text-gray-400">Margin</label>
+                  <input
+                    type="text"
+                    className="w-full px-3 py-1.5 rounded-lg border text-xs dark:bg-neutral-700"
+                    value={btnMargin}
+                    onChange={(e) => setBtnMargin(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] uppercase font-bold text-gray-400">Background</label>
+                  <input
+                    type="color"
+                    className="w-full h-8 p-0 border-0 bg-transparent cursor-pointer"
+                    value={btnBg}
+                    onChange={(e) => setBtnBg(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] uppercase font-bold text-gray-400">Text Color</label>
+                  <input
+                    type="color"
+                    className="w-full h-8 p-0 border-0 bg-transparent cursor-pointer"
+                    value={btnColor}
+                    onChange={(e) => setBtnColor(e.target.value)}
+                  />
+                </div>
+                <div className="col-span-2">
+                  <label className="text-[10px] uppercase font-bold text-gray-400">Border Radius</label>
+                  <input
+                    type="text"
+                    className="w-full px-3 py-1.5 rounded-lg border text-xs dark:bg-neutral-700"
+                    value={btnRadius}
+                    onChange={(e) => setBtnRadius(e.target.value)}
+                  />
+                </div>
+              </div>
             </div>
             {/* Preview */}
             {btnText && (
-              <div className="mb-3 text-center">
-                <span className="inline-block px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg text-sm font-semibold">
+              <div className="mb-3 text-center p-4 bg-gray-50 dark:bg-neutral-900 rounded-xl">
+                <span style={{
+                  display: 'inline-block',
+                  padding: btnPadding,
+                  margin: btnMargin,
+                  backgroundColor: btnBg,
+                  color: btnColor,
+                  borderRadius: btnRadius,
+                  fontWeight: 600,
+                  fontSize: '14px'
+                }}>
                   {btnText}
                 </span>
               </div>
@@ -721,6 +840,43 @@ export default function RichText({ value, onChange, placeholder = 'Type here…'
             <div className="flex gap-2 justify-end">
               <button type="button" className="px-3 py-1.5 rounded-xl border text-sm" onClick={() => setBtnModal(false)}>Cancel</button>
               <button type="button" className="px-4 py-1.5 rounded-xl bg-blue-600 text-white text-sm font-medium" onClick={confirmButton}>Insert Button</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Accordion modal */}
+      {accModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => setAccModal(false)}>
+          <div className="bg-white dark:bg-neutral-800 rounded-2xl shadow-2xl p-6 w-full max-w-md mx-4" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-base font-semibold text-gray-900 dark:text-neutral-100 mb-1">Insert Accordion</h3>
+            <p className="text-xs text-gray-500 dark:text-neutral-400 mb-4">Add a collapsible content section.</p>
+            <div className="space-y-4 mb-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-600 dark:text-neutral-400 mb-1">Accordion Title *</label>
+                <input
+                  type="text"
+                  autoFocus
+                  className="w-full px-3 py-2 rounded-xl border border-gray-300 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-100 text-sm"
+                  placeholder="e.g. Terms & Conditions"
+                  value={accTitle}
+                  onChange={(e) => setAccTitle(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 dark:text-neutral-400 mb-1">Content (Keep it brief)</label>
+                <textarea
+                  className="w-full px-3 py-2 rounded-xl border border-gray-300 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-100 text-sm"
+                  rows={4}
+                  placeholder="The details that will be hidden until clicked..."
+                  value={accContent}
+                  onChange={(e) => setAccContent(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="flex gap-2 justify-end">
+              <button type="button" className="px-3 py-1.5 rounded-xl border text-sm" onClick={() => setAccModal(false)}>Cancel</button>
+              <button type="button" className="px-4 py-1.5 rounded-xl bg-blue-600 text-white text-sm font-medium" onClick={confirmAccordion}>Insert Accordion</button>
             </div>
           </div>
         </div>

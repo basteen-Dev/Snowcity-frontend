@@ -134,7 +134,7 @@ export default function Blog() {
         )}
 
         {/* Article content */}
-        <article className="prose prose-lg max-w-none">
+        <article className="blog-content">
           {isRaw ? (
             <RawFrame
               title={b.title || 'Blog'}
@@ -146,6 +146,28 @@ export default function Blog() {
             <HtmlContent html={b.content || ''} />
           )}
         </article>
+
+        {/* Author Section */}
+        {b.author && (
+          <div className="author-card">
+            {b.author_image_url ? (
+              <img
+                src={b.author_image_url}
+                alt={b.author}
+                className="author-image"
+              />
+            ) : (
+              <div className="author-image bg-gray-200 flex items-center justify-center text-gray-400 text-2xl font-bold">
+                {b.author.charAt(0)}
+              </div>
+            )}
+            <div className="author-info">
+              <span className="text-xs font-bold text-blue-600 uppercase tracking-wider mb-1 block">About the Author</span>
+              <h4>{b.author}</h4>
+              <p>{b.author_description || `Professional content creator at Snow City Bangalore. Passionate about sharing the best family entertainment and adventure experiences.`}</p>
+            </div>
+          </div>
+        )}
 
         {/* FAQ Section */}
         {faqItems.length > 0 && (
