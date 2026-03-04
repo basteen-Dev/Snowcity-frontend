@@ -1,8 +1,11 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import {
     CreditCard, Check, Ticket, ShoppingBag, ArrowRight, Shield,
     Tag, ChevronRight, Calendar, Clock, Users, Sparkles, Lock
 } from 'lucide-react';
+import eazyLogo from '../../assets/images/eazy.png';
+import phonepeLogo from '../../assets/images/payment_gateway_logo.png';
 
 /**
  * Payment Component (Step 4 of Booking)
@@ -78,7 +81,7 @@ export default function Payment({
                     <div className="px-5 py-4 bg-gradient-to-r from-gray-50 to-white border-b border-gray-100">
                         <h3 className="font-bold text-gray-900 flex items-center gap-2">
                             <ShoppingBag className="text-sky-600" size={18} />
-                            Order Details
+                            Booking Details
                             <span className="ml-auto text-xs font-medium text-gray-500 bg-gray-100 px-2.5 py-1 rounded-xl">
                                 {cartItems.length} {cartItems.length === 1 ? 'item' : 'items'}
                             </span>
@@ -264,11 +267,13 @@ export default function Payment({
                                     <Check size={11} className="text-white" strokeWidth={3} />
                                 )}
                             </div>
-                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-sm shrink-0">
-                                <CreditCard size={18} className="text-white" />
-                            </div>
+                            <img
+                                src={eazyLogo}
+                                alt="PayPhi"
+                                className="h-14 w-auto object-contain shrink-0"
+                            />
                             <div className="min-w-0">
-                                <p className="font-bold text-gray-900 text-sm">PayPhi</p>
+
                                 <p className="text-[11px] text-gray-500">Cards · UPI · Netbanking</p>
                             </div>
                         </label>
@@ -289,20 +294,20 @@ export default function Payment({
                                 className="sr-only"
                             />
                             <div
-                                className={`w-5 h-5 rounded-xl border-2 flex items-center justify-center shrink-0 transition-all ${paymentGateway === 'phonepe' ? 'border-purple-500 bg-purple-500' : 'border-gray-300'
+                                className={`w-3 h-3 rounded-xl border-2 flex items-center justify-center shrink-0 transition-all ${paymentGateway === 'phonepe' ? 'border-purple-500 bg-purple-500' : 'border-gray-300'
                                     }`}
                             >
                                 {paymentGateway === 'phonepe' && (
                                     <Check size={11} className="text-white" strokeWidth={3} />
                                 )}
                             </div>
-                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center shadow-sm shrink-0">
-                                <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5zm0 18c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z" />
-                                </svg>
-                            </div>
+                            <img
+                                src={phonepeLogo}
+                                alt="PhonePe"
+                                className="h-14 w-auto object-contain shrink-0"
+                            />
                             <div className="min-w-0">
-                                <p className="font-bold text-gray-900 text-sm">PhonePe</p>
+
                                 <p className="text-[11px] text-gray-500">UPI · Wallet · Cards</p>
                             </div>
                         </label>
@@ -354,7 +359,7 @@ export default function Payment({
 
                 {/* Terms and Conditions Disclaimer */}
                 <p className="text-[11px] text-gray-500 text-center mb-3">
-                    By continuing, you agree to the General Terms, Privacy Policy, and the Cancellation Policy.
+                    By continuing, you agree to the <Link to="/terms-and-conditions" className="text-sky-600 hover:underline">General Terms</Link>, <Link to="/privacy-policy" className="text-sky-600 hover:underline">Privacy Policy</Link>, and the <Link to="/cancellation-policy" className="text-sky-600 hover:underline">Cancellation Policy</Link>.
                 </p>
 
                 {/* Pay Button */}

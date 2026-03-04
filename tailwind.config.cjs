@@ -59,7 +59,7 @@ module.exports = {
       },
       fontFamily: {
         heading: ["Red Hat Display", "sans-serif"],
-        body: ["Inter", "sans-serif"],
+        body: ["Plus Jakarta Sans", "sans-serif"],
       },
       colors: {
         // Updated Brand Color System

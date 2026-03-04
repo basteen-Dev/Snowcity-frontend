@@ -25,10 +25,10 @@ export default function VideoBlock({ title = 'Experience Snowcity', src = 'https
     : undefined;
 
   return (
-    <section className="py-10 bg-gray-50">
-      <div className="max-w-6xl mx-auto px-4">
+    <section className="py-10 bg-gray-50 px-4 md:px-4">
+      <div className="w-full mx-auto">
         <h2 className="text-xl md:text-2xl font-semibold mb-6">{title}</h2>
-        <div className="aspect-video w-full rounded-2xl overflow-hidden shadow relative bg-black">
+        <div className="aspect-video w-full rounded-xl overflow-hidden shadow relative bg-black">
           {play ? (
             <iframe
               className="w-full h-full"

@@ -32,8 +32,8 @@ export default function CombosCarousel({ items = [] }) {
     const realIndex = activeIndex % sortedItems.length;
 
     return (
-        <section className="py-24 px-6 md:px-8 bg-[#003de6] overflow-hidden relative">
-            <div className="max-w-[1400px] mx-auto relative z-10">
+        <section className="py-24 px-4 md:px-4 bg-[#003de6] overflow-hidden relative">
+            <div className="w-full relative z-10">
                 <div className="text-center mb-16">
                     <p className="text-sm font-bold tracking-[0.4em] text-white/70 uppercase">Exclusive Packs</p>
                     <h2 className="text-4xl md:text-5xl font-extrabold text-white mt-4">Combo Deals</h2>

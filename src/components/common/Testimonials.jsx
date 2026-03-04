@@ -72,8 +72,8 @@ export default function Testimonials() {
   const doubledTestimonials = [...testimonials, ...testimonials, ...testimonials];
 
   return (
-    <section className="bg-gradient-to-r from-white via-sky-50 to-cyan-50 py-20 overflow-hidden">
-      <div className="mx-auto max-w-[1400px] px-6 md:px-8 mb-16 text-center">
+    <section className="bg-gradient-to-r from-white via-sky-50 to-cyan-50 py-20 px-4 overflow-hidden border-y border-sky-100">
+      <div className="w-full mb-16 text-center">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -92,12 +92,12 @@ export default function Testimonials() {
         </motion.div>
       </div>
 
-      <div className="relative flex overflow-hidden md:mx-4">
+      <div className="relative flex overflow-hidden w-full">
         <div className="flex whitespace-nowrap animate-testimonials-marquee py-4">
           {doubledTestimonials.map((testimonial, idx) => (
             <div
               key={`${testimonial.id}-${idx}`}
-              className="inline-flex flex-col w-[350px] mx-4 p-8 rounded-2xl border border-sky-200 bg-white/40 backdrop-blur-sm shadow-lg whitespace-normal transition-all duration-300 hover:bg-white/60 hover:border-sky-300"
+              className="inline-flex flex-col w-[350px] mx-4 p-8 rounded-xl border border-sky-200 bg-white/40 backdrop-blur-sm shadow-lg whitespace-normal transition-all duration-300 hover:bg-white/60 hover:border-sky-300"
             >
               <div className="mb-6 flex items-center justify-center gap-1">
                 {[...Array(5)].map((_, i) => (

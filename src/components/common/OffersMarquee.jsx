@@ -72,7 +72,7 @@ export default function OffersMarquee({ items }) {
                     dangerouslySetInnerHTML={{ __html: promo.label }}
                   />
                   {promo.badge ? (
-                    <span className="text-[11px] uppercase font-bold bg-sky-100 text-sky-800 px-2 py-0.5 rounded-xl border border-sky-300">
+                    <span className="text-[11px] uppercase font-bold bg-white/20 text-white px-2 py-0.5 rounded-xl border border-white/30 backdrop-blur-sm">
                       {promo.badge}
                     </span>
                   ) : null}

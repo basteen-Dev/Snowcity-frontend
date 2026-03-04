@@ -119,7 +119,7 @@ export default function ComboCard({ item }) {
   return (
     <div
       onClick={() => navigate(comboHref)}
-      className="exp-card block no-underline cursor-pointer"
+      className="exp-card block no-underline cursor-pointer rounded-xl"
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {

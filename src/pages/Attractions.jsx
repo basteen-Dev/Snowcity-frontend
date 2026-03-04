@@ -88,10 +88,21 @@ export default function Attractions() {
         {aStatus === 'failed' ? <ErrorState message={aError?.message || 'Failed to load attractions'} /> : null}
 
         {/* Attractions Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-16">
-          {list.map((item, idx) => (
-            <AttractionCard key={safeKey('attr', item, idx)} item={item} />
-          ))}
+        <div className="flex flex-col gap-8 mb-16">
+          {list.length > 0 && (
+            <div className="w-full">
+              <AttractionCard
+                item={list[0]}
+                featured={true}
+              />
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {list.slice(1).map((item, idx) => (
+              <AttractionCard key={safeKey('attr', item, idx)} item={item} />
+            ))}
+          </div>
         </div>
 
         {/* Combo Deals Section */}

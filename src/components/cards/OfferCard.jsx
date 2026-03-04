@@ -23,7 +23,7 @@ export default function OfferCard({ item }) {
   return (
     <div
       className="
-        group relative h-[420px] w-full overflow-hidden rounded-2xl
+        group relative h-[420px] w-full overflow-hidden rounded-xl
         bg-white shadow-[0_20px_50px_rgba(0,0,0,0.18)]
         transition-all duration-300 hover:-translate-y-1
       "

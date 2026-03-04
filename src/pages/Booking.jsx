@@ -1947,7 +1947,7 @@ export default function Booking() {
   return (
     <>
       {/* Page wrapper: make sure everything sits under navbar; ensure Inter font */}
-      <div className="min-h-screen bg-gradient-to-b from-[#f5f8ff] to-white font-inter pt-14">
+      <div className="min-h-screen bg-gradient-to-b from-[#f5f8ff] to-white font-body pt-14">
 
         <div className="max-w-7xl mx-auto px-6 py-10">
 

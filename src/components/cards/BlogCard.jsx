@@ -43,7 +43,7 @@ export default function BlogCard({ item }) {
     (item.content ? item.content.replace(/<[^>]*>/g, '').substring(0, 120) + '...' : '');
 
   return (
-    <article className="group bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-2 h-full flex flex-col">
+    <article className="group bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-2 h-full flex flex-col">
       <Link to={url} className="block flex-1 flex flex-col">
         <div className="relative overflow-hidden shrink-0">
           {cover ? (

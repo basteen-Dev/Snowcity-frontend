@@ -1,340 +1,130 @@
-// import React from 'react';
-// import { Link, useNavigate } from 'react-router-dom';
-// import { getAttrId } from '../../utils/ids';
-// import { imgSrc } from '../../utils/media';
-// import { getPrice, getBasePrice, getDiscountPercent } from '../../utils/pricing';
-
-// export default function AttractionCard({ item }) {
-//   const title = item?.name || item?.title || 'Attraction';
-//   const desc = item?.short_description || item?.subtitle || '';
-//   const img = imgSrc(item, 'https://picsum.photos/seed/attr/640/400');
-//   const attrId = getAttrId(item);
-//   const detailHref = attrId ? `/attractions/${attrId}` : '/attractions';
-//   const finalPrice = getPrice(item, { includeOffers: false });
-//   const basePrice = getBasePrice(item);
-//   const displayPrice = finalPrice || basePrice;
-//   const hasDiscount = basePrice > 0 && finalPrice > 0 && finalPrice < basePrice;
-//   const discountPercent = hasDiscount ? Math.round(getDiscountPercent(item)) : 0;
-
-//   const navigate = useNavigate();
-//   const stop = (e) => e.stopPropagation();
-
-//   const goDetail = React.useCallback(() => {
-//     if (detailHref) navigate(detailHref);
-//   }, [detailHref, navigate]);
-
-//   return (
-//     <div
-//       role="button"
-//       tabIndex={0}
-//       onClick={goDetail}
-//       onKeyDown={(e) => {
-//         if (e.key === 'Enter' || e.key === ' ') {
-//           e.preventDefault();
-//           goDetail();
-//         }
-//       }}
-//       className="group relative flex flex-col rounded-2xl bg-white/95 text-slate-900 shadow-[0_18px_45px_rgba(14,165,233,0.12)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_25px_60px_rgba(14,165,233,0.18)] focus:outline-none"
-//     >
-//       <div className="relative overflow-hidden rounded-2xl rounded-b-none">
-//         <img
-//           src={img}
-//           alt="snowcity"
-//           className="h-60 w-full object-cover transition duration-500 group-hover:scale-[1.04]"
-//           loading="lazy"
-//           decoding="async"
-//         />
-//         {displayPrice > 0 ? (
-//           <div className="absolute top-4 left-4 flex items-center gap-2 rounded-xl bg-sky-600/90 px-4 py-1.5 text-xs font-semibold text-white backdrop-blur">
-//             ₹{Math.round(displayPrice)}
-//             <span className="text-white/70 hidden sm:inline">/ person</span>
-//             {hasDiscount ? (
-//               <span className="text-[11px] font-semibold text-sky-200">-{discountPercent}%</span>
-//             ) : null}
-//           </div>
-//         ) : null}
-//         <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-//       </div>
-
-//       <div className="flex flex-col gap-1 sm:gap-1 px-2 sm:px-1 pt-2 sm:pt-1 pb-3 sm:pb-1">
-//         <div className="flex items-start justify-between gap-4">
-//           <div>
-
-//             <h3 className="mt-1 text-xl font-semibold text-slate-900 line-clamp-2">{title}</h3>
-//           </div>
-//           <span className="rounded-xl bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
-//             Indoor Snow
-//           </span>
-//         </div>
-
-//         {desc ? <p className="text-sm text-slate-500 line-clamp-3">{desc}</p> : null}
-
-//         {displayPrice > 0 ? (
-//           <div className="flex flex-wrap items-baseline gap-2 sm:gap-3 pt-0.5 sm:pt-2">
-//             <span className="text-2xl font-semibold text-slate-900">₹{Math.round(displayPrice)}</span>
-//             {hasDiscount ? (
-//               <>
-//                 <span className="text-sm line-through text-slate-400">₹{Math.round(basePrice)}</span>
-//                 <span className="rounded-xl border border-emerald-200/70 px-3 py-1 text-xs font-semibold text-emerald-700 bg-emerald-50">
-//                   Save {discountPercent}%
-//                 </span>
-//               </>
-//             ) : (
-//               <span className="text-sm text-slate-500">per person</span>
-//             )}
-//           </div>
-//         ) : null}
-
-//         <div className="flex flex-wrap items-center gap-2 sm:gap-3 pt-2.5 sm:pt-4 border-t border-slate-100">
-//           <Link
-//             to={attrId ? `/booking?attraction_id=${attrId}&openDrawer=true` : '/booking'}
-//             onClick={stop}
-//             className="inline-flex items-center gap-2 rounded-xl border border-sky-200 bg-sky-600 text-white px-5 py-2 text-sm font-semibold shadow-lg shadow-sky-900/15 hover:bg-sky-700 transition-all duration-200"
-//           >
-//             🎟 Book Now
-//           </Link>
-//           {attrId ? (
-//             <Link
-//               to={detailHref}
-//               onClick={stop}
-//               className="inline-flex items-center gap-1 rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-900"
-//             >
-//               Quick View
-//               <span aria-hidden="true">→</span>
-//             </Link>
-//           ) : null}
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom';
 import { getAttrId } from '../../utils/ids';
 import { imgSrc } from '../../utils/media';
-import { getPrice, getBasePrice, getDiscountPercent } from '../../utils/pricing';
-
-const StyledWrapper = styled.div`
-  height: 100%;
-
-  .card {
-    width: 100%;
-    height: 100%;
-    border-radius: 1rem;
-    background-color: #fff;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  
-  .card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 25px 35px -5px rgba(0, 0, 0, 0.15), 0 12px 15px -5px rgba(0, 0, 0, 0.08);
-  }
-
-  .card a {
-    text-decoration: none;
-  }
-
-  .content {
-    padding: 1.25rem;
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-  }
-
-  .image-box {
-    position: relative;
-    width: 100%;
-    height: 180px;
-    background-color: #f3f4f6;
-    overflow: hidden;
-  }
-
-  .image-box img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.5s ease;
-  }
-  
-  .card:hover .image-box img {
-    transform: scale(1.1);
-  }
-
-  .title {
-    color: #111827;
-    font-size: 1.25rem;
-    line-height: 1.75rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    transition: color 0.2s;
-  }
-  
-  .title:hover {
-    color: #007ACC;
-  }
-
-  .desc {
-    color: #6B7280;
-    font-size: 0.875rem;
-    line-height: 1.5rem;
-    margin-bottom: 1.5rem;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    flex: 1;
-  }
-
-  .action-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-top: 1rem;
-    border-top: 1px solid #f3f4f6;
-    margin-top: auto;
-  }
-
-  .price-info {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .price-cap {
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: #9ca3af;
-    font-weight: 600;
-  }
-
-  .price-val {
-    font-size: 1.25rem;
-    font-weight: 800;
-    color: #111827;
-  }
-
-  .action {
-    display: inline-flex;
-    color: #ffffff;
-    font-size: 0.875rem;
-    line-height: 1.25rem;
-    font-weight: 600;
-    align-items: center;
-    gap: 0.5rem;
-    background-color: #0099FF;
-    padding: 0.6rem 1rem;
-    border-radius: 0.75rem;
-    transition: all 0.3s ease;
-  }
-
-  .action span {
-    transition: transform 0.3s ease;
-  }
-
-  .action:hover {
-    background-color: #007ACC;
-    transform: scale(1.05);
-  }
-
-  .action:hover span {
-    transform: translateX(4px);
-  }
-
-  .featured-tag {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    background: #f59e0b;
-    color: white;
-    font-size: 10px;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    padding: 5px 12px;
-    border-radius: 999px;
-    z-index: 10;
-    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
-  }
-`;
+import { getPrice, getBasePrice } from '../../utils/pricing';
+import api from '../../services/apiClient';
+import endpoints from '../../services/endpoints';
 
 export default function AttractionCard({ item, featured = false }) {
+  const navigate = useNavigate();
   const title = item?.name || item?.title || 'Attraction';
   const desc = item?.short_description || item?.subtitle || '';
-  const img = imgSrc(item, 'https://picsum.photos/seed/attr/640/400');
+  const img = imgSrc(item, 'https://picsum.photos/seed/attr/800/600');
   const attrId = getAttrId(item);
   const detailHref = item?.slug ? `/${item.slug}` : (attrId ? `/attractions/${attrId}` : '/attractions');
 
   const finalPrice = getPrice(item, { includeOffers: false });
   const basePrice = getBasePrice(item);
-  const displayPrice = finalPrice || basePrice;
+  const displayPrice = finalPrice || basePrice || 699;
 
-  const navigate = useNavigate();
+  const [gallery, setGallery] = React.useState([]);
+
+  React.useEffect(() => {
+    if (featured && attrId) {
+      (async () => {
+        try {
+          const res = await api.get(endpoints.gallery.list(), {
+            params: {
+              active: true,
+              target_type: 'attraction',
+              target_ref_id: attrId,
+              limit: 4,
+            },
+          });
+          const items = res?.data?.data || (Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : []);
+          setGallery(items.slice(0, 4));
+        } catch (err) {
+          console.error('Failed to load gallery for featured card:', err);
+        }
+      })();
+    }
+  }, [featured, attrId]);
+
   const stop = (e) => e.stopPropagation();
 
-  const goDetail = React.useCallback((e) => {
+  const goDetail = (e) => {
     if (e) stop(e);
     navigate(detailHref);
-  }, [detailHref, navigate]);
+  };
 
-  return (
-    <StyledWrapper>
-      <div
-        onClick={(e) => goDetail(e)}
-        className="card block no-underline cursor-pointer"
-        role="button"
-        tabIndex={0}
-      >
-        <div className="image-box">
-          {img && (
-            <img
-              src={img}
-              alt={item?.image_alt || title}
-              width={640}
-              height={400}
-              loading="lazy"
-              decoding="async"
-            />
-          )}
-          {featured && <div className="featured-tag">Most Popular</div>}
-        </div>
+  const onBook = (e) => {
+    stop(e);
+    e.preventDefault();
+    sessionStorage.removeItem('snowcity_booking_state');
+    navigate(attrId ? `/tickets-offers?attraction_id=${attrId}&type=attraction&openDrawer=true` : '/tickets-offers');
+  };
 
-        <div className="content">
-          <div className="title">
-            {title}
+  if (featured) {
+    return (
+      <div className="exp-featured rounded-xl group cursor-pointer" onClick={goDetail}>
+        <div className="exp-feat-left">
+          <div className="exp-feat-tag">
+            <span role="img" aria-label="star">⭐</span> Most Popular Experience
           </div>
 
-          <p className="desc">{desc}</p>
+          <div>
+            <h2 className="exp-feat-title">{title}</h2>
+            <p className="exp-feat-desc">{desc}</p>
 
-          <div className="action-row">
-            <div className="price-info">
-              <span className="price-cap">From</span>
-              <span className="price-val">₹{Math.round(displayPrice || 699)}</span>
+            <div className="exp-feat-highlights">
+              <span className="feat-chip">❄️ Real Snow Fall</span>
+              <span className="feat-chip">🌡️ -5°C Temperature</span>
+              <span className="feat-chip">👨‍👩‍👧‍👦 Family Friendly</span>
             </div>
+          </div>
 
-            <div
-              onClick={(e) => {
-                stop(e);
-                e.preventDefault();
-                sessionStorage.removeItem('snowcity_booking_state');
-                navigate(attrId ? `/tickets-offers?attraction_id=${attrId}&type=attraction&openDrawer=true` : '/tickets-offers');
-              }}
-              className="action"
-            >
-              Book Now
-              <span aria-hidden="true">→</span>
+          <div className="exp-feat-footer">
+            <div className="exp-feat-price">
+              <sub>From</sub> ₹{Math.round(displayPrice)}
             </div>
+            <button className="btn-book-new px-10 py-5 text-lg" onClick={onBook}>
+              Book Now <span>→</span>
+            </button>
+          </div>
+        </div>
+
+        <div className="exp-feat-right">
+          <div className="feat-visual-grid">
+            {[0, 1, 2, 3].map((idx) => {
+              const galleryImg = gallery[idx] ? imgSrc(gallery[idx].url || gallery[idx].image_url) : null;
+              const displayImg = galleryImg || (idx === 0 ? img : `https://picsum.photos/seed/snow${idx}/400/300`);
+              return (
+                <div key={idx} className="feat-vg-cell">
+                  <img src={displayImg} alt={`${title} view ${idx + 1}`} loading="lazy" />
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="feat-temp-badge">
+            <div className="feat-temp-num">-5°C</div>
+            <div className="feat-temp-label">FREEZING ZONE</div>
           </div>
         </div>
       </div>
-    </StyledWrapper>
+    );
+  }
+
+  return (
+    <div className="exp-card-new rounded-xl group cursor-pointer" onClick={goDetail}>
+      <div className="exp-card-visual">
+        <img src={img} alt={item?.image_alt || title} loading="lazy" />
+      </div>
+
+      <div className="exp-card-body">
+        <h3 className="exp-card-title">{title}</h3>
+        <p className="exp-card-desc line-clamp-3">{desc}</p>
+
+        <div className="exp-card-footer">
+          <div className="price-val-new">
+            ₹{Math.round(displayPrice)}
+          </div>
+          <button className="btn-book-new" onClick={onBook}>
+            Book Now
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }

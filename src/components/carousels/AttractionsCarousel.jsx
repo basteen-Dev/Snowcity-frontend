@@ -1,235 +1,3 @@
-
-
-
-
-// export default function AttractionsCarousel({ items = [] }) {
-//   const [index, setIndex] = React.useState(0);
-
-//   const cards = React.useMemo(
-//     () =>
-//       [...items]
-//         .sort((a, b) => {
-//           const av = getSortValue(a);
-//           const bv = getSortValue(b);
-//           if (av === bv) return 0;
-//           return av < bv ? -1 : 1;
-//         })
-//         .map((it) => ({
-//           ...it,
-//           _key: getUniqueKey(it),
-//         })),
-//     [items]
-//   );
-
-//   const pairCount = Math.ceil(cards.length / 2);
-
-//   React.useEffect(() => {
-//     if (window.innerWidth >= 768) return;
-//     const timer = setInterval(() => {
-//       setIndex((p) => (p + 1) % pairCount);
-//     }, 3000);
-//     return () => clearInterval(timer);
-//   }, [pairCount]);
-
-//   const leftCard = cards[index * 2];
-//   const rightCard = cards[index * 2 + 1];
-//   const isLastOdd = !rightCard && index === pairCount - 1;
-
-//   return (
-//     <section
-//       className="
-//         relative w-full overflow-hidden py-16
-//         bg-gradient-to-b
-//         from-[#e0f2fe] via-[#bae6fd] to-white
-//       "
-//     >
-//       {/* floating emojis */}
-//       <div className="pointer-events-none absolute inset-0">
-//         <span
-//           className="absolute top-16 left-8 text-6xl opacity-20 text-blue-400 animate-floatSlow"
-//           aria-hidden="true"
-//         >
-//           ❄️
-//         </span>
-//         <span
-//           className="absolute bottom-20 right-10 text-6xl opacity-20 text-indigo-400 animate-floatFast"
-//           aria-hidden="true"
-//         >
-//           🎢
-//         </span>
-//       </div>
-//       {/* wave divider */}
-//       <div className="absolute top-0 left-0 right-0 w-full overflow-hidden leading-[0] z-0">
-//         <svg
-//           className="relative block w-[200%] h-[90px] animate-liquidWave"
-//           viewBox="0 0 1200 120"
-//           preserveAspectRatio="none"
-//         >
-//           <path
-//             d="M321.39 56.44 c58.39 4.09 113.77 22.36 171.23 29.21 c95.25 11.73 191.92-7.88 284.83-25.5 c93.44-17.72 188.32-36.37 285.78-27.95 c66 5.64 128.47 24.69 193.77 39.54V0H0v27.35 c47.72 22.52 103.4 27.88 157.05 29.66 c54.13 1.79 108.29-3.64 164.34-.57z"
-//             fill="#e0f2fe"
-//             fillOpacity="1"
-//           />
-//         </svg>
-//       </div>
-
-//       {/* HEADER */}
-//       <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-5 md:px-8">
-//         <div className="text-center mb-10">
-//           <p className="text-xs font-semibold tracking-[0.4em] text-slate-400">DISCOVER</p>
-//           <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mt-3">
-//             Attractions
-//           </h2>
-//           <p className="mt-3 text-sm text-slate-500">
-//             Discover our amazing collection of thrilling experiences
-//           </p>
-//           <div className="mt-4">
-//             <Link
-//               to="/attractions"
-//               className="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-800"
-//             >
-//               View all attractions
-//               <span aria-hidden="true">→</span>
-//             </Link>
-//           </div>
-//         </div>
-//       </div>
-
-//       {/* DESKTOP GRID */}
-//       <div className="hidden md:block relative z-10 max-w-6xl mx-auto px-5">
-//         <div className="grid md:grid-cols-3 gap-6">
-//           {cards.map((item) => (
-//             <div
-//               key={item._key}
-//               className="
-//                 rounded-2xl overflow-hidden bg-white
-//                 border border-white/40 shadow-md
-//                 hover:shadow-xl transition-all duration-300
-//                 hover:-translate-y-1 will-change-transform
-//               "
-//             >
-//               <AttractionCard item={item} />
-//             </div>
-//           ))}
-//         </div>
-//       </div>
-
-//       {/* MOBILE PAIRED CARDS */}
-//       <div className="md:hidden relative z-10 max-w-md mx-auto px-4 mt-2">
-//         <div className="flex items-start justify-between gap-3 w-full min-h-[460px] relative overflow-visible">
-//           {leftCard && (
-//             <div
-//               key={leftCard._key + "-L-" + index}
-//               className="
-//                 w-[48%] rounded-2xl bg-white shadow-md overflow-hidden
-//                 border border-white/40 animate-card
-//               "
-//               style={{ "--x": "-24px" }}
-//             >
-//               <AttractionCard item={leftCard} />
-//             </div>
-//           )}
-
-//           {!isLastOdd && rightCard && (
-//             <div
-//               key={rightCard._key + "-R-" + index}
-//               className="
-//                 w-[48%] rounded-2xl bg-white shadow-md overflow-hidden
-//                 border border-white/40 animate-card
-//               "
-//               style={{ "--x": "24px" }}
-//             >
-//               <AttractionCard item={rightCard} />
-//             </div>
-//           )}
-
-//           {isLastOdd && (
-//             <div
-//               key={leftCard._key + "-ODD-" + index}
-//               className="
-//                 absolute left-1/2 -translate-x-1/2 w-[70%]
-//                 rounded-2xl bg-white shadow-md overflow-hidden
-//                 border border-white/40 animate-card
-//               "
-//               style={{ "--y": "24px" }}
-//             >
-//               <AttractionCard item={leftCard} />
-//             </div>
-//           )}
-//         </div>
-//       </div>
-
-//       {/* ⭐ SAME WAVE & CARD ANIMATIONS */}
-//       <style>{`
-//         @keyframes liquidWave {
-//           0% { transform: translateX(0); }
-//           100% { transform: translateX(-50%); }
-//         }
-//         .animate-liquidWave {
-//           animation: liquidWave 12s linear infinite;
-//         }
-
-//         @keyframes floatSlow {
-//           0% { transform: translateY(0) rotate(0deg); }
-//           50% { transform: translateY(-14px) rotate(6deg); }
-//           100% { transform: translateY(0) rotate(0deg); }
-//         }
-//         .animate-floatSlow {
-//           animation: floatSlow 7s ease-in-out infinite;
-//         }
-
-//         @keyframes floatFast {
-//           0% { transform: translateY(0) rotate(0deg); }
-//           50% { transform: translateY(16px) rotate(-6deg); }
-//           100% { transform: translateY(0) rotate(0deg); }
-//         }
-//         .animate-floatFast {
-//           animation: floatFast 5s ease-in-out infinite;
-//         }
-
-//         @keyframes cardIn {
-//           0% { opacity: 0; transform: translate(var(--x, 0), var(--y, 12px)) scale(0.98); }
-//           100% { opacity: 1; transform: translate(0, 0) scale(1); }
-//         }
-//         .animate-card {
-//           animation: cardIn .55s ease-out both;
-//         }
-//       `}</style>
-//     </section>
-//   );
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import React from "react";
 import { Link } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -238,13 +6,12 @@ import "swiper/css";
 import "swiper/css/pagination";
 import AttractionCard from "../cards/AttractionCard";
 
-
 export default function AttractionsCarousel({ items = [] }) {
   // Sort items to ensure a consistent experience with priority given to Snow Park and Mad Lab
   const sortedItems = React.useMemo(() => {
     return [...items].sort((a, b) => {
-      const titleA = (a?.title || '').toLowerCase();
-      const titleB = (b?.title || '').toLowerCase();
+      const titleA = (a?.title || a?.name || '').toLowerCase();
+      const titleB = (b?.title || b?.name || '').toLowerCase();
 
       const isSnowParkA = titleA.includes('snow park');
       const isSnowParkB = titleB.includes('snow park');
@@ -282,58 +49,78 @@ export default function AttractionsCarousel({ items = [] }) {
   const realIndex = activeIndex % sortedItems.length;
 
   return (
-    <section className="relative w-full overflow-hidden pt-12 pb-24 px-6 md:px-8 bg-gradient-to-t from-sky-100 to-white">
-      {/* HEADER - Corporate Grade Alignment */}
-      <div className="relative z-10 max-w-[1400px] mx-auto text-center mb-12">
-        <p className="text-xs font-bold tracking-[0.5em] text-sky-600/70 uppercase mb-4">
-          Discover
+    <section className="relative w-full overflow-hidden pt-20 pb-24 px-4 md:px-4 bg-gradient-to-t from-white via-sky-50 to-white">
+      {/* HEADER - MATCHING THE NEW DESIGN */}
+      <div className="relative z-10 w-full text-center mb-16">
+        <p className="text-xs font-bold tracking-[0.4em] text-blue-600 uppercase mb-4">
+          Unforgettable Experiences
         </p>
-        <h2 className="text-4xl md:text-4xl font-black text-slate-900 tracking-tight uppercase leading-none">
-          Experiences
+        <h2 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tight uppercase leading-none mb-6" style={{ fontFamily: 'Red Hat Display, sans-serif' }}>
+          Explore Wonders
         </h2>
+        <div className="w-20 h-1.5 bg-blue-600 mx-auto rounded-xl mb-6" />
         <p className="text-gray-600 text-lg md:text-xl max-w-2xl mx-auto font-medium leading-relaxed">
-          Discover our amazing collection of thrilling experiences and winter wonders.
+          Step into a world of arctic magic and thrilling adventures right in the heart of the city.
         </p>
       </div>
 
-      {/* DESKTOP GRID (4 Columns) */}
-      <div className="hidden md:grid grid-cols-2 lg:grid-cols-4 gap-8 max-w-[1400px] mx-auto mb-16">
-        {sortedItems.slice(0, 4).map((item, idx) => (
-          <div key={`${item?.id || item?.attraction_id}-desktop-${idx}`}>
-            <AttractionCard item={item} />
+      {/* DESKTOP GRID - FEATURED LOGIC */}
+      <div className="hidden lg:flex flex-col gap-10 w-full mb-16">
+        {/* Featured Row */}
+        {sortedItems.length > 0 && (
+          <div className="w-full">
+            <AttractionCard item={sortedItems[0]} featured={true} />
           </div>
-        ))}
+        )}
+
+        {/* Sub Row */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {sortedItems.slice(1, 4).map((item, idx) => (
+            <div key={`${item?.id || item?.attraction_id}-desktop-${idx}`}>
+              <AttractionCard item={item} />
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* MOBILE SLIDER */}
-      <div className="md:hidden relative z-10 premium-carousel mb-8">
-        <Swiper
-          spaceBetween={16}
-          slidesPerView={1.3}
-          centeredSlides={true}
-          loop={true}
-          loopedslides={sortedItems.length}
-          loopPreventsSliding={false}
-          grabCursor={true}
-          watchSlidesProgress={true}
-          onSlideChange={(swiper) => setActiveIndex(swiper.realIndex)}
-          className="pt-10 pb-10 !overflow-visible"
-        >
-          {displayItems.map((item, idx) => (
-            <SwiperSlide key={`${item?.id ?? idx}-${idx}`} className="h-auto">
-              <AttractionCard item={item} />
-            </SwiperSlide>
-          ))}
-        </Swiper>
+      {/* MOBILE & TABLET SLIDER */}
+      <div className="lg:hidden relative z-10 premium-carousel mb-8">
+        {/* Row 1: Snow Park Standalone */}
+        {sortedItems.length > 0 && (
+          <div className="px-2 mb-10">
+            <AttractionCard item={sortedItems[0]} />
+          </div>
+        )}
 
-        {/* CUSTOM PAGINATION DOTS - Fixed count per user request */}
-        <div className="flex justify-center items-center gap-2 mt-8">
+        {/* Row 2: Remaining Items Auto-sliding */}
+        {sortedItems.length > 1 && (
+          <Swiper
+            modules={[Autoplay, Pagination]}
+            spaceBetween={16}
+            slidesPerView={1.2}
+            centeredSlides={false}
+            loop={true}
+            autoplay={{ delay: 3000, disableOnInteraction: false }}
+            grabCursor={true}
+            onSlideChange={(swiper) => setActiveIndex(swiper.realIndex + 1)} // offset by 1 because of the standalone card
+            className="pb-12"
+          >
+            {sortedItems.slice(1).map((item, idx) => (
+              <SwiperSlide key={`${item?.id ?? idx}-mobile-${idx}`} className="h-auto">
+                <AttractionCard item={item} />
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        )}
+
+        {/* CUSTOM PAGINATION DOTS - Reflecting all items */}
+        <div className="flex justify-center items-center gap-2 mt-2">
           {sortedItems.map((_, idx) => (
             <div
               key={idx}
-              className={`h-2 transition-all duration-300 rounded-xl ${realIndex === idx
-                ? "w-8 bg-[#003de6]"
-                : "w-2 bg-gray-300"
+              className={`h-1.5 transition-all duration-300 rounded-xl ${(realIndex === idx || (idx === 0 && activeIndex === 0))
+                ? "w-6 bg-blue-600"
+                : "w-1.5 bg-gray-300"
                 }`}
             />
           ))}
@@ -341,10 +128,10 @@ export default function AttractionsCarousel({ items = [] }) {
       </div>
 
       {/* VIEW ALL BUTTON */}
-      <div className="relative z-10 flex justify-center mt-8">
+      <div className="relative z-10 flex justify-center mt-12">
         <Link
           to="/attractions"
-          className="inline-flex items-center gap-3 rounded-xl bg-[#0099FF] text-white px-12 py-5 text-lg font-extrabold shadow-2xl hover:bg-[#007ACC] hover:scale-105 transition-all duration-300 uppercase tracking-wider"
+          className="inline-flex items-center gap-3 rounded-xl bg-blue-600 text-white px-12 py-5 text-lg font-extrabold shadow-xl hover:bg-blue-700 hover:scale-105 transition-all duration-300 uppercase tracking-wider"
         >
           View All Experiences
           <span className="text-xl" aria-hidden="true">→</span>

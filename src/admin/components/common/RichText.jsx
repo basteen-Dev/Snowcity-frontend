@@ -665,7 +665,7 @@ export default function RichText({ value, onChange, placeholder = 'Type here…'
       {previewOpen ? (
         <div className="richtext-preview text-sm mt-2">
           {value ? (
-            <div dangerouslySetInnerHTML={{ __html: value }} />
+            <div className="font-body text-sm rich-text-container" dangerouslySetInnerHTML={{ __html: value }} />
           ) : (
             <div className="text-gray-400 text-xs">Start typing to see a live preview…</div>
           )}

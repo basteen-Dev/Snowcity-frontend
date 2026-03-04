@@ -170,7 +170,9 @@ export default function SnowSceneWrapper({
       />
 
       {/* content */}
-      <div className="relative z-10">{children}</div>
+      <div className={`relative z-10 font-body ${className}`}>
+        {children}
+      </div>
 
       {/* Wave at bottom */}
       <div

@@ -148,7 +148,7 @@ export default function HeroCarousel({ banners = [], waveColor = "#0b1a33" }) {
                                 <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
 
                                 <div
-                                    className="absolute inset-0 flex flex-col justify-end px-4 sm:px-10 z-10 text-left pb-12 sm:pb-16"
+                                    className="absolute inset-0 flex flex-col justify-end px-4 md:px-4 z-10 text-left pb-12 sm:pb-16"
                                 >
                                     <div className="max-w-4xl space-y-3 sm:space-y-4">
                                         <span className="text-[10px] sm:text-xs font-semibold tracking-[0.35em] uppercase text-sky-400">
