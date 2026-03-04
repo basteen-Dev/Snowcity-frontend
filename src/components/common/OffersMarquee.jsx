@@ -55,7 +55,7 @@ export default function OffersMarquee({ items }) {
   }, [items]);
 
   return (
-    <section className="relative bg-gradient-to-r from-white via-sky-50 to-cyan-50 py-3 overflow-hidden">
+    <section className="relative bg-[#0099FF] py-3 overflow-hidden">
 
       <div className="relative flex overflow-hidden">
         <div className="flex whitespace-nowrap animate-offers-marquee">
@@ -94,7 +94,7 @@ export default function OffersMarquee({ items }) {
           100% { transform: translateX(-33.33%); }
         }
         .animate-offers-marquee {
-          animation: offersMarquee 25s linear infinite;
+          animation: offersMarquee 26s linear infinite;
         }
         .animate-offers-marquee p {
           margin: 0 !important;
