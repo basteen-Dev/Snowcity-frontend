@@ -102,7 +102,7 @@ export default function BlogsList() {
         title: `${data.title} (Copy)`,
         slug: newSlug,
         content: data.content || '',
-        image_url: data.image_url || '',
+        featured_image: data.featured_image || '',
         author: data.author || '',
         active: false
       };

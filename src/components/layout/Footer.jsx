@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { MapPin, Mail, Phone } from "lucide-react";
-import Logo from "../../assets/images/Snowcity New Logo.png";
+import Logo from '../../assets/images/Snowcity_B.png';
 import { prioritizeSnowcityFirst } from "../../utils/attractions";
 
 /**

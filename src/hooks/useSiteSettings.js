@@ -59,19 +59,19 @@ export function useSiteSettings() {
                 const runInjection = () => {
                     if (!mounted) return;
 
-                    // Inject Head Scripts (without 'seo.' prefix)
-                    if (settings['head_scripts']) {
-                        injectHtml(settings['head_scripts'], document.head, false);
+                    // Inject Head Scripts
+                    if (settings['head_schema']) {
+                        injectHtml(settings['head_schema'], document.head, false);
                     }
 
                     // Inject Body Scripts
-                    if (settings['body_scripts']) {
-                        injectHtml(settings['body_scripts'], document.body, true);
+                    if (settings['body_schema']) {
+                        injectHtml(settings['body_schema'], document.body, true);
                     }
 
                     // Inject Footer Scripts
-                    if (settings['footer_scripts']) {
-                        injectHtml(settings['footer_scripts'], document.body, false);
+                    if (settings['footer_schema']) {
+                        injectHtml(settings['footer_schema'], document.body, false);
                     }
 
                     // Inject Organization Schema

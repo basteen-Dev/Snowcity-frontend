@@ -17,20 +17,6 @@ const resolveAssetUrl = (url) => {
 const FONT_WHITELIST = ['inter', 'redhatdisplay'];
 const SIZE_WHITELIST = ['small', false, 'large', 'huge'];
 
-/**
- * Strip all inline background colors / background-color from pasted HTML.
- * Also strips white/near-white text colors that come from dark-mode copy.
- */
-function stripPasteBackgrounds(html) {
-  if (!html) return html;
-  // Remove background-color and background inline styles
-  let cleaned = html.replace(/background(-color)?\s*:\s*[^;"]*(;|(?="))/gi, '');
-  // Remove white/near-white text colors (rgb(255,255,255), #fff, #ffffff, white)
-  cleaned = cleaned.replace(/color\s*:\s*(white|#fff(fff)?|rgb\(\s*255\s*,\s*255\s*,\s*255\s*\))\s*(;|(?="))/gi, '');
-  // Remove empty style attributes left behind
-  cleaned = cleaned.replace(/\sstyle\s*=\s*"[\s;]*"/gi, '');
-  return cleaned;
-}
 
 export default function RichText({ value, onChange, placeholder = 'Type here…', height = 260, gallery = [] }) {
   const ref = React.useRef({ Editor: null });
@@ -127,30 +113,31 @@ export default function RichText({ value, onChange, placeholder = 'Type here…'
     return () => { mounted = false; };
   }, []);
 
-  // ── Paste handler: strip backgrounds ──
+  // ── Paste handler: strip backgrounds using Quill matchers ──
   React.useEffect(() => {
     if (!editorReady) return;
     const quill = quillRef.current?.getEditor?.();
     if (!quill) return;
 
-    const handlePaste = (e) => {
-      const html = e.clipboardData?.getData('text/html');
-      if (!html) return; // plain text paste — let Quill handle it
-      e.preventDefault();
-      const cleaned = stripPasteBackgrounds(html);
-      // Use Quill's clipboard to paste sanitized HTML
-      const delta = quill.clipboard.convert({ html: cleaned });
-      const range = quill.getSelection(true);
-      quill.updateContents(
-        quill.constructor.import('delta').default
-          ? new (quill.constructor.import('delta').default)().retain(range.index).delete(range.length).concat(delta)
-          : (() => { quill.deleteText(range.index, range.length); quill.setSelection(range.index); quill.clipboard.dangerouslyPasteHTML(range.index, cleaned); return null; })(),
-        'user'
-      );
-    };
+    // Use Quill's matcher API to sanitize content on paste.
+    // This avoids the "double paste" issue caused by manual event listeners.
+    quill.clipboard.addMatcher(Node.ELEMENT_NODE, (node, delta) => {
+      delta.ops.forEach((op) => {
+        if (op.attributes) {
+          // 1. Strip all background colors
+          if (op.attributes.background) delete op.attributes.background;
 
-    quill.root.addEventListener('paste', handlePaste);
-    return () => quill.root.removeEventListener('paste', handlePaste);
+          // 2. Strip white/near-white text colors (common in dark-mode copy-paste)
+          if (op.attributes.color) {
+            const color = op.attributes.color.toLowerCase().replace(/\s/g, '');
+            if (['white', '#fff', '#ffffff', 'rgb(255,255,255)'].includes(color)) {
+              delete op.attributes.color;
+            }
+          }
+        }
+      });
+      return delta;
+    });
   }, [editorReady]);
 
   // ── Image upload with alt text prompt ──
@@ -531,15 +518,17 @@ export default function RichText({ value, onChange, placeholder = 'Type here…'
               className="w-20 h-12 shrink-0 rounded-md overflow-hidden border hover:ring-2 hover:ring-blue-500"
               title="Insert image into editor"
             >
-              <img
-                src={url}
-                alt={`img-${i}`}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = '/placeholder-image.png';
-                }}
-              />
+              {url && (
+                <img
+                  src={url}
+                  alt={`img-${i}`}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = '/placeholder-image.png';
+                  }}
+                />
+              )}
             </button>
           ))}
         </div>
@@ -585,7 +574,19 @@ export default function RichText({ value, onChange, placeholder = 'Type here…'
         ref={quillRef}
         theme="snow"
         value={value || ''}
-        onChange={(v) => onChange?.(v)}
+        onChange={(v) => {
+          if (!v) {
+            if (value !== v) onChange?.(v);
+            return;
+          }
+          // Replace &nbsp; and Unicode non-breaking spaces (\u00a0) with regular spaces
+          const cleaned = v.replace(/&nbsp;|\u00a0/g, ' ');
+          // Only trigger parent onChange if the cleaned value actually changed relative to the provided prop.
+          // This prevents infinite loops when Quill insists on adding &nbsp; back.
+          if (cleaned !== value) {
+            onChange?.(cleaned);
+          }
+        }}
         onChangeSelection={onSelectionChange}
         placeholder={placeholder}
         style={{ minHeight: height }}

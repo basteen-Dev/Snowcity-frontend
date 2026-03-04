@@ -97,6 +97,8 @@ function resolveImage(obj, fallback = '', seen = new Set()) {
   }
 
   const p =
+    obj.featured_image ??
+    obj.blog_cover ??
     obj.url_path ??
     obj.media_url ??
     obj.url ??

@@ -2,7 +2,7 @@ import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { adminLogin } from '../features/auth/adminAuthThunks';
 import { Navigate, Link } from 'react-router-dom';
-import Logo from "../../assets/images/Snowcity New Logo.png";
+import Logo from '../../assets/images/Snowcity_B.png';
 
 export default function Login() {
   const dispatch = useDispatch();

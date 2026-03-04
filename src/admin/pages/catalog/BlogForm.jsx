@@ -21,15 +21,15 @@ export default function BlogForm() {
     author_image_url: '',
     author_description: '',
     active: true,
-    image_url: '',
+    featured_image: '',
     image_alt: '',
     editor_mode: 'rich',
     content: '',
     raw_html: '',
     raw_css: '',
     raw_js: '',
-    meta_title: '',
-    meta_description: '',
+    seo_title: '',
+    seo_description: '',
     meta_keywords: '',
     section_type: 'none',
     section_ref_id: null,
@@ -213,8 +213,8 @@ export default function BlogForm() {
                   Featured Image
                 </label>
                 <ImageUploader
-                  value={form.image_url}
-                  onChange={(url) => onChange({ image_url: url })}
+                  value={form.featured_image}
+                  onChange={(url) => onChange({ featured_image: url })}
                   altText={form.image_alt}
                   onAltChange={(alt) => onChange({ image_alt: alt })}
                   folder="blogs"
@@ -337,8 +337,8 @@ export default function BlogForm() {
                 <input
                   type="text"
                   className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-neutral-700 dark:text-neutral-100"
-                  value={form.meta_title || ''}
-                  onChange={(e) => onChange({ meta_title: e.target.value })}
+                  value={form.seo_title || ''}
+                  onChange={(e) => onChange({ seo_title: e.target.value })}
                 />
               </div>
               <div>
@@ -348,8 +348,8 @@ export default function BlogForm() {
                 <input
                   type="text"
                   className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-neutral-700 dark:text-neutral-100"
-                  value={form.meta_description || ''}
-                  onChange={(e) => onChange({ meta_description: e.target.value })}
+                  value={form.seo_description || ''}
+                  onChange={(e) => onChange({ seo_description: e.target.value })}
                 />
               </div>
               <div>

@@ -111,11 +111,13 @@ export default function BulkImageUploader({
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             {uploadedUrls.map((url, idx) => (
               <div key={idx} className="relative group">
-                <img
-                  src={imgSrc(url)}
-                  alt={`Upload ${idx + 1}`}
-                  className="w-full h-20 object-cover rounded-md border"
-                />
+                {imgSrc(url) && (
+                  <img
+                    src={imgSrc(url)}
+                    alt={`Upload ${idx + 1}`}
+                    className="w-full h-20 object-cover rounded-md border"
+                  />
+                )}
                 <button
                   type="button"
                   onClick={() => removeImage(idx)}

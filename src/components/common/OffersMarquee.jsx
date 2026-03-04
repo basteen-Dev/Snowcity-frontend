@@ -62,13 +62,13 @@ export default function OffersMarquee({ items }) {
           {[...promos, ...promos, ...promos].map((promo, idx) => (
             <div
               key={`${promo.id}-${idx}`}
-              className="inline-flex items-center mx-6 text-sky-900"
+              className="inline-flex items-center mx-6 text-white"
             >
               <span className="text-xl mr-3">{promo.icon}</span>
               <div className="flex flex-col text-left">
                 <div className="flex items-center gap-2">
                   <span
-                    className="font-semibold text-sm sm:text-base text-sky-900"
+                    className="font-semibold text-sm sm:text-base text-white"
                     dangerouslySetInnerHTML={{ __html: promo.label }}
                   />
                   {promo.badge ? (
@@ -78,7 +78,7 @@ export default function OffersMarquee({ items }) {
                   ) : null}
                 </div>
                 {promo.description ? (
-                  <span className="text-xs text-sky-700 mt-0.5">
+                  <span className="text-xs text-white mt-0.5">
                     {promo.description}
                   </span>
                 ) : null}

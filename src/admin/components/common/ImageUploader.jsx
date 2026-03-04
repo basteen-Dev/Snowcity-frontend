@@ -189,35 +189,37 @@ export default function ImageUploader({
         {preview ? (
           <div className="w-16 h-16 rounded-md border dark:border-neutral-800 overflow-hidden bg-gray-100">
             {getFileType(file) === 'video' ? (
-              <video src={preview} className="w-full h-full object-cover" muted />
+              preview && <video src={preview} className="w-full h-full object-cover" muted />
             ) : getFileType(file) === 'pdf' ? (
               <div className="w-full h-full flex items-center justify-center text-xs text-gray-500">
                 PDF
               </div>
             ) : (
-              <img src={preview} alt={altText || 'Preview'} loading="lazy" className="w-full h-full object-cover" />
+              preview && <img src={preview} alt={altText || 'Preview'} loading="lazy" className="w-full h-full object-cover" />
             )}
           </div>
         ) : null}
         {resolvedValue ? (
           <div className="w-16 h-16 rounded-md border dark:border-neutral-800 overflow-hidden bg-gray-100">
             {resolvedValue.match(/\.(mp4|webm|ogg)$/i) ? (
-              <video src={resolvedValue} className="w-full h-full object-cover" muted />
+              resolvedValue && <video src={resolvedValue} className="w-full h-full object-cover" muted />
             ) : resolvedValue.match(/\.pdf$/i) ? (
               <div className="w-full h-full flex items-center justify-center text-xs text-gray-500">
                 PDF
               </div>
             ) : (
-              <img
-                src={resolvedValue}
-                alt={altText || 'Current media'}
-                loading="lazy"
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = '/placeholder-image.png';
-                }}
-              />
+              resolvedValue && (
+                <img
+                  src={resolvedValue}
+                  alt={altText || 'Current media'}
+                  loading="lazy"
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = '/placeholder-image.png';
+                  }}
+                />
+              )
             )}
           </div>
         ) : null}
