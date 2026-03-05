@@ -1367,11 +1367,8 @@ export default function Booking() {
         if (added) dispatch(setStep(2));
       }
     } else if (step === 2) {
-      // Session validation: check token before proceeding past add-ons
       if (!hasToken) {
-        // Session expired or not logged in — silently redirect to login
-        const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
-        navigate(`/login?redirect=${returnUrl}`);
+        dispatch(setStep(3)); // Proceed to guest details
         return;
       }
       dispatch(setStep(4)); // logged in → skip details, go to payment

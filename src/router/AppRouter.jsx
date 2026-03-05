@@ -107,6 +107,7 @@ export default function AppRouter() {
 
             <Route path="/home" element={<Navigate to="/" replace />} />
             <Route path="/404" element={<NotFound />} />
+            <Route path="/login" element={<Navigate to="/?authRequired=1" replace />} />
 
             {/* 👇 Catch-all routes for slugs - combos first, then attractions */}
             <Route path="/:slug" element={<SlugRouter />} />

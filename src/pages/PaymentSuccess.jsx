@@ -142,7 +142,7 @@ export default function PaymentSuccess() {
             We are generating your tickets and will send them to your email shortly.
           </p>
           <div className="mt-8 flex justify-center">
-            <a href="/login" className="text-blue-600 font-medium hover:underline">Log in to view your bookings</a>
+            <a href="/?authRequired=1" className="text-blue-600 font-medium hover:underline">Log in to view your bookings</a>
           </div>
         </div>
       </div>
