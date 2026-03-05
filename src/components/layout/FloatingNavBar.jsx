@@ -584,7 +584,7 @@ export default function FloatingNavBar() {
                 </button>
                 {menuOpen === "guide" && (
                   <div className="absolute right-0 top-full mt-2 w-64 rounded-lg border border-gray-200 bg-white shadow-lg p-2 z-[110]" style={{ boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)' }}>
-                    <Link to="/park-timing" className="block px-4 py-2.5 text-sm text-gray-800 hover:bg-sky-100 rounded-lg transition-all duration-200 font-medium" onClick={() => setMenuOpen(null)}>Park Timing</Link>
+                    <Link to="/park-timings" className="block px-4 py-2.5 text-sm text-gray-800 hover:bg-sky-100 rounded-lg transition-all duration-200 font-medium" onClick={() => setMenuOpen(null)}>Park Timing</Link>
                     <Link to="/getting-here" className="block px-4 py-2.5 text-sm text-gray-800 hover:bg-sky-100 rounded-lg transition-all duration-200 font-medium" onClick={() => setMenuOpen(null)}>Getting Here</Link>
                     <Link to="/faqs" className="block px-4 py-2.5 text-sm text-gray-800 hover:bg-sky-100 rounded-lg transition-all duration-200 font-medium" onClick={() => setMenuOpen(null)}>FAQS</Link>
                     <Link to="/safety" className="block px-4 py-2.5 text-sm text-gray-800 hover:bg-sky-100 rounded-lg transition-all duration-200 font-medium" onClick={() => setMenuOpen(null)}>Safety Guidelines</Link>
@@ -763,7 +763,7 @@ export default function FloatingNavBar() {
                 <BookOpen className="w-5 h-5 inline mr-3 text-blue-600" /> Visit
               </summary>
               <div className="pl-4 space-y-1 mt-2 pb-3 border-t border-sky-400/20 pt-3">
-                <Link to="/park-timing" className="block py-2 pl-4 text-gray-700 hover:text-black font-medium hover:bg-gray-50 rounded-lg transition-all duration-200" onClick={() => setMobileOpen(false)}>• Park Timing</Link>
+                <Link to="/park-timings" className="block py-2 pl-4 text-gray-700 hover:text-black font-medium hover:bg-gray-50 rounded-lg transition-all duration-200" onClick={() => setMobileOpen(false)}>• Park Timing</Link>
                 <Link to="/getting-here" className="block py-2 pl-4 text-gray-700 hover:text-black font-medium hover:bg-gray-50 rounded-lg transition-all duration-200" onClick={() => setMobileOpen(false)}>• Getting Here</Link>
                 <Link to="/faqs" className="block py-2 pl-4 text-gray-700 hover:text-black font-medium hover:bg-gray-50 rounded-lg transition-all duration-200" onClick={() => setMobileOpen(false)}>• FAQS</Link>
                 <Link to="/safety" className="block py-2 pl-4 text-gray-700 hover:text-black font-medium hover:bg-gray-50 rounded-lg transition-all duration-200" onClick={() => setMobileOpen(false)}>• Safety Guidelines</Link>

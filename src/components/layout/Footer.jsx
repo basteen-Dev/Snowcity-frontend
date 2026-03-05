@@ -184,7 +184,7 @@ export default function Footer() {
             <div>
               <FooterHeader>Visit</FooterHeader>
               <ul className="space-y-1 pt-2">
-                <li><Link to="/park-timing" className={linkClass}>Park Timing</Link></li>
+                <li><Link to="/park-timings" className={linkClass}>Park Timing</Link></li>
                 <li><Link to="/getting-here" className={linkClass}>Getting Here</Link></li>
                 <li><Link to="/faqs" className={linkClass}>FAQS</Link></li>
                 <li><Link to="/safety" className={linkClass}>Safety Guidelines</Link></li>

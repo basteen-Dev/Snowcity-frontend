@@ -258,7 +258,7 @@ const findBestOfferForSelection = (
 };
 
 const normalizeAttraction = (raw, fallbackTitle, seed) => {
-  if (!raw || typeof raw !== 'object') {
+  if (!raw) {
     return {
       title: fallbackTitle,
       image_url: IMAGE_PLACEHOLDER(seed),
@@ -268,31 +268,15 @@ const normalizeAttraction = (raw, fallbackTitle, seed) => {
     };
   }
 
-  const title = raw.title || raw.name || fallbackTitle;
+  // If raw is an ID (number or string-id), use imgSrc(id) to get the /raw URL
+  // If raw is an object, use imgSrc(obj) to pick the best image field
+  const title = (typeof raw === 'object') ? (raw.title || raw.name || fallbackTitle) : fallbackTitle;
+  const image_url = imgSrc(raw, IMAGE_PLACEHOLDER(seed));
 
-  // Prefer desktop / hero images first
-  const srcCandidate =
-    raw.desktop_image_url ??
-    raw.hero_desktop_image ??
-    raw.hero_image ??
-    raw.image_media_id ??
-    raw.media_id ??
-    raw.cover_media_id ??
-    raw.banner_media_id ??
-    raw.url_path ??
-    raw.image_url ??
-    raw.cover_image ??
-    raw.web_image ??
-    raw.mobile_image ??
-    raw.image ??
-    null;
-
-  const image_url = imgSrc(srcCandidate, IMAGE_PLACEHOLDER(seed));
-  const slug = raw.slug || raw.id || raw.attraction_id || null;
-  const price = Number(raw.base_price || raw.price || raw.amount || 0);
-  const attraction_id = raw.attraction_id ?? raw.id ?? slug;
-
-  const time_slot_enabled = raw.time_slot_enabled !== false;
+  const slug = raw?.slug || raw?.id || raw?.attraction_id || null;
+  const price = Number(raw?.base_price || raw?.price || raw?.amount || 0);
+  const attraction_id = raw?.attraction_id ?? raw?.id ?? slug;
+  const time_slot_enabled = raw?.time_slot_enabled !== false;
 
   return { title, image_url, slug, price, attraction_id, time_slot_enabled };
 };
@@ -698,6 +682,7 @@ export default function ComboDetails() {
           );
           return normalizeAttraction(
             match || { title: `Experience ${idx + 1}` },
+            `Experience ${idx + 1}`,
             `combo-${idx}`,
           );
         })

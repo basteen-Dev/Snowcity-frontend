@@ -8,7 +8,7 @@ const planItems = [
     icon: Clock,
     title: 'Park Timings',
     description: '10:15 am to 8:00 pm | Every day',
-    href: '/park-timing'
+    href: '/park-timings'
   },
   {
     icon: MapPin,
