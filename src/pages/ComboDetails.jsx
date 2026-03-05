@@ -21,7 +21,8 @@ import {
 } from '../utils/pricing';
 import { imgSrc } from '../utils/media';
 import dayjs from 'dayjs';
-import { X, ChevronDown, Check, Calendar } from 'lucide-react';
+import { X, ChevronDown, Check, Calendar, Minus, Plus } from 'lucide-react';
+
 import usePageSeo from '../hooks/usePageSeo';
 
 /* ========= Small helpers / utilities ========= */

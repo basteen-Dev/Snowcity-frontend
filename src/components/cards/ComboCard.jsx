@@ -106,7 +106,9 @@ export default function ComboCard({ item }) {
   const comboDisplayPrice = price > 0 ? price : (toAmount(item?.combo_price) || toAmount(item?.total_price) || baseSum);
 
   const comboSlug = generateComboSlug(item);
-  const comboHref = comboSlug ? `/combo-${comboSlug}` : (comboId ? `/combos/${comboId}` : '/combos');
+  const rawSlug = comboSlug?.startsWith('combo-') ? comboSlug.slice(6) : comboSlug;
+  const comboHref = rawSlug ? `/combo-${rawSlug}` : (comboId ? `/combos/${comboId}` : '/combos');
+
   const numericComboId = item?.combo_id || item?.id || null;
   const bookHref = numericComboId ? `/tickets-offers?combo_id=${numericComboId}&type=combo&openDrawer=true` : '/tickets-offers?type=combo&openDrawer=true';
 

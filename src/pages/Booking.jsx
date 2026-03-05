@@ -529,8 +529,6 @@ export default function Booking() {
   const [promosLoading, setPromosLoading] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [paymentStartTime, setPaymentStartTime] = useState(null);
-  const [phonepeIframeVisible, setPhonepeIframeVisible] = useState(false);
-  const [phonepeIframeUrl, setPhonepeIframeUrl] = useState('');
   const [dynamicPricingDates, setDynamicPricingDates] = useState({});
   const restoredFromSessionRef = useRef(false);
 
@@ -1870,7 +1868,7 @@ export default function Booking() {
 
       // Step 2: Initiate payment based on selected gateway
       if (paymentGateway === 'phonepe') {
-        // PhonePe iframe payment
+        // ✅ PhonePe redirect payment (Option B — same as PayPhi)
         const phonepeResult = await dispatch(
           initiatePhonePe({
             orderId,
@@ -1883,37 +1881,10 @@ export default function Booking() {
         console.log('✅ PhonePe payment initiated:', phonepeResult);
 
         if (phonepeResult.ok && phonepeResult.redirectUrl) {
-          // Show PhonePe iframe
-          setPhonepeIframeUrl(phonepeResult.redirectUrl);
-          setPhonepeIframeVisible(true);
-
-          // Start PhonePe iframe transaction
-          if (window.PhonePeCheckout && window.PhonePeCheckout.transact) {
-            window.PhonePeCheckout.transact({
-              tokenUrl: phonepeResult.redirectUrl,
-              callback: (response) => {
-                console.log('📡 PhonePe iframe callback:', response);
-                setPhonepeIframeVisible(false);
-                setPhonepeIframeUrl('');
-
-                if (response === 'USER_CANCEL') {
-                  // User cancelled payment
-                  alert('Payment was cancelled. You can try again or continue with a different payment method.');
-                } else if (response === 'CONCLUDED') {
-                  // Payment completed - redirect to success page
-                  navigate(`/payment/success?orderId=${orderId}&gateway=phonepe`);
-                } else {
-                  // Unknown response
-                  console.warn('Unknown PhonePe callback response:', response);
-                  alert('Payment status unclear. Please check your email for confirmation.');
-                }
-              },
-              type: 'IFRAME'
-            });
-          } else {
-            console.error('âŒ PhonePe checkout script not loaded');
-            alert('Payment system not ready. Please refresh and try again.');
-          }
+          // ✅ Option B: redirect directly to PhonePe payment page (same approach as PayPhi)
+          // PhonePe will redirect back to snowcityblr.com/payment-status?txnId=...&gateway=phonepe
+          console.log('✅ PhonePe payment initiated, redirecting to:', phonepeResult.redirectUrl);
+          window.location.href = phonepeResult.redirectUrl;
         } else {
           throw new Error(phonepeResult.responseMessage || 'Failed to initiate PhonePe payment');
         }
@@ -2473,64 +2444,7 @@ export default function Booking() {
                 />
               )}
 
-              {/* PhonePe Iframe Overlay */}
-              {phonepeIframeVisible && (
-                <div className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-                  <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl h-[80vh] max-h-[600px] flex flex-col">
-                    <div className="flex items-center justify-between p-4 border-b border-gray-200">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                          <svg className="w-5 h-5 text-purple-600" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 11 5.16-1.26 9-6.45 9-12V7l-10-5zm0 18c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z" />
-                          </svg>
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-gray-900">Complete Payment</h3>
-                          <p className="text-sm text-gray-600">Secure payment powered by PhonePe</p>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => {
-                          setPhonepeIframeVisible(false);
-                          setPhonepeIframeUrl('');
-                          if (window.PhonePeCheckout && window.PhonePeCheckout.closePage) {
-                            window.PhonePeCheckout.closePage();
-                          }
-                        }}
-                        className="p-2 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-gray-600 transition-colors"
-                      >
-                        <X size={20} />
-                      </button>
-                    </div>
-                    <div className="flex-1 p-4">
-                      {phonepeIframeUrl ? (
-                        <iframe
-                          src={phonepeIframeUrl}
-                          className="w-full h-full rounded-xl border border-gray-200"
-                          title="PhonePe Payment"
-                          allow="payment"
-                          sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation"
-                        />
-                      ) : (
-                        <div className="w-full h-full rounded-xl bg-gray-50 border border-gray-200 flex items-center justify-center">
-                          <div className="text-center">
-                            <div className="animate-spin rounded-xl h-8 w-8 border-2 border-purple-600 border-t-transparent mx-auto mb-4" />
-                            <p className="text-gray-600">Loading payment page...</p>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                    <div className="p-4 border-t border-gray-200 bg-gray-50 rounded-b-2xl">
-                      <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
-                        <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                        </svg>
-                        <span>Secure payment processing • 256-bit SSL encryption</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
+
 
               {/* Custom Calendar Popup */}
               {showCalendar && (

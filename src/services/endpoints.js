@@ -174,6 +174,16 @@ const endpoints = {
     }
   },
 
+  // Public payment status check by txnId (no auth) — used by PaymentStatus page after redirect
+  payment: {
+    phonepe: {
+      statusByTxn: (txnId) => `/api/payments/phonepe/status/txn/${encodeURIComponent(txnId)}` // GET – no auth
+    },
+    payphi: {
+      statusByTxn: (txnId) => `/api/payments/payphi/status/txn/${encodeURIComponent(txnId)}` // GET – no auth
+    }
+  },
+
   // Conversion Tracking (Public)
   tracking: {
     visit: () => '/api/track/visit',        // POST

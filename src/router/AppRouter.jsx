@@ -31,6 +31,7 @@ const Booking = safeLazy(() => import('../pages/Booking.jsx'), () => <Placeholde
 const MyBookings = safeLazy(() => import('../pages/MyBookings.jsx'), () => <Placeholder title="My Bookings" />);
 const PaymentReturn = safeLazy(() => import('../pages/PaymentReturn.jsx'), () => <Placeholder title="Payment Return" />);
 const PaymentSuccess = safeLazy(() => import('../pages/PaymentSuccess.jsx'), () => <Placeholder title="Payment Success" />);
+const PaymentStatus = safeLazy(() => import('../pages/PaymentStatus.jsx'), () => <Placeholder title="Payment Status" />);
 const NotFound = safeLazy(() => import('../pages/NotFound.jsx'), () => <Placeholder title="Not Found" />);
 const BlogDetails = safeLazy(() => import('../pages/Blog.jsx'), () => <Placeholder title="Blog" />);
 const Gallery = safeLazy(() => import('../pages/Gallery.jsx'), () => <Placeholder title="Gallery" />);
@@ -98,6 +99,7 @@ export default function AppRouter() {
             <Route path="/visitor-guide/blogs" element={<VisitorBlogs />} />
             <Route path="/payment/success" element={<PaymentSuccess />} />
             <Route path="/payment/return" element={<PaymentReturn />} />
+            <Route path="/payment-status" element={<PaymentStatus />} />
 
             <Route element={<ProtectedRoute />}>
               <Route path="/my-bookings" element={<MyBookings />} />
