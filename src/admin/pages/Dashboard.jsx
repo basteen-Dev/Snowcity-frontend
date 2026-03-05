@@ -1,269 +1,393 @@
 // src/admin/pages/Dashboard.jsx
-import React, { useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import dayjs from 'dayjs';
 import adminApi from '../services/adminApi';
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, PieChart, Pie, Cell } from 'recharts';
-import { formatCurrency } from '../../utils/formatters';
-import useReportDownload from '../hooks/useReportDownload';
+import './OpsDashboard.css';
 
-const RANGES = [
-  { key: 'all', label: 'All Time', get: () => ({ from: undefined, to: undefined }) },
-  { key: 'today', label: 'Today', get: () => ({ from: dayjs().format('YYYY-MM-DD'), to: dayjs().format('YYYY-MM-DD') }) },
-  { key: 'yesterday', label: 'Yesterday', get: () => ({ from: dayjs().subtract(1, 'day').format('YYYY-MM-DD'), to: dayjs().subtract(1, 'day').format('YYYY-MM-DD') }) },
-  { key: 'past7', label: 'Past Week', get: () => ({ from: dayjs().subtract(7, 'day').format('YYYY-MM-DD'), to: dayjs().format('YYYY-MM-DD') }) },
-  { key: 'thisMonth', label: 'This Month', get: () => ({ from: dayjs().startOf('month').format('YYYY-MM-DD'), to: dayjs().endOf('month').format('YYYY-MM-DD') }) },
-];
-
-const COLORS = ['#2563eb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#14b8a6', '#e11d48', '#22c55e', '#f97316', '#3b82f6'];
-
-const metricConfig = [
-  { key: 'total_bookings', label: 'Confirmed Bookings', accent: 'from-blue-500 to-indigo-600', formatter: (v) => Number(v || 0).toLocaleString(), note: 'Paid orders' },
-  { key: 'pending_bookings', label: 'Pending Bookings', accent: 'from-amber-400 to-orange-500', formatter: (v) => Number(v || 0).toLocaleString(), note: 'Awaiting payment' },
-  { key: 'total_revenue', label: 'Revenue (Paid)', accent: 'from-emerald-500 to-green-600', formatter: (v) => formatCurrency(v || 0), note: 'Captured revenue' },
-  { key: 'pending_revenue', label: 'Pending Revenue', accent: 'from-rose-500 to-pink-500', formatter: (v) => formatCurrency(v || 0), note: 'Held in cart / unpaid' },
-  { key: 'total_people', label: 'Tickets (People)', accent: 'from-slate-500 to-slate-700', formatter: (v) => Number(v || 0).toLocaleString() },
-  { key: 'unique_users', label: 'Unique Users', accent: 'from-teal-500 to-cyan-500', formatter: (v) => Number(v || 0).toLocaleString() },
-  { key: 'today_bookings', label: 'Today', accent: 'from-purple-500 to-fuchsia-500', formatter: (v) => Number(v || 0).toLocaleString(), note: 'Paid today' },
-];
-
-const numberFmt = (v = 0) => Number(v || 0).toLocaleString();
-
-const SectionCard = ({ title, subtitle, children, className = '' }) => (
-  <div className={`rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:bg-neutral-900 dark:border-neutral-800 ${className}`}>
-    <div className="flex items-start justify-between mb-4">
-      <div>
-        <p className="text-sm font-semibold text-gray-900 dark:text-neutral-100">{title}</p>
-        {subtitle ? <p className="text-xs text-gray-500">{subtitle}</p> : null}
-      </div>
-    </div>
-    {children}
-  </div>
-);
-
-const MetricCard = ({ label, value, note, accent }) => (
-  <div className="rounded-2xl border border-gray-100 bg-white shadow-sm p-4 dark:bg-neutral-900 dark:border-neutral-800">
-    <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{label}</div>
-    <div className={`mt-3 text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r ${accent}`}>{value}</div>
-    {note ? <div className="text-xs text-gray-500 mt-2">{note}</div> : null}
-  </div>
-);
+const numberFmt = (v = 0) => Number(v || 0).toLocaleString('en-IN');
+const moneyFmt = (v = 0) => `₹${Number(v || 0).toLocaleString('en-IN')}`;
 
 export default function Dashboard() {
-  const [rangeKey, setRangeKey] = React.useState('all');
-  const [month, setMonth] = React.useState(dayjs().format('YYYY-MM'));
-  const [loading, setLoading] = React.useState(false);
-  const [summary, setSummary] = React.useState(null);
-  const [trend, setTrend] = React.useState([]);
-  const [attractions, setAttractions] = React.useState([]);
-  const { download, downloading, error: downloadError } = useReportDownload();
+  const [filterType, setFilterType] = useState('today');
+  const [customFrom, setCustomFrom] = useState(dayjs().format('YYYY-MM-DD'));
+  const [customTo, setCustomTo] = useState(dayjs().format('YYYY-MM-DD'));
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(null);
 
-  const computeRange = () => {
-    if (rangeKey === 'customMonth') {
-      const base = dayjs(`${month}-01`);
-      return { from: base.startOf('month').format('YYYY-MM-DD'), to: base.endOf('month').format('YYYY-MM-DD') };
+  // Compute date label for display
+  const activeDateLabel = useMemo(() => {
+    if (filterType === 'today') return dayjs().format('DD MMM YYYY');
+    if (filterType === 'tomorrow') return dayjs().add(1, 'day').format('DD MMM YYYY');
+    if (filterType === 'yesterday') return dayjs().subtract(1, 'day').format('DD MMM YYYY');
+    if (filterType === 'mtd') return `${dayjs().startOf('month').format('DD')} – ${dayjs().format('DD MMM YYYY')}`;
+    if (filterType === 'custom') {
+      if (customFrom === customTo) return dayjs(customFrom).format('DD MMM YYYY');
+      return `${dayjs(customFrom).format('DD MMM')} – ${dayjs(customTo).format('DD MMM YYYY')}`;
     }
-    const r = RANGES.find((x) => x.key === rangeKey) || RANGES[0];
-    return r.get();
-  };
+    return '';
+  }, [filterType, customFrom, customTo]);
 
-  async function load() {
+  const loadData = async () => {
     setLoading(true);
     try {
-      const { from, to } = computeRange();
-      const params = {};
-      if (from) params.from = from;
-      if (to) params.to = to;
+      let from, to;
+      if (filterType === 'today') {
+        from = to = dayjs().format('YYYY-MM-DD');
+      } else if (filterType === 'tomorrow') {
+        from = to = dayjs().add(1, 'day').format('YYYY-MM-DD');
+      } else if (filterType === 'yesterday') {
+        from = to = dayjs().subtract(1, 'day').format('YYYY-MM-DD');
+      } else if (filterType === 'mtd') {
+        from = dayjs().startOf('month').format('YYYY-MM-DD');
+        to = dayjs().format('YYYY-MM-DD');
+      } else {
+        from = customFrom;
+        to = customTo;
+      }
 
-      const overview = await adminApi.get('/api/admin/analytics/overview', { params });
-      setSummary(overview?.summary || overview);
-
-      const t = await adminApi.get('/api/admin/analytics/trend', { params: { ...params, granularity: 'day' } });
-      setTrend(Array.isArray(t) ? t : (t?.data || []));
-
-      const topA = await adminApi.get('/api/admin/analytics/top-attractions', { params: { ...params, limit: 10 } });
-      setAttractions(Array.isArray(topA) ? topA : (topA?.data || []));
+      setError(null);
+      const res = await adminApi.get('/api/admin/analytics/ops-dashboard', { params: { from, to } });
+      setData(res);
+    } catch (err) {
+      console.error('Failed to load dashboard data', err);
+      setError(err?.message || 'Failed to load dashboard data');
     } finally {
       setLoading(false);
     }
-  }
+  };
 
-  React.useEffect(() => { load(); /* eslint-disable-next-line */ }, [rangeKey, month]);
+  useEffect(() => {
+    loadData();
+  }, [filterType, customFrom, customTo]);
 
-  const { from, to } = computeRange();
-  const downloadFormats = [
-    { label: 'CSV', ext: 'csv' },
-    { label: 'Excel', ext: 'xlsx' },
-    { label: 'PDF', ext: 'pdf' }
-  ];
-  const handleDownload = (type, ext) => () => download({ type, ext, params: { from, to } });
+  const visitor = data?.visitorSummary || { totalGuests: 0, snow: 0, madlabs: 0, eyelusion: 0, devil: 0 };
+  const revenue = data?.revenueSummary || { ticketing: 0, addons: 0 };
+  const attractions = data?.attractionBreakdown || [];
+  const txn = data?.transactionSummary || { bookingsPlaced: 0, revenuePlaced: 0, guestsPlaced: 0, attractions: [] };
 
-  const paid = Number(summary?.total_revenue || 0);
-  const pending = Number(summary?.pending_revenue || 0);
-  const totalRevenue = paid + pending;
-  const paidPct = totalRevenue ? Math.round((paid / totalRevenue) * 100) : 0;
-
-  const attractionList = useMemo(() => (attractions || []).slice(0, 6), [attractions]);
+  const totalRev = revenue.ticketing + revenue.addons;
+  const maxRevStream = Math.max(revenue.ticketing, revenue.addons, 1);
+  const revPct = (v) => Math.round((v / maxRevStream) * 100);
 
   return (
-    <div className="space-y-6">
-      {/* Filters */}
-      <SectionCard title="Performance Filters" subtitle="Quickly slice data by period" className="p-4">
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex flex-wrap gap-2">
-            {RANGES.map((r) => (
-              <button
-                key={r.key}
-                onClick={() => setRangeKey(r.key)}
-                className={`px-3 py-1.5 rounded-xl text-sm border transition-colors ${rangeKey === r.key ? 'bg-gray-900 text-white border-gray-900' : 'border-gray-200 text-gray-700 hover:border-gray-400'}`}
-              >
-                {r.label}
-              </button>
-            ))}
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setRangeKey('customMonth')}
-              className={`px-3 py-1.5 rounded-xl text-sm border ${rangeKey === 'customMonth' ? 'bg-gray-900 text-white border-gray-900' : 'border-gray-200 text-gray-700 hover:border-gray-400'}`}
-            >
-              Month
-            </button>
-            <input
-              type="month"
-              className="rounded-lg border border-gray-200 px-3 py-1.5 text-sm focus:ring-2 focus:ring-gray-900"
-              value={month}
-              onChange={(e) => setMonth(e.target.value)}
-            />
-          </div>
-          <div className="flex flex-wrap items-center gap-2 ml-auto">
-            {downloadFormats.map((fmt) => (
-              <button
-                key={`trend-${fmt.ext}`}
-                type="button"
-                className="px-3 py-1.5 rounded-xl border text-sm disabled:opacity-50"
-                onClick={handleDownload('trend', fmt.ext)}
-                disabled={downloading}
-              >
-                Trend {fmt.label}
-              </button>
-            ))}
-            {downloadFormats.map((fmt) => (
-              <button
-                key={`attr-${fmt.ext}`}
-                type="button"
-                className="px-3 py-1.5 rounded-xl border text-sm disabled:opacity-50"
-                onClick={handleDownload('top-attractions', fmt.ext)}
-                disabled={downloading}
-              >
-                Attractions {fmt.label}
-              </button>
-            ))}
+    <div className="ops-wrapper">
+      {/* TOPBAR */}
+      <div className="topbar a1">
+        <div className="brand">
+          <div className="b-icon">🎡</div>
+          <div>
+            <div className="b-name">FunZone — Operations Dashboard</div>
+            <div className="b-sub">Counter · Manager · Management</div>
           </div>
         </div>
-        {downloadError && (
-          <p className="text-xs text-red-600 mt-2">{downloadError.message || 'Failed to download report.'}</p>
+        <div className="tr">
+          <div className="chip"><div className="ldot"></div>{loading ? 'Refreshing...' : 'Live'}</div>
+          <div className="chip">🕐 {dayjs().format('ddd, DD MMM YYYY · HH:mm')}</div>
+        </div>
+      </div>
+
+      {/* DATE FILTER BAR */}
+      <div className="filter-bar a1">
+        <span className="fl">Period</span>
+        <button
+          className={`fb ${filterType === 'today' ? 'active' : ''}`}
+          onClick={() => setFilterType('today')}
+        >Today</button>
+        <button
+          className={`fb ${filterType === 'tomorrow' ? 'active' : ''}`}
+          onClick={() => setFilterType('tomorrow')}
+        >Tomorrow</button>
+        <button
+          className={`fb ${filterType === 'yesterday' ? 'active' : ''}`}
+          onClick={() => setFilterType('yesterday')}
+        >Yesterday</button>
+        <button
+          className={`fb ${filterType === 'mtd' ? 'active' : ''}`}
+          onClick={() => setFilterType('mtd')}
+        >Month-to-Date</button>
+        <div className="custom-wrap">
+          <button
+            className={`fb ${filterType === 'custom' ? 'active' : ''}`}
+            onClick={() => setFilterType('custom')}
+          >Custom</button>
+          {filterType === 'custom' && (
+            <>
+              <input
+                type="date"
+                value={customFrom}
+                onChange={(e) => setCustomFrom(e.target.value)}
+              />
+              <span className="text-xs text-gray-400">to</span>
+              <input
+                type="date"
+                value={customTo}
+                onChange={(e) => setCustomTo(e.target.value)}
+              />
+            </>
+          )}
+        </div>
+        <div className="active-date">{activeDateLabel}</div>
+      </div>
+
+      {/* PAGE */}
+      <div className="page">
+
+        {error && (
+          <div style={{ background: 'var(--red-bg)', color: 'var(--red)', border: '1px solid var(--red)', borderRadius: 'var(--r)', padding: '14px 20px', marginBottom: '16px', fontSize: '13px', fontWeight: 500 }}>
+            ⚠️ {error}
+          </div>
         )}
-      </SectionCard>
 
-      {/* KPI Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {metricConfig.map((metric) => (
-          <MetricCard
-            key={metric.key}
-            label={metric.label}
-            value={metric.formatter(summary?.[metric.key])}
-            note={metric.note}
-            accent={metric.accent}
-          />
-        ))}
-      </div>
+        {/* §1 VISITOR SUMMARY */}
+        <div className="sec-hd s1 a2">
+          <div className="sec-hd-pill">🎢 Visitor Summary</div>
+          <div className="sec-hd-body">Guests who physically <strong>visited the park</strong> on the selected date</div>
+          <div className="sec-hd-date">Visit Date: {activeDateLabel}</div>
+        </div>
 
-      {/* Trend + Revenue Split */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-        <SectionCard title="Daily Momentum" subtitle="Confirmed bookings vs visitors" className="xl:col-span-2">
-          <div style={{ height: 300 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={trend || []}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis dataKey="bucket" tickFormatter={(v) => dayjs(v).format('MM-DD')} />
-                <YAxis />
-                <Tooltip labelFormatter={(v) => dayjs(v).format('YYYY-MM-DD')} />
-                <Legend />
-                <Line type="monotone" dataKey="bookings" stroke="#2563eb" name="Bookings" strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="people" stroke="#10b981" name="People" strokeWidth={2} dot={false} />
-              </LineChart>
-            </ResponsiveContainer>
+        <div className="scards sc5 a2">
+          <div className="sc c-dark">
+            <div className="sc-lbl">Total Guests</div>
+            <div className="sc-val">{numberFmt(visitor.totalGuests)}</div>
+            <div className="sc-sub">All parks & attractions</div>
           </div>
-        </SectionCard>
-        <SectionCard title="Revenue Mix" subtitle="Paid vs pending inflows">
-          <div className="space-y-6">
+          <div className="sc c-blue">
+            <div className="sc-lbl">❄️ Snow Park</div>
+            <div className="sc-val">{numberFmt(visitor.snow)}</div>
+            <div className="sc-sub">{visitor.snow > 0 ? 'Visited' : 'No visitors'} today</div>
+          </div>
+          <div className="sc c-purple">
+            <div className="sc-lbl">🧪 Madlabs</div>
+            <div className="sc-val">{numberFmt(visitor.madlabs)}</div>
+            <div className="sc-sub">{visitor.madlabs > 0 ? 'Visited' : 'No visitors'} today</div>
+          </div>
+          <div className="sc c-pink">
+            <div className="sc-lbl">👁 Eyelusion</div>
+            <div className="sc-val">{numberFmt(visitor.eyelusion)}</div>
+            <div className="sc-sub">{visitor.eyelusion > 0 ? 'Visited' : 'No visitors'} today</div>
+          </div>
+          <div className="sc c-slate">
+            <div className="sc-lbl">👹 Devil's Darkhouse</div>
+            <div className="sc-val">{numberFmt(visitor.devil)}</div>
+            <div className="sc-sub">{visitor.devil > 0 ? 'Visited' : 'No visitors'} today</div>
+          </div>
+        </div>
+
+        {/* §2 REVENUE SUMMARY */}
+        <div className="sec-hd s2 a3">
+          <div className="sec-hd-pill">💰 Revenue Summary</div>
+          <div className="sec-hd-body">Revenue for visitors on the <strong>selected visit date</strong></div>
+          <div className="sec-hd-date">Visit Date: {activeDateLabel}</div>
+        </div>
+
+        <div className="scards sc3 a3">
+          <div className="sc c-green">
+            <div className="sc-lbl">Grand Total</div>
+            <div className="sc-val">{moneyFmt(totalRev)}</div>
+            <div className="sc-sub">Ticketing + Add-ons</div>
+          </div>
+          <div className="sc c-blue">
+            <div className="sc-lbl">Ticketing</div>
+            <div className="sc-val">{moneyFmt(revenue.ticketing)}</div>
+            <div className="sc-sub">Attraction & combo ticket prices</div>
+          </div>
+          <div className="sc c-amber">
+            <div className="sc-lbl">Add-ons</div>
+            <div className="sc-val">{moneyFmt(revenue.addons)}</div>
+            <div className="sc-sub">Jackets, gloves & extras</div>
+          </div>
+        </div>
+
+        {/* Revenue breakdown panel */}
+        <div className="panel a3" style={{ marginBottom: '32px' }}>
+          <div className="ph">
             <div>
-              <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
-                <span>Paid</span>
-                <span>{formatCurrency(paid)}</span>
-              </div>
-              <div className="h-2 rounded-xl bg-gray-100">
-                <div className="h-full rounded-xl bg-emerald-500" style={{ width: `${paidPct}%` }} />
-              </div>
+              <div className="pt">Revenue Breakdown</div>
+              <div className="ps">Ticketing vs Add-ons — revenue for the selected visit date</div>
             </div>
-            <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
-              <span>Pending</span>
-              <span>{formatCurrency(pending)}</span>
-            </div>
-            <div className="grid grid-cols-2 gap-3 text-sm">
-              <div className="rounded-xl bg-emerald-50 p-3">
-                <p className="text-xs text-emerald-600 uppercase">Conversion</p>
-                <p className="text-2xl font-semibold text-emerald-700">{paidPct}%</p>
-              </div>
-              <div className="rounded-xl bg-amber-50 p-3">
-                <p className="text-xs text-amber-600 uppercase">Open Value</p>
-                <p className="text-2xl font-semibold text-amber-700">{formatCurrency(pending)}</p>
-              </div>
-            </div>
+            <div className="pbadge pb-green">Visit: {activeDateLabel}</div>
           </div>
-        </SectionCard>
-      </div>
-
-      {/* Attraction Performance & Share */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <SectionCard title="Top Attractions" subtitle="Ranked by paid bookings">
-          <div className="space-y-3">
-            {attractionList.length === 0 && <p className="text-sm text-gray-500">No data available.</p>}
-            {attractionList.map((attr, idx) => {
-              const progress = attr.bookings ? Math.min(100, (attr.bookings / (attractionList[0]?.bookings || 1)) * 100) : 0;
-              return (
-                <div key={attr.attraction_id || idx} className="p-3 rounded-xl border border-gray-100">
-                  <div className="flex items-center justify-between text-sm font-medium text-gray-800">
-                    <span>{idx + 1}. {attr.title}</span>
-                    <span>{numberFmt(attr.bookings)} bookings</span>
-                  </div>
-                  <div className="h-2 rounded-xl bg-gray-100 mt-2">
-                    <div className="h-full rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500" style={{ width: `${progress}%` }} />
-                  </div>
-                  <div className="flex items-center justify-between text-xs text-gray-500 mt-1">
-                    <span>People: {numberFmt(attr.people)}</span>
-                    <span>Revenue: {formatCurrency(attr.revenue)}</span>
-                  </div>
+          <div className="pbody" style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '32px' }}>
+            <div>
+              <div className="sec-lbl" style={{ color: 'var(--blue)' }}>Ticketing Revenue</div>
+              <div className="ri"><div className="ri-ic">🎫</div><div className="ri-lbl">Attraction & Combo Tickets</div><div className="ri-bar"><div className="ri-fil" style={{ width: `${revPct(revenue.ticketing)}%`, background: 'var(--blue)' }}></div></div><div className="ri-amt" style={{ color: 'var(--blue)' }}>{moneyFmt(revenue.ticketing)}</div></div>
+              <div className="sec-lbl" style={{ color: 'var(--muted)', marginTop: '12px' }}>Non-Ticketing Revenue</div>
+              <div className="ri"><div className="ri-ic">🧤</div><div className="ri-lbl">Add-ons (Jackets, Gloves, etc.)</div><div className="ri-bar"><div className="ri-fil" style={{ width: `${revPct(revenue.addons)}%`, background: 'var(--amber)' }}></div></div><div className="ri-amt" style={{ color: 'var(--amber)' }}>{moneyFmt(revenue.addons)}</div></div>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <div className="rev-total">
+                <div>
+                  <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--green)', textTransform: 'uppercase', letterSpacing: '.5px' }}>Grand Total</div>
+                  <div style={{ fontSize: '11px', color: 'var(--sub)', marginTop: '2px' }}>Ticketing {moneyFmt(revenue.ticketing)} + Add-ons {moneyFmt(revenue.addons)}</div>
                 </div>
-              );
-            })}
+                <div style={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '26px', fontWeight: '600', color: 'var(--green)' }}>{moneyFmt(totalRev)}</div>
+              </div>
+            </div>
           </div>
-        </SectionCard>
+        </div>
 
-        <SectionCard title="Share of Bookings" subtitle="Top 10 attractions">
-          <div style={{ height: 320 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie data={attractions || []} dataKey="bookings" nameKey="title" innerRadius={70} outerRadius={110} paddingAngle={2}>
-                  {(attractions || []).map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
-                </Pie>
-                <Tooltip formatter={(value, name, props) => [`${value} bookings`, props?.payload?.title || name]} />
-              </PieChart>
-            </ResponsiveContainer>
+        {/* §3 ATTRACTION-WISE BREAKDOWN */}
+        <div className="sec-hd s3 a4">
+          <div className="sec-hd-pill">📊 Attraction-wise Breakdown</div>
+          <div className="sec-hd-body">Guest count and revenue split <strong>per attraction</strong> for the selected period</div>
+          <div className="sec-hd-date">{activeDateLabel}</div>
+        </div>
+
+        <div className="two-col a4">
+          {/* GUEST COUNT */}
+          <div className="panel">
+            <div className="ph">
+              <div>
+                <div className="pt">Guest Count by Attraction</div>
+                <div className="ps">How many guests visited each attraction</div>
+              </div>
+              <div className="pbadge pb-blue">Visit: {activeDateLabel}</div>
+            </div>
+            <div className="pbody">
+              <table className="tbl">
+                <thead><tr><th>Attraction</th><th>Guests</th><th>Share</th><th>Tickets</th></tr></thead>
+                <tbody>
+                  {(attractions.length > 0 ? attractions : [{ title: 'No data', guests: 0, revenue: 0, tickets: 0 }]).map((attr, i) => {
+                    const totalG = visitor.totalGuests || 1;
+                    const pct = Math.round((attr.guests / totalG) * 100);
+                    const tagClass = attr.title.toLowerCase().includes('snow') ? 'at-snow' : attr.title.toLowerCase().includes('mad') ? 'at-mad' : attr.title.toLowerCase().includes('devil') ? 'at-devil' : 'at-eye';
+                    return (
+                      <tr key={i}>
+                        <td><span className={`atag ${tagClass}`}>{attr.title}</span></td>
+                        <td>{numberFmt(attr.guests || 0)}</td>
+                        <td>
+                          <div className="mpb">
+                            <div className="mpb-track"><div className="mpb-fill" style={{ width: `${pct}%`, background: 'var(--blue)' }}></div></div>
+                            <span className="mpb-pct">{pct}%</span>
+                          </div>
+                        </td>
+                        <td>{numberFmt(attr.tickets || 0)}</td>
+                      </tr>
+                    );
+                  })}
+                  <tr className="tot">
+                    <td>Total</td>
+                    <td>{numberFmt(visitor.totalGuests)}</td>
+                    <td></td>
+                    <td>{numberFmt(attractions.reduce((acc, curr) => acc + curr.tickets, 0))}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
-        </SectionCard>
+
+          {/* ATTRACTION REVENUE */}
+          <div className="panel">
+            <div className="ph">
+              <div>
+                <div className="pt">Revenue by Attraction</div>
+                <div className="ps">Ticketed-attraction revenue breakdown</div>
+              </div>
+              <div className="pbadge pb-green">Collected: {activeDateLabel}</div>
+            </div>
+            <div className="pbody">
+              <table className="tbl">
+                <thead><tr><th>Attraction</th><th>Revenue</th><th>Share</th><th>Avg/Guest</th></tr></thead>
+                <tbody>
+                  {(attractions.length > 0 ? attractions : [{ title: 'No data', guests: 0, revenue: 0, tickets: 0 }]).map((attr, i) => {
+                    const totalR = attractions.reduce((acc, curr) => acc + curr.revenue, 0) || 1;
+                    const pct = Math.round((attr.revenue / totalR) * 100);
+                    const avg = attr.guests ? Math.round(attr.revenue / attr.guests) : 0;
+                    const tagClass = attr.title.toLowerCase().includes('snow') ? 'at-snow' : attr.title.toLowerCase().includes('mad') ? 'at-mad' : attr.title.toLowerCase().includes('devil') ? 'at-devil' : 'at-eye';
+                    return (
+                      <tr key={i}>
+                        <td><span className={`atag ${tagClass}`}>{attr.title}</span></td>
+                        <td style={{ color: 'var(--green)' }}>{moneyFmt(attr.revenue || 0)}</td>
+                        <td>
+                          <div className="mpb">
+                            <div className="mpb-track"><div className="mpb-fill" style={{ width: `${pct}%`, background: 'var(--green)' }}></div></div>
+                            <span className="mpb-pct">{pct}%</span>
+                          </div>
+                        </td>
+                        <td>{moneyFmt(avg)}</td>
+                      </tr>
+                    );
+                  })}
+                  <tr className="tot">
+                    <td>Total</td>
+                    <td style={{ color: 'var(--green)' }}>{moneyFmt(attractions.reduce((acc, curr) => acc + curr.revenue, 0))}</td>
+                    <td></td>
+                    <td>{moneyFmt(Math.round(attractions.reduce((acc, curr) => acc + curr.revenue, 0) / (visitor.totalGuests || 1)))} avg</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        {/* §4 TRANSACTION SUMMARY */}
+        <div className="sec-hd s4 a5" style={{ marginTop: '32px' }}>
+          <div className="sec-hd-pill">📋 Booking Summary</div>
+          <div className="sec-hd-body">Confirmed bookings for the <strong>selected visit date</strong></div>
+          <div className="sec-hd-date">Visit Date: {activeDateLabel}</div>
+        </div>
+
+        <div className="scards sc3 a5">
+          <div className="sc c-slate">
+            <div className="sc-lbl">Total Bookings</div>
+            <div className="sc-val">{numberFmt(txn.bookingsPlaced)}</div>
+            <div className="sc-sub">Confirmed orders for this date</div>
+          </div>
+          <div className="sc c-green">
+            <div className="sc-lbl">Booking Value</div>
+            <div className="sc-val">{moneyFmt(txn.revenuePlaced)}</div>
+            <div className="sc-sub">Total paid amount</div>
+          </div>
+          <div className="sc c-blue">
+            <div className="sc-lbl">Total Guests</div>
+            <div className="sc-val">{numberFmt(txn.guestsPlaced)}</div>
+            <div className="sc-sub">People visiting on this date</div>
+          </div>
+        </div>
+
+        <div className="panel a6" style={{ marginBottom: '16px' }}>
+          <div className="ph">
+            <div>
+              <div className="pt">Bookings by Attraction</div>
+              <div className="ps">Attraction-wise split for the selected visit date</div>
+            </div>
+            <div className="pbadge pb-slate">Visit: {activeDateLabel}</div>
+          </div>
+          <div className="pbody">
+            <table className="tbl">
+              <thead><tr><th>Attraction</th><th>Bookings</th><th>Guests</th><th>Value</th></tr></thead>
+              <tbody>
+                {(txn.attractions.length > 0 ? txn.attractions : [{ title: 'No bookings', bookings: 0, guests: 0, value: 0 }]).map((attr, i) => {
+                  const tagClass = attr.title.toLowerCase().includes('snow') ? 'at-snow' : attr.title.toLowerCase().includes('mad') ? 'at-mad' : attr.title.toLowerCase().includes('devil') ? 'at-devil' : 'at-eye';
+                  return (
+                    <tr key={i}>
+                      <td><span className={`atag ${tagClass}`}>{attr.title}</span></td>
+                      <td>{numberFmt(attr.bookings)}</td>
+                      <td>{numberFmt(attr.guests)}</td>
+                      <td style={{ color: 'var(--green)' }}>{moneyFmt(attr.value)}</td>
+                    </tr>
+                  );
+                })}
+                <tr className="tot">
+                  <td>Total</td>
+                  <td>{numberFmt(txn.bookingsPlaced)}</td>
+                  <td>{numberFmt(txn.guestsPlaced)}</td>
+                  <td style={{ color: 'var(--green)' }}>{moneyFmt(txn.revenuePlaced)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* FOOTER */}
+        <div className="footer a7">
+          FunZone Operations Dashboard &nbsp;·&nbsp;
+          All data based on <strong>Visit Date</strong> (booking_date) &nbsp;·&nbsp;
+          Combo revenue attributed to individual attractions &nbsp;·&nbsp;
+          Real-time updates
+        </div>
       </div>
-
-      {loading ? <div className="text-sm text-gray-500">Refreshing analytics…</div> : null}
     </div>
   );
 }

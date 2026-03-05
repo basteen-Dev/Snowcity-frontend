@@ -551,31 +551,9 @@ export default function FloatingNavBar() {
                 )}
               </div>
 
-              {/* Offers */}
-              <div className="relative">
-                <button className={navLinkClass} onClick={() => toggleMenu("offers")}>
-                  OFFERS <ChevronDown className={`inline w-4 h-4 transition-transform duration-300 ${menuOpen === 'offers' ? 'rotate-180' : ''}`} />
-                </button>
-                {menuOpen === "offers" && (
-                  <div className="absolute right-0 top-full mt-2 w-56 rounded-lg border border-gray-200 bg-white shadow-lg p-2 z-[110]" style={{ boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)' }}>
-                    <Link
-                      to="/combos"
-                      className="block px-4 py-2.5 text-sm text-gray-800 hover:bg-sky-100 rounded-lg transition-all duration-200 font-medium"
-                      onClick={() => setMenuOpen(null)}
-                    >
-                      Combo Deals
-                    </Link>
-                    <Link
-                      to="/offers"
-                      className="block px-4 py-2.5 text-sm text-gray-800 hover:bg-sky-100 rounded-lg transition-all duration-200 font-medium"
-                      onClick={() => setMenuOpen(null)}
-                    >
-                      All Offers
-                    </Link>
-
-                  </div>
-                )}
-              </div>
+              <Link to="/combos" className={navLinkClass}>
+                DEALS
+              </Link>
 
               {/* Visitor Guide */}
               <div className="relative">
@@ -735,28 +713,13 @@ export default function FloatingNavBar() {
               </div>
             </details>
 
-            <details className="group">
-              <summary className="cursor-pointer py-3 px-4 text-black hover:text-gray-800 font-semibold transition-all duration-200 rounded-lg hover:bg-gray-100 list-none">
-                <Gift className="w-5 h-5 inline mr-3 text-blue-600" /> Offers
-              </summary>
-              <div className="pl-4 space-y-1 mt-2 pb-3 border-t border-sky-400/20 pt-3">
-                <Link
-                  to="/combos"
-                  className="block py-2 pl-4 text-gray-700 hover:text-black font-medium hover:bg-gray-50 rounded-lg transition-all duration-200"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  • Combo Deals
-                </Link>
-                <Link
-                  to="/offers"
-                  className="block py-2 pl-4 text-gray-700 hover:text-black font-medium hover:bg-gray-50 rounded-lg transition-all duration-200"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  • All Offers
-                </Link>
-
-              </div>
-            </details>
+            <Link
+              to="/combos"
+              className="block py-3 px-4 text-black hover:text-gray-800 font-semibold transition-all duration-200 rounded-lg hover:bg-gray-100"
+              onClick={() => setMobileOpen(false)}
+            >
+              <Gift className="w-5 h-5 inline mr-3 text-blue-600" /> DEALS
+            </Link>
 
             <details className="group">
               <summary className="cursor-pointer py-3 px-4 text-black hover:text-gray-800 font-semibold transition-all duration-200 rounded-lg hover:bg-gray-100 list-none">

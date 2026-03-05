@@ -1367,7 +1367,14 @@ export default function Booking() {
         if (added) dispatch(setStep(2));
       }
     } else if (step === 2) {
-      dispatch(setStep(hasToken ? 4 : 3));
+      // Session validation: check token before proceeding past add-ons
+      if (!hasToken) {
+        // Session expired or not logged in — silently redirect to login
+        const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
+        navigate(`/login?redirect=${returnUrl}`);
+        return;
+      }
+      dispatch(setStep(4)); // logged in → skip details, go to payment
     } else if (step === 3) {
       if (otp.verified) dispatch(setStep(4));
       else alert('Please verify OTP to continue.');
@@ -1793,10 +1800,6 @@ export default function Booking() {
 
   const onPlaceOrderAndPay = async () => {
     if (creating?.status === 'loading' || paymentLoading) return; // prevent duplicate submits while processing
-    if (!hasToken) {
-      setShowTokenExpiredModal(true);
-      return;
-    }
     if (!hasCartItems) return;
 
     // Start payment loading with minimum 15 seconds
@@ -1908,7 +1911,7 @@ export default function Booking() {
       }
     } catch (err) {
       console.error('âŒ Payment initiation failed:', err);
-      alert(`Session Closed.please Signin Again`);
+      alert(err?.message || 'Payment initiation failed. Please try again.');
     } finally {
       setPaymentLoading(false);
       setPaymentStartTime(null);

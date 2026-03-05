@@ -53,6 +53,7 @@ const quickRanges = [
 const ActionMenu = ({ row, onView, onWhatsApp, onEmail, onDownload }) => {
   const [open, setOpen] = React.useState(false);
   const ref = React.useRef(null);
+  const isConfirmed = row.booking_status === 'CONFIRMED' || row.booking_status === 'Booked';
 
   React.useEffect(() => {
     const close = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
@@ -78,22 +79,25 @@ const ActionMenu = ({ row, onView, onWhatsApp, onEmail, onDownload }) => {
           </button>
           <button
             onClick={(e) => { e.stopPropagation(); setOpen(false); onWhatsApp(row); }}
-            className="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-neutral-200 dark:hover:bg-neutral-800 transition-colors"
+            disabled={!isConfirmed}
+            className={`flex items-center gap-2.5 w-full px-3 py-2 text-sm transition-colors ${isConfirmed ? 'text-gray-700 hover:bg-gray-50 dark:text-neutral-200 dark:hover:bg-neutral-800' : 'text-gray-400 cursor-not-allowed opacity-50'}`}
           >
-            <MessageSquare size={15} className="text-green-500" /> Send WhatsApp
+            <MessageSquare size={15} className={isConfirmed ? 'text-green-500' : 'text-gray-400'} /> Send WhatsApp
           </button>
           <button
             onClick={(e) => { e.stopPropagation(); setOpen(false); onEmail(row); }}
-            className="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-neutral-200 dark:hover:bg-neutral-800 transition-colors"
+            disabled={!isConfirmed}
+            className={`flex items-center gap-2.5 w-full px-3 py-2 text-sm transition-colors ${isConfirmed ? 'text-gray-700 hover:bg-gray-50 dark:text-neutral-200 dark:hover:bg-neutral-800' : 'text-gray-400 cursor-not-allowed opacity-50'}`}
           >
-            <Mail size={15} className="text-indigo-500" /> Send Email
+            <Mail size={15} className={isConfirmed ? 'text-indigo-500' : 'text-gray-400'} /> Send Email
           </button>
           <div className="border-t border-gray-100 dark:border-neutral-700 my-1" />
           <button
             onClick={(e) => { e.stopPropagation(); setOpen(false); onDownload(row); }}
-            className="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-neutral-200 dark:hover:bg-neutral-800 transition-colors"
+            disabled={!isConfirmed}
+            className={`flex items-center gap-2.5 w-full px-3 py-2 text-sm transition-colors ${isConfirmed ? 'text-gray-700 hover:bg-gray-50 dark:text-neutral-200 dark:hover:bg-neutral-800' : 'text-gray-400 cursor-not-allowed opacity-50'}`}
           >
-            <Download size={15} className="text-cyan-500" /> Download Ticket
+            <Download size={15} className={isConfirmed ? 'text-cyan-500' : 'text-gray-400'} /> Download Ticket
           </button>
         </div>
       )}
@@ -284,20 +288,25 @@ export default function BookingsList() {
     dispatch(listAdminBookings({ ...clean, page: 1, limit: rowsPerPage }));
   };
 
-  // Inline status change — propagate to all sibling bookings in same order
-  const handleInlineStatusChange = async (row, newStatus) => {
+  // Inline ticket status toggle — propagate to all sibling bookings in same order
+  const handleTicketStatusToggle = async (row) => {
     const bookingId = row.booking_id ?? row.id;
     if (!bookingId) return;
-    const oldStatus = row.booking_status || 'Unknown';
-    if (newStatus === oldStatus) return;
-    const ok = window.confirm(`Change booking #${row.booking_ref || bookingId} status from "${oldStatus}" to "${newStatus}"?\n\nThis will update all items in this order.`);
+    const isConfirmed = row.booking_status === 'CONFIRMED' || row.booking_status === 'Booked';
+    if (!isConfirmed) {
+      window.alert('Ticket status can only be changed when booking is CONFIRMED.');
+      return;
+    }
+    const currentTicketStatus = row.ticket_status || 'NOT_REDEEMED';
+    const newTicketStatus = currentTicketStatus === 'REDEEMED' ? 'NOT_REDEEMED' : 'REDEEMED';
+    const ok = window.confirm(`Change ticket status from "${currentTicketStatus}" to "${newTicketStatus}"?\n\nThis will update all items in this order.`);
     if (!ok) return;
     setStatusUpdating(bookingId);
     try {
-      await dispatch(updateAdminBooking({ id: bookingId, patch: { booking_status: newStatus, propagate: true } })).unwrap();
+      await dispatch(updateAdminBooking({ id: bookingId, patch: { ticket_status: newTicketStatus, propagate: true } })).unwrap();
       dispatch(listAdminBookings({ ...buildQuery(), page: currPage, limit: rowsPerPage }));
     } catch (err) {
-      window.alert(err?.message || 'Failed to update status');
+      window.alert(err?.message || 'Failed to update ticket status');
     } finally {
       setStatusUpdating(null);
     }
@@ -468,11 +477,21 @@ export default function BookingsList() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               <select className={selectClasses} value={filters.payment_status} onChange={(e) => handleSelectChange('payment_status', e.target.value)}>
                 <option value="">Payment: All</option>
-                <option>Pending</option><option>Completed</option><option>Failed</option><option>Cancelled</option>
+                <option value="INITIATED">Initiated</option>
+                <option value="Pending">Pending</option>
+                <option value="SUCCESS">Success</option>
+                <option value="Completed">Completed</option>
+                <option value="Failed">Failed</option>
+                <option value="TIMED_OUT">Timed Out</option>
+                <option value="Cancelled">Cancelled</option>
               </select>
               <select className={selectClasses} value={filters.booking_status} onChange={(e) => handleSelectChange('booking_status', e.target.value)}>
                 <option value="">Booking: All</option>
-                <option>Booked</option><option>Redeemed</option><option>Expired</option>
+                <option value="PENDING_PAYMENT">Pending Payment</option>
+                <option value="CONFIRMED">Confirmed</option>
+                <option value="Cancelled">Cancelled</option>
+                <option value="ABANDONED">Abandoned</option>
+                <option value="REFUNDED">Refunded</option>
               </select>
               <select className={selectClasses} value={filters.item_type} onChange={(e) => handleSelectChange('item_type', e.target.value)}>
                 <option value="">Item Type: All</option>
@@ -576,37 +595,62 @@ export default function BookingsList() {
               const status = r.payment_status || '—';
               const colors = {
                 Completed: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+                SUCCESS: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
                 Pending: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+                INITIATED: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
                 Failed: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+                TIMED_OUT: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
                 Cancelled: 'bg-gray-100 text-gray-600 dark:bg-neutral-800 dark:text-neutral-400',
               };
+              const labels = { SUCCESS: 'Success', INITIATED: 'Initiated', TIMED_OUT: 'Timed Out' };
               return (
                 <span className={`inline-flex items-center rounded-xl px-2.5 py-0.5 text-xs font-semibold ${colors[status] || 'bg-gray-100 text-gray-600'}`}>
-                  {status}
+                  {labels[status] || status}
                 </span>
               );
             }
           },
           {
-            key: 'booking_status', title: 'Status', tdClass: 'whitespace-nowrap', render: (r) => {
-              const bookingId = r.booking_id ?? r.id;
+            key: 'booking_status', title: 'Booking', tdClass: 'whitespace-nowrap', render: (r) => {
               const status = r.booking_status || '—';
-              const isUpdating = statusUpdating === bookingId;
-              const colorMap = {
-                Booked: 'border-blue-300 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-700',
-                Redeemed: 'border-emerald-300 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-700',
+              const colors = {
+                PENDING_PAYMENT: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+                CONFIRMED: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+                Booked: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+                Cancelled: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+                ABANDONED: 'bg-gray-100 text-gray-600 dark:bg-neutral-800 dark:text-neutral-400',
+                REFUNDED: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
+                Redeemed: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+                Expired: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
               };
+              const labels = { PENDING_PAYMENT: 'Pending Payment', CONFIRMED: 'Confirmed', ABANDONED: 'Abandoned', REFUNDED: 'Refunded' };
               return (
-                <select
-                  className={`rounded-xl px-2.5 py-1 text-xs font-semibold border cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-all ${colorMap[status] || 'border-gray-200 bg-gray-50 text-gray-600'} ${isUpdating ? 'opacity-50 pointer-events-none' : ''}`}
-                  value={status}
-                  onClick={(e) => e.stopPropagation()}
-                  onChange={(e) => { e.stopPropagation(); handleInlineStatusChange(r, e.target.value); }}
-                  disabled={isUpdating}
+                <span className={`inline-flex items-center rounded-xl px-2.5 py-0.5 text-xs font-semibold ${colors[status] || 'bg-gray-100 text-gray-600'}`}>
+                  {labels[status] || status}
+                </span>
+              );
+            }
+          },
+          {
+            key: 'ticket_status', title: 'Ticket', tdClass: 'whitespace-nowrap', render: (r) => {
+              const bookingId = r.booking_id ?? r.id;
+              const ticketStatus = r.ticket_status || 'NOT_REDEEMED';
+              const isConfirmed = r.booking_status === 'CONFIRMED' || r.booking_status === 'Booked';
+              const isUpdating = statusUpdating === bookingId;
+              const isRedeemed = ticketStatus === 'REDEEMED';
+              return (
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleTicketStatusToggle(r); }}
+                  disabled={!isConfirmed || isUpdating}
+                  className={`inline-flex items-center gap-1.5 rounded-xl px-2.5 py-1 text-xs font-semibold border transition-all ${isRedeemed
+                      ? 'border-emerald-300 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-700'
+                      : 'border-amber-300 bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-700'
+                    } ${(!isConfirmed || isUpdating) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:shadow-sm'}`}
+                  title={!isConfirmed ? 'Booking must be CONFIRMED to change ticket status' : (isRedeemed ? 'Click to mark as Not Redeemed' : 'Click to mark as Redeemed')}
                 >
-                  <option value="Booked">Booked</option>
-                  <option value="Redeemed">Redeemed</option>
-                </select>
+                  <span className={`inline-block w-2 h-2 rounded-full ${isRedeemed ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                  {isRedeemed ? 'Redeemed' : 'Not Redeemed'}
+                </button>
               );
             }
           },

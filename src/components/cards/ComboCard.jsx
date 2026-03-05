@@ -95,7 +95,7 @@ const computeBaseSum = (combo) => {
   return 0;
 };
 
-export default function ComboCard({ item }) {
+export default function ComboCard({ item, isUltimate = false }) {
   const title = item?.name || item?.title || 'Combo deal';
   const desc = item?.short_description || item?.subtitle || '';
   const comboId = item?.combo_id || item?.id || item?.slug || null;
@@ -118,10 +118,83 @@ export default function ComboCard({ item }) {
     e.stopPropagation();
   };
 
+  const attractions = item?.attractions || item?.combo_attractions || [];
+  const attractionImages = attractions.slice(0, 3).map(a => getComboPrimaryImage(a) || IMAGE_PLACEHOLDER(a?.name || 'attr'));
+
+  if (isUltimate) {
+    return (
+      <div
+        onClick={() => navigate(comboHref)}
+        className="group relative w-full overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-[#0b1a33] via-[#123a63] to-[#0b1a33] p-1 shadow-2xl transition-all duration-500 hover:scale-[1.01] hover:shadow-blue-500/20 cursor-pointer"
+        role="button"
+        tabIndex={0}
+      >
+        <div className="relative flex flex-col lg:flex-row h-full w-full overflow-hidden rounded-[2.4rem] bg-[#0b1a33]/40 backdrop-blur-xl">
+          {/* Combo Hero Image */}
+          <div className="relative w-full lg:w-3/5 h-[300px] lg:h-auto overflow-hidden">
+            {heroImage ? (
+              <img
+                src={heroImage}
+                alt={title}
+                className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+              />
+            ) : (
+              <div className="h-full w-full bg-slate-800" />
+            )}
+            <div className="absolute inset-0 bg-gradient-to-r from-[#0b1a33]/80 via-transparent to-transparent" />
+          </div>
+
+          {/* Content Area */}
+          <div className="flex flex-1 flex-col justify-center p-8 lg:p-12">
+            <div className="mb-4 inline-flex items-center gap-2">
+              <span className="rounded-full bg-sky-500/20 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-sky-400 border border-sky-500/30">
+                Ultimate Experience
+              </span>
+            </div>
+
+            <h3 className="mb-4 text-3xl lg:text-5xl font-black text-white leading-tight">
+              {title}
+            </h3>
+
+            <p className="mb-8 text-sm lg:text-lg text-slate-300 line-clamp-2 max-w-xl">
+              {desc}
+            </p>
+
+            <div className="mt-auto flex flex-wrap items-end justify-between gap-6 pt-8 border-t border-white/10">
+              <div className="space-y-1">
+                <p className="text-[10px] lg:text-xs font-black uppercase tracking-[0.2em] text-sky-400">FROM / PER PERSON</p>
+                <div className="flex items-baseline gap-2">
+                  <p className="text-3xl lg:text-5xl font-black text-white">{formatCurrency(comboDisplayPrice || 1499)}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={(e) => {
+                    stop(e);
+                    sessionStorage.removeItem('snowcity_booking_state');
+                    navigate(bookHref);
+                  }}
+                  className="rounded-2xl bg-white px-8 lg:px-12 py-4 text-sm lg:text-base font-black uppercase tracking-widest text-[#0b1a33] transition-all hover:bg-sky-50 hover:scale-105 active:scale-95 shadow-xl shadow-white/10"
+                >
+                  Book Ultimate Pass
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Decorative Elements */}
+          <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-blue-600/10 blur-[100px]" />
+          <div className="absolute -left-20 -bottom-20 h-64 w-64 rounded-full bg-sky-600/10 blur-[100px]" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       onClick={() => navigate(comboHref)}
-      className="exp-card block no-underline cursor-pointer rounded-xl"
+      className="exp-card-new block no-underline cursor-pointer rounded-xl group"
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
@@ -131,12 +204,12 @@ export default function ComboCard({ item }) {
         }
       }}
     >
-      <div className="exp-card-img">
+      <div className="exp-card-visual overflow-hidden">
         {heroImage && (
           <img
             src={heroImage}
             alt={item?.image_alt || title}
-            className="absolute inset-0 h-full w-full object-cover"
+            className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
             width={640}
             height={400}
             loading="lazy"
@@ -150,15 +223,12 @@ export default function ComboCard({ item }) {
 
 
         <div className="flex gap-3 mb-6">
-          <div className="flex-shrink-0 mt-1">
-
-          </div>
-          <div className="exp-desc">{desc}</div>
+          <div className="exp-desc line-clamp-2">{desc}</div>
         </div>
 
         <div className="flex items-center justify-between mt-auto pt-4 border-t border-slate-100">
           <div>
-            <p className="text-[10px] text-[#6B7280] uppercase font-bold tracking-wider">Per Person</p>
+            <p className="text-[10px] text-[#6B7280] uppercase font-bold tracking-wider mb-1">FROM / PER PERSON</p>
             <p className="text-xl font-extrabold text-[#111827]">{formatCurrency(comboDisplayPrice || 1299)}</p>
           </div>
           <div

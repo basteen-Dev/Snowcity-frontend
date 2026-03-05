@@ -91,6 +91,10 @@ const ComboRevenue = lazy(() => import('../pages/revenue/ComboRevenue'));
 // Site Settings
 const SiteSettings = lazy(() => import('../pages/settings/SiteSettings'));
 
+// Report pages
+const TransactionReport = lazy(() => import('../pages/reports/TransactionReport'));
+const GuestReport = lazy(() => import('../pages/reports/GuestReport'));
+
 function RequireAdmin({ children }) {
   const token = useSelector((s) => s.adminAuth?.token);
   if (!token) return <Navigate to="login" replace />;
@@ -214,6 +218,18 @@ export default function AdminRouter() {
           <Route path="bookings/:id" element={
             <RequireRole allowed={['superadmin', 'gm', 'staff']}>
               <BookingDetails />
+            </RequireRole>
+          } />
+
+          {/* ──── Reports — SuperAdmin + GM + Staff ──── */}
+          <Route path="reports/transactions" element={
+            <RequireRole allowed={['superadmin', 'gm', 'staff']}>
+              <TransactionReport />
+            </RequireRole>
+          } />
+          <Route path="reports/guests" element={
+            <RequireRole allowed={['superadmin', 'gm', 'staff']}>
+              <GuestReport />
             </RequireRole>
           } />
 

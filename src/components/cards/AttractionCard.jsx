@@ -76,7 +76,7 @@ export default function AttractionCard({ item, featured = false }) {
 
           <div className="exp-feat-footer">
             <div className="exp-feat-price">
-              <sub>From</sub> ₹{Math.round(displayPrice)}
+              <sub>From / Per Person</sub> ₹{Math.round(displayPrice)}
             </div>
             <button className="btn-book-new px-10 py-5 text-lg" onClick={onBook}>
               Book Now <span>→</span>
@@ -117,8 +117,11 @@ export default function AttractionCard({ item, featured = false }) {
         <p className="exp-card-desc line-clamp-3">{desc}</p>
 
         <div className="exp-card-footer">
-          <div className="price-val-new">
-            ₹{Math.round(displayPrice)}
+          <div>
+            <p className="text-[10px] text-[#6B7280] uppercase font-bold tracking-wider mb-1">FROM / PER PERSON</p>
+            <div className="price-val-new">
+              ₹{Math.round(displayPrice)}
+            </div>
           </div>
           <button className="btn-book-new" onClick={onBook}>
             Book Now

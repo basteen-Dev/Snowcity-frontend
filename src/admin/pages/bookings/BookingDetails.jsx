@@ -28,15 +28,30 @@ function formatTime12(t) {
 
 const statusBadge = (status, type = 'booking') => {
   const colors = {
+    // Booking statuses
+    PENDING_PAYMENT: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+    CONFIRMED: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+    ABANDONED: 'bg-gray-100 text-gray-600 dark:bg-neutral-800 dark:text-neutral-400',
+    REFUNDED: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
     Booked: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
     Redeemed: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+    Expired: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
+    Cancelled: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+    // Payment statuses
     Completed: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+    SUCCESS: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
     Pending: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+    INITIATED: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
     Failed: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+    TIMED_OUT: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
+  };
+  const labels = {
+    PENDING_PAYMENT: 'Pending Payment', CONFIRMED: 'Confirmed', ABANDONED: 'Abandoned',
+    REFUNDED: 'Refunded', SUCCESS: 'Success', INITIATED: 'Initiated', TIMED_OUT: 'Timed Out',
   };
   return (
     <span className={`inline-flex items-center rounded-xl px-3 py-1 text-xs font-semibold ${colors[status] || 'bg-gray-100 text-gray-600'}`}>
-      {status || '—'}
+      {labels[status] || status || '—'}
     </span>
   );
 };
@@ -71,8 +86,11 @@ const InfoRow = ({ label, value, icon: Icon }) => (
 /* ── Timeline event icon helper ── */
 const timelineIcon = (eventType) => {
   if (eventType.startsWith('booking_created')) return { icon: Ticket, color: 'bg-blue-500' };
-  if (eventType.startsWith('payment_completed')) return { icon: CheckCircle2, color: 'bg-emerald-500' };
+  if (eventType.startsWith('payment_completed') || eventType.startsWith('payment_success')) return { icon: CheckCircle2, color: 'bg-emerald-500' };
   if (eventType.startsWith('payment_')) return { icon: CreditCard, color: 'bg-amber-500' };
+  if (eventType === 'ticket_redeemed') return { icon: CheckCircle2, color: 'bg-emerald-500' };
+  if (eventType === 'ticket_not_redeemed') return { icon: RotateCcw, color: 'bg-amber-500' };
+  if (eventType.startsWith('status_confirmed')) return { icon: CheckCircle2, color: 'bg-emerald-500' };
   if (eventType.startsWith('status_redeemed')) return { icon: CheckCircle2, color: 'bg-emerald-500' };
   if (eventType.startsWith('status_cancelled')) return { icon: XCircle, color: 'bg-red-500' };
   if (eventType.startsWith('status_')) return { icon: RotateCcw, color: 'bg-purple-500' };
@@ -86,12 +104,21 @@ const timelineLabel = (eventType) => {
   const labels = {
     booking_created: 'Booking Created',
     payment_completed: 'Payment Completed',
+    payment_success: 'Payment Successful',
     payment_pending: 'Payment Initiated',
+    payment_initiated: 'Payment Initiated',
     payment_failed: 'Payment Failed',
     payment_cancelled: 'Payment Cancelled',
+    payment_timed_out: 'Payment Timed Out',
     status_booked: 'Status → Booked',
+    status_confirmed: 'Booking Confirmed',
+    status_pending_payment: 'Awaiting Payment',
     status_redeemed: 'Ticket Redeemed',
     status_cancelled: 'Booking Cancelled',
+    status_abandoned: 'Booking Abandoned',
+    status_refunded: 'Booking Refunded',
+    ticket_redeemed: 'Ticket Redeemed',
+    ticket_not_redeemed: 'Ticket Marked Not Redeemed',
     whatsapp_sent: 'WhatsApp Sent',
     email_sent: 'Email Sent',
     ticket_generated: 'Ticket Generated',
@@ -193,35 +220,45 @@ export default function BookingDetails() {
           </div>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          {/* Status update dropdown */}
-          <select
-            className={`rounded-xl border px-3 py-2 text-sm font-semibold cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-all ${bookingStatus === 'Redeemed' ? 'border-emerald-300 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-700'
-              : bookingStatus === 'Expired' ? 'border-orange-300 bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-700'
-                : 'border-blue-300 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-700'
-              } ${statusUpdating ? 'opacity-50 pointer-events-none' : ''}`}
-            value={bookingStatus}
-            onChange={async (e) => {
-              const newStatus = e.target.value;
-              if (newStatus === bookingStatus) return;
-              const firstBookingId = items[0]?.booking_id;
-              if (!firstBookingId) return;
-              const ok = window.confirm(`Change status from "${bookingStatus}" to "${newStatus}"?\n\nThis will update all items in this order.`);
-              if (!ok) { e.target.value = bookingStatus; return; }
-              setStatusUpdating(true);
-              try {
-                await dispatch(updateAdminBooking({ id: firstBookingId, patch: { booking_status: newStatus, propagate: true } })).unwrap();
-                dispatch(getAdminBooking({ id }));
-              } catch (err) {
-                window.alert(err?.message || 'Failed to update status');
-              } finally {
-                setStatusUpdating(false);
-              }
-            }}
-            disabled={statusUpdating}
-          >
-            <option value="Booked">Booked</option>
-            <option value="Redeemed">Redeemed</option>
-          </select>
+          {/* Ticket Status toggle */}
+          {(() => {
+            const isConfirmed = bookingStatus === 'CONFIRMED' || bookingStatus === 'Booked';
+            const ticketStatus = b.ticket_status || 'NOT_REDEEMED';
+            const isRedeemed = ticketStatus === 'REDEEMED';
+            return (
+              <button
+                onClick={async () => {
+                  const firstBookingId = items[0]?.booking_id;
+                  if (!firstBookingId) return;
+                  if (!isConfirmed) {
+                    window.alert('Ticket status can only be changed when booking is CONFIRMED.');
+                    return;
+                  }
+                  const newStatus = isRedeemed ? 'NOT_REDEEMED' : 'REDEEMED';
+                  const ok = window.confirm(`Change ticket status from "${ticketStatus}" to "${newStatus}"?\n\nThis will update all items in this order.`);
+                  if (!ok) return;
+                  setStatusUpdating(true);
+                  try {
+                    await dispatch(updateAdminBooking({ id: firstBookingId, patch: { ticket_status: newStatus, propagate: true } })).unwrap();
+                    dispatch(getAdminBooking({ id }));
+                  } catch (err) {
+                    window.alert(err?.message || 'Failed to update ticket status');
+                  } finally {
+                    setStatusUpdating(false);
+                  }
+                }}
+                disabled={statusUpdating || !isConfirmed}
+                className={`inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold transition-all ${isRedeemed
+                  ? 'border-emerald-300 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-700'
+                  : 'border-amber-300 bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-700'
+                  } ${(statusUpdating || !isConfirmed) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:shadow-sm'}`}
+                title={!isConfirmed ? 'Booking must be CONFIRMED to change ticket status' : (isRedeemed ? 'Click to mark as Not Redeemed' : 'Click to mark as Redeemed')}
+              >
+                <span className={`inline-block w-2.5 h-2.5 rounded-full ${isRedeemed ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                {isRedeemed ? 'Redeemed' : 'Not Redeemed'}
+              </button>
+            );
+          })()}
           <button
             onClick={() => dispatch(getAdminBooking({ id }))}
             className="rounded-xl border border-gray-200 px-4 py-2 text-sm hover:bg-gray-50 transition dark:border-neutral-700 dark:hover:bg-neutral-800"
@@ -284,7 +321,7 @@ export default function BookingDetails() {
                   onClick={() => toggleItem(item.booking_id)}
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className={`w-2 h-2 rounded-xl shrink-0 ${item.booking_status === 'Redeemed' ? 'bg-emerald-500' : item.booking_status === 'Cancelled' ? 'bg-red-400' : 'bg-blue-500'}`} />
+                    <div className={`w-2 h-2 rounded-xl shrink-0 ${item.booking_status === 'CONFIRMED' || item.booking_status === 'Redeemed' ? 'bg-emerald-500' : item.booking_status === 'Cancelled' ? 'bg-red-400' : item.booking_status === 'PENDING_PAYMENT' ? 'bg-amber-500' : 'bg-blue-500'}`} />
                     <div className="min-w-0">
                       <div className="text-sm font-semibold text-gray-900 dark:text-neutral-100 truncate">
                         {item.item_title}
@@ -298,7 +335,18 @@ export default function BookingDetails() {
                   <div className="flex items-center gap-3">
                     <div className="text-right">
                       <div className="text-sm font-semibold text-gray-900 dark:text-neutral-100">{money(item.final_amount || item.total_amount)}</div>
-                      {statusBadge(item.booking_status)}
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        {statusBadge(item.booking_status)}
+                        {item.ticket_status && (
+                          <span className={`inline-flex items-center gap-1 rounded-xl px-2 py-0.5 text-[10px] font-semibold ${item.ticket_status === 'REDEEMED'
+                            ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400'
+                            : 'bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400'
+                            }`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${item.ticket_status === 'REDEEMED' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                            {item.ticket_status === 'REDEEMED' ? 'Redeemed' : 'Not Redeemed'}
+                          </span>
+                        )}
+                      </div>
                     </div>
                     {isExpanded ? <ChevronUp size={16} className="text-gray-400" /> : <ChevronDown size={16} className="text-gray-400" />}
                   </div>
@@ -356,43 +404,57 @@ export default function BookingDetails() {
       <Card>
         <CardHeader icon={Send} title="Quick Actions" />
         <div className="px-5 pb-5 flex flex-wrap gap-3">
-          <button
-            onClick={() => {
-              const firstBid = items[0]?.booking_id;
-              if (firstBid) {
-                import('../../features/bookings/adminBookingsSlice').then(m => {
-                  dispatch(m.resendWhatsAppAdmin({ id: firstBid }));
-                });
-              }
-            }}
-            className="flex items-center gap-2 rounded-xl border border-green-200 px-4 py-2.5 text-sm font-medium text-green-700 hover:bg-green-50 transition dark:border-green-800 dark:text-green-400 dark:hover:bg-green-900/20"
-          >
-            <MessageSquare size={16} /> Send WhatsApp
-          </button>
-          <button
-            onClick={() => {
-              const firstBid = items[0]?.booking_id;
-              if (firstBid) {
-                import('../../features/bookings/adminBookingsSlice').then(m => {
-                  dispatch(m.resendEmailAdmin({ id: firstBid }));
-                });
-              }
-            }}
-            className="flex items-center gap-2 rounded-xl border border-indigo-200 px-4 py-2.5 text-sm font-medium text-indigo-700 hover:bg-indigo-50 transition dark:border-indigo-800 dark:text-indigo-400 dark:hover:bg-indigo-900/20"
-          >
-            <Mail size={16} /> Send Email
-          </button>
-          <button
-            onClick={() => {
-              const firstBid = items[0]?.booking_id;
-              if (firstBid) {
-                window.open(`/api/admin/bookings/${firstBid}/ticket`, '_blank');
-              }
-            }}
-            className="flex items-center gap-2 rounded-xl border border-blue-200 px-4 py-2.5 text-sm font-medium text-blue-700 hover:bg-blue-50 transition dark:border-blue-800 dark:text-blue-400 dark:hover:bg-blue-900/20"
-          >
-            <Download size={16} /> Download Ticket
-          </button>
+          {(() => {
+            const isConfirmed = bookingStatus === 'CONFIRMED' || bookingStatus === 'Booked';
+            const disabledStyle = 'opacity-50 cursor-not-allowed';
+            return (
+              <>
+                <button
+                  onClick={() => {
+                    const firstBid = items[0]?.booking_id;
+                    if (firstBid) {
+                      import('../../features/bookings/adminBookingsSlice').then(m => {
+                        dispatch(m.resendWhatsAppAdmin({ id: firstBid }));
+                      });
+                    }
+                  }}
+                  disabled={!isConfirmed}
+                  className={`flex items-center gap-2 rounded-xl border border-green-200 px-4 py-2.5 text-sm font-medium text-green-700 hover:bg-green-50 transition dark:border-green-800 dark:text-green-400 dark:hover:bg-green-900/20 ${!isConfirmed ? disabledStyle : ''}`}
+                  title={!isConfirmed ? 'Booking must be CONFIRMED' : ''}
+                >
+                  <MessageSquare size={16} /> Send WhatsApp
+                </button>
+                <button
+                  onClick={() => {
+                    const firstBid = items[0]?.booking_id;
+                    if (firstBid) {
+                      import('../../features/bookings/adminBookingsSlice').then(m => {
+                        dispatch(m.resendEmailAdmin({ id: firstBid }));
+                      });
+                    }
+                  }}
+                  disabled={!isConfirmed}
+                  className={`flex items-center gap-2 rounded-xl border border-indigo-200 px-4 py-2.5 text-sm font-medium text-indigo-700 hover:bg-indigo-50 transition dark:border-indigo-800 dark:text-indigo-400 dark:hover:bg-indigo-900/20 ${!isConfirmed ? disabledStyle : ''}`}
+                  title={!isConfirmed ? 'Booking must be CONFIRMED' : ''}
+                >
+                  <Mail size={16} /> Send Email
+                </button>
+                <button
+                  onClick={() => {
+                    const firstBid = items[0]?.booking_id;
+                    if (firstBid) {
+                      window.open(`/api/admin/bookings/${firstBid}/ticket`, '_blank');
+                    }
+                  }}
+                  disabled={!isConfirmed}
+                  className={`flex items-center gap-2 rounded-xl border border-blue-200 px-4 py-2.5 text-sm font-medium text-blue-700 hover:bg-blue-50 transition dark:border-blue-800 dark:text-blue-400 dark:hover:bg-blue-900/20 ${!isConfirmed ? disabledStyle : ''}`}
+                  title={!isConfirmed ? 'Booking must be CONFIRMED' : ''}
+                >
+                  <Download size={16} /> Download Ticket
+                </button>
+              </>
+            );
+          })()}
           <button
             onClick={() => setShowPayPhi(!showPayPhi)}
             className="flex items-center gap-2 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"

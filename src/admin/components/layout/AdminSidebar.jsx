@@ -92,19 +92,54 @@ export default function AdminSidebar({ collapsed, onClose }) {
     if (!isEditor) {
       sections.push({
         key: 'Dashboard',
-        label: 'Overview',
-        items: [{ to: '/admin', end: true, label: 'Dashboard', icon: LayoutDashboard }],
+        label: 'Dashboard',
+        isLink: true,
+        to: '/admin',
+        end: true,
+        icon: LayoutDashboard,
       });
     }
 
     // ─────────────────────────────────────────────────
-    // 2. Analytics — SuperAdmin, GM, Staff
+    // 2. Bookings — SuperAdmin, GM, Staff
+    // ─────────────────────────────────────────────────
+    if (canSeeBookings) {
+      sections.push({
+        key: 'Bookings',
+        label: 'Bookings',
+        isLink: true,
+        to: '/admin/bookings',
+        end: false,
+        icon: CalendarClock,
+      });
+    }
+
+    // ─────────────────────────────────────────────────
+    // 2b. Reports — SuperAdmin, GM, Staff
+    // ─────────────────────────────────────────────────
+    if (canSeeBookings) {
+      sections.push({
+        key: 'Reports',
+        label: 'Reports',
+        items: [
+          { to: '/admin/reports/transactions', label: 'Transaction Report', icon: FileText },
+          { to: '/admin/reports/guests', label: 'Guest Report', icon: Users },
+        ],
+      });
+    }
+
+    // ─────────────────────────────────────────────────
+    // 3. Analytics — SuperAdmin, GM, Staff
     // ─────────────────────────────────────────────────
     if (canSeeAnalytics) {
       const analyticsItems = [
         { to: '/admin/analytics/overview', label: 'Overview', icon: BarChart3 },
         { to: '/admin/analytics/daily', label: 'Daily Trend', icon: TrendingUp },
       ];
+      if (canSeeBookings) {
+        analyticsItems.push({ to: '/admin/bookings/analytics', label: 'Booking Analytics', icon: BarChart3 });
+      }
+
       // Full analytics (non-scoped)  — SuperAdmin + GM only
       if (isSuperAdmin || isGM) {
         analyticsItems.push(
@@ -119,20 +154,6 @@ export default function AdminSidebar({ collapsed, onClose }) {
         );
       }
       sections.push({ key: 'Analytics', label: 'Analytics', items: analyticsItems });
-    }
-
-    // ─────────────────────────────────────────────────
-    // 3. Bookings — SuperAdmin, GM, Staff
-    // ─────────────────────────────────────────────────
-    if (canSeeBookings) {
-      sections.push({
-        key: 'Bookings',
-        label: 'Bookings',
-        items: [
-          { to: '/admin/bookings', label: 'All Bookings', icon: CalendarClock },
-          { to: '/admin/bookings/analytics', label: 'Booking Analytics', icon: BarChart3 },
-        ],
-      });
     }
 
     // ─────────────────────────────────────────────────
@@ -225,6 +246,9 @@ export default function AdminSidebar({ collapsed, onClose }) {
     const term = navFilter.trim().toLowerCase();
     return sections
       .map((s) => {
+        if (s.isLink) {
+          return s.label.toLowerCase().includes(term) ? s : null;
+        }
         const items = s.items.filter((it) => it.label.toLowerCase().includes(term));
         return items.length ? { ...s, items } : null;
       })
@@ -239,6 +263,7 @@ export default function AdminSidebar({ collapsed, onClose }) {
     Dashboard: true,
     Analytics: false,
     Bookings: true,
+    Reports: false,
     Catalog: true,
     People: false,
     Settings: false,
@@ -249,6 +274,7 @@ export default function AdminSidebar({ collapsed, onClose }) {
   React.useEffect(() => {
     const path = location.pathname || '';
     for (const s of NAV_SECTIONS) {
+      if (s.isLink) continue;
       if (s.items.some((it) => path.startsWith(it.to)) && !openMap[s.key]) {
         setOpen(s.key, true);
       }
@@ -327,6 +353,32 @@ export default function AdminSidebar({ collapsed, onClose }) {
       {/* Nav */}
       <nav className="px-3 pb-4 h-[calc(100vh-160px)] overflow-y-auto">
         {NAV_SECTIONS.map((section) => {
+          if (section.isLink) {
+            const { key, to, end, label, icon: Icon } = section;
+            return (
+              <div key={key} className="mt-3 first:mt-0">
+                <NavLink
+                  to={to}
+                  end={end}
+                  title={collapsed ? label : undefined}
+                  className={({ isActive }) =>
+                    [
+                      baseLinkClasses,
+                      collapsed ? 'justify-center px-2' : 'justify-start px-3',
+                      isActive || isLinkActive(to, end)
+                        ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/30 font-medium'
+                        : 'text-gray-600 dark:text-neutral-300 hover:bg-gray-100/80 dark:hover:bg-neutral-800 font-medium',
+                    ].join(' ')
+                  }
+                  onClick={handleNavClick}
+                >
+                  <Icon className="h-5 w-5" aria-hidden="true" />
+                  {!collapsed && <span>{label}</span>}
+                </NavLink>
+              </div>
+            );
+          }
+
           if (!section.items?.length) return null;
           const isOpen = !!openMap[section.key];
 
@@ -365,7 +417,7 @@ export default function AdminSidebar({ collapsed, onClose }) {
                           [
                             baseLinkClasses,
                             collapsed ? 'justify-center px-2' : 'justify-start px-3',
-                            isActive
+                            isActive || (to !== '/admin' && isLinkActive(to, end))
                               ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/30'
                               : 'text-gray-600 dark:text-neutral-300 hover:bg-gray-100/80 dark:hover:bg-neutral-800',
                           ].join(' ')
@@ -375,7 +427,7 @@ export default function AdminSidebar({ collapsed, onClose }) {
                         <Icon className="h-5 w-5" aria-hidden="true" />
                         {!collapsed && <span>{label}</span>}
                       </NavLink>
-                      {isLinkActive(to, end) && !collapsed && (
+                      {(isLinkActive(to, end) && to !== '/admin') && !collapsed && (
                         <span className="absolute right-3 top-1/2 -translate-y-1/2 h-1.5 w-1.5 rounded-xl bg-emerald-400" aria-hidden="true" />
                       )}
                     </div>

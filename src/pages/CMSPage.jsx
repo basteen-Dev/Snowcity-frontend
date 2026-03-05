@@ -77,8 +77,13 @@ export default function CMSPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#f5f8ff] to-white w-full px-4 pt-24 pb-10 md:pb-14">
-      <div className="max-w-6xl mx-auto space-y-4">
-        <h1 className="text-3xl md:text-4xl font-semibold">{title}</h1>
+      <div className="max-w-6xl mx-auto space-y-8">
+        <div className="text-center mb-12">
+          <h1 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tight leading-none mb-6" style={{ fontFamily: 'Red Hat Display, sans-serif' }}>
+            {title}
+          </h1>
+          <div className="w-20 h-1.5 bg-blue-600 mx-auto rounded-xl" />
+        </div>
         {isRaw ? (
           <RawFrame
             title={title}

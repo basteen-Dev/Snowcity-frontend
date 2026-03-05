@@ -32,89 +32,114 @@ export default function CombosCarousel({ items = [] }) {
     const realIndex = activeIndex % sortedItems.length;
 
     return (
-        <section className="py-24 px-4 md:px-4 bg-[#003de6] overflow-hidden relative">
+        <section className="relative w-full overflow-hidden pt-20 pb-24 px-4 md:px-4 bg-gradient-to-t from-white via-sky-50 to-white">
             <div className="w-full relative z-10">
                 <div className="text-center mb-16">
-                    <p className="text-sm font-bold tracking-[0.4em] text-white/70 uppercase">Exclusive Packs</p>
-                    <h2 className="text-4xl md:text-5xl font-extrabold text-white mt-4">Combo Deals</h2>
-                    <p className="mt-4 text-lg text-white/80 max-w-2xl mx-auto">Save more when you bundle your favorite experiences together</p>
+                    <p className="text-xs font-bold tracking-[0.4em] text-blue-600 uppercase mb-4">Exclusive Packs</p>
+                    <h2 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tight leading-none mb-6">Combo Deals</h2>
+                    <div className="w-20 h-1.5 bg-blue-600 mx-auto rounded-xl mb-6" />
+                    <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto font-medium leading-relaxed">Save more when you bundle your favorite experiences together</p>
                 </div>
 
                 {/* DESKTOP GRID */}
-                <div className="hidden md:grid grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-                    {sortedItems.length === 5 ? (
-                        <>
-                            {/* 2 in first row */}
-                            <div className="lg:col-span-3 grid grid-cols-2 gap-8 mb-4 max-w-[1000px] mx-auto w-full">
-                                {sortedItems.slice(0, 2).map((item, idx) => (
-                                    <div key={`${item?.id ?? item?.combo_id}-desktop-row1-${idx}`}>
-                                        <ComboCard item={item} />
+                <div className="hidden md:block mb-16">
+                    {(() => {
+                        const ultimateOrder = ["Snowcity + Madlabs + Eyelusion", "Snow City + Madlabs + Eyelusion"];
+                        const ultimateItem = sortedItems.find(item =>
+                            ultimateOrder.some(name => (item?.name || item?.title)?.toLowerCase() === name.toLowerCase())
+                        );
+                        const otherItems = sortedItems.filter(item => item !== ultimateItem);
+
+                        return (
+                            <div className="space-y-12">
+                                {ultimateItem && (
+                                    <div className="w-full">
+                                        <ComboCard item={ultimateItem} isUltimate={true} />
                                     </div>
-                                ))}
-                            </div>
-                            {/* 3 in second row */}
-                            <div className="lg:col-span-3 grid grid-cols-3 gap-8">
-                                {sortedItems.slice(2, 5).map((item, idx) => (
-                                    <div key={`${item?.id ?? item?.combo_id}-desktop-row2-${idx}`}>
-                                        <ComboCard item={item} />
+                                )}
+
+                                {otherItems.length > 0 && (
+                                    <div className="grid grid-cols-2 gap-8">
+                                        {otherItems.map((item, idx) => (
+                                            <div key={`${item?.id ?? item?.combo_id}-desktop-${idx}`}>
+                                                <ComboCard item={item} />
+                                            </div>
+                                        ))}
                                     </div>
-                                ))}
+                                )}
                             </div>
-                        </>
-                    ) : (
-                        sortedItems.map((item, idx) => (
-                            <div key={`${item?.id ?? item?.combo_id}-desktop-${idx}`}>
-                                <ComboCard item={item} />
-                            </div>
-                        ))
-                    )}
+                        );
+                    })()}
                 </div>
 
                 {/* MOBILE SLIDER */}
                 <div className="md:hidden relative z-10 premium-carousel mb-8">
-                    <Swiper
-                        modules={[Autoplay]}
-                        spaceBetween={16}
-                        slidesPerView={1.3}
-                        centeredSlides={true}
-                        loop={true}
-                        loopedslides={sortedItems.length}
-                        loopPreventsSliding={false}
-                        grabCursor={true}
-                        watchSlidesProgress={true}
-                        onSlideChange={(swiper) => setActiveIndex(swiper.realIndex)}
-                        autoplay={{
-                            delay: 3000,
-                            disableOnInteraction: false,
-                        }}
-                        className="pt-10 pb-10 !overflow-visible"
-                    >
-                        {displayItems.map((item, idx) => (
-                            <SwiperSlide key={`${item?.id ?? idx}-${idx}`} className="h-auto">
-                                <ComboCard item={item} />
-                            </SwiperSlide>
-                        ))}
-                    </Swiper>
+                    {(() => {
+                        const ultimateOrder = ["Snowcity + Madlabs + Eyelusion", "Snow City + Madlabs + Eyelusion"];
+                        const ultimateItem = sortedItems.find(item =>
+                            ultimateOrder.some(name => (item?.name || item?.title)?.toLowerCase() === name.toLowerCase())
+                        );
+                        const otherItems = sortedItems.filter(item => item !== ultimateItem);
+                        const sliderItems = otherItems.length > 0 ? [...otherItems, ...otherItems, ...otherItems] : [];
 
-                    {/* CUSTOM PAGINATION DOTS - Fixed count per user request */}
-                    <div className="flex justify-center items-center gap-2 mt-8">
-                        {sortedItems.map((_, idx) => (
-                            <div
-                                key={idx}
-                                className={`h-2 transition-all duration-300 rounded-xl ${realIndex === idx
-                                    ? "w-8 bg-white"
-                                    : "w-2 bg-white/30"
-                                    }`}
-                            />
-                        ))}
-                    </div>
+                        return (
+                            <>
+                                {ultimateItem && (
+                                    <div className="mb-6 px-4">
+                                        <ComboCard item={ultimateItem} isUltimate={true} />
+                                    </div>
+                                )}
+
+                                {otherItems.length > 0 && (
+                                    <>
+                                        <Swiper
+                                            modules={[Autoplay]}
+                                            spaceBetween={16}
+                                            slidesPerView={1.3}
+                                            centeredSlides={true}
+                                            loop={true}
+                                            loopedslides={otherItems.length}
+                                            loopPreventsSliding={false}
+                                            grabCursor={true}
+                                            watchSlidesProgress={true}
+                                            onSlideChange={(swiper) => setActiveIndex(swiper.realIndex)}
+                                            autoplay={{
+                                                delay: 3000,
+                                                disableOnInteraction: false,
+                                            }}
+                                            className="pt-10 pb-10 !overflow-visible"
+                                        >
+                                            {sliderItems.map((item, idx) => (
+                                                <SwiperSlide key={`${item?.id ?? idx}-${idx}`} className="h-auto">
+                                                    <ComboCard item={item} />
+                                                </SwiperSlide>
+                                            ))}
+                                        </Swiper>
+
+                                        {/* CUSTOM PAGINATION DOTS */}
+                                        <div className="flex justify-center items-center gap-2 mt-8">
+                                            {otherItems.map((_, idx) => (
+                                                <div
+                                                    key={idx}
+                                                    className={`h-2 transition-all duration-300 rounded-xl ${realIndex === idx
+                                                        ? "w-8 bg-blue-600"
+                                                        : "w-2 bg-gray-300"
+                                                        }`}
+                                                />
+                                            ))}
+                                        </div>
+                                    </>
+                                )}
+                            </>
+                        );
+                    })()}
                 </div>
 
                 {/* VIEW ALL BUTTON */}
                 <div className="relative z-10 flex justify-center mt-2">
                     <Link
                         to="/combos"
-                        className="inline-flex items-center gap-3 rounded-xl bg-white text-[#1e3a8a] px-10 py-4 text-lg font-bold shadow-xl hover:bg-gray-50 hover:scale-105 transition-all duration-300 border-2 border-[#1e3a8a]/10"
+                        className="inline-flex items-center gap-3 rounded-xl bg-blue-600 text-white px-10 py-4 text-lg font-bold shadow-xl hover:bg-blue-700 hover:scale-105 transition-all duration-300 border-2 border-blue-600/10"
                     >
                         View All Combo Packs
                         <span className="text-xl" aria-hidden="true">→</span>

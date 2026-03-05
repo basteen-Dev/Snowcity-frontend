@@ -55,12 +55,12 @@ export default function AttractionsCarousel({ items = [] }) {
         <p className="text-xs font-bold tracking-[0.4em] text-blue-600 uppercase mb-4">
           Unforgettable Experiences
         </p>
-        <h2 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tight uppercase leading-none mb-6" style={{ fontFamily: 'Red Hat Display, sans-serif' }}>
-          Explore Wonders
+        <h2 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tight leading-none mb-6" style={{ fontFamily: 'Red Hat Display, sans-serif' }}>
+          Every Visit is a Different Adventure
         </h2>
         <div className="w-20 h-1.5 bg-blue-600 mx-auto rounded-xl mb-6" />
         <p className="text-gray-600 text-lg md:text-xl max-w-2xl mx-auto font-medium leading-relaxed">
-          Step into a world of arctic magic and thrilling adventures right in the heart of the city.
+          From real snowfall at −7°C to mind-bending illusions, augmented reality and hands-on science — Snow City is Bengaluru's most extraordinary indoor destination.
         </p>
       </div>
 
