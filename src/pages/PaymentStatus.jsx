@@ -101,15 +101,22 @@ export default function PaymentStatus() {
     }, [txnId, gateway, retryCount]);
 
     useEffect(() => {
-        // If PhonePe already told us via 'code' param — quick path
-        if (code === 'PAYMENT_SUCCESS') {
-            // Still verify with backend to trigger booking confirmation
-        } else if (code && code !== 'PAYMENT_SUCCESS') {
-            // PhonePe explicit failure
+        // Gateway-aware quick-path using 'code' query param
+        // PayPhi success codes: '0000'
+        // PhonePe success code: 'PAYMENT_SUCCESS'
+        const isKnownSuccess =
+            code === 'PAYMENT_SUCCESS' ||                 // PhonePe
+            (gateway === 'payphi' && code === '0000');    // PayPhi
+
+        if (isKnownSuccess) {
+            // Still need to verify with backend to trigger booking confirmation
+        } else if (gateway === 'phonepe' && code && code !== 'PAYMENT_SUCCESS') {
+            // PhonePe explicit failure — only short-circuit for PhonePe
             setPhase('failed');
             setErrorMsg('Payment was not completed. You can try again or choose a different payment method.');
             return;
         }
+        // For PayPhi, ALWAYS call backend to verify regardless of code param
         verify();
     }, [retryCount]); // Re-run when retryCount increments (auto-retry)
 
