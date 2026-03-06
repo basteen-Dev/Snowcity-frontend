@@ -135,14 +135,13 @@ export default function CombosCarousel({ items = [] }) {
                     })()}
                 </div>
 
-                {/* VIEW ALL BUTTON */}
                 <div className="relative z-10 flex justify-center mt-2">
                     <Link
                         to="/combos"
-                        className="inline-flex items-center gap-3 rounded-xl bg-blue-600 text-white px-10 py-4 text-lg font-bold shadow-xl hover:bg-blue-700 hover:scale-105 transition-all duration-300 border-2 border-blue-600/10"
+                        className="inline-flex items-center gap-2 rounded-xl border-2 border-sky-600 px-8 py-3 text-sm font-semibold text-sky-600 transition-all duration-300 hover:bg-sky-600 hover:text-white"
                     >
                         View All Combo Packs
-                        <span className="text-xl" aria-hidden="true">→</span>
+                        <span aria-hidden="true">→</span>
                     </Link>
                 </div>
             </div>

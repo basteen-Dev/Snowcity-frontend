@@ -118,7 +118,7 @@ export default function TransactionReport() {
                     <div className="rpt-brand">
                         <div className="rpt-b-icon">🎡</div>
                         <div>
-                            <div className="rpt-b-name">FunZone — Reports</div>
+                            <div className="rpt-b-name">Snowcity - Reports</div>
                             <div className="rpt-b-sub">Transactions Report</div>
                         </div>
                     </div>

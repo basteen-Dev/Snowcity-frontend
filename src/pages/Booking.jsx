@@ -869,7 +869,19 @@ export default function Booking() {
   }, [dispatch, attractionsState.status, combosState.status, addonsState.status]);
 
   useEffect(() => {
-    if (step === 3 && hasToken) dispatch(setStep(4));
+    if (step === 3 && hasToken) {
+      // Validate token before auto-skipping to payment
+      api.get(endpoints.users.me(), { skipOnUnauthorized: true }).then(() => {
+        dispatch(setStep(4));
+      }).catch((err) => {
+        if (err?.status === 401) {
+          // Token revoked — clear auth and stay on step 3 for re-auth
+          dispatch(logout());
+        } else {
+          dispatch(setStep(4)); // Non-auth error — proceed
+        }
+      });
+    }
   }, [step, hasToken, dispatch]);
 
   useEffect(() => {
@@ -1354,7 +1366,7 @@ export default function Booking() {
     dispatch(setStep(2));
   }, [selectionReady, sel, cartItems, addSelectionToCart, dispatch, hasToken]);
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (step === 1) {
       if (hasCartItems) {
         dispatch(setStep(2));
@@ -1367,11 +1379,23 @@ export default function Booking() {
         if (added) dispatch(setStep(2));
       }
     } else if (step === 2) {
-      if (!hasToken) {
-        dispatch(setStep(3)); // Proceed to guest details
-        return;
+      if (hasToken) {
+        // Validate token is still accepted by backend before proceeding
+        try {
+          await api.get(endpoints.users.me(), { skipOnUnauthorized: true });
+          dispatch(setStep(4)); // Token valid → skip to payment
+        } catch (err) {
+          if (err?.status === 401) {
+            // Token revoked — clear auth state and go to YourDetails for re-auth
+            dispatch(logout());
+            dispatch(setStep(3));
+          } else {
+            dispatch(setStep(4)); // Non-auth error — proceed normally
+          }
+        }
+      } else {
+        dispatch(setStep(3)); // Guest → go to details
       }
-      dispatch(setStep(4)); // logged in → skip details, go to payment
     } else if (step === 3) {
       if (otp.verified) dispatch(setStep(4));
       else alert('Please verify OTP to continue.');
@@ -1909,6 +1933,11 @@ export default function Booking() {
     } catch (err) {
       console.error('âŒ Payment initiation failed:', err);
       alert(err?.message || 'Payment initiation failed. Please try again.');
+      // Handle token revocation: redirect to re-auth instead of staying stuck
+      if (err?.status === 401 || (typeof err?.message === 'string' && err.message.toLowerCase().includes('token revoked'))) {
+        dispatch(logout());
+        dispatch(setStep(3));
+      }
     } finally {
       setPaymentLoading(false);
       setPaymentStartTime(null);

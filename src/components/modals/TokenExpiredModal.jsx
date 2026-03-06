@@ -8,8 +8,7 @@ import { logout } from '../../features/auth/authSlice';
  * Modal that appears when token expires during booking
  * Offers clean re-authentication without losing booking context
  */
-export default function TokenExpiredModal({ isOpen, onClose, onSignIn }) {
-  if (!isOpen) return null;
+export default function TokenExpiredModal({ onClose, onSignIn }) {
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">

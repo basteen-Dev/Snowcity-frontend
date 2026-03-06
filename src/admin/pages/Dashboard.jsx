@@ -77,7 +77,7 @@ export default function Dashboard() {
         <div className="brand">
           <div className="b-icon">🎡</div>
           <div>
-            <div className="b-name">FunZone — Operations Dashboard</div>
+            <div className="b-name">Snowcity Dashboard</div>
             <div className="b-sub">Counter · Manager · Management</div>
           </div>
         </div>
@@ -142,7 +142,7 @@ export default function Dashboard() {
         {/* §1 VISITOR SUMMARY */}
         <div className="sec-hd s1 a2">
           <div className="sec-hd-pill">🎢 Visitor Summary</div>
-          <div className="sec-hd-body">Guests who physically <strong>visited the park</strong> on the selected date</div>
+          <div className="sec-hd-body">Guests who physically visits the park  on the selected date</div>
           <div className="sec-hd-date">Visit Date: {activeDateLabel}</div>
         </div>
 
@@ -155,22 +155,22 @@ export default function Dashboard() {
           <div className="sc c-blue">
             <div className="sc-lbl">❄️ Snow Park</div>
             <div className="sc-val">{numberFmt(visitor.snow)}</div>
-            <div className="sc-sub">{visitor.snow > 0 ? 'Visited' : 'No visitors'} today</div>
+            <div className="sc-sub">{visitor.snow > 0 ? 'Visitors' : 'No visitors'} today</div>
           </div>
           <div className="sc c-purple">
             <div className="sc-lbl">🧪 Madlabs</div>
             <div className="sc-val">{numberFmt(visitor.madlabs)}</div>
-            <div className="sc-sub">{visitor.madlabs > 0 ? 'Visited' : 'No visitors'} today</div>
+            <div className="sc-sub">{visitor.madlabs > 0 ? 'Visitors' : 'No visitors'} today</div>
           </div>
           <div className="sc c-pink">
             <div className="sc-lbl">👁 Eyelusion</div>
             <div className="sc-val">{numberFmt(visitor.eyelusion)}</div>
-            <div className="sc-sub">{visitor.eyelusion > 0 ? 'Visited' : 'No visitors'} today</div>
+            <div className="sc-sub">{visitor.eyelusion > 0 ? 'Visitors' : 'No visitors'} today</div>
           </div>
           <div className="sc c-slate">
             <div className="sc-lbl">👹 Devil's Darkhouse</div>
             <div className="sc-val">{numberFmt(visitor.devil)}</div>
-            <div className="sc-sub">{visitor.devil > 0 ? 'Visited' : 'No visitors'} today</div>
+            <div className="sc-sub">{visitor.devil > 0 ? 'Visitors' : 'No visitors'} today</div>
           </div>
         </div>
 
@@ -195,7 +195,7 @@ export default function Dashboard() {
           <div className="sc c-amber">
             <div className="sc-lbl">Add-ons</div>
             <div className="sc-val">{moneyFmt(revenue.addons)}</div>
-            <div className="sc-sub">Jackets, gloves & extras</div>
+            
           </div>
         </div>
 
@@ -213,7 +213,7 @@ export default function Dashboard() {
               <div className="sec-lbl" style={{ color: 'var(--blue)' }}>Ticketing Revenue</div>
               <div className="ri"><div className="ri-ic">🎫</div><div className="ri-lbl">Attraction & Combo Tickets</div><div className="ri-bar"><div className="ri-fil" style={{ width: `${revPct(revenue.ticketing)}%`, background: 'var(--blue)' }}></div></div><div className="ri-amt" style={{ color: 'var(--blue)' }}>{moneyFmt(revenue.ticketing)}</div></div>
               <div className="sec-lbl" style={{ color: 'var(--muted)', marginTop: '12px' }}>Non-Ticketing Revenue</div>
-              <div className="ri"><div className="ri-ic">🧤</div><div className="ri-lbl">Add-ons (Jackets, Gloves, etc.)</div><div className="ri-bar"><div className="ri-fil" style={{ width: `${revPct(revenue.addons)}%`, background: 'var(--amber)' }}></div></div><div className="ri-amt" style={{ color: 'var(--amber)' }}>{moneyFmt(revenue.addons)}</div></div>
+              <div className="ri"><div className="ri-ic">🧤</div><div className="ri-lbl">Add-ons </div><div className="ri-bar"><div className="ri-fil" style={{ width: `${revPct(revenue.addons)}%`, background: 'var(--amber)' }}></div></div><div className="ri-amt" style={{ color: 'var(--amber)' }}>{moneyFmt(revenue.addons)}</div></div>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               <div className="rev-total">

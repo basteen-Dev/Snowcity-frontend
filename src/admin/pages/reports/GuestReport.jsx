@@ -109,7 +109,7 @@ export default function GuestReport() {
                     <div className="rpt-brand">
                         <div className="rpt-b-icon">🎡</div>
                         <div>
-                            <div className="rpt-b-name">FunZone — Reports</div>
+                            <div className="rpt-b-name">Snowcity - Reports</div>
                             <div className="rpt-b-sub">Guest Report</div>
                         </div>
                     </div>

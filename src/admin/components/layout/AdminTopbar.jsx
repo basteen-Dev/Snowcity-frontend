@@ -91,27 +91,9 @@ export default function AdminTopbar({ onToggleSidebar, onToggleMobile }) {
               className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 bg-gray-50 dark:bg-neutral-800 px-10 py-2 text-sm text-gray-700 dark:text-neutral-200 shadow-sm focus:border-blue-400 dark:focus:border-blue-500 focus:ring-1 focus:ring-blue-400 focus:outline-none transition-colors placeholder:text-gray-400 dark:placeholder:text-neutral-500"
             />
           </label>
-          <div className="hidden lg:flex items-center gap-1.5">
-            {quickLinks.map((item) => (
-              <Link
-                key={item.to}
-                to={item.to}
-                className="rounded-lg border border-gray-200 dark:border-neutral-700 px-3 py-1.5 text-xs font-semibold text-gray-600 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors"
-              >
-                {item.label}
-              </Link>
-            ))}
-          </div>
         </div>
-
         {/* Right: Actions */}
         <div className="flex items-center gap-2">
-          <button
-            className="hidden md:inline-flex items-center justify-center h-9 w-9 rounded-xl border border-gray-200 dark:border-neutral-700 text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors"
-            aria-label="Notifications"
-          >
-            <Bell className="h-4 w-4" />
-          </button>
           <div className="hidden md:block">
             <ThemeToggle compact />
           </div>

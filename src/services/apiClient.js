@@ -185,7 +185,7 @@ http.interceptors.response.use(
       const url = cfg.url || '';
       const isAuthEndpoint = /\/api\/auth\//.test(url);
       const isPaymentEndpoint = /\/api\/(user\/)?(booking-flow|payment|cart|bookings)\//.test(url);
-      if (!isAuthEndpoint && !isPaymentEndpoint && typeof authHandlers.onUnauthorized === 'function') {
+      if (!isAuthEndpoint && !isPaymentEndpoint && !cfg.skipOnUnauthorized && typeof authHandlers.onUnauthorized === 'function') {
         try { await authHandlers.onUnauthorized(); } catch { /* ignore */ }
       }
     }
@@ -201,7 +201,7 @@ http.interceptors.response.use(
 
 // 7. Exported API Wrapper
 const api = {
-  async get(url, { params, headers, signal, fullResponse = false, noCache = false, quiet404 = false } = {}) {
+  async get(url, { params, headers, signal, fullResponse = false, noCache = false, quiet404 = false, skipOnUnauthorized = false } = {}) {
     const cacheKey = !noCache && !fullResponse ? `${url}:${JSON.stringify(params || {})}` : null;
 
     if (cacheKey) {
@@ -211,7 +211,7 @@ const api = {
       }
     }
 
-    const res = await http.get(url, { params, headers, signal, quiet404 });
+    const res = await http.get(url, { params, headers, signal, quiet404, skipOnUnauthorized });
     const data = fullResponse ? res : res.data;
 
     if (cacheKey) {

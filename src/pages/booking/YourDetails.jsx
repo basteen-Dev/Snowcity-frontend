@@ -273,6 +273,7 @@ export default function YourDetails({
                 handleNext={handleNext}
                 step={step}
                 paymentLoading={paymentLoading}
+                otpVerified={otp.verified}
             />
         </div>
     );

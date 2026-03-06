@@ -18,12 +18,6 @@ export default function ThemeToggle({ compact = false }) {
       >
         Dark
       </button>
-      <button
-        className={`px-2 py-1 rounded-md text-xs ${theme === 'system' ? 'bg-gray-900 text-white' : 'border dark:border-neutral-700 dark:text-neutral-200'}`}
-        onClick={() => setTheme('system')}
-      >
-        System
-      </button>
     </div>
   );
 }

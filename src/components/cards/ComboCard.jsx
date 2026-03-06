@@ -125,11 +125,11 @@ export default function ComboCard({ item, isUltimate = false }) {
     return (
       <div
         onClick={() => navigate(comboHref)}
-        className="group relative w-full overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-[#0b1a33] via-[#123a63] to-[#0b1a33] p-1 shadow-2xl transition-all duration-500 hover:scale-[1.01] hover:shadow-blue-500/20 cursor-pointer"
+        className="group relative w-full overflow-hidden rounded-[var(--r-xl)] bg-gradient-to-br from-[#0b1a33] via-[#123a63] to-[#0b1a33] p-1 shadow-2xl transition-all duration-500 hover:scale-[1.01] hover:shadow-blue-500/20 cursor-pointer"
         role="button"
         tabIndex={0}
       >
-        <div className="relative flex flex-col lg:flex-row h-full w-full overflow-hidden rounded-[2.4rem] bg-[#0b1a33]/40 backdrop-blur-xl">
+        <div className="relative flex flex-col lg:flex-row h-full w-full overflow-hidden rounded-[calc(var(--r-xl)-4px)] bg-[#0b1a33]/40 backdrop-blur-xl">
           {/* Combo Hero Image */}
           <div className="relative w-full lg:w-3/5 h-[300px] lg:h-auto overflow-hidden">
             {heroImage ? (
@@ -175,7 +175,7 @@ export default function ComboCard({ item, isUltimate = false }) {
                     sessionStorage.removeItem('snowcity_booking_state');
                     navigate(bookHref);
                   }}
-                  className="rounded-2xl bg-white px-8 lg:px-12 py-4 text-sm lg:text-base font-black uppercase tracking-widest text-[#0b1a33] transition-all hover:bg-sky-50 hover:scale-105 active:scale-95 shadow-xl shadow-white/10"
+                  className="rounded-2xl bg-white px-8 lg:px-12 py-4 text-sm lg:text-base font-black uppercase tracking-widest text-[#0099ff] transition-all hover:bg-sky-50 hover:scale-105 active:scale-95 shadow-xl shadow-white/10"
                 >
                   Book Ultimate Pass
                 </button>
@@ -237,7 +237,7 @@ export default function ComboCard({ item, isUltimate = false }) {
               sessionStorage.removeItem('snowcity_booking_state');
               navigate(bookHref);
             }}
-            className="btn-book-exp !py-2.5 !px-6 !text-xs cursor-pointer"
+            className={`btn-book-exp !py-2.5 !px-6 !text-xs cursor-pointer ${(title.toLowerCase().includes('snowcity + madlabs + eyelusion') || title.toLowerCase().includes('snow city + madlabs + eyelusion')) ? '!bg-white !text-[#0099ff]' : ''}`}
           >
             Book Now
           </div>

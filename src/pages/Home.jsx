@@ -21,6 +21,7 @@ import VideoBlock from '../components/common/VideoBlock';
 import BlogCard from '../components/cards/BlogCard';
 import AttractionCard from '../components/cards/AttractionCard';
 import ComboCard from '../components/cards/ComboCard';
+import NearbyAttractionSection from '../components/common/Nearbyattractionsection';
 import Loader from '../components/common/Loader';
 import ErrorState from '../components/common/ErrorState';
 import LazyVisible from '../components/common/LazyVisible';
@@ -188,6 +189,11 @@ export default function Home() {
           <Testimonials />
         </LazyVisible>
 
+        {/* Plan Your Visit & FAQ */}
+        <LazyVisible minHeight={400} placeholder={<div className="py-10" />}>
+          <PlanVisitSection />
+        </LazyVisible>
+
         {/* BLOGS */}
         <LazyVisible minHeight={420} placeholder={<div className="py-6"><SkeletonSectionHeader /></div>}>
           <section id="blogs" className="bg-white py-20 px-4 md:px-4">
@@ -203,10 +209,17 @@ export default function Home() {
               {blogs.status === 'failed' ? (
                 <ErrorState message={blogs.error?.message || 'Failed to load blogs'} />
               ) : blogItems.length ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {blogItems.slice(0, 3).map((blog) => (
-                    <BlogCard key={blog.blog_id ?? blog.id ?? blog.slug} item={blog} />
-                  ))}
+                <div className="blog-marquee-wrapper">
+                  <div className="blog-marquee grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {[...blogItems.slice(0, 3), ...blogItems.slice(0, 3)].map((blog, idx) => (
+                      <div
+                        className={`blog-card-wrap ${idx >= 3 ? 'md:hidden' : ''}`}
+                        key={`${blog.blog_id ?? blog.id ?? blog.slug}-${idx}`}
+                      >
+                        <BlogCard item={blog} />
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ) : (
                 <SkeletonCarousel items={3} />
@@ -215,7 +228,7 @@ export default function Home() {
               <div className="mt-12 text-center">
                 <Link
                   to="/blog"
-                  className="inline-flex items-center gap-2 rounded-xl border-2 border-blue-600 px-8 py-3 text-sm font-semibold text-blue-600 transition-all duration-300 hover:bg-blue-600 hover:text-white"
+                  className="inline-flex items-center gap-2 rounded-xl border-2 border-sky-600 px-8 py-3 text-sm font-semibold text-sky-600 transition-all duration-300 hover:bg-sky-600 hover:text-white"
                 >
                   View All Articles
                   <span aria-hidden="true">→</span>
@@ -225,10 +238,12 @@ export default function Home() {
           </section>
         </LazyVisible>
 
-        {/* Plan Your Visit */}
-        <LazyVisible minHeight={320} placeholder={<div className="py-6" />}>
-          <PlanVisitSection />
+        {/* Nearby Attractions */}
+        <LazyVisible minHeight={400} placeholder={<div className="py-10" />}>
+          <NearbyAttractionSection />
         </LazyVisible>
+
+
 
 
         {/* Marquee animation styles */}
@@ -239,6 +254,31 @@ export default function Home() {
           }
           .marquee { animation: scrollHalf 18s linear infinite; }
           .marquee:hover { animation-play-state: paused; }
+
+          @media (max-width: 767px) {
+            .blog-marquee-wrapper {
+              overflow: hidden;
+              margin: 0;
+              padding: 10px 0;
+            }
+            .blog-marquee {
+              display: flex !important;
+              flex-direction: row !important;
+              width: max-content;
+              gap: 24px !important;
+              animation: scrollRTL 40s linear infinite;
+              padding: 0 20px;
+            }
+            .blog-card-wrap {
+              width: 300px;
+              flex-shrink: 0;
+            }
+          }
+
+          @keyframes scrollRTL {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+          }
         `}</style>
       </main>
     </div>

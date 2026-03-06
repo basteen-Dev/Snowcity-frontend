@@ -78,7 +78,10 @@ export default function AttractionCard({ item, featured = false }) {
             <div className="exp-feat-price">
               <sub>From / Per Person</sub> ₹{Math.round(displayPrice)}
             </div>
-            <button className="btn-book-new px-10 py-5 text-lg" onClick={onBook}>
+            <button
+              className={`btn-book-new px-10 py-5 text-lg ${title.toLowerCase().includes('snow park') ? '!bg-white !text-[#0099ff]' : ''}`}
+              onClick={onBook}
+            >
               Book Now <span>→</span>
             </button>
           </div>
@@ -123,7 +126,10 @@ export default function AttractionCard({ item, featured = false }) {
               ₹{Math.round(displayPrice)}
             </div>
           </div>
-          <button className="btn-book-new" onClick={onBook}>
+          <button
+            className={`btn-book-new ${title.toLowerCase().includes('snow park') ? '!bg-white !text-[#0099ff]' : ''}`}
+            onClick={onBook}
+          >
             Book Now
           </button>
         </div>

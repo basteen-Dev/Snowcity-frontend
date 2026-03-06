@@ -319,7 +319,7 @@ export default function AdminSidebar({ collapsed, onClose }) {
           </div>
           {!collapsed && (
             <div>
-              <p className="text-sm font-semibold text-gray-900 dark:text-neutral-100">SnowCity Admin</p>
+              <p className="text-sm font-semibold text-gray-900 dark:text-neutral-100">Snow Park Panel</p>
               <span className={`inline-block text-[10px] font-medium px-2 py-0.5 rounded-xl text-white bg-gradient-to-r ${roleBadge.color}`}>
                 {roleBadge.label}
               </span>
@@ -336,19 +336,7 @@ export default function AdminSidebar({ collapsed, onClose }) {
       </div>
 
       {/* Search */}
-      {!collapsed && (
-        <div className="px-4 pt-4">
-          <label className="relative block">
-            <input
-              type="search"
-              value={navFilter}
-              onChange={(e) => setNavFilter(e.target.value)}
-              placeholder="Quick find…"
-              className="w-full rounded-2xl border border-gray-200/80 bg-white/80 dark:bg-neutral-900 px-3 py-2 text-sm text-gray-700 dark:text-neutral-200 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
-            />
-          </label>
-        </div>
-      )}
+      
 
       {/* Nav */}
       <nav className="px-3 pb-4 h-[calc(100vh-160px)] overflow-y-auto">
@@ -439,31 +427,8 @@ export default function AdminSidebar({ collapsed, onClose }) {
         })}
       </nav>
 
-      {/* Bottom panel */}
-      <div className="px-4 pb-5">
-        <div className={`rounded-2xl bg-gradient-to-br ${roleBadge.color.replace('from-', 'from-').replace('to-', 'to-')} text-white p-4 shadow-lg`}
-          style={{ background: 'linear-gradient(135deg, #1e3a5f, #1e40af)' }}>
-          <p className="text-sm font-semibold mb-1">Quick Access</p>
-          <p className="text-xs text-white/80 mb-3">Jump to bookings or reach support.</p>
-          <div className="flex flex-col gap-2">
-            {canSeeBookings && (
-              <Link
-                to="/admin/bookings"
-                className="inline-flex items-center justify-center rounded-xl bg-white/10 px-3 py-1.5 text-xs font-semibold hover:bg-white/20"
-                onClick={handleNavClick}
-              >
-                Go to Bookings
-              </Link>
-            )}
-            <a
-              href="mailto:support@snowcity.com"
-              className="inline-flex items-center justify-center rounded-xl bg-white text-slate-900 px-3 py-1.5 text-xs font-semibold"
-            >
-              Contact Support
-            </a>
-          </div>
-        </div>
-      </div>
+     
+      
     </aside>
   );
 }

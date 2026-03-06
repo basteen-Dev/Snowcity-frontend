@@ -16,6 +16,7 @@ export default function OrderDetailsBox({
     step,
     paymentLoading,
     cartAddons,
+    otpVerified,
 }) {
     return (
         <div className="lg:sticky lg:top-[180px]">
@@ -131,10 +132,10 @@ export default function OrderDetailsBox({
 
                 <button
                     type="button"
-                    disabled={!hasCartItems}
+                    disabled={!hasCartItems || (step === 3 && !otpVerified)}
                     onClick={handleNext}
-                    className={`mt-4 w-full flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition-all active:scale-[0.98] ${!hasCartItems
-                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    className={`mt-4 w-full flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition-all active:scale-[0.98] ${(!hasCartItems || (step === 3 && !otpVerified))
+                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
                         : 'bg-sky-600 text-white shadow-md hover:bg-sky-700'
                         }`}
                 >

@@ -1028,8 +1028,8 @@ body {
 
   --r-sm: 8px;
   --r-md: 10px;
-  --r-lg: 12px;
-  --r-xl: 12px;
+  --r-lg: 16px;
+  --r-xl: 24px;
 
   --shadow-sm: 0 2px 12px rgba(20, 96, 232, 0.08);
   --shadow-md: 0 6px 32px rgba(20, 96, 232, 0.13);
@@ -1317,7 +1317,7 @@ body {
 }
 
 .btn-book-new {
-  background: #1460E8;
+  background: #0099ff;
   color: white;
   font-size: 13.5px;
   font-weight: 700;
@@ -1333,7 +1333,7 @@ body {
 }
 
 .btn-book-new:hover {
-  background: #0A3A9E;
+  background: #007acc;
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(20, 96, 232, 0.42);
 }
