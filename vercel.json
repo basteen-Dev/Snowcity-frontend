@@ -1,0 +1,12 @@
+{
+    "rewrites": [
+        {
+            "source": "/api/payphi-return",
+            "destination": "/api/payphi-return"
+        },
+        {
+            "source": "/(.*)",
+            "destination": "/index.html"
+        }
+    ]
+}
