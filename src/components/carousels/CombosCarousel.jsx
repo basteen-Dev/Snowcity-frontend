@@ -35,9 +35,9 @@ export default function CombosCarousel({ items = [] }) {
         <section className="relative w-full overflow-hidden pt-20 pb-24 px-4 md:px-4 bg-gradient-to-t from-white via-sky-50 to-white">
             <div className="w-full relative z-10">
                 <div className="text-center mb-16">
-                    <p className="text-xs font-bold tracking-[0.4em] text-blue-600 uppercase mb-4">Exclusive Packs</p>
+                    <p className="text-xs font-bold tracking-[0.4em] text-[#0099ff] uppercase mb-4">Exclusive Packs</p>
                     <h2 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tight leading-none mb-6">Combo Deals</h2>
-                    <div className="w-20 h-1.5 bg-blue-600 mx-auto rounded-xl mb-6" />
+                    <div className="w-20 h-1.5 bg-[#0099ff] mx-auto rounded-xl mb-6" />
                     <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto font-medium leading-relaxed">Save more when you bundle your favorite experiences together</p>
                 </div>
 

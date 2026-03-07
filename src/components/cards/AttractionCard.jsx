@@ -5,6 +5,7 @@ import { imgSrc } from '../../utils/media';
 import { getPrice, getBasePrice } from '../../utils/pricing';
 import api from '../../services/apiClient';
 import endpoints from '../../services/endpoints';
+import snowParkVideo from '../../assets/images/Web gif_GStory_1772876679.mp4';
 
 export default function AttractionCard({ item, featured = false }) {
   const navigate = useNavigate();
@@ -89,9 +90,45 @@ export default function AttractionCard({ item, featured = false }) {
 
         <div className="exp-feat-right">
           <div className="feat-visual-grid">
-            {[0, 1, 2, 3].map((idx) => {
-              const galleryImg = gallery[idx] ? imgSrc(gallery[idx].url || gallery[idx].image_url) : null;
-              const displayImg = galleryImg || (idx === 0 ? img : `https://picsum.photos/seed/snow${idx}/400/300`);
+            {(title.toLowerCase().includes('snow park') ? [0, 1, 2] : [0, 1, 2, 3]).map((idx) => {
+              // For Snow Park: 
+              // 0 -> Main Image (top left)
+              // 1 -> Video (full right column)
+              // 2 -> Gallery Image (bottom left)
+
+              const isSnowPark = title.toLowerCase().includes('snow park');
+
+              if (isSnowPark && idx === 1) {
+                return (
+                  <div key="video-cell" className="feat-vg-cell">
+                    <video
+                      src={snowParkVideo}
+                      autoPlay
+                      muted
+                      loop
+                      playsInline
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                );
+              }
+
+              // Mapping for Snow Park to get correct images
+              // idx 0 -> img (main)
+              // idx 2 -> gallery[0] (or 1)
+              let displayImg;
+              if (isSnowPark) {
+                if (idx === 0) displayImg = img;
+                else {
+                  // idx 2
+                  const gImg = gallery[0] ? imgSrc(gallery[0].url || gallery[0].image_url) : null;
+                  displayImg = gImg || `https://picsum.photos/seed/snow${idx}/400/300`;
+                }
+              } else {
+                const galleryImg = gallery[idx] ? imgSrc(gallery[idx].url || gallery[idx].image_url) : null;
+                displayImg = galleryImg || (idx === 0 ? img : `https://picsum.photos/seed/snow${idx}/400/300`);
+              }
+
               return (
                 <div key={idx} className="feat-vg-cell">
                   <img src={displayImg} alt={`${title} view ${idx + 1}`} loading="lazy" />

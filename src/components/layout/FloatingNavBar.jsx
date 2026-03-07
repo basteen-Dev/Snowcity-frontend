@@ -579,7 +579,7 @@ export default function FloatingNavBar() {
                 className={bookTicketButtonClass}
                 onClick={() => { sessionStorage.removeItem('snowcity_booking_state'); navigate('/tickets-offers'); }}
               >
-                <Ticket className="w-5 h-5 mr-2" /> BUY TICKETS
+                <Ticket className="w-5 h-5 bg-[#0099ff] mr-2" /> BUY TICKETS
               </button>
 
               {token && (
@@ -671,7 +671,7 @@ export default function FloatingNavBar() {
               navigate('/tickets-offers');
             }}
           >
-            <Ticket className="w-4 h-4 mr-1" /> BUY
+            <Ticket className="w-4 bg-[#0099FF] h-4 mr-1" /> BUY
           </button>
         </div>
 
@@ -718,7 +718,7 @@ export default function FloatingNavBar() {
               className="block py-3 px-4 text-black hover:text-gray-800 font-semibold transition-all duration-200 rounded-lg hover:bg-gray-100"
               onClick={() => setMobileOpen(false)}
             >
-              <Gift className="w-5 h-5 inline mr-3 text-blue-600" /> DEALS
+              <Gift className="w-5 h-5 inline mr-3 text-blue-600" /> Deals
             </Link>
 
             <details className="group">

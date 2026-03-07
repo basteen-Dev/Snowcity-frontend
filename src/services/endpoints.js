@@ -64,6 +64,9 @@ const endpoints = {
     apiMeta: () => '/api',
     paymentsHealth: () => '/api/payments/health'
   },
+  contact: {
+    submit: () => '/api/contact'
+  },
 
   // Auth (User)
   auth: {

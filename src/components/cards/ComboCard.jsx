@@ -131,17 +131,16 @@ export default function ComboCard({ item, isUltimate = false }) {
       >
         <div className="relative flex flex-col lg:flex-row h-full w-full overflow-hidden rounded-[calc(var(--r-xl)-4px)] bg-[#0b1a33]/40 backdrop-blur-xl">
           {/* Combo Hero Image */}
-          <div className="relative w-full lg:w-3/5 h-[300px] lg:h-auto overflow-hidden">
+          <div className="relative w-full lg:w-3/5 overflow-hidden flex items-center bg-[#040e21]">
             {heroImage ? (
               <img
                 src={heroImage}
                 alt={title}
-                className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                className="w-full h-auto object-contain lg:absolute lg:inset-0 lg:h-full lg:object-cover transition-transform duration-700 group-hover:scale-105"
               />
             ) : (
-              <div className="h-full w-full bg-slate-800" />
+              <div className="w-full min-h-[220px] bg-slate-800" />
             )}
-            <div className="absolute inset-0 bg-gradient-to-r from-[#0b1a33]/80 via-transparent to-transparent" />
           </div>
 
           {/* Content Area */}

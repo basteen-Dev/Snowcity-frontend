@@ -55,7 +55,7 @@ const FAQItem = ({ faq, isOpen, onClick }) => (
           width="14" height="14" viewBox="0 0 14 14" fill="none"
           style={{ transform: isOpen ? 'rotate(45deg)' : 'rotate(0deg)', transition: 'transform 0.25s cubic-bezier(0.4,0,0.2,1)' }}
         >
-          <path d="M7 1V13M1 7H13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+          <path d="M7 1V13M1 7H13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
         </svg>
       </div>
     </div>
@@ -152,7 +152,7 @@ export default function PlanVisitSection() {
                   <Link to={item.link} className="vq-link">
                     Learn more
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-                      <path d="M2 7H12M8 3L12 7L8 11" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M2 7H12M8 3L12 7L8 11" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   </Link>
                 </div>
@@ -165,9 +165,9 @@ export default function PlanVisitSection() {
       <style>{`
         /* ── Tokens ── */
         .sec-faq {
-          --blue: #003DE6;
+          --blue: #0099ff;
           --blue-light: #EEF2FF;
-          --blue-mid: rgba(0, 61, 230, 0.08);
+          --blue-mid: rgba(0, 153, 255, 0.08);
           --ink: #0B1A33;
           --ink-2: #253450;
           --muted: #5C6F8A;
@@ -180,7 +180,7 @@ export default function PlanVisitSection() {
           --radius-md: 14px;
           --radius-lg: 20px;
           --shadow-sm: 0 1px 3px rgba(11,26,51,.06), 0 1px 2px rgba(11,26,51,.04);
-          --shadow-md: 0 4px 16px rgba(0,61,230,.10), 0 1px 4px rgba(0,61,230,.06);
+          --shadow-md: 0 4px 16px rgba(0,153,255,.10), 0 1px 4px rgba(0,153,255,.06);
           --transition: 0.22s cubic-bezier(0.4,0,0.2,1);
         }
 
@@ -197,8 +197,8 @@ export default function PlanVisitSection() {
           position: absolute;
           inset: 0;
           background-image:
-            linear-gradient(rgba(0,61,230,.035) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(0,61,230,.035) 1px, transparent 1px);
+            linear-gradient(rgba(0,153,255,.035) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(0,153,255,.035) 1px, transparent 1px);
           background-size: 40px 40px;
           pointer-events: none;
           z-index: 0;

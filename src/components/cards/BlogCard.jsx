@@ -74,7 +74,7 @@ export default function BlogCard({ item }) {
           </h2>
 
           <div className="mt-auto flex items-center justify-between">
-            <span className="inline-flex items-center text-sm font-medium text-blue-600 group-hover:text-blue-700 transition-colors">
+            <span className="inline-flex items-center text-sm font-medium text-[#0099ff] group-hover:text-blue-700 transition-colors">
               Read more
               <svg className="ml-1 w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

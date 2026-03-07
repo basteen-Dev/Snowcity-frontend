@@ -569,14 +569,6 @@ export default function Booking() {
     const selectedDate = checkoutItem.date || '';
     const selectedSlot = checkoutItem.slot || {};
 
-    // ── Same-day blocking: offers only apply for future dates ──
-    if (selectedDate) {
-      const todayStr = dayjs().format('YYYY-MM-DD');
-      if (selectedDate <= todayStr) {
-        return null; // No offers for same-day or past bookings
-      }
-    }
-
     // ── Dynamic Pricing Override: suppress offers on dates with dynamic pricing
     if (selectedDate && targetId) {
       const dpKey = `${targetType}:${targetId}:${selectedDate}`;
@@ -586,7 +578,13 @@ export default function Booking() {
     }
 
     let best = null;
+    const todayStr = dayjs().format('YYYY-MM-DD');
+    const isSameOrPast = selectedDate && selectedDate <= todayStr;
+
     for (const offer of state.offers) {
+      if (isSameOrPast && offer.rule_type !== 'dynamic_pricing') {
+        continue;
+      }
       const rules = Array.isArray(offer.rules) ? offer.rules : [];
       for (const rule of rules) {
         if (

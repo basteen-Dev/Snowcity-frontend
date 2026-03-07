@@ -1184,8 +1184,13 @@ body {
   inset: 0;
   display: grid;
   grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
   gap: 8px;
   padding: 24px;
+}
+
+.feat-vg-cell:nth-child(2) {
+  grid-row: span 2;
 }
 
 .feat-vg-cell {

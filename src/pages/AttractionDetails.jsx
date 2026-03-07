@@ -915,7 +915,7 @@ export default function AttractionDetails() {
                     <img
                       src={cover}
                       alt={title}
-                      className="w-full h-full object-cover"
+                      className="w-full h-half object-cover"
                       loading="lazy"
                       draggable="false"
                     />

@@ -997,8 +997,8 @@ export default function ComboDetails() {
                   className="w-full h-full object-cover transition-opacity duration-700 brightness-75 group-hover:brightness-90"
                   loading="eager"
                 />
-                {/* Overlaying Gradient */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
+                {/* Overlaying Gradient (Bottom only) */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
               </button>
 
               {/* Carousel Controls */}
@@ -1302,7 +1302,6 @@ export default function ComboDetails() {
                           <div className="flex justify-between items-start mb-4">
                             <div>
                               <p className="font-bold text-gray-900 text-base">{labelTime(s)}</p>
-                              <p className="text-xs text-gray-500 mt-0.5">Capacity: {s.capacity} • {s.available} left</p>
                             </div>
                             <div className="text-right">
                               <p className="text-xl font-bold text-[#0099FF] rupee">{formatCurrency(pricing.finalPrice)}</p>
