@@ -2,7 +2,7 @@
     "rewrites": [
         {
             "source": "/api/:path*",
-            "destination": "https://app.snowcityblr.com/:path*"
+            "destination": "https://app.snowcityblr.com/api/:path*"
         },
         {
             "source": "/api/payphi-return",
