@@ -36,13 +36,13 @@ export const adminLogin = createAsyncThunk('adminAuth/adminLogin',
 );
 
 /**
- * Hydrate roles, permissions, and scopes from /api/admin/admins/me
+ * Hydrate roles, permissions, and scopes from /api/parkpanel/admins/me
  */
 export const adminHydratePermissions = createAsyncThunk('adminAuth/hydratePerms',
   async (_, { dispatch, rejectWithValue }) => {
     try {
       // Call the /me endpoint which returns roles, perms, and scopes
-      const profile = await adminApi.get('/api/admin/admins/me');
+      const profile = await adminApi.get('/api/parkpanel/admins/me');
 
       // Normalize
       const roles = Array.isArray(profile?.roles) ? profile.roles : [];

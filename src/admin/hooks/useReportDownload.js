@@ -24,7 +24,7 @@ export default function useReportDownload() {
     setError(null);
     try {
       const query = buildQuery({ type, ...params });
-      const url = `/api/admin/analytics/report.${ext}${query ? `?${query}` : ''}`;
+      const url = `/api/parkpanel/analytics/report.${ext}${query ? `?${query}` : ''}`;
       const response = await adminApi.get(url, { responseType: 'blob', fullResponse: true });
       const blob = response?.data;
       if (!blob) throw new Error('No data returned');

@@ -1,6 +1,6 @@
 import adminApi from '../services/adminApi';
 
-const ENDPOINT = import.meta.env?.VITE_ADMIN_UPLOAD_ENDPOINT || '/api/admin/uploads';
+const ENDPOINT = import.meta.env?.VITE_ADMIN_UPLOAD_ENDPOINT || '/api/parkpanel/uploads';
 
 export async function uploadAdminMedia(file, { fieldName = 'file', folder = '', extra = {} } = {}) {
   if (!file) throw new Error('No file selected');
