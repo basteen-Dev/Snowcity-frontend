@@ -1442,10 +1442,20 @@ export default function Booking() {
 
   const applyPromo = async () => {
     if (!promoInput) return;
+
+    // Construct items array for precise coupon validation
+    const items = cartItems.map(item => ({
+      item_type: item.item_type || 'Attraction',
+      attraction_id: item.attraction_id,
+      combo_id: item.combo_id,
+      price: Number(item.unitPrice || 0),
+      quantity: Number(item.quantity || 1)
+    }));
+
     await dispatch(
       applyCoupon({
         code: promoInput,
-        total_amount: Math.max(0, grossTotal),
+        items,
         onDate: sel.date || toYMD(new Date()),
       }),
     )
@@ -1857,6 +1867,7 @@ export default function Booking() {
           // Pass offer information if a happy hour or other offer was applied
           offer_id: item.offer?.offer_id || item.offer_id || null,
           offer_rule_id: item.offer?.rule_id || item.offer_rule_id || null,
+          coupon_code: coupon?.code || promoInput || null,
         };
 
         // Add addons if any

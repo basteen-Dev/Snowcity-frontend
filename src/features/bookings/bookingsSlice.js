@@ -334,9 +334,9 @@ export const verifyAuthOtp = createAsyncThunk(
 
 export const applyCoupon = createAsyncThunk(
   'bookings/applyCoupon',
-  async ({ code, total_amount, onDate }, { rejectWithValue }) => {
+  async ({ code, items, onDate }, { rejectWithValue }) => {
     try {
-      const res = await api.post(endpoints.coupons.apply(), { code, total_amount, onDate });
+      const res = await api.post(endpoints.coupons.apply(), { code, items, onDate });
       return res || { coupon: null, discount: 0, reason: 'Invalid' };
     } catch (err) { return rejectWithValue(err); }
   }
@@ -592,6 +592,7 @@ const bookingsSlice = createSlice({
     });
     b.addCase(applyCoupon.fulfilled, (s, a) => {
       s.coupon.status = 'succeeded';
+      s.coupon.code = a.meta.arg.code || '';
       s.coupon.discount = Number(a.payload?.discount || 0);
       s.coupon.data = a.payload?.coupon || null;
       s.coupon.reason = a.payload?.reason || null;
