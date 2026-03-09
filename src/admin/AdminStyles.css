@@ -1,0 +1,312 @@
+.admin-panel-theme {
+  --brand: #4361ee;
+  --brand-light: #eef0ff;
+  --brand-dark: #3451d1;
+  --green: #22c55e;
+  --green-light: #dcfce7;
+  --orange: #f59e0b;
+  --orange-light: #fef3c7;
+  --red: #ef4444;
+  --red-light: #fee2e2;
+  --text: #0f172a;
+  --text-2: #475569;
+  --text-3: #94a3b8;
+  --border: #e2e8f0;
+  --bg: #f8fafc;
+  --white: #ffffff;
+  --sidebar-w: 230px;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, .08);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, .10);
+  --shadow-lg: 0 20px 60px rgba(0, 0, 0, .15);
+  --radius: 10px;
+
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 13.5px;
+  color: var(--text);
+  background: var(--bg);
+}
+
+.admin-panel-theme * {
+  box-sizing: border-box;
+}
+
+/* ── LAYOUT ── */
+.admin-panel-theme .main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.admin-panel-theme .main-scroll {
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* ── SIDEBAR ── */
+.admin-panel-theme .sidebar {
+  width: var(--sidebar-w);
+  background: var(--white);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  transition: width .25s ease, transform .25s ease;
+  overflow: hidden;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.admin-panel-theme .sidebar.collapsed {
+  width: 58px;
+}
+
+.admin-panel-theme .sidebar-head {
+  padding: 0 14px;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.admin-panel-theme .logo-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.admin-panel-theme .logo-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #4361ee, #3a0ca3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 800;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.admin-panel-theme .logo-text {
+  overflow: hidden;
+  white-space: nowrap;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-panel-theme .logo-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.2;
+}
+
+.admin-panel-theme .logo-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--brand);
+  background: var(--brand-light);
+  padding: 1px 6px;
+  border-radius: 4px;
+  margin-top: 2px;
+  display: inline-block;
+  width: fit-content;
+}
+
+.admin-panel-theme .collapse-btn {
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--white);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background .15s;
+  padding: 0;
+  outline: none;
+}
+
+.admin-panel-theme .collapse-btn:hover {
+  background: var(--bg);
+}
+
+.admin-panel-theme .sidebar.collapsed .collapse-btn svg {
+  transform: rotate(180deg);
+  transition: transform 0.2s;
+}
+
+.admin-panel-theme .sidebar:not(.collapsed) .collapse-btn svg {
+  transition: transform 0.2s;
+}
+
+/* Hide text when collapsed */
+.admin-panel-theme .sidebar.collapsed .logo-text {
+  opacity: 0;
+  pointer-events: none;
+  width: 0;
+  padding: 0;
+  margin: 0;
+}
+
+.admin-panel-theme .sidebar.collapsed .nav-section-label {
+  visibility: hidden;
+  height: 16px;
+  padding: 4px 14px;
+}
+
+.admin-panel-theme .sidebar.collapsed .nav-label-text {
+  opacity: 0;
+  width: 0;
+  pointer-events: none;
+}
+
+.admin-panel-theme .sidebar.collapsed .nav-badge {
+  display: none;
+}
+
+.admin-panel-theme .nav-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 0;
+}
+
+.admin-panel-theme .nav-body::-webkit-scrollbar {
+  width: 5px;
+}
+
+.admin-panel-theme .nav-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.admin-panel-theme .nav-body::-webkit-scrollbar-thumb {
+  background: #e2e8f0;
+  border-radius: 3px;
+}
+
+.admin-panel-theme .nav-section-label {
+  padding: 8px 14px 4px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-3);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.admin-panel-theme .nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 0;
+  border-left: 3px solid transparent;
+  transition: all .15s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-decoration: none;
+}
+
+.admin-panel-theme .nav-item:hover {
+  background: #f8fafc;
+  color: var(--text);
+}
+
+.admin-panel-theme .nav-item.active {
+  background: var(--brand-light);
+  color: var(--brand);
+  font-weight: 700;
+  border-left-color: var(--brand);
+}
+
+.admin-panel-theme .nav-item svg,
+.admin-panel-theme .nav-item .nav-emoji {
+  flex-shrink: 0;
+  width: 16px;
+  text-align: center;
+  display: inline-block;
+}
+
+.admin-panel-theme .nav-label-text {
+  overflow: hidden;
+  white-space: nowrap;
+  flex: 1;
+  text-overflow: ellipsis;
+}
+
+.admin-panel-theme .nav-badge {
+  margin-left: auto;
+  background: var(--brand);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+/* Mobile Overlay */
+.admin-panel-theme .mobile-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
+  z-index: 40;
+}
+
+/* Dark mode overrides (to blend if the rest of app is dark) */
+html.dark .admin-panel-theme {
+  --bg: #0f172a;
+  --white: #1e293b;
+  --text: #f8fafc;
+  --text-2: #cbd5e1;
+  --text-3: #64748b;
+  --border: #334155;
+  --brand-light: #1e293b;
+  /* Maybe a slight tint */
+  --brand: #6366f1;
+}
+
+html.dark .admin-panel-theme .nav-item:hover {
+  background: #334155;
+}
+
+html.dark .admin-panel-theme .collapse-btn:hover {
+  background: #334155;
+}
+
+html.dark .admin-panel-theme .nav-item.active {
+  background: #2e3048;
+  border-left-color: #6366f1;
+}
+
+@media (max-width: 768px) {
+  .admin-panel-theme .sidebar {
+    position: fixed;
+    transform: translateX(-100%);
+    z-index: 50;
+    left: 0;
+    top: 0;
+    bottom: 0;
+  }
+
+  .admin-panel-theme .sidebar.mobile-open {
+    transform: translateX(0);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  }
+}

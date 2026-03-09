@@ -82,7 +82,7 @@ export default function AttractionsList() {
   };
 
   const meta = state.meta || {};
-  const totalCount = meta.total || meta.count || state.items.length;
+  const totalCount = meta.total || meta.count || meta.totalCount || meta.total_items || state.items.length;
 
   return (
     <div>

@@ -43,7 +43,7 @@ export default function UsersList() {
   React.useEffect(() => { loadRoles(); load(1); /* eslint-disable-next-line */ }, []);
 
   const meta = state.meta || {};
-  const totalCount = meta.total || meta.count || state.items.length;
+  const totalCount = meta.total || meta.count || meta.totalCount || meta.total_items || state.items.length;
 
   return (
     <div>

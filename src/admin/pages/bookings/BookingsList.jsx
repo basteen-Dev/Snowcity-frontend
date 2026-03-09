@@ -643,8 +643,8 @@ export default function BookingsList() {
                   onClick={(e) => { e.stopPropagation(); handleTicketStatusToggle(r); }}
                   disabled={!isConfirmed || isUpdating}
                   className={`inline-flex items-center gap-1.5 rounded-xl px-2.5 py-1 text-xs font-semibold border transition-all ${isRedeemed
-                      ? 'border-emerald-300 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-700'
-                      : 'border-amber-300 bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-700'
+                    ? 'border-emerald-300 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-700'
+                    : 'border-amber-300 bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-700'
                     } ${(!isConfirmed || isUpdating) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:shadow-sm'}`}
                   title={!isConfirmed ? 'Booking must be CONFIRMED to change ticket status' : (isRedeemed ? 'Click to mark as Not Redeemed' : 'Click to mark as Redeemed')}
                 >
@@ -689,7 +689,7 @@ export default function BookingsList() {
       </div>
 
       <TablePagination
-        count={meta.total || meta.count || meta.totalBookings || rows.length}
+        count={meta.total || meta.count || meta.totalBookings || meta.totalCount || meta.total_items || rows.length}
         page={currPage}
         rowsPerPage={rowsPerPage}
         onPageChange={(p) => dispatch(listAdminBookings({ ...buildQuery(), page: p, limit: rowsPerPage }))}

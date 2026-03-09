@@ -218,7 +218,7 @@ export default function BlogsList() {
       />
 
       <TablePagination
-        count={meta.total || meta.count || meta.total_items || state.items.length}
+        count={meta.total || meta.count || meta.total_items || meta.totalCount || state.items.length}
         page={state.page}
         rowsPerPage={state.limit}
         onPageChange={(p) => load(p)}
