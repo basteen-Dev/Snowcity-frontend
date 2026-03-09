@@ -1,6 +1,10 @@
 {
     "rewrites": [
         {
+            "source": "/api/:path*",
+            "destination": "https://app.snowcityblr.com/:path*"
+        },
+        {
             "source": "/api/payphi-return",
             "destination": "/api/payphi-return"
         },
