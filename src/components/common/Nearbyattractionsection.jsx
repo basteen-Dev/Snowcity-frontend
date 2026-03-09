@@ -40,8 +40,7 @@ export default function NearbyAttractionSection() {
 
           {/* Heading */}
           <h2 className="nearby-title">
-            Visit Fun World<br />
-            <span className="title-accent">Alongside Snow City</span>
+            Visit Fun World
           </h2>
 
           {/* Sub */}
@@ -84,14 +83,7 @@ export default function NearbyAttractionSection() {
               View Details
               <span aria-hidden="true">→</span>
             </a>
-            <a
-              href="https://www.funworldblr.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-link-hover"
-            >
-              funworldblr.com ↗
-            </a>
+           
           </div>
         </motion.div>
 
@@ -149,9 +141,8 @@ export default function NearbyAttractionSection() {
         .sec-nearby {
           position: relative;
           background: var(--white);
-          padding: 80px 0 120px 0;
+          padding: 40px 0 40px 0;
           overflow: hidden;
-          border-top: 1px solid var(--border);
         }
 
         .bg-grid {
@@ -195,7 +186,7 @@ export default function NearbyAttractionSection() {
           display: grid;
           grid-template-columns: 1fr 1.15fr;
           gap: 64px;
-          align-items: start;
+          align-items: stretch;
         }
 
         /* ── Eyebrow ── */
@@ -255,7 +246,7 @@ export default function NearbyAttractionSection() {
         .stats-row {
           display: flex;
           gap: 0;
-          margin-top: 32px;
+          margin-top: 24px;
           border: 1.5px solid var(--border);
           border-radius: var(--radius-md);
           overflow: hidden;
@@ -296,7 +287,7 @@ export default function NearbyAttractionSection() {
           display: flex;
           align-items: center;
           gap: 16px;
-          margin-top: 32px;
+          margin-top: 24px;
           flex-wrap: wrap;
         }
 
@@ -344,10 +335,10 @@ export default function NearbyAttractionSection() {
         /* ── Hero Image ── */
         .nearby-hero-wrap {
           position: relative;
-          height: 80%;
-          min-height: 226px;
+          width: 100%;
+          min-height: 300px;
         }
-
+ 
         .hero-img-inner {
           position: relative;
           width: 100%;
@@ -356,6 +347,17 @@ export default function NearbyAttractionSection() {
           overflow: hidden;
           box-shadow: var(--shadow-md);
           border: 1px solid var(--border);
+        }
+ 
+        @media (min-width: 769px) {
+          .nearby-hero-wrap {
+            height: 100%;
+            min-height: 0;
+          }
+          .hero-img-inner {
+            position: absolute;
+            inset: 0;
+          }
         }
 
         .hero-img {

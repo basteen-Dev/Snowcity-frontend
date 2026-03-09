@@ -28,12 +28,9 @@ export default function NavigationAccordion() {
             <div className="max-w-7xl mx-auto px-4 md:px-6">
                 <button
                     onClick={() => setIsOpen(!isOpen)}
-                    className="w-full py-6 flex items-center justify-between group transition-all"
+                    className="w-full py-6 flex items-center gap-3 group transition-all"
                 >
-                    <div className="flex items-center gap-3">
-                     
-                        <h3 className="text-lg font-bold text-slate-900 group-hover:text-sky-600 transition-colors">More info</h3>
-                    </div>
+                    <h3 className="text-lg font-bold text-slate-900 group-hover:text-sky-600 transition-colors">More info</h3>
                     <ChevronDown
                         size={20}
                         className={`text-gray-400 group-hover:text-sky-600 transition-all duration-300 ${isOpen ? 'rotate-180' : ''}`}

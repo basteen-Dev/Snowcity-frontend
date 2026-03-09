@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { adminLogout } from '../../features/auth/adminAuthSlice';
 import ThemeToggle from '../common/ThemeToggle';
 import { Link, useLocation } from 'react-router-dom';
-import { Search, Bell, Menu, LogOut, User } from 'lucide-react';
+import { Bell, Menu, LogOut, User } from 'lucide-react';
 
 const quickLinks = [
   { label: 'Reports', to: '/parkpanel/analytics/overview' },
@@ -26,7 +26,7 @@ export default function AdminTopbar({ onToggleSidebar, onToggleMobile }) {
   const dispatch = useDispatch();
   const initial = (user?.name || user?.email || 'A').charAt(0).toUpperCase();
   const [open, setOpen] = React.useState(false);
-  const [search, setSearch] = React.useState('');
+
   const profileRef = React.useRef(null);
   const breadcrumbs = useBreadcrumbs();
 
@@ -79,19 +79,7 @@ export default function AdminTopbar({ onToggleSidebar, onToggleMobile }) {
           </nav>
         </div>
 
-        {/* Center: Search */}
-        <div className="flex-1 flex items-center gap-3 max-w-xl">
-          <label className="flex-1 relative">
-            <Search className="h-4 w-4 text-gray-400 dark:text-neutral-500 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input
-              type="search"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search…"
-              className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 bg-gray-50 dark:bg-neutral-800 px-10 py-2 text-sm text-gray-700 dark:text-neutral-200 shadow-sm focus:border-blue-400 dark:focus:border-blue-500 focus:ring-1 focus:ring-blue-400 focus:outline-none transition-colors placeholder:text-gray-400 dark:placeholder:text-neutral-500"
-            />
-          </label>
-        </div>
+        <div className="flex-1" />
         {/* Right: Actions */}
         <div className="flex items-center gap-2">
           <div className="hidden md:block">

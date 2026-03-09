@@ -99,13 +99,13 @@ const A = {
 };
 
 export const ANALYTICS_ENDPOINTS = {
-  OVERVIEW: '/parkpanel/analytics/overview',
-  TREND: '/parkpanel/analytics/trend',
-  TOP_ATTRACTIONS: '/parkpanel/analytics/top-attractions',
-  ATTRACTIONS_BREAKDOWN: '/parkpanel/analytics/attractions-breakdown',
-  ATTRACTION_REVENUE: '/parkpanel/analytics/attraction-revenue',
-  COMBO_REVENUE: '/parkpanel/analytics/combo-revenue',
-  GENERAL: '/parkpanel',
+  OVERVIEW: '/api/parkpanel/analytics/overview',
+  TREND: '/api/parkpanel/analytics/trend',
+  TOP_ATTRACTIONS: '/api/parkpanel/analytics/top-attractions',
+  ATTRACTIONS_BREAKDOWN: '/api/parkpanel/analytics/attractions-breakdown',
+  ATTRACTION_REVENUE: '/api/parkpanel/analytics/attraction-revenue',
+  COMBO_REVENUE: '/api/parkpanel/analytics/combo-revenue',
+  GENERAL: '/api/parkpanel',
 };
 
 export default A;

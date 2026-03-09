@@ -22,7 +22,7 @@ const buildDownloadLinks = (type, params = {}, options = {}) => {
 
   const make = (ext, label) => ({
     label,
-    href: absoluteUrl(`/api/admin/analytics/report.${ext}${queryString ? `?${queryString}` : ''}`),
+    href: absoluteUrl(`/api/parkpanel/analytics/report.${ext}${queryString ? `?${queryString}` : ''}`),
     target,
     rel,
     ext,
