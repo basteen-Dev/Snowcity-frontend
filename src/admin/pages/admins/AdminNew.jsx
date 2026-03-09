@@ -1,4 +1,4 @@
-// src/admin/pages/admins/AdminNew.jsx
+// src/parkpanel/pages/admins/AdminNew.jsx
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import adminApi from '../../services/adminApi';
@@ -27,7 +27,7 @@ export default function AdminNew() {
   React.useEffect(() => {
     if (!isSuperAdmin) {
       toast.error('Only Super Admins can create admin accounts');
-      nav('/admin/admins');
+      nav('/parkpanel/admins');
     }
   }, [isSuperAdmin, nav]);
 
@@ -44,7 +44,7 @@ export default function AdminNew() {
     setSaving(true);
     const loadingToast = toast.loading('Creating admin...');
     try {
-      const res = await adminApi.post('/api/admin/admins', {
+      const res = await adminApi.post('/api/parkpanel/admins', {
         name: form.name.trim(),
         email: form.email.trim(),
         phone: form.phone.trim() || null,
@@ -54,9 +54,9 @@ export default function AdminNew() {
       toast.success('Admin created successfully', { id: loadingToast });
       // For staff, redirect to access grant page so scopes can be assigned
       if (form.role === 'staff' && res?.user_id) {
-        nav(`/admin/admins/${res.user_id}/access`);
+        nav(`/parkpanel/admins/${res.user_id}/access`);
       } else {
-        nav('/admin/admins');
+        nav('/parkpanel/admins');
       }
     } catch (e) {
       toast.error(e.message || 'Create failed', { id: loadingToast });
@@ -78,7 +78,7 @@ export default function AdminNew() {
           </div>
           <button
             type="button"
-            onClick={() => nav('/admin/admins')}
+            onClick={() => nav('/parkpanel/admins')}
             className="px-4 py-2 border border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-neutral-300 rounded-xl hover:bg-gray-50 dark:hover:bg-neutral-700 transition-colors text-sm"
           >
             ← Back
@@ -187,7 +187,7 @@ export default function AdminNew() {
           </button>
           <button
             type="button"
-            onClick={() => nav('/admin/admins')}
+            onClick={() => nav('/parkpanel/admins')}
             className="px-4 py-2.5 border border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-neutral-300 rounded-xl hover:bg-gray-50 dark:hover:bg-neutral-700 transition-colors text-sm"
           >
             Cancel

@@ -1,4 +1,4 @@
-// src/admin/pages/users/UserNew.jsx
+// src/parkpanel/pages/users/UserNew.jsx
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import adminApi from '../../services/adminApi';
@@ -18,14 +18,14 @@ export default function UserNew() {
         setSaving(true);
         const loadingToast = toast.loading('Creating customer...');
         try {
-            await adminApi.post('/api/admin/users', {
+            await adminApi.post('/api/parkpanel/users', {
                 name: form.name.trim(),
                 email: form.email.trim(),
                 phone: form.phone.trim() || null,
                 password: form.password || undefined,
             });
             toast.success('Customer created successfully', { id: loadingToast });
-            nav('/admin/users');
+            nav('/parkpanel/users');
         } catch (e) {
             toast.error(e.message || 'Create failed', { id: loadingToast });
         } finally {
@@ -43,7 +43,7 @@ export default function UserNew() {
                     </div>
                     <button
                         type="button"
-                        onClick={() => nav('/admin/users')}
+                        onClick={() => nav('/parkpanel/users')}
                         className="px-4 py-2 border border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-neutral-300 rounded-lg hover:bg-gray-50 dark:hover:bg-neutral-700 transition-colors text-sm"
                     >
                         Cancel
@@ -110,7 +110,7 @@ export default function UserNew() {
                     </button>
                     <button
                         type="button"
-                        onClick={() => nav('/admin/users')}
+                        onClick={() => nav('/parkpanel/users')}
                         className="px-4 py-2.5 border border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-neutral-300 rounded-lg hover:bg-gray-50 dark:hover:bg-neutral-700 transition-colors text-sm"
                     >
                         Cancel

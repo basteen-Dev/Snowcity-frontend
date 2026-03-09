@@ -54,7 +54,7 @@ export default function AddonForm() {
       else await adminApi.post(A.addons(), payload);
 
       toast.success(isEdit ? 'Addon updated successfully' : 'Addon created successfully', { id: loadingToast });
-      navigate('/admin/catalog/addons');
+      navigate('/parkpanel/catalog/addons');
     } catch (err) {
       toast.error(err.message || 'Save failed', { id: loadingToast });
       setState((s) => ({ ...s, error: err }));

@@ -31,6 +31,18 @@ export default function AdminSidebar({ collapsed, mobileOpen, onCloseMobile, onT
     canSeeUsers, canSeeFullCatalog, canSeeScopedCatalog, canSeeEditorCatalog,
   } = useAdminRole();
 
+  const [expandedSections, setExpandedSections] = React.useState({
+    Reports: true,
+    Analytics: true,
+    Catalog: true,
+    People: true,
+    Settings: true
+  });
+
+  const toggleSection = (key) => {
+    setExpandedSections(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
   const handleNavClick = () => { if (typeof onCloseMobile === 'function') onCloseMobile(); };
 
   const NAV_SECTIONS = [];
@@ -39,7 +51,7 @@ export default function AdminSidebar({ collapsed, mobileOpen, onCloseMobile, onT
     NAV_SECTIONS.push({
       key: 'Dashboard',
       isLink: true,
-      to: '/admin', end: true, label: 'Dashboard', icon: LayoutDashboard
+      to: '/parkpanel', end: true, label: 'Dashboard', icon: LayoutDashboard
     });
   }
 
@@ -47,34 +59,34 @@ export default function AdminSidebar({ collapsed, mobileOpen, onCloseMobile, onT
     NAV_SECTIONS.push({
       key: 'Bookings',
       isLink: true,
-      to: '/admin/bookings', end: false, label: 'Bookings', icon: CalendarClock
+      to: '/parkpanel/bookings', end: false, label: 'Bookings', icon: CalendarClock
     });
 
     NAV_SECTIONS.push({
       key: 'Reports', label: 'Reports',
       items: [
-        { to: '/admin/reports/transactions', label: 'Transaction Report', icon: FileText },
-        { to: '/admin/reports/guests', label: 'Guest Report', icon: Users },
+        { to: '/parkpanel/reports/transactions', label: 'Transaction Report', icon: FileText },
+        { to: '/parkpanel/reports/guests', label: 'Guest Report', icon: Users },
       ],
     });
   }
 
   if (canSeeAnalytics) {
     const items = [
-      { to: '/admin/analytics/overview', label: 'Overview', icon: BarChart3 },
-      { to: '/admin/analytics/daily', label: 'Daily Trend', icon: TrendingUp },
+      { to: '/parkpanel/analytics/overview', label: 'Overview', icon: BarChart3 },
+      { to: '/parkpanel/analytics/daily', label: 'Daily Trend', icon: TrendingUp },
     ];
-    if (canSeeBookings) items.push({ to: '/admin/bookings/analytics', label: 'Booking Analytics', icon: BarChart3 });
+    if (canSeeBookings) items.push({ to: '/parkpanel/bookings/analytics', label: 'Booking Analytics', icon: BarChart3 });
     if (isSuperAdmin || isGM) {
       items.push(
-        { to: '/admin/analytics/attractions', label: 'Attractions', icon: Building2 },
-        { to: '/admin/analytics/split', label: 'Split Analysis', icon: SplitSquareHorizontal },
-        { to: '/admin/analytics/custom', label: 'Custom Report', icon: FileText },
-        { to: '/admin/analytics/people', label: 'People', icon: Users },
-        { to: '/admin/analytics/views', label: 'Views', icon: Eye },
-        { to: '/admin/analytics/conversion', label: 'Conversion', icon: TrendingUp },
-        { to: '/admin/revenue/attractions', label: 'Attraction Revenue', icon: DollarSign },
-        { to: '/admin/revenue/combos', label: 'Combo Revenue', icon: DollarSign },
+        { to: '/parkpanel/analytics/attractions', label: 'Attractions', icon: Building2 },
+        { to: '/parkpanel/analytics/split', label: 'Split Analysis', icon: SplitSquareHorizontal },
+        { to: '/parkpanel/analytics/custom', label: 'Custom Report', icon: FileText },
+        { to: '/parkpanel/analytics/people', label: 'People', icon: Users },
+        { to: '/parkpanel/analytics/views', label: 'Views', icon: Eye },
+        { to: '/parkpanel/analytics/conversion', label: 'Conversion', icon: TrendingUp },
+        { to: '/parkpanel/revenue/attractions', label: 'Attraction Revenue', icon: DollarSign },
+        { to: '/parkpanel/revenue/combos', label: 'Combo Revenue', icon: DollarSign },
       );
     }
     NAV_SECTIONS.push({ key: 'Analytics', label: 'Analytics', items });
@@ -84,56 +96,56 @@ export default function AdminSidebar({ collapsed, mobileOpen, onCloseMobile, onT
     NAV_SECTIONS.push({
       key: 'Catalog', label: 'Catalog',
       items: [
-        { to: '/admin/catalog/attractions', label: 'Attractions', icon: Gift },
-        { to: '/admin/catalog/combos', label: 'Combos', icon: Boxes },
-        { to: '/admin/catalog/addons', label: 'Add-ons', icon: Gift },
-        { to: '/admin/catalog/offers', label: 'Offers', icon: BadgePercent },
-        { to: '/admin/catalog/announcements', label: 'Announcements', icon: Megaphone },
-        { to: '/admin/catalog/dynamic-pricing', label: 'Dynamic Pricing', icon: DollarSign },
-        { to: '/admin/catalog/coupons', label: 'Coupons', icon: Ticket },
-        { to: '/admin/catalog/banners', label: 'Banners', icon: ImageIcon },
-        { to: '/admin/catalog/gallery', label: 'Gallery', icon: ImageIcon },
-        { to: '/admin/catalog/pages', label: 'Pages', icon: FileText },
-        { to: '/admin/catalog/blogs', label: 'Blogs', icon: Newspaper },
+        { to: '/parkpanel/catalog/attractions', label: 'Attractions', icon: Gift },
+        { to: '/parkpanel/catalog/combos', label: 'Combos', icon: Boxes },
+        { to: '/parkpanel/catalog/addons', label: 'Add-ons', icon: Gift },
+        { to: '/parkpanel/catalog/offers', label: 'Offers', icon: BadgePercent },
+        { to: '/parkpanel/catalog/announcements', label: 'Announcements', icon: Megaphone },
+        { to: '/parkpanel/catalog/dynamic-pricing', label: 'Dynamic Pricing', icon: DollarSign },
+        { to: '/parkpanel/catalog/coupons', label: 'Coupons', icon: Ticket },
+        { to: '/parkpanel/catalog/banners', label: 'Banners', icon: ImageIcon },
+        { to: '/parkpanel/catalog/gallery', label: 'Gallery', icon: ImageIcon },
+        { to: '/parkpanel/catalog/pages', label: 'Pages', icon: FileText },
+        { to: '/parkpanel/catalog/blogs', label: 'Blogs', icon: Newspaper },
       ]
     });
   } else if (isStaff) {
     NAV_SECTIONS.push({
       key: 'Catalog', label: 'Catalog',
       items: [
-        { to: '/admin/catalog/attractions', label: 'Attractions', icon: Gift },
-        { to: '/admin/catalog/combos', label: 'Combos', icon: Boxes },
-        { to: '/admin/catalog/offers', label: 'Offers', icon: BadgePercent },
-        { to: '/admin/catalog/announcements', label: 'Announcements', icon: Megaphone },
-        { to: '/admin/catalog/dynamic-pricing', label: 'Dynamic Pricing', icon: DollarSign },
+        { to: '/parkpanel/catalog/attractions', label: 'Attractions', icon: Gift },
+        { to: '/parkpanel/catalog/combos', label: 'Combos', icon: Boxes },
+        { to: '/parkpanel/catalog/offers', label: 'Offers', icon: BadgePercent },
+        { to: '/parkpanel/catalog/announcements', label: 'Announcements', icon: Megaphone },
+        { to: '/parkpanel/catalog/dynamic-pricing', label: 'Dynamic Pricing', icon: DollarSign },
       ]
     });
   } else if (isEditor) {
     NAV_SECTIONS.push({
       key: 'Catalog', label: 'Catalog',
       items: [
-        { to: '/admin/catalog/attractions', label: 'Attractions', icon: Gift },
-        { to: '/admin/catalog/combos', label: 'Combos', icon: Boxes },
-        { to: '/admin/catalog/addons', label: 'Add-ons', icon: Gift },
-        { to: '/admin/catalog/announcements', label: 'Announcements', icon: Megaphone },
-        { to: '/admin/catalog/banners', label: 'Banners', icon: ImageIcon },
-        { to: '/admin/catalog/gallery', label: 'Gallery', icon: ImageIcon },
-        { to: '/admin/catalog/pages', label: 'Pages', icon: FileText },
-        { to: '/admin/catalog/blogs', label: 'Blogs', icon: Newspaper },
+        { to: '/parkpanel/catalog/attractions', label: 'Attractions', icon: Gift },
+        { to: '/parkpanel/catalog/combos', label: 'Combos', icon: Boxes },
+        { to: '/parkpanel/catalog/addons', label: 'Add-ons', icon: Gift },
+        { to: '/parkpanel/catalog/announcements', label: 'Announcements', icon: Megaphone },
+        { to: '/parkpanel/catalog/banners', label: 'Banners', icon: ImageIcon },
+        { to: '/parkpanel/catalog/gallery', label: 'Gallery', icon: ImageIcon },
+        { to: '/parkpanel/catalog/pages', label: 'Pages', icon: FileText },
+        { to: '/parkpanel/catalog/blogs', label: 'Blogs', icon: Newspaper },
       ]
     });
   }
 
   if (canListAdmins) {
     const items = [
-      { to: '/admin/users', label: 'Customers', icon: Users },
-      { to: '/admin/roles', label: 'Admin Roles', icon: ShieldCheck },
-      { to: '/admin/admins', label: 'Admin Team', icon: UserCog },
+      { to: '/parkpanel/users', label: 'Customers', icon: Users },
+      { to: '/parkpanel/roles', label: 'Admin Roles', icon: ShieldCheck },
+      { to: '/parkpanel/admins', label: 'Admin Team', icon: UserCog },
     ];
     if (canManageAdmins) {
       items.push(
-        { to: '/admin/admins/new', label: 'Create Admin', icon: UserCog },
-        { to: '/admin/admins/access', label: 'Grant Access', icon: KeyRound }
+        { to: '/parkpanel/admins/new', label: 'Create Admin', icon: UserCog },
+        { to: '/parkpanel/admins/access', label: 'Grant Access', icon: KeyRound }
       );
     }
     NAV_SECTIONS.push({ key: 'People', label: 'People', items });
@@ -142,7 +154,7 @@ export default function AdminSidebar({ collapsed, mobileOpen, onCloseMobile, onT
   if (canSeeSettings) {
     NAV_SECTIONS.push({
       key: 'Settings', label: 'Settings',
-      items: [{ to: '/admin/site-settings', label: 'Site Settings (SEO)', icon: Settings }]
+      items: [{ to: '/parkpanel/site-settings', label: 'Site Settings (SEO)', icon: Settings }]
     });
   }
 
@@ -197,20 +209,35 @@ export default function AdminSidebar({ collapsed, mobileOpen, onCloseMobile, onT
 
           if (!section.items?.length) return null;
 
+          const isExpanded = expandedSections[section.key];
+
           return (
             <React.Fragment key={section.key}>
-              <div className="nav-section-label">{section.label}</div>
-              {section.items.map(item => (
-                <NavItem
-                  key={item.to}
-                  to={item.to}
-                  end={item.end}
-                  icon={item.icon}
-                  label={item.label}
-                  collapsed={collapsed && !mobileOpen}
-                  onClick={handleNavClick}
-                />
-              ))}
+              <div
+                className={`nav-section-label clickable ${isExpanded ? 'active' : ''}`}
+                onClick={() => toggleSection(section.key)}
+              >
+                <span>{section.label}</span>
+                {!collapsed && (
+                  <ChevronDown
+                    size={14}
+                    className={`section-arrow ${isExpanded ? 'expanded' : ''}`}
+                  />
+                )}
+              </div>
+              <div className={`nav-section-content ${isExpanded ? 'expanded' : 'collapsed'}`}>
+                {section.items.map(item => (
+                  <NavItem
+                    key={item.to}
+                    to={item.to}
+                    end={item.end}
+                    icon={item.icon}
+                    label={item.label}
+                    collapsed={collapsed && !mobileOpen}
+                    onClick={handleNavClick}
+                  />
+                ))}
+              </div>
             </React.Fragment>
           );
         })}

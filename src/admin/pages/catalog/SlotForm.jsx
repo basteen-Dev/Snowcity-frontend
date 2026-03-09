@@ -102,7 +102,7 @@ export default function SlotForm() {
           return;
         }
       }
-      navigate('/admin/catalog/slots');
+      navigate('/parkpanel/catalog/slots');
     } catch (err) {
       setState((st) => ({ ...st, error: err }));
     }

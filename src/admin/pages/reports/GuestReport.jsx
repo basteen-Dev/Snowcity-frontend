@@ -43,7 +43,7 @@ export default function GuestReport() {
             setError('');
             try {
                 const { from, to } = getDateRange();
-                const res = await adminApi.get(`/api/admin/analytics/reports/guests?from=${from}&to=${to}`);
+                const res = await adminApi.get(`/api/parkpanel/analytics/reports/guests?from=${from}&to=${to}`);
                 if (!cancel) setData(res);
             } catch (e) {
                 if (!cancel) setError(e.message || 'Failed to load');
@@ -109,8 +109,7 @@ export default function GuestReport() {
                     <div className="rpt-brand">
                         <div className="rpt-b-icon">🎡</div>
                         <div>
-                            <div className="rpt-b-name">Snowcity - Reports</div>
-                            <div className="rpt-b-sub">Guest Report</div>
+                            <div className="rpt-b-name">Guest - Reports</div>
                         </div>
                     </div>
                 </div>

@@ -1,4 +1,4 @@
-// src/admin/pages/analytics/Daily.jsx
+// src/parkpanel/pages/analytics/Daily.jsx
 import React from 'react';
 import dayjs from 'dayjs';
 import adminApi from '../../services/adminApi';
@@ -59,8 +59,8 @@ export default function Daily() {
     (async () => {
       try {
         const [attractionsData, combosData] = await Promise.all([
-          adminApi.get('/api/admin/attractions'),
-          adminApi.get('/api/admin/combos')
+          adminApi.get('/api/parkpanel/attractions'),
+          adminApi.get('/api/parkpanel/combos')
         ]);
         setAttractions(normalizeOptionList(attractionsData));
         setCombos(normalizeOptionList(combosData));
@@ -78,7 +78,7 @@ export default function Daily() {
         if (selectedAttraction) params.attraction_id = selectedAttraction;
         if (selectedCombo) params.combo_id = selectedCombo;
 
-        const rows = await adminApi.get('/api/admin/analytics/daily', { params });
+        const rows = await adminApi.get('/api/parkpanel/analytics/daily', { params });
         setData(Array.isArray(rows) ? rows : []);
       } catch (error) {
         console.error('Error fetching analytics:', error);
@@ -89,7 +89,7 @@ export default function Daily() {
     })();
   }, [from, to, selectedAttraction, selectedCombo]);
 
-  const csvUrl = `/api/admin/analytics/report.csv?type=daily&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}${selectedAttraction ? `&attraction_id=${selectedAttraction}` : ''}${selectedCombo ? `&combo_id=${selectedCombo}` : ''}`;
+  const csvUrl = `/api/parkpanel/analytics/report.csv?type=daily&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}${selectedAttraction ? `&attraction_id=${selectedAttraction}` : ''}${selectedCombo ? `&combo_id=${selectedCombo}` : ''}`;
 
   const totals = React.useMemo(() => {
     return data.reduce(

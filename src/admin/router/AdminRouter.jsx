@@ -1,4 +1,4 @@
-// src/admin/router/AdminRouter.jsx
+// src/parkpanel/router/AdminRouter.jsx
 import React, { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { useSelector } from 'react-redux';
@@ -144,7 +144,7 @@ function RequireRole({ allowed, children }) {
 
   if (!ok) {
     // Editors go to catalog, others to admin root
-    return <Navigate to={isEditor ? '/admin/catalog/attractions' : '/admin'} replace />;
+    return <Navigate to={isEditor ? '/parkpanel/catalog/attractions' : '/parkpanel'} replace />;
   }
   return children;
 }
@@ -154,7 +154,7 @@ function RequireRole({ allowed, children }) {
  */
 function DashboardIndex() {
   const { isEditor } = useAdminRole();
-  if (isEditor) return <Navigate to="/admin/catalog/attractions" replace />;
+  if (isEditor) return <Navigate to="/parkpanel/catalog/attractions" replace />;
   return (
     <Suspense fallback={<div className="p-4 text-sm">Loading…</div>}>
       <Dashboard />
@@ -465,7 +465,7 @@ export default function AdminRouter() {
       </Route>
 
       {/* Global fallback */}
-      <Route path="*" element={<Navigate to="/admin" replace />} />
+      <Route path="*" element={<Navigate to="/parkpanel" replace />} />
     </Routes>
   );
 }

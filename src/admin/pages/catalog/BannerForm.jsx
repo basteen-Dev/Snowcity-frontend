@@ -82,7 +82,7 @@ export default function BannerForm() {
       else await adminApi.post(A.banners(), payload);
 
       toast.success(isEdit ? 'Banner updated successfully' : 'Banner created successfully', { id: loadingToast });
-      navigate('/admin/catalog/banners');
+      navigate('/parkpanel/catalog/banners');
     } catch (err) {
       toast.error(err.message || 'Save failed', { id: loadingToast });
       setState((s) => ({ ...s, error: err }));

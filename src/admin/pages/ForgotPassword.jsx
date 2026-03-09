@@ -23,7 +23,7 @@ export default function ForgotPassword() {
     }
 
     try {
-      const response = await adminApi.post('/api/admin/auth/forgot-password', { email });
+      const response = await adminApi.post('/api/parkpanel/auth/forgot-password', { email });
       setResult({
         message: response.data?.message || `If an account with email ${email} exists, a password reset link has been sent.`,
         email: response.data?.email || email
@@ -59,7 +59,7 @@ export default function ForgotPassword() {
 
             <div className="space-y-4">
               <Link
-                to="/admin/login"
+                to="/parkpanel/login"
                 className="flex items-center justify-center w-full py-3.5 bg-slate-900 hover:bg-black text-white font-semibold rounded-xl transition-all active:scale-[0.98]"
               >
                 Back to Login
@@ -151,7 +151,7 @@ export default function ForgotPassword() {
 
           <div className="mt-8 pt-8 border-t border-slate-100 text-center">
             <Link
-              to="/admin/login"
+              to="/parkpanel/login"
               className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-slate-900 transition-colors"
             >
               <ArrowLeft size={16} />

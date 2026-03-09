@@ -1,4 +1,4 @@
-// src/admin/pages/catalog/ComboSlotForm.jsx
+// src/parkpanel/pages/catalog/ComboSlotForm.jsx
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import adminApi from '../../services/adminApi';
@@ -42,7 +42,7 @@ export default function ComboSlotForm() {
 
   React.useEffect(() => {
     (async () => {
-      const data = await adminApi.get('/api/admin/combos', { params: { active: true } });
+      const data = await adminApi.get('/api/parkpanel/combos', { params: { active: true } });
       const list = Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : [];
       setCombos(list);
     })();
@@ -54,7 +54,7 @@ export default function ComboSlotForm() {
       try {
         setLoading(true);
         setErr('');
-        const row = await adminApi.get(`/api/admin/combo-slots/${id}`);
+        const row = await adminApi.get(`/api/parkpanel/combo-slots/${id}`);
         setForm({
           combo_id: row.combo_id || '',
           start_date: row.start_date || '',
@@ -92,11 +92,11 @@ export default function ComboSlotForm() {
 
     try {
       if (isEdit) {
-        await adminApi.put(`/api/admin/combo-slots/${id}`, payload);
+        await adminApi.put(`/api/parkpanel/combo-slots/${id}`, payload);
       } else {
-        await adminApi.post('/api/admin/combo-slots', payload);
+        await adminApi.post('/api/parkpanel/combo-slots', payload);
       }
-      nav('/admin/catalog/combo-slots');
+      nav('/parkpanel/catalog/combo-slots');
     } catch (e) {
       setErr(e.message || 'Save failed');
     }
@@ -207,7 +207,7 @@ export default function ComboSlotForm() {
         <button className="px-3 py-2 rounded-md bg-gray-900 text-white" type="submit">
           {isEdit ? 'Update' : 'Create'}
         </button>
-        <button className="px-3 py-2 rounded-md border" type="button" onClick={() => nav('/admin/catalog/combo-slots')}>
+        <button className="px-3 py-2 rounded-md border" type="button" onClick={() => nav('/parkpanel/catalog/combo-slots')}>
           Cancel
         </button>
       </div>

@@ -20,7 +20,7 @@ export default function AdminProfile() {
     (async () => {
       try {
         // Use admin-specific profile endpoint
-        const res = await adminApi.get('/api/admin/auth/profile');
+        const res = await adminApi.get('/api/parkpanel/auth/profile');
         const u = res?.user || {};
         setProfileState((s) => ({
           ...s,
@@ -79,7 +79,7 @@ export default function AdminProfile() {
     }
 
     try {
-      await adminApi.post('/api/admin/auth/change-password', {
+      await adminApi.post('/api/parkpanel/auth/change-password', {
         currentPassword,
         newPassword
       });

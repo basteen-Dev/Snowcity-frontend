@@ -66,7 +66,7 @@ export default function AddonsList() {
     <div>
       <div className="flex items-center justify-between mb-3">
         <h1 className="text-xl font-semibold">Addons</h1>
-        <button className="rounded-md bg-gray-900 text-white px-3 py-2 text-sm" onClick={() => navigate('/admin/catalog/addons/new')}>
+        <button className="rounded-md bg-gray-900 text-white px-3 py-2 text-sm" onClick={() => navigate('/parkpanel/catalog/addons/new')}>
           New Addon
         </button>
       </div>
@@ -107,7 +107,7 @@ export default function AddonsList() {
           }
         ]}
         rows={state.items}
-        onRowClick={(row) => navigate(`/admin/catalog/addons/${row.addon_id || row.id}`)}
+        onRowClick={(row) => navigate(`/parkpanel/catalog/addons/${row.addon_id || row.id}`)}
         empty={state.status === 'loading' ? 'Loading…' : 'No addons found'}
       />
 

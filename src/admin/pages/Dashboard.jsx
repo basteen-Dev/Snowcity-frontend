@@ -1,4 +1,4 @@
-// src/admin/pages/Dashboard.jsx
+// src/parkpanel/pages/Dashboard.jsx
 import React, { useState, useEffect, useMemo } from 'react';
 import dayjs from 'dayjs';
 import adminApi from '../services/adminApi';
@@ -47,7 +47,7 @@ export default function Dashboard() {
       }
 
       setError(null);
-      const res = await adminApi.get('/api/admin/analytics/ops-dashboard', { params: { from, to } });
+      const res = await adminApi.get('/api/parkpanel/analytics/ops-dashboard', { params: { from, to } });
       setData(res);
     } catch (err) {
       console.error('Failed to load dashboard data', err);

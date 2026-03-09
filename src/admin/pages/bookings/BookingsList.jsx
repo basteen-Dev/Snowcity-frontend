@@ -116,7 +116,7 @@ export default function BookingsList() {
 
   const [filters, setFilters] = React.useState({
     search: '',
-    payment_status: '',   // Default: ALL (no filter)
+    payment_status: '',
     booking_status: '',
     attraction_id: '',
     combo_id: '',
@@ -124,11 +124,11 @@ export default function BookingsList() {
     user_email: '',
     user_phone: '',
     item_type: '',
-    date_from: '',
-    date_to: ''
+    date_from: dayjs().startOf('day').format('YYYY-MM-DD'),
+    date_to: dayjs().endOf('day').format('YYYY-MM-DD')
   });
   const [options, setOptions] = React.useState({ status: 'idle', attractions: [], combos: [], offers: [] });
-  const [activeRange, setActiveRange] = React.useState('all');
+  const [activeRange, setActiveRange] = React.useState('today');
   const [rowsPerPage, setRowsPerPage] = React.useState(20);
   const [showFilters, setShowFilters] = React.useState(false); // Default: collapsed
   const searchTimerRef = React.useRef(null);
@@ -399,6 +399,41 @@ export default function BookingsList() {
 
   /* ─── Render ───────────────────────────────────────────── */
 
+  // State for Custom Modal
+  const [redeemModalOpen, setRedeemModalOpen] = React.useState(false);
+  const [redeemModalState, setRedeemModalState] = React.useState('confirm'); // 'confirm' | 'success'
+  const [selectedTicket, setSelectedTicket] = React.useState(null);
+
+  const openRedeemModal = (row) => {
+    setSelectedTicket(row);
+    setRedeemModalState('confirm');
+    setRedeemModalOpen(true);
+  };
+
+  const closeRedeemModal = () => {
+    setRedeemModalOpen(false);
+    setTimeout(() => { setSelectedTicket(null); setRedeemModalState('confirm'); }, 300);
+  };
+
+  const handleConfirmRedeem = async () => {
+    if (!selectedTicket) return;
+    const bookingId = selectedTicket.booking_id ?? selectedTicket.id;
+    setStatusUpdating(bookingId);
+    try {
+      await dispatch(updateAdminBooking({ id: bookingId, patch: { ticket_status: 'REDEEMED', propagate: true } })).unwrap();
+      setRedeemModalState('success');
+      setTimeout(() => {
+        closeRedeemModal();
+        dispatch(listAdminBookings({ ...buildQuery(), page: currPage, limit: rowsPerPage }));
+      }, 1800);
+    } catch (err) {
+      window.alert(err?.message || 'Failed to update ticket status');
+      closeRedeemModal();
+    } finally {
+      setStatusUpdating(null);
+    }
+  };
+
   return (
     <div className="space-y-5">
       {/* ── Header ── */}
@@ -568,43 +603,43 @@ export default function BookingsList() {
       <AdminTable
         keyField="booking_id"
         columns={[
-          { key: 'order_ref', title: 'ID', tdClass: 'whitespace-nowrap font-medium', render: (r) => r.order_ref || r.booking_ref || '—' },
-          { key: 'booking_date', title: 'Date', tdClass: 'whitespace-nowrap', render: (r) => r.booking_date ? dayjs(r.booking_date).format('DD MMM, YYYY') : '—' },
+          { key: 'order_ref', title: 'ID', render: (r) => <span className="booking-id">{r.order_ref || r.booking_ref || '—'}</span> },
+          { key: 'booking_date', title: 'Date', tdClass: 'whitespace-nowrap text-gray-500', render: (r) => r.booking_date ? dayjs(r.booking_date).format('DD MMM, YYYY') : '—' },
           {
             key: 'user_email', title: 'Customer', render: (r) => (
-              <div className="text-xs min-w-[140px]">
-                <div className="font-medium text-gray-800 dark:text-neutral-200">{r.user_name || r.user_email || '—'}</div>
-                <div className="text-gray-500">{r.user_phone || '—'}</div>
+              <div>
+                <div className="customer-name">{r.user_name || r.user_email || '—'}</div>
+                <div className="customer-phone">{r.user_phone || '—'}</div>
               </div>
             )
           },
           {
             key: 'item_title', title: 'Item', render: (r) => (
               <div className="flex flex-col min-w-[120px]">
-                <span className="font-medium truncate max-w-[200px]">{r.item_title || '—'}</span>
-                <span className="text-xs text-gray-500">
+                <span className="font-medium text-gray-600 truncate max-w-[200px]">{r.item_title || '—'}</span>
+                <span className="text-xs text-gray-400">
                   {r.item_count > 1 ? `${r.item_count} items` : (r.items?.[0]?.item_type === 'Combo' ? 'Combo' : 'Attraction')}
                   {r.quantity && r.quantity > 1 ? ` × ${r.quantity}` : ''}
                 </span>
               </div>
             )
           },
-          { key: 'final_amount', title: 'Amount', tdClass: 'whitespace-nowrap font-semibold', render: (r) => `₹${Number(r?.final_amount ?? r?.total_amount ?? 0).toLocaleString()}` },
+          { key: 'final_amount', title: 'Amount', tdClass: 'whitespace-nowrap font-bold', render: (r) => `₹${Number(r?.final_amount ?? r?.total_amount ?? 0).toLocaleString()}` },
           {
             key: 'payment_status', title: 'Payment', tdClass: 'whitespace-nowrap', render: (r) => {
               const status = r.payment_status || '—';
               const colors = {
-                Completed: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
-                SUCCESS: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
-                Pending: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-                INITIATED: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-                Failed: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-                TIMED_OUT: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
-                Cancelled: 'bg-gray-100 text-gray-600 dark:bg-neutral-800 dark:text-neutral-400',
+                Completed: 'badge-green',
+                SUCCESS: 'badge-green',
+                Pending: 'badge-orange',
+                INITIATED: 'badge-blue',
+                Failed: 'badge-red',
+                TIMED_OUT: 'badge-orange',
+                Cancelled: 'badge-gray',
               };
-              const labels = { SUCCESS: 'Success', INITIATED: 'Initiated', TIMED_OUT: 'Timed Out' };
+              const labels = { SUCCESS: 'Completed', INITIATED: 'Initiated', TIMED_OUT: 'Timed Out' };
               return (
-                <span className={`inline-flex items-center rounded-xl px-2.5 py-0.5 text-xs font-semibold ${colors[status] || 'bg-gray-100 text-gray-600'}`}>
+                <span className={`badge ${colors[status] || 'badge-gray'}`}>
                   {labels[status] || status}
                 </span>
               );
@@ -614,18 +649,18 @@ export default function BookingsList() {
             key: 'booking_status', title: 'Booking', tdClass: 'whitespace-nowrap', render: (r) => {
               const status = r.booking_status || '—';
               const colors = {
-                PENDING_PAYMENT: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-                CONFIRMED: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
-                Booked: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-                Cancelled: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-                ABANDONED: 'bg-gray-100 text-gray-600 dark:bg-neutral-800 dark:text-neutral-400',
-                REFUNDED: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
-                Redeemed: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
-                Expired: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
+                PENDING_PAYMENT: 'badge-orange',
+                CONFIRMED: 'badge-blue',
+                Booked: 'badge-blue',
+                Cancelled: 'badge-red',
+                ABANDONED: 'badge-gray',
+                REFUNDED: 'badge-purple',
+                Redeemed: 'badge-green',
+                Expired: 'badge-orange',
               };
-              const labels = { PENDING_PAYMENT: 'Pending Payment', CONFIRMED: 'Confirmed', ABANDONED: 'Abandoned', REFUNDED: 'Refunded' };
+              const labels = { PENDING_PAYMENT: 'Pending', CONFIRMED: 'Confirmed', Booked: 'Confirmed', Cancelled: 'Cancelled', ABANDONED: 'Abandoned', REFUNDED: 'Refunded' };
               return (
-                <span className={`inline-flex items-center rounded-xl px-2.5 py-0.5 text-xs font-semibold ${colors[status] || 'bg-gray-100 text-gray-600'}`}>
+                <span className={`badge ${colors[status] || 'badge-gray'}`}>
                   {labels[status] || status}
                 </span>
               );
@@ -638,18 +673,20 @@ export default function BookingsList() {
               const isConfirmed = r.booking_status === 'CONFIRMED' || r.booking_status === 'Booked';
               const isUpdating = statusUpdating === bookingId;
               const isRedeemed = ticketStatus === 'REDEEMED';
+
+              if (isRedeemed) {
+                return <span className="badge badge-success">Redeemed</span>;
+              }
+
               return (
                 <button
-                  onClick={(e) => { e.stopPropagation(); handleTicketStatusToggle(r); }}
+                  onClick={(e) => { e.stopPropagation(); openRedeemModal(r); }}
                   disabled={!isConfirmed || isUpdating}
-                  className={`inline-flex items-center gap-1.5 rounded-xl px-2.5 py-1 text-xs font-semibold border transition-all ${isRedeemed
-                    ? 'border-emerald-300 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-700'
-                    : 'border-amber-300 bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-700'
-                    } ${(!isConfirmed || isUpdating) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:shadow-sm'}`}
-                  title={!isConfirmed ? 'Booking must be CONFIRMED to change ticket status' : (isRedeemed ? 'Click to mark as Not Redeemed' : 'Click to mark as Redeemed')}
+                  className={`redeem-btn ${(!isConfirmed || isUpdating) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  title={!isConfirmed ? 'Booking must be CONFIRMED to redeem ticket' : 'Click to redeem'}
                 >
-                  <span className={`inline-block w-2 h-2 rounded-full ${isRedeemed ? 'bg-emerald-500' : 'bg-amber-500'}`} />
-                  {isRedeemed ? 'Redeemed' : 'Not Redeemed'}
+                  <svg width="13" height="13" fill="none" viewBox="0 0 24 24"><path d="M20 12V22H4V12M22 7H2v5h20V7zM12 22V7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                  Redeem
                 </button>
               );
             }
@@ -658,7 +695,7 @@ export default function BookingsList() {
             key: '_actions', title: '', tdClass: 'w-10', render: (r) => (
               <ActionMenu
                 row={r}
-                onView={(r) => navigate(`/admin/bookings/${r.booking_id || r.id}`)}
+                onView={(r) => navigate(`/parkpanel/bookings/${r.booking_id || r.id}`)}
                 onWhatsApp={handleResendWhatsApp}
                 onEmail={handleResendEmail}
                 onDownload={handleDownloadTicket}
@@ -667,7 +704,7 @@ export default function BookingsList() {
           },
         ]}
         rows={rows}
-        onRowClick={(r) => navigate(`/admin/bookings/${r.booking_id || r.id}`)}
+        onRowClick={(r) => navigate(`/parkpanel/bookings/${r.booking_id || r.id}`)}
         empty={list.status === 'loading' ? 'Loading…' : 'No bookings found'}
       />
 
@@ -698,6 +735,84 @@ export default function BookingsList() {
           dispatch(listAdminBookings({ ...buildQuery(), page: 1, limit: l }));
         }}
       />
+
+      {/* ── Custom Redeem Modal Overlay ── */}
+      {redeemModalOpen && selectedTicket && (
+        <div className="custom-overlay" onClick={closeRedeemModal}>
+          <div className="custom-modal" onClick={(e) => e.stopPropagation()}>
+            {redeemModalState === 'confirm' ? (
+              <>
+                <div className="custom-modal-header">
+                  <div className="custom-modal-icon">
+                    <svg width="22" height="22" fill="none" viewBox="0 0 24 24">
+                      <path d="M20 12V22H4V12M22 7H2v5h20V7zM12 22V7M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z" stroke="#e07b00" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </div>
+                  <div>
+                    <div className="custom-modal-title">Redeem Ticket</div>
+                    <div className="custom-modal-sub">Verify details before marking as redeemed</div>
+                  </div>
+                </div>
+
+                <div className="custom-modal-body">
+                  <div className="ticket-card">
+                    <div className="ticket-row">
+                      <div className="ticket-field">
+                        <label>Booking ID</label>
+                        <div className="val highlight">{selectedTicket.order_ref || selectedTicket.booking_ref || selectedTicket.booking_id || selectedTicket.id || '—'}</div>
+                      </div>
+                      <div className="ticket-field" style={{ textAlign: 'right' }}>
+                        <label>Amount Paid</label>
+                        <div className="val">{`₹${Number(selectedTicket?.final_amount ?? selectedTicket?.total_amount ?? 0).toLocaleString()}`}</div>
+                      </div>
+                    </div>
+                    <hr className="ticket-divider" />
+                    <div className="ticket-meta">
+                      <div className="ticket-meta-item">
+                        <label>Customer</label>
+                        <div className="val">{selectedTicket.user_name || selectedTicket.user_email || '—'}</div>
+                        <div className="sub">{selectedTicket.user_phone || '—'}</div>
+                      </div>
+                      <div className="ticket-meta-item">
+                        <label>Item</label>
+                        <div className="val">{selectedTicket.item_title || '—'}</div>
+                        <div className="sub">{selectedTicket.booking_date ? dayjs(selectedTicket.booking_date).format('DD MMM, YYYY') : '—'}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="warn-box">
+                    <svg width="16" height="16" fill="none" viewBox="0 0 24 24">
+                      <path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="#e07b00" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    <p>This action is <strong>irreversible</strong>. Once confirmed, this ticket cannot be redeemed again.</p>
+                  </div>
+                </div>
+
+                <div className="custom-modal-footer">
+                  <button className="btn-cancel" onClick={closeRedeemModal}>Cancel</button>
+                  <button className="btn-confirm" onClick={handleConfirmRedeem} disabled={statusUpdating !== null}>
+                    {statusUpdating ? 'Redeeming...' : (
+                      <>
+                        <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                        Yes, Redeem Ticket
+                      </>
+                    )}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="success-body">
+                <div className="check-circle">
+                  <svg width="34" height="34" fill="none" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="#22a06b" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                </div>
+                <div className="success-title">Ticket Redeemed!</div>
+                <div className="success-sub">Booking marked as redeemed successfully.</div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

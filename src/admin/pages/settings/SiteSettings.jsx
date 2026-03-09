@@ -55,7 +55,7 @@ export default function SiteSettings() {
     React.useEffect(() => {
         (async () => {
             try {
-                const res = await adminApi.get('/api/admin/site-settings/seo');
+                const res = await adminApi.get('/api/parkpanel/site-settings/seo');
                 setState((s) => ({
                     ...s,
                     status: 'idle',
@@ -78,7 +78,7 @@ export default function SiteSettings() {
         setState((s) => ({ ...s, error: null }));
         const loadingToast = toast.loading('Saving site settings...');
         try {
-            await adminApi.put('/api/admin/site-settings/seo', state.form);
+            await adminApi.put('/api/parkpanel/site-settings/seo', state.form);
             toast.success('Site settings updated successfully', { id: loadingToast });
         } catch (err) {
             toast.error(err.message || 'Save failed', { id: loadingToast });

@@ -205,6 +205,45 @@
   overflow: hidden;
 }
 
+.admin-panel-theme .nav-section-label.clickable {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.2s;
+  user-select: none;
+}
+
+.admin-panel-theme .nav-section-label.clickable:hover {
+  color: var(--brand);
+}
+
+.admin-panel-theme .section-arrow {
+  transition: transform 0.2s ease;
+  color: var(--text-3);
+}
+
+.admin-panel-theme .section-arrow.expanded {
+  transform: rotate(180deg);
+}
+
+.admin-panel-theme .nav-section-content {
+  overflow: hidden;
+  transition: max-height 0.3s ease-out, opacity 0.2s ease;
+}
+
+.admin-panel-theme .nav-section-content.collapsed {
+  max-height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.admin-panel-theme .nav-section-content.expanded {
+  max-height: 500px;
+  /* Large enough to contain items */
+  opacity: 1;
+}
+
 .admin-panel-theme .nav-item {
   display: flex;
   align-items: center;
@@ -309,4 +348,397 @@ html.dark .admin-panel-theme .nav-item.active {
     transform: translateX(0);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   }
+}
+
+/* ── BOOKINGS LIST & TABLES ── */
+.admin-panel-theme .booking-id {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--text);
+  font-family: monospace;
+}
+
+.admin-panel-theme .customer-name {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.admin-panel-theme .customer-phone {
+  font-size: 11px;
+  color: var(--text-3);
+  margin-top: 2px;
+}
+
+.admin-panel-theme .badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.admin-panel-theme .badge-green {
+  background: #e6faf2;
+  color: #22a06b;
+}
+
+.admin-panel-theme .badge-blue {
+  background: #e8f0ff;
+  color: #4f7cff;
+}
+
+.admin-panel-theme .badge-orange {
+  background: #fff4e5;
+  color: #e07b00;
+}
+
+.admin-panel-theme .badge-success {
+  background: #e6faf2;
+  color: #22a06b;
+}
+
+.admin-panel-theme .badge-red {
+  background: #fee2e2;
+  color: #ef4444;
+}
+
+.admin-panel-theme .badge-gray {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.admin-panel-theme .badge-purple {
+  background: #f3e8ff;
+  color: #9333ea;
+}
+
+.admin-panel-theme .badge::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.admin-panel-theme .redeem-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 13px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1.5px solid #e07b00;
+  color: #e07b00;
+  background: #fff;
+  transition: all .18s;
+}
+
+.admin-panel-theme .redeem-btn:hover {
+  background: #fff4e5;
+  box-shadow: 0 2px 8px rgba(224, 123, 0, .15);
+  transform: translateY(-1px);
+}
+
+/* ── MODAL OVERLAY ── */
+.admin-panel-theme .custom-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(45, 55, 72, .45);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn .18s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0
+  }
+
+  to {
+    opacity: 1
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1
+  }
+}
+
+.admin-panel-theme .custom-modal {
+  background: #fff;
+  border-radius: 16px;
+  width: 460px;
+  max-width: 95vw;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, .18);
+  animation: slideUp .22s ease;
+  overflow: hidden;
+}
+
+/* Modal header */
+.admin-panel-theme .custom-modal-header {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid #f0f2f5;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-panel-theme .custom-modal-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: #fff4e5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.admin-panel-theme .custom-modal-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a202c;
+  line-height: 1.2;
+}
+
+.admin-panel-theme .custom-modal-sub {
+  font-size: 12px;
+  color: #a0aec0;
+  margin-top: 2px;
+}
+
+/* Ticket card inside modal */
+.admin-panel-theme .custom-modal-body {
+  padding: 20px 24px;
+}
+
+.admin-panel-theme .ticket-card {
+  background: #f9fafb;
+  border: 1.5px dashed #cbd5e0;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 16px;
+  position: relative;
+}
+
+.admin-panel-theme .ticket-card::before,
+.admin-panel-theme .ticket-card::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1.5px dashed #cbd5e0;
+  transform: translateY(-50%);
+}
+
+.admin-panel-theme .ticket-card::before {
+  left: -11px;
+}
+
+.admin-panel-theme .ticket-card::after {
+  right: -11px;
+}
+
+.admin-panel-theme .ticket-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.admin-panel-theme .ticket-field label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: #a0aec0;
+  display: block;
+  margin-bottom: 3px;
+}
+
+.admin-panel-theme .ticket-field .val {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a202c;
+}
+
+.admin-panel-theme .ticket-field .val.highlight {
+  color: #e07b00;
+  font-family: monospace;
+  letter-spacing: .04em;
+}
+
+.admin-panel-theme .ticket-divider {
+  border: none;
+  border-top: 1.5px dashed #cbd5e0;
+  margin: 12px 0;
+}
+
+.admin-panel-theme .ticket-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.admin-panel-theme .ticket-meta-item label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: #a0aec0;
+  display: block;
+  margin-bottom: 3px;
+}
+
+.admin-panel-theme .ticket-meta-item .val {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.admin-panel-theme .ticket-meta-item .sub {
+  font-size: 11px;
+  color: #a0aec0;
+  margin-top: 1px;
+}
+
+/* Warning */
+.admin-panel-theme .warn-box {
+  background: #fffbeb;
+  border: 1px solid #f6d860;
+  border-radius: 8px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin-bottom: 20px;
+}
+
+.admin-panel-theme .warn-box svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.admin-panel-theme .warn-box p {
+  font-size: 12.5px;
+  color: #92640c;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.admin-panel-theme .warn-box strong {
+  color: #7a5209;
+}
+
+/* Modal footer */
+.admin-panel-theme .custom-modal-footer {
+  padding: 0 24px 22px;
+  display: flex;
+  gap: 10px;
+}
+
+.admin-panel-theme .btn-cancel {
+  flex: 1;
+  padding: 11px;
+  border: 1.5px solid #e8ecf0;
+  background: #fff;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #718096;
+  cursor: pointer;
+  transition: all .15s;
+}
+
+.admin-panel-theme .btn-cancel:hover {
+  border-color: #cbd5e0;
+  background: #f7f9fc;
+}
+
+.admin-panel-theme .btn-confirm {
+  flex: 2;
+  padding: 11px;
+  border: none;
+  background: #22a06b;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background .18s, transform .1s;
+}
+
+.admin-panel-theme .btn-confirm:hover {
+  background: #1a8f5d;
+}
+
+.admin-panel-theme .btn-confirm:active {
+  transform: scale(.98);
+}
+
+/* Success state */
+.admin-panel-theme .success-body {
+  padding: 32px 24px;
+  text-align: center;
+}
+
+@keyframes checkPop {
+  0% {
+    transform: scale(0)
+  }
+
+  60% {
+    transform: scale(1.2)
+  }
+
+  100% {
+    transform: scale(1)
+  }
+}
+
+.admin-panel-theme .check-circle {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: #e6faf2;
+  margin: 0 auto 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: checkPop .4s ease;
+}
+
+.admin-panel-theme .success-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #22a06b;
+  margin-bottom: 6px;
+  line-height: 1.2;
+}
+
+.admin-panel-theme .success-sub {
+  font-size: 13px;
+  color: #a0aec0;
 }

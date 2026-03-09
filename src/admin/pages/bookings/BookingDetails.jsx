@@ -204,7 +204,7 @@ export default function BookingDetails() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <button
-            onClick={() => navigate('/admin/bookings')}
+            onClick={() => navigate('/parkpanel/bookings')}
             className="p-2 rounded-xl hover:bg-gray-100 transition dark:hover:bg-neutral-800"
           >
             <ArrowLeft size={20} />
@@ -443,7 +443,7 @@ export default function BookingDetails() {
                   onClick={() => {
                     const firstBid = items[0]?.booking_id;
                     if (firstBid) {
-                      window.open(`/api/admin/bookings/${firstBid}/ticket`, '_blank');
+                      window.open(`/api/parkpanel/bookings/${firstBid}/ticket`, '_blank');
                     }
                   }}
                   disabled={!isConfirmed}

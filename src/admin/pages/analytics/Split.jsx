@@ -1,5 +1,5 @@
 
-// src/admin/pages/analytics/Split.jsx
+// src/parkpanel/pages/analytics/Split.jsx
 import React from 'react';
 import dayjs from 'dayjs';
 import adminApi from '../../services/adminApi';
@@ -19,12 +19,12 @@ export default function Split() {
 
   React.useEffect(() => {
     (async () => {
-      const out = await adminApi.get('/api/admin/analytics/split', { params: { from, to, group_by: groupBy } });
+      const out = await adminApi.get('/api/parkpanel/analytics/split', { params: { from, to, group_by: groupBy } });
       setRows(Array.isArray(out?.data) ? out.data : (Array.isArray(out) ? out : []));
     })();
   }, [from, to, groupBy]);
 
-  const csvUrl = `/api/admin/analytics/report.csv?type=split&group_by=${encodeURIComponent(groupBy)}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`;
+  const csvUrl = `/api/parkpanel/analytics/report.csv?type=split&group_by=${encodeURIComponent(groupBy)}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`;
 
   return (
     <div className="space-y-4">

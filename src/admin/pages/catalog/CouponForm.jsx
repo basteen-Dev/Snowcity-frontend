@@ -75,7 +75,7 @@ export default function CouponForm() {
       };
       if (isEdit) await adminApi.put(`${A.coupons()}/${id}`, payload);
       else await adminApi.post(A.coupons(), payload);
-      navigate('/admin/catalog/coupons');
+      navigate('/parkpanel/catalog/coupons');
     } catch (err) {
       setState((s) => ({ ...s, error: err }));
     }

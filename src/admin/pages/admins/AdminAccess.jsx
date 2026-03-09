@@ -1,4 +1,4 @@
-// src/admin/pages/admins/AdminAccess.jsx
+// src/parkpanel/pages/admins/AdminAccess.jsx
 import React from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import adminApi from '../../services/adminApi';
@@ -93,9 +93,9 @@ export default function AdminAccess() {
         setErr('');
         setLoadingBase(true);
         const [adminList, atts, cmbs] = await Promise.all([
-          adminApi.get('/api/admin/admins', { limit: 200 }),
-          adminApi.get('/api/admin/attractions', { limit: 200 }),
-          adminApi.get('/api/admin/combos', { active: true }),
+          adminApi.get('/api/parkpanel/admins', { limit: 200 }),
+          adminApi.get('/api/parkpanel/attractions', { limit: 200 }),
+          adminApi.get('/api/parkpanel/combos', { active: true }),
         ]);
         setAdmins(Array.isArray(adminList) ? adminList : []);
         setLists({
@@ -134,7 +134,7 @@ export default function AdminAccess() {
         setErr('');
         setNotice('');
         setLoadingAccess(true);
-        const acc = await adminApi.get(`/api/admin/admins/${selectedAdminId}/access`);
+        const acc = await adminApi.get(`/api/parkpanel/admins/${selectedAdminId}/access`);
         if (cancelled) return;
         setAccess({
           attraction: acc?.access?.attraction || [],
@@ -157,13 +157,13 @@ export default function AdminAccess() {
       setErr('');
       setNotice('');
       setSaving(true);
-      await adminApi.put(`/api/admin/admins/${selectedAdminId}/access`, {
+      await adminApi.put(`/api/parkpanel/admins/${selectedAdminId}/access`, {
         access,
         module_permissions: modulePerms,
       });
       toast.success('Access saved!');
       setNotice('Access updated successfully.');
-      if (forcedAdminId) nav('/admin/admins');
+      if (forcedAdminId) nav('/parkpanel/admins');
     } catch (e) {
       setErr(e.message || 'Save failed');
     } finally {
@@ -229,7 +229,7 @@ export default function AdminAccess() {
               </option>
             ))}
           </select>
-          <Link to="/admin/admins/new" className="text-sm font-medium text-blue-600 hover:text-blue-500 whitespace-nowrap">
+          <Link to="/parkpanel/admins/new" className="text-sm font-medium text-blue-600 hover:text-blue-500 whitespace-nowrap">
             + Create Admin
           </Link>
         </div>
@@ -310,7 +310,7 @@ export default function AdminAccess() {
             </button>
             <button
               className="px-4 py-2.5 rounded-xl border border-gray-300 dark:border-neutral-700 text-sm text-gray-700 dark:text-neutral-300 hover:bg-gray-50 dark:hover:bg-neutral-800"
-              onClick={() => forcedAdminId ? nav('/admin/admins') : setSelectedAdminId('')}
+              onClick={() => forcedAdminId ? nav('/parkpanel/admins') : setSelectedAdminId('')}
             >
               Cancel
             </button>

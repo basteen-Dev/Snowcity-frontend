@@ -146,7 +146,7 @@ export default function ComboForm() {
       else await adminApi.post(A.combos(), payload);
 
       toast.success(isEdit ? 'Combo updated successfully' : 'Combo created successfully (slots generating in background)', { id: loadingToast });
-      navigate('/admin/catalog/combos');
+      navigate('/parkpanel/catalog/combos');
     } catch (err) {
       toast.error(err.message || 'Save failed', { id: loadingToast });
       console.error('Combo save error:', err);
@@ -610,7 +610,7 @@ export default function ComboForm() {
             <button
               type="button"
               className="rounded-md bg-blue-600 text-white px-4 py-2 text-sm hover:bg-blue-700"
-              onClick={() => navigate(`/admin/catalog/combo-slots?combo_id=${id}`)}
+              onClick={() => navigate(`/parkpanel/catalog/combo-slots?combo_id=${id}`)}
             >
               View Slots
             </button>

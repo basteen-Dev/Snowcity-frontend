@@ -25,7 +25,7 @@ export default function PermissionsList() {
     <div>
       <div className="flex items-center justify-between mb-3">
         <h1 className="text-xl font-semibold">Permissions</h1>
-        <button className="rounded-md bg-gray-900 text-white px-3 py-2 text-sm" onClick={() => navigate('/admin/permissions/new')}>New Permission</button>
+        <button className="rounded-md bg-gray-900 text-white px-3 py-2 text-sm" onClick={() => navigate('/parkpanel/permissions/new')}>New Permission</button>
       </div>
 
       <div className="mb-3 flex gap-2">
@@ -40,7 +40,7 @@ export default function PermissionsList() {
           { key: 'description', title: 'Description' }
         ]}
         rows={state.items}
-        onRowClick={(r) => navigate(`/admin/permissions/${r.permission_id}`)}
+        onRowClick={(r) => navigate(`/parkpanel/permissions/${r.permission_id}`)}
         empty={state.status === 'loading' ? 'Loading…' : 'No permissions'}
       />
     </div>

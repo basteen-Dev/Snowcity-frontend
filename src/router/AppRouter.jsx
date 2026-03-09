@@ -82,7 +82,7 @@ export default function AppRouter() {
       <Suspense fallback={<FallbackPage />}>
         <Routes>
           {/* 👇 Admin routes are now independent (no public navbar/footer) */}
-          <Route path="/admin/*" element={<AdminApp />} />
+          <Route path="/parkpanel/*" element={<AdminApp />} />
 
           {/* 👇 Main public layout */}
           <Route element={<AppLayout />}>

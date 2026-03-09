@@ -1,4 +1,4 @@
-// src/admin/pages/analytics/Views.jsx
+// src/parkpanel/pages/analytics/Views.jsx
 import React from 'react';
 import dayjs from 'dayjs';
 import adminApi from '../../services/adminApi';
@@ -12,7 +12,7 @@ export default function Views() {
   React.useEffect(() => {
     (async () => {
       // Data is already scoped by server permission guard; this is a view-only wrapper.
-      const rows = await adminApi.get('/api/admin/analytics/daily', { params: { from, to } });
+      const rows = await adminApi.get('/api/parkpanel/analytics/daily', { params: { from, to } });
       setData(Array.isArray(rows) ? rows : []);
     })();
   }, [from, to]);

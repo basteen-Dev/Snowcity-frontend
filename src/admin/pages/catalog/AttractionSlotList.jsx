@@ -133,7 +133,7 @@ export default function AttractionSlotList() {
   React.useEffect(() => {
     (async () => {
       try {
-        const data = await adminApi.get('/api/admin/attractions', { active: true });
+        const data = await adminApi.get('/api/parkpanel/attractions', { active: true });
         const list = Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : [];
         setAttractions(list);
 
@@ -167,7 +167,7 @@ export default function AttractionSlotList() {
     setLoading(true);
     setErr('');
     try {
-      const data = await adminApi.get('/api/admin/attraction-slots', {
+      const data = await adminApi.get('/api/parkpanel/attraction-slots', {
         params: {
           attraction_id: normalizedAttractionId,
           start_date: startDate,
@@ -234,7 +234,7 @@ export default function AttractionSlotList() {
       try {
         setBookingLoading(true);
         setBookingErr('');
-        const res = await adminApi.get('/api/admin/bookings', {
+        const res = await adminApi.get('/api/parkpanel/bookings', {
           params: {
             attraction_id: normalizedAttractionId,
             date_from: startDate,
@@ -295,7 +295,7 @@ export default function AttractionSlotList() {
 
     if (!window.confirm('Delete this attraction slot?')) return;
     try {
-      await adminApi.delete(`/api/admin/attraction-slots/${id}`);
+      await adminApi.delete(`/api/parkpanel/attraction-slots/${id}`);
       setRows((prev) => prev.filter((r) => r.slot_id !== id));
     } catch (e) {
       alert(e.message || 'Delete failed');
@@ -305,7 +305,7 @@ export default function AttractionSlotList() {
   async function onSlotClick(slot) {
     setSelectedSlot(slot);
     try {
-      const res = await adminApi.get('/api/admin/bookings', {
+      const res = await adminApi.get('/api/parkpanel/bookings', {
         params: {
           attraction_id: slot.attraction_id,
           date_from: slot.start_date,
@@ -455,7 +455,7 @@ export default function AttractionSlotList() {
         <div className="mb-3">
           <button
             className="rounded-md bg-blue-600 text-white px-3 py-2 text-sm"
-            onClick={() => navigate(`/admin/catalog/attractions/${attractionId}`)}
+            onClick={() => navigate(`/parkpanel/catalog/attractions/${attractionId}`)}
           >
             Edit Attraction
           </button>

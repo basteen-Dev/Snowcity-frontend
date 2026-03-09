@@ -1,4 +1,4 @@
-// src/admin/components/common/PageHeader.jsx
+// src/parkpanel/components/common/PageHeader.jsx
 import React from 'react';
 
 /**

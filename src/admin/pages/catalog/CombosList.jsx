@@ -47,7 +47,7 @@ export default function CombosList() {
       <PageHeader title="Combos" subtitle="Manage attraction combos and bundles">
         <button
           className="rounded-lg bg-gray-900 dark:bg-blue-600 text-white px-4 py-2 text-sm font-medium hover:bg-gray-800 dark:hover:bg-blue-700 transition-colors"
-          onClick={() => navigate('/admin/catalog/combos/new')}
+          onClick={() => navigate('/parkpanel/catalog/combos/new')}
         >
           + New Combo
         </button>
@@ -106,7 +106,7 @@ export default function CombosList() {
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  navigate(`/admin/catalog/combo-slots?combo_id=${r.combo_id}`);
+                  navigate(`/parkpanel/catalog/combo-slots?combo_id=${r.combo_id}`);
                 }}
                 className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium"
               >
@@ -135,7 +135,7 @@ export default function CombosList() {
           }
         ]}
         rows={state.items}
-        onRowClick={(r) => navigate(`/admin/catalog/combos/${r.combo_id}`)}
+        onRowClick={(r) => navigate(`/parkpanel/catalog/combos/${r.combo_id}`)}
         empty={state.status === 'loading' ? 'Loading…' : 'No combos found'}
       />
     </div>

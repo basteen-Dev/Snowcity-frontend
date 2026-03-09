@@ -88,7 +88,7 @@ export default function ComboSlotList() {
   React.useEffect(() => {
     (async () => {
       try {
-        const data = await adminApi.get('/api/admin/combos', { active: true });
+        const data = await adminApi.get('/api/parkpanel/combos', { active: true });
         const list = Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : [];
         setCombos(list);
 
@@ -122,7 +122,7 @@ export default function ComboSlotList() {
     try {
       setLoading(true);
       setErr('');
-      const out = await adminApi.get('/api/admin/combo-slots', {
+      const out = await adminApi.get('/api/parkpanel/combo-slots', {
         params: {
           start_date: startDate || null,
           end_date: endDate || null,
@@ -194,7 +194,7 @@ export default function ComboSlotList() {
 
     if (!window.confirm('Delete this combo slot?')) return;
     try {
-      await adminApi.delete(`/api/admin/combo-slots/${id}`);
+      await adminApi.delete(`/api/parkpanel/combo-slots/${id}`);
       setRows((prev) => prev.filter((r) => r.combo_slot_id !== id));
     } catch (e) {
       alert(e.message || 'Delete failed');
@@ -204,7 +204,7 @@ export default function ComboSlotList() {
   async function onSlotClick(slot) {
     setSelectedSlot(slot);
     try {
-      const res = await adminApi.get('/api/admin/bookings', {
+      const res = await adminApi.get('/api/parkpanel/bookings', {
         params: {
           combo_id: slot.combo_id,
           booking_date: slot.start_date,
@@ -321,7 +321,7 @@ export default function ComboSlotList() {
                     className="px-2 py-1 rounded-md border text-xs"
                     onClick={(e) => {
                       e.stopPropagation();
-                      nav(`/admin/catalog/combo-slots/${r.combo_slot_id}`);
+                      nav(`/parkpanel/catalog/combo-slots/${r.combo_slot_id}`);
                     }}
                   >
                     Edit

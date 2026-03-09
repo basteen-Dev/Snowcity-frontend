@@ -1,4 +1,4 @@
-// src/admin/pages/analytics/ConversionDashboard.jsx
+// src/parkpanel/pages/analytics/ConversionDashboard.jsx
 import React, { useState, useEffect, useCallback } from 'react';
 import dayjs from 'dayjs';
 import adminApi from '../../services/adminApi';

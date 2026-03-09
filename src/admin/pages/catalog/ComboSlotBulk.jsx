@@ -1,4 +1,4 @@
-// src/admin/pages/catalog/ComboSlotBulk.jsx
+// src/parkpanel/pages/catalog/ComboSlotBulk.jsx
 import React from 'react';
 import dayjs from 'dayjs';
 import adminApi from '../../services/adminApi';
@@ -44,7 +44,7 @@ export default function ComboSlotBulk() {
   React.useEffect(() => {
     (async () => {
       try {
-        const data = await adminApi.get('/api/admin/combos', { active: true });
+        const data = await adminApi.get('/api/parkpanel/combos', { active: true });
         const list = Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : [];
         setCombos(list);
       } catch {
@@ -95,7 +95,7 @@ export default function ComboSlotBulk() {
           const et12 = to12h(et24);
 
           try {
-            await adminApi.post('/api/admin/combo-slots', {
+            await adminApi.post('/api/parkpanel/combo-slots', {
               combo_id: cid,
               start_date: dayStr,
               end_date: dayStr,

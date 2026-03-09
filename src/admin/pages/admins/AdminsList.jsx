@@ -1,4 +1,4 @@
-// src/admin/pages/admins/AdminsList.jsx
+// src/parkpanel/pages/admins/AdminsList.jsx
 import React from 'react';
 import { Link } from 'react-router-dom';
 import adminApi from '../../services/adminApi';
@@ -51,7 +51,7 @@ export default function AdminsList() {
   async function load() {
     setLoading(true);
     try {
-      const data = await adminApi.get('/api/admin/admins', { search: q });
+      const data = await adminApi.get('/api/parkpanel/admins', { search: q });
       setRows(Array.isArray(data) ? data : []);
     } finally {
       setLoading(false);
@@ -65,7 +65,7 @@ export default function AdminsList() {
       <PageHeader title="Admin Team" subtitle="Manage administrators and their access levels">
         {canManageAdmins && (
           <Link
-            to="/admin/admins/new"
+            to="/parkpanel/admins/new"
             className="rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 text-sm font-medium hover:from-blue-700 hover:to-indigo-700 transition-all inline-flex items-center shadow-lg shadow-blue-500/25"
           >
             + Create Admin
@@ -122,7 +122,7 @@ export default function AdminsList() {
                     <td className="px-4 py-3 text-right">
                       <Link
                         className="inline-flex items-center rounded-xl border border-gray-300 dark:border-neutral-700 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors"
-                        to={`/admin/admins/${r.user_id}/access`}
+                        to={`/parkpanel/admins/${r.user_id}/access`}
                       >
                         Manage Access
                       </Link>

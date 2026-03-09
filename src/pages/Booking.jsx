@@ -102,7 +102,7 @@ function useMediaQuery(query) {
 }
 
 const createDefaultSelection = () => ({
-  itemType: 'attraction',
+  itemType: 'combo',
   attractionId: '',
   comboId: '',
   date: todayYMD(),

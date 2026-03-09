@@ -45,7 +45,7 @@ export default function BlogForm() {
     if (!isEdit) return;
     (async () => {
       try {
-        const row = await adminApi.get(`/api/admin/blogs/${id}`);
+        const row = await adminApi.get(`/api/parkpanel/blogs/${id}`);
         setForm((f) => ({
           ...f,
           ...row,
@@ -70,12 +70,12 @@ export default function BlogForm() {
       const payload = { ...form };
       // head_schema is raw string
       if (isEdit) {
-        await adminApi.put(`/api/admin/blogs/${id}`, payload);
+        await adminApi.put(`/api/parkpanel/blogs/${id}`, payload);
       } else {
-        await adminApi.post('/api/admin/blogs', payload);
+        await adminApi.post('/api/parkpanel/blogs', payload);
       }
       toast.success(isEdit ? 'Blog updated successfully' : 'Blog created successfully', { id: loadingToast });
-      nav('/admin/catalog/blogs');
+      nav('/parkpanel/catalog/blogs');
     } catch (e) {
       toast.error(e.message || 'Save failed', { id: loadingToast });
       setErr(e.message || 'Save failed');
@@ -147,7 +147,7 @@ export default function BlogForm() {
               )}
               <button
                 type="button"
-                onClick={() => nav('/admin/catalog/blogs')}
+                onClick={() => nav('/parkpanel/catalog/blogs')}
                 className="px-4 py-2 border border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-neutral-300 rounded-lg hover:bg-gray-50 dark:hover:bg-neutral-700 transition-colors"
               >
                 Cancel

@@ -11,7 +11,7 @@ export default function Login() {
   const [status, setStatus] = React.useState('idle');
   const [error, setError] = React.useState(null);
 
-  if (token) return <Navigate to="/admin" replace />;
+  if (token) return <Navigate to="/parkpanel" replace />;
 
   const submit = async (e) => {
     e.preventDefault();
@@ -85,7 +85,7 @@ export default function Login() {
           {/* Forgot Password Link */}
           <div className="mt-6 text-center">
             <Link
-              to="/admin/forgot-password"
+              to="/parkpanel/forgot-password"
               className="text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
             >
               Forgot your password?

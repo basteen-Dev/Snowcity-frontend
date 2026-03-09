@@ -77,14 +77,14 @@ export default function GalleryForm() {
       };
       if (isEdit) await adminApi.put(A.galleryById(id), payload);
       else await adminApi.post(A.gallery(), payload);
-      navigate('/admin/catalog/gallery');
+      navigate('/parkpanel/catalog/gallery');
     } catch (err) {
       setState((s) => ({ ...s, error: err }));
     }
   };
 
   // Bulk upload support
-  const UPLOAD_ENDPOINT = import.meta.env?.VITE_ADMIN_UPLOAD_ENDPOINT || '/api/admin/uploads';
+  const UPLOAD_ENDPOINT = import.meta.env?.VITE_ADMIN_UPLOAD_ENDPOINT || '/api/parkpanel/uploads';
   const [bulkFiles, setBulkFiles] = React.useState([]);
   const [bulkPreviews, setBulkPreviews] = React.useState([]);
   const [bulkStatus, setBulkStatus] = React.useState({ uploading: false, progress: 0, error: null });
@@ -132,7 +132,7 @@ export default function GalleryForm() {
       }
       // success: navigate to gallery list
       setBulkStatus((s) => ({ ...s, uploading: false, progress: 100 }));
-      navigate('/admin/catalog/gallery');
+      navigate('/parkpanel/catalog/gallery');
     } catch (err) {
       setBulkStatus({ uploading: false, progress: Math.round((done / total) * 100), error: err });
     }

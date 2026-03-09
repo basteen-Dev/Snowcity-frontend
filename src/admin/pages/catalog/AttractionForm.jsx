@@ -59,7 +59,7 @@ export default function AttractionForm() {
       else await adminApi.post(A.attractions(), state.form);
 
       toast.success(isEdit ? 'Attraction updated successfully' : 'Attraction created successfully (slots generating in background)', { id: loadingToast });
-      navigate('/admin/catalog/attractions');
+      navigate('/parkpanel/catalog/attractions');
     } catch (err) {
       toast.error(err.message || 'Save failed', { id: loadingToast });
       setState((s) => ({ ...s, error: err }));

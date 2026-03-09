@@ -70,7 +70,7 @@ export default function AttractionCard({ item, featured = false }) {
 
             <div className="exp-feat-highlights">
               <span className="feat-chip">❄️ Real Snow Fall</span>
-              <span className="feat-chip">🌡️ -5°C Temperature</span>
+              <span className="feat-chip">🌡️ -7°C Temperature</span>
               <span className="feat-chip">👨‍👩‍👧‍👦 Family Friendly</span>
             </div>
           </div>
@@ -138,7 +138,7 @@ export default function AttractionCard({ item, featured = false }) {
           </div>
 
           <div className="feat-temp-badge">
-            <div className="feat-temp-num">-5°C</div>
+            <div className="feat-temp-num">-7°C</div>
             <div className="feat-temp-label">FREEZING ZONE</div>
           </div>
         </div>

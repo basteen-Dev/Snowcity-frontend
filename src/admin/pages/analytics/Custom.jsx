@@ -1,4 +1,4 @@
-// src/admin/pages/analytics/Custom.jsx
+// src/parkpanel/pages/analytics/Custom.jsx
 import React from 'react';
 import dayjs from 'dayjs';
 import adminApi from '../../services/adminApi';
@@ -37,12 +37,12 @@ export default function Custom() {
 
   React.useEffect(() => {
     (async () => {
-      const rows = await adminApi.get('/api/admin/analytics/trend', { params: { from, to, granularity } });
+      const rows = await adminApi.get('/api/parkpanel/analytics/trend', { params: { from, to, granularity } });
       setData(Array.isArray(rows) ? rows : []);
     })();
   }, [from, to, granularity]);
 
-  const csvUrl = `/api/admin/analytics/report.csv?type=trend&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`;
+  const csvUrl = `/api/parkpanel/analytics/report.csv?type=trend&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`;
 
   const totals = React.useMemo(() => {
     return data.reduce(

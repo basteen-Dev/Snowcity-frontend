@@ -1,4 +1,4 @@
-// src/admin/components/common/FilterBar.jsx
+// src/parkpanel/components/common/FilterBar.jsx
 import React from 'react';
 
 /**

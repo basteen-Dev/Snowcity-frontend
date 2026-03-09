@@ -49,7 +49,7 @@ export default function UsersList() {
     <div>
       <PageHeader title="Customers" subtitle="Manage registered users">
         <button
-          onClick={() => navigate('/admin/users/new')}
+          onClick={() => navigate('/parkpanel/users/new')}
           className="rounded-lg bg-gray-900 dark:bg-blue-600 text-white px-4 py-2 text-sm font-medium hover:bg-gray-800 dark:hover:bg-blue-700 transition-colors"
         >
           + Create Customer
@@ -82,7 +82,7 @@ export default function UsersList() {
           { key: 'last_login_at', title: 'Last Login', render: (r) => r.last_login_at ? new Date(r.last_login_at).toLocaleDateString() : '—' }
         ]}
         rows={state.items}
-        onRowClick={(r) => navigate(`/admin/users/${r.user_id}`)}
+        onRowClick={(r) => navigate(`/parkpanel/users/${r.user_id}`)}
         empty={state.status === 'loading' ? 'Loading…' : 'No users found'}
       />
 

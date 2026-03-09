@@ -1,211 +1,126 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import funworldBanner from '../../assets/images/funworld-desktop-1536x320.webp';
+import funworldHero from '../../assets/images/fun.png';
 
-const highlights = [
-    {
-        icon: '🎢',
-        title: 'Thrilling Rides',
-        desc: 'Roller coasters, Giant Wheel, and heart-pumping attractions for every thrill level.'
-    },
-    {
-        icon: '🌊',
-        title: 'Water World',
-        desc: 'Refreshing water slides, wave pools, and splash zones perfect for the whole family.'
-    },
-    {
-        icon: '🎡',
-        title: 'Carnival Games',
-        desc: 'Classic carnival games, prizes, and fun-filled activities for kids and adults alike.'
-    },
-    {
-        icon: '🎟️',
-        title: 'Combo Offers',
-        desc: 'Combine your Fun World visit with Snow City for exclusive deals and maximum fun.'
-    }
-];
 
 const stats = [
-    { value: '50+', label: 'Rides & Attractions' },
-    { value: '30+', label: 'Years of Fun' },
-    { value: '1M+', label: 'Happy Visitor' },
+  { value: '50+', label: 'Rides & Attractions' },
+  { value: '30+', label: 'Years of Fun' },
+  { value: '1M+', label: 'Happy Visitor' },
 ];
 
 export default function NearbyAttractionSection() {
-    const [hovered, setHovered] = useState(null);
+  const [hovered, setHovered] = useState(null);
 
-    return (
-        <section className="sec-nearby">
-            <div className="bg-grid" aria-hidden="true" />
+  return (
+    <section className="sec-nearby">
+      <div className="bg-grid" aria-hidden="true" />
 
-            {/* Fun World Banner Enhancement */}
-            <div className="nearby-banner-wrap">
-                <motion.div
-                    initial={{ opacity: 0, scale: 1.05 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.8, ease: "easeOut" }}
-                    className="nearby-banner-inner"
-                >
-                    <img
-                        src={funworldBanner}
-                        alt="Fun World Banner"
-                        className="nearby-banner-img"
-                    />
-                    <div className="banner-overlay" />
-                </motion.div>
+
+
+      {/* Decorative blobs */}
+      <div className="blob blob-1" aria-hidden="true" />
+      <div className="blob blob-2" aria-hidden="true" />
+
+      <div className="nearby-container">
+
+        {/* ── Left: Content ── */}
+        <motion.div
+          className="nearby-content"
+          initial={{ opacity: 0, y: 28 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.65, ease: [0.4, 0, 0.2, 1] }}
+        >
+          {/* Tag */}
+          <span className="nearby-eyebrow">
+            <span className="eyebrow-dot" />
+            Attractions Nearby
+          </span>
+
+          {/* Heading */}
+          <h2 className="nearby-title">
+            Visit Fun World<br />
+            <span className="title-accent">Alongside Snow City</span>
+          </h2>
+
+          {/* Sub */}
+          <p className="nearby-tagline">Splash, Spin &amp; Scream</p>
+          <p className="nearby-desc">
+            Fun World, one of Bangalore's beloved amusement parks, features thrilling rides including
+            roller coasters, a Giant Wheel, and exciting carnival games. Don't miss the fantastic
+            Water World area, complete with refreshing water slides and wave pools.
+          </p>
+          <p className="nearby-desc" style={{ marginTop: '12px' }}>
+            Combine your Fun World adventure with Snow City for snow-filled fun —
+            excellent combo offers and unforgettable family memories await!
+          </p>
+
+          {/* Stats row */}
+          <div className="stats-row">
+            {stats.map((s, i) => (
+              <motion.div
+                className="stat-item"
+                key={i}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: 0.15 * i + 0.3 }}
+              >
+                <span className="stat-value">{s.value}</span>
+                <span className="stat-label">{s.label}</span>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* CTA */}
+          <div className="cta-row">
+            <a
+              href="https://www.funworldblr.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-xl border-2 border-sky-600 px-8 py-3 text-sm font-semibold text-sky-600 transition-all duration-300 hover:bg-sky-600 hover:text-white"
+            >
+              View Details
+              <span aria-hidden="true">→</span>
+            </a>
+            <a
+              href="https://www.funworldblr.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-link-hover"
+            >
+              funworldblr.com ↗
+            </a>
+          </div>
+        </motion.div>
+
+        {/* ── Right: Hero Image ── */}
+        <motion.div
+          className="nearby-hero-wrap"
+          initial={{ opacity: 0, x: 40 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
+        >
+          <div className="hero-img-inner">
+            <img
+              src={funworldHero}
+              alt="Fun World Theme Park"
+              className="hero-img"
+            />
+            <div className="hero-img-overlay" />
+
+            {/* Floating elements for depth */}
+            <div className="hero-float-badge">
+              <span className="badge-dot" />
+              Fun World Theme Park
             </div>
+          </div>
+        </motion.div>
+      </div>
 
-            {/* Decorative blobs */}
-            <div className="blob blob-1" aria-hidden="true" />
-            <div className="blob blob-2" aria-hidden="true" />
-
-            <div className="nearby-container">
-
-                {/* ── Left: Content ── */}
-                <motion.div
-                    className="nearby-content"
-                    initial={{ opacity: 0, y: 28 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.65, ease: [0.4, 0, 0.2, 1] }}
-                >
-                    {/* Tag */}
-                    <span className="nearby-eyebrow">
-                        <span className="eyebrow-dot" />
-                        Attractions Nearby
-                    </span>
-
-                    {/* Heading */}
-                    <h2 className="nearby-title">
-                        Visit Fun World<br />
-                        <span className="title-accent">Alongside Snow City</span>
-                    </h2>
-
-                    {/* Sub */}
-                    <p className="nearby-tagline">Splash, Spin &amp; Scream</p>
-                    <p className="nearby-desc">
-                        Fun World, one of Bangalore's beloved amusement parks, features thrilling rides including
-                        roller coasters, a Giant Wheel, and exciting carnival games. Don't miss the fantastic
-                        Water World area, complete with refreshing water slides and wave pools.
-                    </p>
-                    <p className="nearby-desc" style={{ marginTop: '12px' }}>
-                        Combine your Fun World adventure with Snow City for snow-filled fun —
-                        excellent combo offers and unforgettable family memories await!
-                    </p>
-
-                    {/* Stats row */}
-                    <div className="stats-row">
-                        {stats.map((s, i) => (
-                            <motion.div
-                                className="stat-item"
-                                key={i}
-                                initial={{ opacity: 0, y: 16 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ duration: 0.4, delay: 0.15 * i + 0.3 }}
-                            >
-                                <span className="stat-value">{s.value}</span>
-                                <span className="stat-label">{s.label}</span>
-                            </motion.div>
-                        ))}
-                    </div>
-
-                    {/* CTA */}
-                    <div className="cta-row">
-                        <a
-                            href="https://www.funworldblr.com/"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 rounded-xl border-2 border-sky-600 px-8 py-3 text-sm font-semibold text-sky-600 transition-all duration-300 hover:bg-sky-600 hover:text-white"
-                        >
-                            View Details
-                            <span aria-hidden="true">→</span>
-                        </a>
-                        <a
-                            href="https://www.funworldblr.com/"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="btn-link-hover"
-                        >
-                            funworldblr.com ↗
-                        </a>
-                    </div>
-                </motion.div>
-
-                {/* ── Right: Highlights grid ── */}
-                <motion.div
-                    className="highlights-grid"
-                    initial={{ opacity: 0, y: 28 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.65, delay: 0.14, ease: [0.4, 0, 0.2, 1] }}
-                >
-                    {/* Feature badge */}
-                    <div className="park-badge">
-                        <div className="badge-inner">
-                            <span className="badge-emoji">🎠</span>
-                            <div>
-                                <div className="badge-name">Fun World</div>
-                                <div className="badge-loc">📍 Bangalore, KA</div>
-                            </div>
-                            <span className="badge-open">Open Now</span>
-                        </div>
-                    </div>
-
-                    {/* Highlight cards */}
-                    <div className="hl-cards">
-                        {highlights.map((h, idx) => (
-                            <motion.div
-                                className={`hl-card ${hovered === idx ? 'hl-card--hovered' : ''}`}
-                                key={idx}
-                                onMouseEnter={() => setHovered(idx)}
-                                onMouseLeave={() => setHovered(null)}
-                                initial={{ opacity: 0, scale: 0.96 }}
-                                whileInView={{ opacity: 1, scale: 1 }}
-                                viewport={{ once: true }}
-                                transition={{ duration: 0.38, delay: 0.08 * idx + 0.25 }}
-                            >
-                                <div className="hl-icon-wrap">
-                                    <span className="hl-icon">{h.icon}</span>
-                                </div>
-                                <div className="hl-body">
-                                    <div className="hl-title">{h.title}</div>
-                                    <div className="hl-desc">{h.desc}</div>
-                                </div>
-                                <div className="hl-arrow" aria-hidden="true">
-                                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                                        <path d="M2 7H12M8 3L12 7L8 11" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                                    </svg>
-                                </div>
-                            </motion.div>
-                        ))}
-                    </div>
-
-                    {/* Combo nudge banner */}
-                    <motion.div
-                        className="combo-banner"
-                        initial={{ opacity: 0, y: 12 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.45, delay: 0.55 }}
-                    >
-                        <span className="combo-icon">❄️</span>
-                        <div className="combo-text">
-                            <strong>Snow City + Fun World Combo</strong>
-                            <span>Save more when you book both experiences together!</span>
-                        </div>
-                        <a href="/combo-offers" className="combo-link">
-                            Get Deal
-                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                                <path d="M2 6H10M7 3L10 6L7 9" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
-                        </a>
-                    </motion.div>
-                </motion.div>
-            </div>
-
-            <style>{`
+      <style>{`
         /* ── Tokens ── */
         .sec-nearby {
           --blue: #0099ff;
@@ -234,37 +149,9 @@ export default function NearbyAttractionSection() {
         .sec-nearby {
           position: relative;
           background: var(--white);
-          padding: 0 0 96px 0; /* Removed top padding to start with banner */
+          padding: 80px 0 120px 0;
           overflow: hidden;
           border-top: 1px solid var(--border);
-        }
-
-        .nearby-banner-wrap {
-          width: 100%;
-          margin-bottom: 64px;
-          overflow: hidden;
-          position: relative;
-        }
-
-        .nearby-banner-inner {
-          width: 100%;
-          height: auto;
-          aspect-ratio: 1536 / 320;
-          position: relative;
-        }
-
-        .nearby-banner-img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          display: block;
-        }
-
-        .banner-overlay {
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(to bottom, rgba(11, 26, 51, 0.2), transparent 40%, transparent 60%, rgba(11, 26, 51, 0.2));
-          pointer-events: none;
         }
 
         .bg-grid {
@@ -454,192 +341,71 @@ export default function NearbyAttractionSection() {
           background: var(--blue-light);
         }
 
-        /* ── Park badge ── */
-        .park-badge {
-          background: var(--white);
-          border: 1.5px solid var(--border);
+        /* ── Hero Image ── */
+        .nearby-hero-wrap {
+          position: relative;
+          height: 80%;
+          min-height: 226px;
+        }
+
+        .hero-img-inner {
+          position: relative;
+          width: 100%;
+          height: 100%;
           border-radius: var(--radius-lg);
-          padding: 18px 22px;
-          margin-bottom: 16px;
-          box-shadow: var(--shadow-sm);
-          position: relative;
           overflow: hidden;
+          box-shadow: var(--shadow-md);
+          border: 1px solid var(--border);
         }
 
-        .park-badge::before {
-          content: '';
+        .hero-img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+          transition: transform 0.6s var(--transition);
+        }
+
+        .hero-img-inner:hover .hero-img {
+          transform: scale(1.04);
+        }
+
+        .hero-img-overlay {
           position: absolute;
-          top: 0; left: 0; right: 0;
-          height: 3px;
-          background: linear-gradient(90deg, var(--blue), var(--gold));
-          border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+          inset: 0;
+          background: linear-gradient(to top, rgba(11, 26, 51, 0.4), transparent 60%);
+          pointer-events: none;
         }
 
-        .badge-inner {
-          display: flex;
-          align-items: center;
-          gap: 14px;
-        }
-
-        .badge-emoji {
-          font-size: 30px;
-          line-height: 1;
-          flex-shrink: 0;
-        }
-
-        .badge-name {
-          font-size: 17px;
-          font-weight: 800;
-          color: var(--ink);
-          letter-spacing: -0.01em;
-        }
-
-        .badge-loc {
-          font-size: 12.5px;
-          color: var(--muted);
-          margin-top: 2px;
-        }
-
-        .badge-open {
-          margin-left: auto;
-          background: var(--green-bg);
-          color: var(--green);
-          font-size: 11.5px;
-          font-weight: 700;
-          padding: 5px 12px;
+        .hero-float-badge {
+          position: absolute;
+          bottom: 24px;
+          left: 24px;
+          background: var(--white);
+          padding: 10px 18px;
           border-radius: 100px;
-          border: 1.5px solid rgba(11,155,90,.15);
-          white-space: nowrap;
-          letter-spacing: 0.02em;
-        }
-
-        /* ── Highlight cards ── */
-        .hl-cards {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 12px;
-          margin-bottom: 14px;
-        }
-
-        .hl-card {
-          background: var(--surface);
-          border: 1.5px solid var(--border);
-          border-radius: var(--radius-md);
-          padding: 18px 16px;
-          display: flex;
-          flex-direction: column;
-          gap: 10px;
-          position: relative;
-          transition: border-color var(--transition), background var(--transition), box-shadow var(--transition), transform var(--transition);
-          cursor: default;
-          overflow: hidden;
-        }
-
-        .hl-card--hovered {
-          border-color: var(--blue);
-          background: var(--blue-bg);
-          box-shadow: var(--shadow-blue);
-          transform: translateY(-3px);
-        }
-
-        .hl-icon-wrap {
-          width: 44px; height: 44px;
-          border-radius: var(--radius-sm);
-          background: var(--gold-bg);
-          border: 1.5px solid rgba(232,165,0,.2);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-shrink: 0;
-          box-shadow: 0 2px 6px rgba(232,165,0,.15);
-        }
-
-        .hl-icon { font-size: 20px; line-height: 1; }
-
-        .hl-body { flex: 1; }
-
-        .hl-title {
-          font-size: 14px;
-          font-weight: 800;
-          color: var(--ink);
-          margin-bottom: 4px;
-          letter-spacing: -0.01em;
-        }
-
-        .hl-desc {
-          font-size: 12.5px;
-          color: var(--muted);
-          line-height: 1.55;
-        }
-
-        .hl-arrow {
-          position: absolute;
-          top: 14px; right: 14px;
-          color: var(--border);
-          transition: color var(--transition);
-        }
-
-        .hl-card--hovered .hl-arrow {
-          color: var(--blue);
-        }
-
-        /* ── Combo banner ── */
-        .combo-banner {
-          background: linear-gradient(135deg, #EEF2FF 0%, #F7FAFF 100%);
-          border: 1.5px solid var(--border);
-          border-left: 4px solid var(--blue);
-          border-radius: var(--radius-md);
-          padding: 16px 20px;
-          display: flex;
-          align-items: center;
-          gap: 14px;
-        }
-
-        .combo-icon {
-          font-size: 24px;
-          flex-shrink: 0;
-          line-height: 1;
-        }
-
-        .combo-text {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
-        }
-
-        .combo-text strong {
-          font-size: 13.5px;
-          font-weight: 800;
-          color: var(--ink);
-          letter-spacing: -0.01em;
-        }
-
-        .combo-text span {
-          font-size: 12px;
-          color: var(--muted);
-          line-height: 1.4;
-        }
-
-        .combo-link {
-          display: inline-flex;
-          align-items: center;
-          gap: 5px;
-          background: var(--blue);
-          color: var(--white);
-          font-size: 12.5px;
+          font-size: 13px;
           font-weight: 700;
-          padding: 9px 16px;
-          border-radius: 8px;
-          text-decoration: none;
-          white-space: nowrap;
-          transition: background var(--transition), transform var(--transition);
-          flex-shrink: 0;
+          color: var(--ink);
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.15);
         }
 
-        .combo-link:hover {
-          background: #002cb8;
-          transform: translateY(-1px);
+        .badge-dot {
+          width: 8px;
+          height: 8px;
+          background: #4ADE80;
+          border-radius: 50%;
+          box-shadow: 0 0 12px #4ADE80;
+          animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+          0% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.6; transform: scale(1.2); }
+          100% { opacity: 1; transform: scale(1); }
         }
 
         /* ─────────────────────────────
@@ -677,6 +443,11 @@ export default function NearbyAttractionSection() {
 
           .hl-cards {
             grid-template-columns: 1fr 1fr;
+          }
+
+          .nearby-hero-wrap {
+            min-height: 160px;
+            order: -1; /* Image first on mobile */
           }
 
           .combo-banner {
@@ -718,8 +489,15 @@ export default function NearbyAttractionSection() {
             font-size: 10px;
           }
 
-          .hl-cards {
-            grid-template-columns: 1fr;
+          .nearby-hero-wrap {
+            min-height: 134px;
+          }
+
+          .hero-float-badge {
+            bottom: 16px;
+            left: 16px;
+            font-size: 11px;
+            padding: 8px 14px;
           }
 
           .hl-card {
@@ -751,6 +529,6 @@ export default function NearbyAttractionSection() {
           }
         }
       `}</style>
-        </section>
-    );
+    </section>
+  );
 }

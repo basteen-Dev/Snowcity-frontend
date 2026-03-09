@@ -245,12 +245,12 @@ export default function Overview() {
           <div className="flex gap-2 ml-auto">
             <a
               className="rounded-xl border px-3 py-1.5 text-sm"
-              href={urlWithQuery('/api/admin/analytics/report.csv', { type: 'bookings', from: state.from, to: state.to, attraction_id: state.attractionId || undefined })}
+              href={urlWithQuery('/api/parkpanel/analytics/report.csv', { type: 'bookings', from: state.from, to: state.to, attraction_id: state.attractionId || undefined })}
               target="_blank" rel="noopener noreferrer"
             >Download CSV</a>
             <a
               className="rounded-xl border px-3 py-1.5 text-sm"
-              href={urlWithQuery('/api/admin/analytics/report.pdf', { type: 'bookings', from: state.from, to: state.to, attraction_id: state.attractionId || undefined })}
+              href={urlWithQuery('/api/parkpanel/analytics/report.pdf', { type: 'bookings', from: state.from, to: state.to, attraction_id: state.attractionId || undefined })}
               target="_blank" rel="noopener noreferrer"
             >PDF</a>
           </div>

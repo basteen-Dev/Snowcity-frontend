@@ -1,4 +1,4 @@
-// src/admin/components/common/StatusBadge.jsx
+// src/parkpanel/components/common/StatusBadge.jsx
 import React from 'react';
 
 /**

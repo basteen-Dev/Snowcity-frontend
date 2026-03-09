@@ -32,7 +32,7 @@ export default function PermissionForm() {
     try {
       if (isEdit) await adminApi.put(`${A.permissions()}/${id}`, state.form);
       else await adminApi.post(A.permissions(), state.form);
-      navigate('/admin/permissions');
+      navigate('/parkpanel/permissions');
     } catch (err) {
       setState((s) => ({ ...s, error: err }));
     }

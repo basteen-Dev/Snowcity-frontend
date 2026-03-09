@@ -22,6 +22,7 @@ import BlogCard from '../components/cards/BlogCard';
 import AttractionCard from '../components/cards/AttractionCard';
 import ComboCard from '../components/cards/ComboCard';
 import NearbyAttractionSection from '../components/common/Nearbyattractionsection';
+import NavigationAccordion from '../components/common/NavigationAccordion';
 import Loader from '../components/common/Loader';
 import ErrorState from '../components/common/ErrorState';
 import LazyVisible from '../components/common/LazyVisible';
@@ -242,6 +243,9 @@ export default function Home() {
         <LazyVisible minHeight={400} placeholder={<div className="py-10" />}>
           <NearbyAttractionSection />
         </LazyVisible>
+
+        {/* Navigation Group (Accordion) */}
+        <NavigationAccordion />
 
 
 

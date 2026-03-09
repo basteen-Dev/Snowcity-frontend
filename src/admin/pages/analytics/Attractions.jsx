@@ -1,4 +1,4 @@
-// src/admin/pages/analytics/Attractions.jsx
+// src/parkpanel/pages/analytics/Attractions.jsx
 import React from 'react';
 import dayjs from 'dayjs';
 import adminApi from '../../services/adminApi';
@@ -13,12 +13,12 @@ export default function Attractions() {
 
   React.useEffect(() => {
     (async () => {
-      const rows = await adminApi.get('/api/admin/analytics/attractions-breakdown', { params: { from, to, limit: 50 } });
+      const rows = await adminApi.get('/api/parkpanel/analytics/attractions-breakdown', { params: { from, to, limit: 50 } });
       setData(Array.isArray(rows) ? rows : []);
     })();
   }, [from, to]);
 
-  const csvUrl = `/api/admin/analytics/report.csv?type=attractions-breakdown&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`;
+  const csvUrl = `/api/parkpanel/analytics/report.csv?type=attractions-breakdown&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`;
 
   return (
     <div className="space-y-4">

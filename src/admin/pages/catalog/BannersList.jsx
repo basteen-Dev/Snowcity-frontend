@@ -94,7 +94,7 @@ export default function BannersList() {
               {state.saving ? 'Saving…' : 'Save Order'}
             </button>
           ) : (
-            <button className="rounded-md bg-gray-900 text-white px-3 py-2 text-sm" onClick={() => navigate('/admin/catalog/banners/new')}>
+            <button className="rounded-md bg-gray-900 text-white px-3 py-2 text-sm" onClick={() => navigate('/parkpanel/catalog/banners/new')}>
               New Banner
             </button>
           )}
@@ -148,7 +148,7 @@ export default function BannersList() {
               }
             ]}
             rows={state.items}
-            onRowClick={(row) => navigate(`/admin/catalog/banners/${row.banner_id || row.id}`)}
+            onRowClick={(row) => navigate(`/parkpanel/catalog/banners/${row.banner_id || row.id}`)}
             empty={state.status === 'loading' ? 'Loading…' : 'No banners'}
           />
 

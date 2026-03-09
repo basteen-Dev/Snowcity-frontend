@@ -2,7 +2,7 @@ import React from 'react';
 import adminApi from '../../services/adminApi';
 import { imgSrc } from '../../../utils/media';
 
-const ENDPOINT = import.meta.env?.VITE_ADMIN_UPLOAD_ENDPOINT || '/api/admin/uploads';
+const ENDPOINT = import.meta.env?.VITE_ADMIN_UPLOAD_ENDPOINT || '/api/parkpanel/uploads';
 const CLOUD_PRESET = import.meta.env?.VITE_CLOUDINARY_UPLOAD_PRESET || '';
 
 export default function BulkImageUploader({
@@ -40,7 +40,7 @@ export default function BulkImageUploader({
       });
       if (folder) formData.append('folder', folder);
 
-      const res = await adminApi.post('/api/admin/uploads/bulk', formData, {
+      const res = await adminApi.post('/api/parkpanel/uploads/bulk', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 

@@ -1,4 +1,4 @@
-// src/admin/pages/analytics/People.jsx
+// src/parkpanel/pages/analytics/People.jsx
 import React from 'react';
 import dayjs from 'dayjs';
 import adminApi from '../../services/adminApi';
@@ -36,13 +36,13 @@ export default function People() {
 
   React.useEffect(() => {
     (async () => {
-      const rows = await adminApi.get('/api/admin/analytics/daily', { params: { from, to } });
+      const rows = await adminApi.get('/api/parkpanel/analytics/daily', { params: { from, to } });
       const withAvg = (rows || []).map((r) => ({ ...r, avg_people_per_booking: r.bookings ? (r.people || 0) / r.bookings : 0 }));
       setData(withAvg);
     })();
   }, [from, to]);
 
-  const csvUrl = `/api/admin/analytics/report.csv?type=daily&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`;
+  const csvUrl = `/api/parkpanel/analytics/report.csv?type=daily&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`;
 
   const totals = React.useMemo(() => {
     return data.reduce(

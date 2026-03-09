@@ -44,7 +44,7 @@ export default function TransactionReport() {
             setError('');
             try {
                 const { from, to } = getDateRange();
-                const res = await adminApi.get(`/api/admin/analytics/reports/transactions?from=${from}&to=${to}&type=${txnType}`);
+                const res = await adminApi.get(`/api/parkpanel/analytics/reports/transactions?from=${from}&to=${to}&type=${txnType}`);
                 if (!cancel) setData(res);
             } catch (e) {
                 if (!cancel) setError(e.message || 'Failed to load');
@@ -59,7 +59,7 @@ export default function TransactionReport() {
         let r = data?.rows || [];
         if (search.trim()) {
             const q = search.toLowerCase();
-            r = r.filter(row => String(row.bookingId).includes(q) || row.description?.toLowerCase().includes(q));
+            r = r.filter(row => String(row.bookingId).toLowerCase().includes(q) || row.description?.toLowerCase().includes(q));
         }
         if (sortCol) {
             r = [...r].sort((a, b) => {
@@ -118,8 +118,7 @@ export default function TransactionReport() {
                     <div className="rpt-brand">
                         <div className="rpt-b-icon">🎡</div>
                         <div>
-                            <div className="rpt-b-name">Snowcity - Reports</div>
-                            <div className="rpt-b-sub">Transactions Report</div>
+                            <div className="rpt-b-name">Transactions - Reports</div>
                         </div>
                     </div>
                 </div>
@@ -186,13 +185,13 @@ export default function TransactionReport() {
 
                 {/* TABLE */}
                 <div className="tbl-wrap a4">
-                    <div className="tbl-toolbar">
+                    <div className="tbl-toolbar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                         <div className="tbl-info">
                             Showing <strong>{Math.min(shown, rows.length)}</strong> of <strong>{rows.length}</strong> records &nbsp;·&nbsp;
                             <span className="vd-legend"><span className="vd-dot" /> <span style={{ color: 'var(--visit-col)', fontWeight: 600 }}>Green date</span> = Visit Date · Grey = Booking Date</span>
                         </div>
-                        <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search Booking ID…"
-                            style={{ padding: '5px 12px', borderRadius: 7, border: '1px solid var(--border)', fontFamily: 'inherit', fontSize: 12, outline: 'none', width: 180, color: 'var(--sub)' }} />
+                        <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search Booking ID/Desc…"
+                            style={{ padding: '6px 14px', borderRadius: 8, border: '1px solid var(--border)', fontFamily: 'inherit', fontSize: 13, outline: 'none', width: '240px', color: 'var(--text)' }} />
                     </div>
                     <div className="tbl-scroll">
                         <table>

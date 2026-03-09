@@ -66,7 +66,7 @@ export default function CouponsList() {
     <div>
       <div className="flex items-center justify-between mb-3">
         <h1 className="text-xl font-semibold">Coupons</h1>
-        <button className="rounded-md bg-gray-900 text-white px-3 py-2 text-sm" onClick={() => navigate('/admin/catalog/coupons/new')}>
+        <button className="rounded-md bg-gray-900 text-white px-3 py-2 text-sm" onClick={() => navigate('/parkpanel/catalog/coupons/new')}>
           New Coupon
         </button>
       </div>
@@ -110,7 +110,7 @@ export default function CouponsList() {
           }
         ]}
         rows={state.items}
-        onRowClick={(row) => navigate(`/admin/catalog/coupons/${row.coupon_id || row.id}`)}
+        onRowClick={(row) => navigate(`/parkpanel/catalog/coupons/${row.coupon_id || row.id}`)}
         empty={state.status === 'loading' ? 'Loading…' : 'No coupons found'}
       />
 
