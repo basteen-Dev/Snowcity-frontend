@@ -113,9 +113,11 @@ function SuspenseOutlet() {
  * Route guard — only renders children if the check returns true,
  * otherwise redirects to catalog (for editors) or admin dashboard.
  */
-function RequireRole({ allowed, children }) {
+function RequireRole({ allowed, module, children }) {
   const {
     isSuperAdmin, isGM, isStaff, isEditor,
+    canSeeAnalytics, canSeeBookings, canSeeOffers, canSeeDynamicPricing,
+    canSeeReports, canSeeCatalog,
   } = useAdminRole();
   const { checked, token, profileLoaded } = useSelector((s) => ({
     checked: s.adminAuth?.checked,
@@ -137,15 +139,26 @@ function RequireRole({ allowed, children }) {
   if (isSuperAdmin) return children;
 
   // Check if any of the allowed roles match
-  const ok = (allowed || []).some((r) => {
+  const roleOk = (allowed || []).some((r) => {
     const key = r.toLowerCase().replace(/\s+/g, '');
     return roleMap[key];
   });
 
-  if (!ok) {
-    // Editors go to catalog, others to admin root
+  if (!roleOk) {
     return <Navigate to={isEditor ? '/parkpanel/catalog/attractions' : '/parkpanel'} replace />;
   }
+
+  // If role is ok, check module permission specifically for staff
+  if (isStaff && module) {
+    if (module === 'dashboard' && !canSeeDashboard) return <Navigate to="/parkpanel/catalog/attractions" replace />;
+    if (module === 'analytics' && !canSeeAnalytics) return <Navigate to="/parkpanel/catalog/attractions" replace />;
+    if (module === 'bookings' && !canSeeBookings) return <Navigate to="/parkpanel/catalog/attractions" replace />;
+    if (module === 'reports' && !canSeeReports) return <Navigate to="/parkpanel/catalog/attractions" replace />;
+    if (module === 'catalog' && !canSeeCatalog) return <Navigate to="/parkpanel" replace />;
+    if (module === 'offers' && !canSeeOffers) return <Navigate to="/parkpanel/catalog/attractions" replace />;
+    if (module === 'dynamic_pricing' && !canSeeDynamicPricing) return <Navigate to="/parkpanel/catalog/attractions" replace />;
+  }
+
   return children;
 }
 
@@ -153,8 +166,16 @@ function RequireRole({ allowed, children }) {
  * Dashboard index — editors are redirected to catalog since they have no dashboard access.
  */
 function DashboardIndex() {
-  const { isEditor } = useAdminRole();
+  const { isEditor, canSeeDashboard, canSeeBookings, canSeeCatalog } = useAdminRole();
   if (isEditor) return <Navigate to="/parkpanel/catalog/attractions" replace />;
+  
+  // If user cannot see dashboard, redirect to bookings or catalog
+  if (!canSeeDashboard) {
+    if (canSeeBookings) return <Navigate to="/parkpanel/bookings" replace />;
+    if (canSeeCatalog) return <Navigate to="/parkpanel/catalog/attractions" replace />;
+    return <div className="p-8 text-center text-sm text-gray-500">You do not have access to any modules.</div>;
+  }
+
   return (
     <Suspense fallback={<div className="p-4 text-sm">Loading…</div>}>
       <Dashboard />
@@ -188,7 +209,7 @@ export default function AdminRouter() {
 
           {/* ──── Analytics — SuperAdmin + GM + Staff ──── */}
           <Route path="analytics" element={
-            <RequireRole allowed={['superadmin', 'gm', 'staff']}>
+            <RequireRole allowed={['superadmin', 'gm', 'staff']} module="analytics">
               <SuspenseOutlet />
             </RequireRole>
           }>
@@ -206,42 +227,70 @@ export default function AdminRouter() {
 
           {/* ──── Bookings — SuperAdmin + GM + Staff ──── */}
           <Route path="bookings" element={
-            <RequireRole allowed={['superadmin', 'gm', 'staff']}>
+            <RequireRole allowed={['superadmin', 'gm', 'staff']} module="bookings">
               <BookingsList />
             </RequireRole>
           } />
           <Route path="bookings/analytics" element={
-            <RequireRole allowed={['superadmin', 'gm', 'staff']}>
+            <RequireRole allowed={['superadmin', 'gm', 'staff']} module="bookings">
               <BookingsAnalytics />
             </RequireRole>
           } />
           <Route path="bookings/:id" element={
-            <RequireRole allowed={['superadmin', 'gm', 'staff']}>
+            <RequireRole allowed={['superadmin', 'gm', 'staff']} module="bookings">
               <BookingDetails />
             </RequireRole>
           } />
 
           {/* ──── Reports — SuperAdmin + GM + Staff ──── */}
           <Route path="reports/transactions" element={
-            <RequireRole allowed={['superadmin', 'gm', 'staff']}>
+            <RequireRole allowed={['superadmin', 'gm', 'staff']} module="reports">
               <TransactionReport />
             </RequireRole>
           } />
           <Route path="reports/guests" element={
-            <RequireRole allowed={['superadmin', 'gm', 'staff']}>
+            <RequireRole allowed={['superadmin', 'gm', 'staff']} module="reports">
               <GuestReport />
             </RequireRole>
           } />
 
           {/* ──── Catalog — all roles (content varies by sidebar filtering) ──── */}
-          <Route path="catalog/attractions" element={<AttractionsList />} />
-          <Route path="catalog/attractions/new" element={<AttractionForm />} />
-          <Route path="catalog/attractions/:id" element={<AttractionForm />} />
+          <Route path="catalog/attractions" element={
+            <RequireRole allowed={['superadmin', 'gm', 'staff', 'editor']} module="catalog">
+              <AttractionsList />
+            </RequireRole>
+          } />
+          <Route path="catalog/attractions/new" element={
+            <RequireRole allowed={['superadmin', 'gm', 'staff', 'editor']} module="catalog">
+              <AttractionForm />
+            </RequireRole>
+          } />
+          <Route path="catalog/attractions/:id" element={
+            <RequireRole allowed={['superadmin', 'gm', 'staff', 'editor']} module="catalog">
+              <AttractionForm />
+            </RequireRole>
+          } />
 
-          <Route path="catalog/slots" element={<SlotsList />} />
-          <Route path="catalog/slots/bulk" element={<SlotBulk />} />
-          <Route path="catalog/slots/new" element={<SlotForm />} />
-          <Route path="catalog/slots/:id" element={<SlotForm />} />
+          <Route path="catalog/slots" element={
+            <RequireRole allowed={['superadmin', 'gm', 'staff', 'editor']} module="catalog">
+              <SlotsList />
+            </RequireRole>
+          } />
+          <Route path="catalog/slots/bulk" element={
+            <RequireRole allowed={['superadmin', 'gm', 'staff', 'editor']} module="catalog">
+              <SlotBulk />
+            </RequireRole>
+          } />
+          <Route path="catalog/slots/new" element={
+            <RequireRole allowed={['superadmin', 'gm', 'staff', 'editor']} module="catalog">
+              <SlotForm />
+            </RequireRole>
+          } />
+          <Route path="catalog/slots/:id" element={
+            <RequireRole allowed={['superadmin', 'gm', 'staff', 'editor']} module="catalog">
+              <SlotForm />
+            </RequireRole>
+          } />
 
           <Route path="catalog/addons" element={
             <RequireRole allowed={['superadmin', 'gm', 'editor']}>
@@ -261,57 +310,93 @@ export default function AdminRouter() {
 
           {/* Offers — SuperAdmin + GM + Staff */}
           <Route path="catalog/offers" element={
-            <RequireRole allowed={['superadmin', 'gm', 'staff']}>
+            <RequireRole allowed={['superadmin', 'gm', 'staff']} module="offers">
               <OffersList />
             </RequireRole>
           } />
           <Route path="catalog/offers/new" element={
-            <RequireRole allowed={['superadmin', 'gm', 'staff']}>
+            <RequireRole allowed={['superadmin', 'gm', 'staff']} module="offers">
               <OfferForm />
             </RequireRole>
           } />
           <Route path="catalog/offers/:id" element={
-            <RequireRole allowed={['superadmin', 'gm', 'staff']}>
+            <RequireRole allowed={['superadmin', 'gm', 'staff']} module="offers">
               <OfferForm />
             </RequireRole>
           } />
-          <Route path="catalog/announcements" element={<AnnouncementsList />} />
+          <Route path="catalog/announcements" element={
+            <RequireRole allowed={['superadmin', 'gm', 'staff', 'editor']} module="catalog">
+              <AnnouncementsList />
+            </RequireRole>
+          } />
 
           {/* Dynamic Pricing — SuperAdmin + GM + Staff */}
           <Route path="catalog/dynamic-pricing" element={
-            <RequireRole allowed={['superadmin', 'gm', 'staff']}>
+            <RequireRole allowed={['superadmin', 'gm', 'staff']} module="dynamic_pricing">
               <DynamicPricing />
             </RequireRole>
           } />
 
           {/* Coupons — SuperAdmin + GM only */}
           <Route path="catalog/coupons" element={
-            <RequireRole allowed={['superadmin', 'gm']}>
+            <RequireRole allowed={['superadmin', 'gm']} module="catalog">
               <CouponsList />
             </RequireRole>
           } />
           <Route path="catalog/coupons/new" element={
-            <RequireRole allowed={['superadmin', 'gm']}>
+            <RequireRole allowed={['superadmin', 'gm']} module="catalog">
               <CouponForm />
             </RequireRole>
           } />
           <Route path="catalog/coupons/:id" element={
-            <RequireRole allowed={['superadmin', 'gm']}>
+            <RequireRole allowed={['superadmin', 'gm']} module="catalog">
               <CouponForm />
             </RequireRole>
           } />
 
           {/* Combos — all roles with catalog access */}
-          <Route path="catalog/combos" element={<CombosList />} />
-          <Route path="catalog/combos/new" element={<ComboForm />} />
-          <Route path="catalog/combos/:id" element={<ComboForm />} />
+          <Route path="catalog/combos" element={
+            <RequireRole allowed={['superadmin', 'gm', 'staff', 'editor']} module="catalog">
+              <CombosList />
+            </RequireRole>
+          } />
+          <Route path="catalog/combos/new" element={
+            <RequireRole allowed={['superadmin', 'gm', 'staff', 'editor']} module="catalog">
+              <ComboForm />
+            </RequireRole>
+          } />
+          <Route path="catalog/combos/:id" element={
+            <RequireRole allowed={['superadmin', 'gm', 'staff', 'editor']} module="catalog">
+              <ComboForm />
+            </RequireRole>
+          } />
 
-          <Route path="catalog/combo-slots" element={<ComboSlotList />} />
-          <Route path="catalog/combo-slots/new" element={<ComboSlotForm />} />
-          <Route path="catalog/combo-slots/:id" element={<ComboSlotForm />} />
-          <Route path="catalog/combo-slots/bulk" element={<ComboSlotBulk />} />
+          <Route path="catalog/combo-slots" element={
+            <RequireRole allowed={['superadmin', 'gm', 'staff', 'editor']} module="catalog">
+              <ComboSlotList />
+            </RequireRole>
+          } />
+          <Route path="catalog/combo-slots/new" element={
+            <RequireRole allowed={['superadmin', 'gm', 'staff', 'editor']} module="catalog">
+              <ComboSlotForm />
+            </RequireRole>
+          } />
+          <Route path="catalog/combo-slots/:id" element={
+            <RequireRole allowed={['superadmin', 'gm', 'staff', 'editor']} module="catalog">
+              <ComboSlotForm />
+            </RequireRole>
+          } />
+          <Route path="catalog/combo-slots/bulk" element={
+            <RequireRole allowed={['superadmin', 'gm', 'staff', 'editor']} module="catalog">
+              <ComboSlotBulk />
+            </RequireRole>
+          } />
 
-          <Route path="catalog/attraction-slots" element={<AttractionSlotList />} />
+          <Route path="catalog/attraction-slots" element={
+            <RequireRole allowed={['superadmin', 'gm', 'staff', 'editor']} module="catalog">
+              <AttractionSlotList />
+            </RequireRole>
+          } />
 
           {/* Banners, Gallery, Pages, Blogs — SuperAdmin + GM + Editor */}
           <Route path="catalog/banners" element={

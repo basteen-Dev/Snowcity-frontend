@@ -38,6 +38,17 @@ export function useAdminRole() {
         // What modules can staff access (from module_permissions)
         const staffModules = Array.isArray(scopes?.module_permissions) ? scopes.module_permissions : [];
 
+        // Permission check helpers
+        const hasModule = (mod) => isSuperLevel || isGM || (isStaff && staffModules.includes(mod));
+
+        const canSeeDashboard = hasModule('dashboard');
+        const canSeeAnalytics = hasModule('analytics');
+        const canSeeReports = hasModule('reports');
+        const canSeeBookings = hasModule('bookings');
+        const canSeeCatalog = isSuperLevel || isGM || isEditor || (isStaff && staffModules.includes('catalog'));
+        const canSeeOffers = hasModule('offers');
+        const canSeeDynamicPricing = hasModule('dynamic_pricing');
+
         return {
             roles,
             isSuperAdmin: isSuperLevel,
@@ -53,9 +64,9 @@ export function useAdminRole() {
             // Can list admins (view only)?
             canListAdmins: isSuperLevel || isGM,
             // Can see analytics?
-            canSeeAnalytics: isSuperLevel || isGM || isStaff,
+            canSeeAnalytics,
             // Can see bookings?
-            canSeeBookings: isSuperLevel || isGM || isStaff,
+            canSeeBookings,
             // Can see full catalog (including offers/coupons/dynamic pricing)?
             canSeeFullCatalog: isSuperLevel || isGM,
             // Can see scoped catalog (attractions, combos, offers, dynamic pricing)?
@@ -67,6 +78,13 @@ export function useAdminRole() {
             canSeeSettings: isSuperLevel || isGM,
             // Can see people/users section?
             canSeeUsers: isSuperLevel || isGM,
+
+            // Granular module flags
+            canSeeDashboard,
+            canSeeReports,
+            canSeeCatalog,
+            canSeeOffers,
+            canSeeDynamicPricing,
         };
     }, [rawRoles, scopes, isSuperAdmin]);
 }

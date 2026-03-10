@@ -224,9 +224,16 @@ export default function BookingsList() {
   const buildQuery = React.useCallback((extra = {}) => {
     const merged = { ...filters, ...extra };
     const clean = {};
+    // If search is non-empty, we ignore date filters to search "all time"
+    const hasSearch = !!(merged.search?.trim() || merged.user_email?.trim() || merged.user_phone?.trim());
+
     Object.entries(merged).forEach(([key, value]) => {
       if (value === undefined || value === null) return;
       if (typeof value === 'string' && value.trim() === '') return;
+
+      // Ignore date filters if performing a search
+      if (hasSearch && (key === 'date_from' || key === 'date_to')) return;
+
       clean[key] = value;
     });
     return clean;
@@ -250,18 +257,11 @@ export default function BookingsList() {
 
   const handleSearchChange = (field, value) => {
     setFilters((prev) => {
-      const next = { ...prev, [field]: value };
       if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
       searchTimerRef.current = setTimeout(() => {
-        const clean = {};
-        Object.entries(next).forEach(([k, v]) => {
-          if (v === undefined || v === null) return;
-          if (typeof v === 'string' && v.trim() === '') return;
-          clean[k] = v;
-        });
-        dispatch(listAdminBookings({ ...clean, page: 1, limit: rowsPerPage }));
+        dispatch(listAdminBookings({ ...buildQuery({ [field]: value }), page: 1, limit: rowsPerPage }));
       }, 400);
-      return next;
+      return { ...prev, [field]: value };
     });
   };
 
@@ -277,15 +277,8 @@ export default function BookingsList() {
   };
 
   const handleSelectChange = (field, value) => {
-    const next = { ...filters, [field]: value };
-    setFilters(next);
-    const clean = {};
-    Object.entries(next).forEach(([k, v]) => {
-      if (v === undefined || v === null) return;
-      if (typeof v === 'string' && v.trim() === '') return;
-      clean[k] = v;
-    });
-    dispatch(listAdminBookings({ ...clean, page: 1, limit: rowsPerPage }));
+    setFilters((prev) => ({ ...prev, [field]: value }));
+    dispatch(listAdminBookings({ ...buildQuery({ [field]: value }), page: 1, limit: rowsPerPage }));
   };
 
   // Inline ticket status toggle — propagate to all sibling bookings in same order

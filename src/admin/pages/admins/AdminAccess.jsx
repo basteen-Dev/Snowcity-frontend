@@ -5,8 +5,11 @@ import adminApi from '../../services/adminApi';
 import toast from 'react-hot-toast';
 
 const MODULE_PERMISSIONS = [
-  { key: 'analytics', label: 'Analytics & Reports', desc: 'View analytics dashboard and reports' },
+  { key: 'dashboard', label: 'Dashboard', desc: 'View operations dashboard' },
+  { key: 'analytics', label: 'Analytics', desc: 'View analytics and trends' },
+  { key: 'reports', label: 'Reports', desc: 'View transaction and guest reports' },
   { key: 'bookings', label: 'Bookings', desc: 'View and manage bookings' },
+  { key: 'catalog', label: 'Catalog', desc: 'Access catalog management' },
   { key: 'offers', label: 'Offers', desc: 'Create and manage offers' },
   { key: 'dynamic_pricing', label: 'Dynamic Pricing', desc: 'Manage dynamic pricing rules' },
 ];

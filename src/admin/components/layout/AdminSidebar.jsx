@@ -29,6 +29,7 @@ export default function AdminSidebar({ collapsed, mobileOpen, onCloseMobile, onT
     canManageAdmins, canListAdmins, canSeeAnalytics,
     canSeeBookings, canSeeRevenue, canSeeSettings,
     canSeeUsers, canSeeFullCatalog, canSeeScopedCatalog, canSeeEditorCatalog,
+    canSeeOffers, canSeeDynamicPricing, canSeeDashboard, canSeeReports, canSeeCatalog,
   } = useAdminRole();
 
   const [expandedSections, setExpandedSections] = React.useState({
@@ -47,7 +48,7 @@ export default function AdminSidebar({ collapsed, mobileOpen, onCloseMobile, onT
 
   const NAV_SECTIONS = [];
 
-  if (!isEditor) {
+  if (canSeeDashboard) {
     NAV_SECTIONS.push({
       key: 'Dashboard',
       isLink: true,
@@ -61,7 +62,9 @@ export default function AdminSidebar({ collapsed, mobileOpen, onCloseMobile, onT
       isLink: true,
       to: '/parkpanel/bookings', end: false, label: 'Bookings', icon: CalendarClock
     });
+  }
 
+  if (canSeeReports) {
     NAV_SECTIONS.push({
       key: 'Reports', label: 'Reports',
       items: [
@@ -92,48 +95,49 @@ export default function AdminSidebar({ collapsed, mobileOpen, onCloseMobile, onT
     NAV_SECTIONS.push({ key: 'Analytics', label: 'Analytics', items });
   }
 
-  if (isSuperAdmin || isGM) {
-    NAV_SECTIONS.push({
-      key: 'Catalog', label: 'Catalog',
-      items: [
+  if (canSeeCatalog) {
+    if (isSuperAdmin || isGM) {
+      NAV_SECTIONS.push({
+        key: 'Catalog', label: 'Catalog',
+        items: [
+          { to: '/parkpanel/catalog/attractions', label: 'Attractions', icon: Gift },
+          { to: '/parkpanel/catalog/combos', label: 'Combos', icon: Boxes },
+          { to: '/parkpanel/catalog/addons', label: 'Add-ons', icon: Gift },
+          { to: '/parkpanel/catalog/offers', label: 'Offers', icon: BadgePercent },
+          { to: '/parkpanel/catalog/announcements', label: 'Announcements', icon: Megaphone },
+          { to: '/parkpanel/catalog/dynamic-pricing', label: 'Dynamic Pricing', icon: DollarSign },
+          { to: '/parkpanel/catalog/coupons', label: 'Coupons', icon: Ticket },
+          { to: '/parkpanel/catalog/banners', label: 'Banners', icon: ImageIcon },
+          { to: '/parkpanel/catalog/gallery', label: 'Gallery', icon: ImageIcon },
+          { to: '/parkpanel/catalog/pages', label: 'Pages', icon: FileText },
+          { to: '/parkpanel/catalog/blogs', label: 'Blogs', icon: Newspaper },
+        ]
+      });
+    } else if (isStaff) {
+      const items = [
         { to: '/parkpanel/catalog/attractions', label: 'Attractions', icon: Gift },
         { to: '/parkpanel/catalog/combos', label: 'Combos', icon: Boxes },
-        { to: '/parkpanel/catalog/addons', label: 'Add-ons', icon: Gift },
-        { to: '/parkpanel/catalog/offers', label: 'Offers', icon: BadgePercent },
-        { to: '/parkpanel/catalog/announcements', label: 'Announcements', icon: Megaphone },
-        { to: '/parkpanel/catalog/dynamic-pricing', label: 'Dynamic Pricing', icon: DollarSign },
-        { to: '/parkpanel/catalog/coupons', label: 'Coupons', icon: Ticket },
-        { to: '/parkpanel/catalog/banners', label: 'Banners', icon: ImageIcon },
-        { to: '/parkpanel/catalog/gallery', label: 'Gallery', icon: ImageIcon },
-        { to: '/parkpanel/catalog/pages', label: 'Pages', icon: FileText },
-        { to: '/parkpanel/catalog/blogs', label: 'Blogs', icon: Newspaper },
-      ]
-    });
-  } else if (isStaff) {
-    NAV_SECTIONS.push({
-      key: 'Catalog', label: 'Catalog',
-      items: [
-        { to: '/parkpanel/catalog/attractions', label: 'Attractions', icon: Gift },
-        { to: '/parkpanel/catalog/combos', label: 'Combos', icon: Boxes },
-        { to: '/parkpanel/catalog/offers', label: 'Offers', icon: BadgePercent },
-        { to: '/parkpanel/catalog/announcements', label: 'Announcements', icon: Megaphone },
-        { to: '/parkpanel/catalog/dynamic-pricing', label: 'Dynamic Pricing', icon: DollarSign },
-      ]
-    });
-  } else if (isEditor) {
-    NAV_SECTIONS.push({
-      key: 'Catalog', label: 'Catalog',
-      items: [
-        { to: '/parkpanel/catalog/attractions', label: 'Attractions', icon: Gift },
-        { to: '/parkpanel/catalog/combos', label: 'Combos', icon: Boxes },
-        { to: '/parkpanel/catalog/addons', label: 'Add-ons', icon: Gift },
-        { to: '/parkpanel/catalog/announcements', label: 'Announcements', icon: Megaphone },
-        { to: '/parkpanel/catalog/banners', label: 'Banners', icon: ImageIcon },
-        { to: '/parkpanel/catalog/gallery', label: 'Gallery', icon: ImageIcon },
-        { to: '/parkpanel/catalog/pages', label: 'Pages', icon: FileText },
-        { to: '/parkpanel/catalog/blogs', label: 'Blogs', icon: Newspaper },
-      ]
-    });
+      ];
+      if (canSeeOffers) items.push({ to: '/parkpanel/catalog/offers', label: 'Offers', icon: BadgePercent });
+      items.push({ to: '/parkpanel/catalog/announcements', label: 'Announcements', icon: Megaphone });
+      if (canSeeDynamicPricing) items.push({ to: '/parkpanel/catalog/dynamic-pricing', label: 'Dynamic Pricing', icon: DollarSign });
+
+      NAV_SECTIONS.push({ key: 'Catalog', label: 'Catalog', items });
+    } else if (isEditor) {
+      NAV_SECTIONS.push({
+        key: 'Catalog', label: 'Catalog',
+        items: [
+          { to: '/parkpanel/catalog/attractions', label: 'Attractions', icon: Gift },
+          { to: '/parkpanel/catalog/combos', label: 'Combos', icon: Boxes },
+          { to: '/parkpanel/catalog/addons', label: 'Add-ons', icon: Gift },
+          { to: '/parkpanel/catalog/announcements', label: 'Announcements', icon: Megaphone },
+          { to: '/parkpanel/catalog/banners', label: 'Banners', icon: ImageIcon },
+          { to: '/parkpanel/catalog/gallery', label: 'Gallery', icon: ImageIcon },
+          { to: '/parkpanel/catalog/pages', label: 'Pages', icon: FileText },
+          { to: '/parkpanel/catalog/blogs', label: 'Blogs', icon: Newspaper },
+        ]
+      });
+    }
   }
 
   if (canListAdmins) {

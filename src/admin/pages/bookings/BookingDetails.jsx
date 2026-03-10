@@ -139,6 +139,11 @@ export default function BookingDetails() {
   const [init, setInit] = useState({ email: '', mobile: '' });
   const [statusUpdating, setStatusUpdating] = useState(false);
 
+  // Custom modal states
+  const [redeemModalOpen, setRedeemModalOpen] = useState(false);
+  const [redeemModalState, setRedeemModalState] = useState('confirm'); // 'confirm' | 'success'
+  const [redeemNewStatus, setRedeemNewStatus] = useState('REDEEMED');
+
   React.useEffect(() => {
     dispatch(getAdminBooking({ id }));
   }, [id, dispatch]);
@@ -197,6 +202,30 @@ export default function BookingDetails() {
     setExpandedItems(prev => ({ ...prev, [bookingId]: !prev[bookingId] }));
   };
 
+  const closeRedeemModal = () => {
+    setRedeemModalOpen(false);
+    setTimeout(() => { setRedeemModalState('confirm'); }, 300);
+  };
+
+  const handleConfirmRedeem = async () => {
+    const firstBookingId = items[0]?.booking_id;
+    if (!firstBookingId) return;
+    setStatusUpdating(true);
+    try {
+      await dispatch(updateAdminBooking({ id: firstBookingId, patch: { ticket_status: redeemNewStatus, propagate: true } })).unwrap();
+      setRedeemModalState('success');
+      setTimeout(() => {
+        closeRedeemModal();
+        dispatch(getAdminBooking({ id }));
+      }, 1800);
+    } catch (err) {
+      window.alert(err?.message || 'Failed to update ticket status');
+      closeRedeemModal();
+    } finally {
+      setStatusUpdating(false);
+    }
+  };
+
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
 
@@ -227,25 +256,15 @@ export default function BookingDetails() {
             const isRedeemed = ticketStatus === 'REDEEMED';
             return (
               <button
-                onClick={async () => {
-                  const firstBookingId = items[0]?.booking_id;
-                  if (!firstBookingId) return;
+                onClick={() => {
                   if (!isConfirmed) {
                     window.alert('Ticket status can only be changed when booking is CONFIRMED.');
                     return;
                   }
                   const newStatus = isRedeemed ? 'NOT_REDEEMED' : 'REDEEMED';
-                  const ok = window.confirm(`Change ticket status from "${ticketStatus}" to "${newStatus}"?\n\nThis will update all items in this order.`);
-                  if (!ok) return;
-                  setStatusUpdating(true);
-                  try {
-                    await dispatch(updateAdminBooking({ id: firstBookingId, patch: { ticket_status: newStatus, propagate: true } })).unwrap();
-                    dispatch(getAdminBooking({ id }));
-                  } catch (err) {
-                    window.alert(err?.message || 'Failed to update ticket status');
-                  } finally {
-                    setStatusUpdating(false);
-                  }
+                  setRedeemNewStatus(newStatus);
+                  setRedeemModalState('confirm');
+                  setRedeemModalOpen(true);
                 }}
                 disabled={statusUpdating || !isConfirmed}
                 className={`inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold transition-all ${isRedeemed
@@ -521,6 +540,89 @@ export default function BookingDetails() {
           )}
         </div>
       </Card>
+
+      {/* ── Custom Redeem Modal Overlay ── */}
+      {redeemModalOpen && (
+        <div className="custom-overlay" onClick={closeRedeemModal}>
+          <div className="custom-modal" onClick={(e) => e.stopPropagation()}>
+            {redeemModalState === 'confirm' ? (
+              <>
+                <div className="custom-modal-header">
+                  <div className="custom-modal-icon">
+                    <svg width="22" height="22" fill="none" viewBox="0 0 24 24">
+                      <path d="M20 12V22H4V12M22 7H2v5h20V7zM12 22V7M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z" stroke={redeemNewStatus === 'REDEEMED' ? '#e07b00' : '#4b5563'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </div>
+                  <div>
+                    <div className="custom-modal-title">{redeemNewStatus === 'REDEEMED' ? 'Redeem Ticket' : 'Mark as Not Redeemed'}</div>
+                    <div className="custom-modal-sub">Verify details before marking as {redeemNewStatus === 'REDEEMED' ? 'redeemed' : 'not redeemed'}</div>
+                  </div>
+                </div>
+
+                <div className="custom-modal-body">
+                  <div className="ticket-card">
+                    <div className="ticket-row">
+                      <div className="ticket-field">
+                        <label>Booking ID</label>
+                        <div className="val highlight">{orderRef || '—'}</div>
+                      </div>
+                      <div className="ticket-field" style={{ textAlign: 'right' }}>
+                        <label>Amount Paid</label>
+                        <div className="val">{money(payment.total)}</div>
+                      </div>
+                    </div>
+                    <hr className="ticket-divider" />
+                    <div className="ticket-meta">
+                      <div className="ticket-meta-item">
+                        <label>Customer</label>
+                        <div className="val">{user.name || user.email || '—'}</div>
+                        <div className="sub">{user.phone || '—'}</div>
+                      </div>
+                      <div className="ticket-meta-item">
+                        <label>Date</label>
+                        <div className="val">{fmtDate(bookingDate)}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="warn-box" style={redeemNewStatus !== 'REDEEMED' ? { backgroundColor: '#f3f4f6', borderColor: '#d1d5db', color: '#374151' } : {}}>
+                    {redeemNewStatus === 'REDEEMED' ? (
+                      <>
+                        <svg width="16" height="16" fill="none" viewBox="0 0 24 24">
+                          <path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="#e07b00" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        <p>This action is <strong>irreversible</strong>. Once confirmed, this ticket cannot be redeemed again.</p>
+                      </>
+                    ) : (
+                      <p>This will roll back the redeemed status. The ticket will become active again.</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="custom-modal-footer">
+                  <button className="btn-cancel" onClick={closeRedeemModal}>Cancel</button>
+                  <button className="btn-confirm" onClick={handleConfirmRedeem} disabled={statusUpdating}>
+                    {statusUpdating ? 'Updating...' : (
+                      <>
+                        <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                        {redeemNewStatus === 'REDEEMED' ? 'Yes, Redeem Ticket' : 'Yes, Un-redeem Ticket'}
+                      </>
+                    )}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="success-body">
+                <div className="check-circle">
+                  <svg width="34" height="34" fill="none" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="#22a06b" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                </div>
+                <div className="success-title">Ticket {redeemNewStatus === 'REDEEMED' ? 'Redeemed' : 'Un-redeemed'}!</div>
+                <div className="success-sub">Booking status updated successfully.</div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div >
   );
 }
