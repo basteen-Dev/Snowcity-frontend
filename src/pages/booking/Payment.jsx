@@ -312,7 +312,7 @@ export default function Payment({
                             </div>
                             
                         </label>
-                        <p className="text-[11px] text-red-500">Currently Phonepe Server Down</p>
+                        <p className="text-[11px] text-red-500">Currently Phone-pe Server Down</p>
 
                     </div>
                     
