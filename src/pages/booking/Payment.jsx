@@ -228,7 +228,48 @@ export default function Payment({
                         )}
                     </div>
                 </div>
+               {/* Payment Summary */}
+                <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+                    <div className="px-5 py-4 space-y-2.5">
+                        {/* <div className="flex justify-between items-center text-sm">
+                            <span className="text-gray-600">Tickets</span>
+                            <span className="font-semibold text-gray-800 tabular-nums">₹{ticketsTotal.toLocaleString()}</span>
+                        </div>
 
+                        {totalAddonsCost > 0 && (
+                            <div className="flex justify-between items-center text-sm">
+                                <span className="text-gray-600">Add-ons</span>
+                                <span className="font-semibold text-gray-800 tabular-nums">₹{totalAddonsCost.toLocaleString()}</span>
+                            </div>
+                        )} */}
+
+                        {couponApplied && couponDiscount > 0 && (
+                            <div className="flex justify-between items-center text-sm text-emerald-700">
+                                <span className="flex items-center gap-1">
+                                    <Tag size={12} />
+                                    Coupon ({String(coupon.code || coupon.data?.code).toUpperCase()})
+                                </span>
+                                <span className="font-semibold tabular-nums">-₹{couponDiscount.toFixed(0)}</span>
+                            </div>
+                        )}
+
+                        {selectedOfferDiscount > 0 && (
+                            <div className="flex justify-between items-center text-sm text-emerald-700">
+                                <span className="flex items-center gap-1">
+                                    <Sparkles size={12} />
+                                    Offer Discount
+                                </span>
+                                <span className="font-semibold tabular-nums">-₹{selectedOfferDiscount.toFixed(0)}</span>
+                            </div>
+                        )}
+
+                        <hr className="my-4" />
+                        <div className="flex justify-between font-semibold text-lg">
+                            <span>Total</span>
+                            <span className="tabular-nums">₹{finalTotal.toLocaleString()}</span>
+                        </div>
+                    </div>
+                </div>
                 {/* Payment Gateway Selection */}
                 <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                     <div className="px-5 py-4 bg-gradient-to-r from-gray-50 to-white border-b border-gray-100">
@@ -312,54 +353,11 @@ export default function Payment({
                             </div>
                             
                         </label>
-                        <p className="text-[11px] text-red-500">Currently Phone-pe Server Down</p>
-
                     </div>
                     
                 </div>
 
-                {/* Payment Summary */}
-                <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-                    <div className="px-5 py-4 space-y-2.5">
-                        <div className="flex justify-between items-center text-sm">
-                            <span className="text-gray-600">Tickets</span>
-                            <span className="font-semibold text-gray-800 tabular-nums">₹{ticketsTotal.toLocaleString()}</span>
-                        </div>
-
-                        {totalAddonsCost > 0 && (
-                            <div className="flex justify-between items-center text-sm">
-                                <span className="text-gray-600">Add-ons</span>
-                                <span className="font-semibold text-gray-800 tabular-nums">₹{totalAddonsCost.toLocaleString()}</span>
-                            </div>
-                        )}
-
-                        {couponApplied && couponDiscount > 0 && (
-                            <div className="flex justify-between items-center text-sm text-emerald-700">
-                                <span className="flex items-center gap-1">
-                                    <Tag size={12} />
-                                    Coupon ({String(coupon.code || coupon.data?.code).toUpperCase()})
-                                </span>
-                                <span className="font-semibold tabular-nums">-₹{couponDiscount.toFixed(0)}</span>
-                            </div>
-                        )}
-
-                        {selectedOfferDiscount > 0 && (
-                            <div className="flex justify-between items-center text-sm text-emerald-700">
-                                <span className="flex items-center gap-1">
-                                    <Sparkles size={12} />
-                                    Offer Discount
-                                </span>
-                                <span className="font-semibold tabular-nums">-₹{selectedOfferDiscount.toFixed(0)}</span>
-                            </div>
-                        )}
-
-                        <hr className="my-4" />
-                        <div className="flex justify-between font-semibold text-lg">
-                            <span>Total</span>
-                            <span className="tabular-nums">₹{finalTotal.toLocaleString()}</span>
-                        </div>
-                    </div>
-                </div>
+               
 
                 {/* Terms and Conditions Disclaimer */}
                 <p className="text-[11px] text-gray-500 text-center mb-3">

@@ -507,8 +507,7 @@ export default function BookingsList() {
                 <option value="">Payment: All</option>
                 <option value="INITIATED">Initiated</option>
                 <option value="Pending">Pending</option>
-                <option value="SUCCESS">Success</option>
-                <option value="Completed">Completed</option>
+                <option value="Completed">Success</option>
                 <option value="Failed">Failed</option>
                 <option value="TIMED_OUT">Timed Out</option>
                 <option value="Cancelled">Cancelled</option>
@@ -596,7 +595,7 @@ export default function BookingsList() {
       <AdminTable
         keyField="booking_id"
         columns={[
-          { key: 'order_ref', title: 'ID', render: (r) => <span className="booking-id">{r.order_ref || r.booking_ref || '—'}</span> },
+          { key: 'order_ref', title: 'Booking Id' , tdClass: 'whitespace-nowrap text-blue-600 hover:underline cursor-pointer font-medium', render: (r) => <span className="booking-id">{r.order_ref || r.booking_ref || '—'}</span> },
           { key: 'booking_date', title: 'Date', tdClass: 'whitespace-nowrap text-gray-500', render: (r) => r.booking_date ? dayjs(r.booking_date).format('DD MMM, YYYY') : '—' },
           {
             key: 'user_email', title: 'Customer', render: (r) => (
@@ -639,7 +638,7 @@ export default function BookingsList() {
             }
           },
           {
-            key: 'booking_status', title: 'Booking', tdClass: 'whitespace-nowrap', render: (r) => {
+            key: 'booking_status', title: 'Booking Status', tdClass: 'whitespace-nowrap', render: (r) => {
               const status = r.booking_status || '—';
               const colors = {
                 PENDING_PAYMENT: 'badge-orange',
@@ -755,7 +754,7 @@ export default function BookingsList() {
                         <div className="val highlight">{selectedTicket.order_ref || selectedTicket.booking_ref || selectedTicket.booking_id || selectedTicket.id || '—'}</div>
                       </div>
                       <div className="ticket-field" style={{ textAlign: 'right' }}>
-                        <label>Amount Paid</label>
+                        <label>Transaction Amount</label>
                         <div className="val">{`₹${Number(selectedTicket?.final_amount ?? selectedTicket?.total_amount ?? 0).toLocaleString()}`}</div>
                       </div>
                     </div>

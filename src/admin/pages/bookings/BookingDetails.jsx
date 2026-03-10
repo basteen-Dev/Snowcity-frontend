@@ -322,15 +322,15 @@ export default function BookingDetails() {
           />
           <div className="px-5 pb-5 grid grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-3">
             <InfoRow icon={IndianRupee} label="Total" value={money(payment.total)} />
-            <InfoRow icon={IndianRupee} label="Paid Amount" value={money(payment.paid)} />
-            <InfoRow icon={Clock} label="Payment Time" value={fmtPayTime(payment.datetime)} />
+            <InfoRow icon={IndianRupee} label="Transaction Amount" value={money(payment.paid)} />
+            <InfoRow icon={Clock} label="Transaction Date & Time" value={fmtPayTime(payment.datetime)} />
             
             <InfoRow icon={CreditCard} label="Gateway" value={payment.mode || '—'} />
-            <InfoRow icon={CreditCard} label="Pay Method" value={payment.method || '—'} />
-            <InfoRow icon={Ticket} label="Order Ref" value={b.order_ref || '—'} />
+            <InfoRow icon={CreditCard} label="Payment Mode" value={payment.method || '—'} />
+            <InfoRow icon={Ticket} label="Booking Ref" value={b.order_ref || '—'} />
             
-            <InfoRow icon={Ticket} label="Gateway Ref" value={payment.ref || '—'} />
-            <InfoRow icon={Ticket} label="Txn Number" value={payment.txn_no || '—'} />
+            <InfoRow icon={Ticket} label="Transaction Id" value={payment.ref || '—'} />
+            <InfoRow icon={Ticket} label="Merchent Ref No" value={payment.txn_no || '—'} />
           </div>
         </Card>
       </div>
