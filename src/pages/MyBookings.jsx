@@ -172,9 +172,9 @@ export default function MyBookings() {
     try {
       let res;
       if (paymentGateway === 'phonepe') {
-        res = await dispatch(initiatePhonePe({ bookingId: order.id, email, mobile, amount: order.calculatedTotal })).unwrap();
+        res = await dispatch(initiatePhonePe({ orderRef: order.ref, orderId: order.id, email, mobile, amount: order.calculatedTotal })).unwrap();
       } else {
-        res = await dispatch(initiatePayPhi({ bookingId: order.id, email, mobile, amount: order.calculatedTotal })).unwrap();
+        res = await dispatch(initiatePayPhi({ orderRef: order.ref, orderId: order.id, email, mobile, amount: order.calculatedTotal })).unwrap();
       }
 
       if (res?.redirectUrl) {
@@ -196,9 +196,9 @@ export default function MyBookings() {
       const mode = orderItems[0]?.payment_mode || 'PayPhi';
 
       if (mode === 'PhonePe') {
-        await dispatch(checkPhonePeStatus({ bookingId: orderId })).unwrap();
+        await dispatch(checkPhonePeStatus({ orderRef: orderItems[0]?.order_ref, orderId: orderId })).unwrap();
       } else {
-        await dispatch(checkPayPhiStatus({ bookingId: orderId })).unwrap();
+        await dispatch(checkPayPhiStatus({ orderRef: orderItems[0]?.order_ref, orderId: orderId })).unwrap();
       }
       refresh();
     } catch (err) {

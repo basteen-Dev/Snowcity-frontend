@@ -137,7 +137,7 @@ export default function PaymentSuccess() {
           </div>
           <h1 className="text-3xl font-bold text-slate-900 mt-6 bg-yellow-100 inline-block px-4 py-1 rounded-lg">Booking Confirmed!</h1>
           <p className="text-slate-600 mt-4 text-base">
-            Your booking ID is <strong>{bookingId || cartRef}</strong>.
+            Your booking reference is <strong>{booking?.order_ref || bookingId || cartRef}</strong>.
             <br />
             We are generating your tickets and will send them to your email shortly.
           </p>
@@ -206,8 +206,7 @@ export default function PaymentSuccess() {
 
         <div className="mt-8 p-4 rounded-2xl bg-slate-50 text-left flex flex-col gap-3 text-sm text-slate-600">
           <div className="flex flex-wrap gap-3 text-xs uppercase tracking-wide text-slate-400">
-            <span>Booking Id: <strong className="text-slate-700">{cartRef || booking?.order_ref || '—'}</strong></span>
-            {bookingId && <span>Booking ID: <strong className="text-slate-700">{bookingId}</strong></span>}
+            <span>Booking Ref: <strong className="text-slate-700">{booking?.order_ref || cartRef || '—'}</strong></span>
             {tranCtx && <span>Txn ID: <strong className="text-slate-700">{tranCtx}</strong></span>}
           </div>
           <div className="flex items-center gap-3 text-sm">

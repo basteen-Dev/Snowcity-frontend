@@ -17,14 +17,26 @@ const money = (n) => `₹${Number(n || 0).toLocaleString('en-IN')}`;
 const fmtDate = (d) => d ? dayjs(d).format('DD MMM, YYYY') : '—';
 const fmtDateTime = (d) => d ? dayjs(d).format('DD MMM YYYY · h:mm A') : '—';
 
-function formatTime12(t) {
+const formatTime12 = (t) => {
   if (!t) return '';
   const [h, m] = String(t).split(':');
   if (!h || !m) return '';
   const hour = parseInt(h, 10);
   const ampm = hour >= 12 ? 'PM' : 'AM';
   return `${hour % 12 || 12}:${m.padStart(2, '0')} ${ampm}`;
-}
+};
+
+const fmtPayTime = (ts) => {
+  if (!ts || ts.length < 14) return ts || '—';
+  // YYYYMMDDHHmmss
+  const y = ts.slice(0, 4);
+  const m = ts.slice(4, 6);
+  const d = ts.slice(6, 8);
+  const h = ts.slice(8, 10);
+  const min = ts.slice(10, 12);
+  const s = ts.slice(12, 14);
+  return `${d}/${m}/${y} ${h}:${min}:${s}`;
+};
 
 const statusBadge = (status, type = 'booking') => {
   const colors = {
@@ -308,11 +320,17 @@ export default function BookingDetails() {
             title="Payment Details"
             action={statusBadge(payment.status)}
           />
-          <div className="px-5 pb-5 grid grid-cols-2 gap-x-4 gap-y-1">
+          <div className="px-5 pb-5 grid grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-3">
             <InfoRow icon={IndianRupee} label="Total" value={money(payment.total)} />
-            <InfoRow icon={IndianRupee} label="Paid" value={money(payment.paid)} />
-            <InfoRow icon={CreditCard} label="Method" value={payment.mode || '—'} />
-            <InfoRow icon={Ticket} label="Txn ID" value={payment.ref || payment.txn_no || '—'} />
+            <InfoRow icon={IndianRupee} label="Paid Amount" value={money(payment.paid)} />
+            <InfoRow icon={Clock} label="Payment Time" value={fmtPayTime(payment.datetime)} />
+            
+            <InfoRow icon={CreditCard} label="Gateway" value={payment.mode || '—'} />
+            <InfoRow icon={CreditCard} label="Pay Method" value={payment.method || '—'} />
+            <InfoRow icon={Ticket} label="Order Ref" value={b.order_ref || '—'} />
+            
+            <InfoRow icon={Ticket} label="Gateway Ref" value={payment.ref || '—'} />
+            <InfoRow icon={Ticket} label="Txn Number" value={payment.txn_no || '—'} />
           </div>
         </Card>
       </div>

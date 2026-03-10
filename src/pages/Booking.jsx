@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import dayjs from 'dayjs';
@@ -1892,7 +1892,8 @@ export default function Booking() {
       console.log('✅ Booking creation result:', createResult);
 
       const orderId = createResult?.order_id || createResult?.orderId;
-      console.log('🔢 Order ID extracted:', orderId);
+      const orderRef = createResult?.order_ref || createResult?.orderRef;
+      console.log('🔢 Order ID/Ref extracted:', { orderId, orderRef });
 
       if (!orderId) {
         console.error('âŒ No order ID in response:', createResult);
@@ -1904,6 +1905,7 @@ export default function Booking() {
         // ✅ PhonePe redirect payment (Option B — same as PayPhi)
         const phonepeResult = await dispatch(
           initiatePhonePe({
+            orderRef,
             orderId,
             email: paymentEmail,
             mobile: paymentMobile,
@@ -1925,6 +1927,7 @@ export default function Booking() {
         // PayPhi redirect payment
         const payphiResult = await dispatch(
           initiatePayPhi({
+            orderRef,
             orderId,
             email: paymentEmail,
             mobile: paymentMobile,

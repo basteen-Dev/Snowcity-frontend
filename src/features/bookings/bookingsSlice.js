@@ -372,8 +372,9 @@ export const createBooking = createAsyncThunk(
       // Fallback handling for different response shapes
       const bookings = res.bookings || (Array.isArray(res) ? res : [res]);
       const order_id = res.order_id || (bookings[0] && (bookings[0].order_id || bookings[0].booking_id)) || null;
+      const order_ref = res.order_ref || (res.order && res.order.order_ref) || null;
 
-      return { bookings, order_id, order: res.order || null };
+      return { bookings, order_id, order_ref, order: res.order || null };
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -382,11 +383,11 @@ export const createBooking = createAsyncThunk(
 
 export const initiatePayPhi = createAsyncThunk(
   'bookings/initiatePayPhi',
-  async ({ orderId, bookingId, email, mobile, amount }, { rejectWithValue }) => {
+  async ({ orderRef, orderId, bookingId, email, mobile, amount }, { rejectWithValue }) => {
     try {
-      const id = orderId || bookingId;
+      const id = orderRef || orderId || bookingId;
       if (!id) {
-        return rejectWithValue({ message: 'Order ID is required to initiate PayPhi payment', status: 400, code: 'MISSING_ORDER_ID' });
+        return rejectWithValue({ message: 'Order reference is required to initiate PayPhi payment', status: 400, code: 'MISSING_ORDER_ID' });
       }
       const res = await api.post(endpoints.bookings.payphi.initiate(id), {
         email,
@@ -400,11 +401,11 @@ export const initiatePayPhi = createAsyncThunk(
 
 export const checkPayPhiStatus = createAsyncThunk(
   'bookings/checkPayPhiStatus',
-  async ({ orderId, bookingId }, { rejectWithValue }) => {
+  async ({ orderRef, orderId, bookingId }, { rejectWithValue }) => {
     try {
-      const id = orderId || bookingId;
+      const id = orderRef || orderId || bookingId;
       if (!id) {
-        return rejectWithValue({ message: 'Order ID is required to check PayPhi status', status: 400, code: 'MISSING_ORDER_ID' });
+        return rejectWithValue({ message: 'Order reference is required to check PayPhi status', status: 400, code: 'MISSING_ORDER_ID' });
       }
       const res = await api.get(endpoints.bookings.payphi.status(id));
       return { bookingId: id, success: !!res?.success, response: res?.response || res };
@@ -414,11 +415,11 @@ export const checkPayPhiStatus = createAsyncThunk(
 
 export const initiatePhonePe = createAsyncThunk(
   'bookings/initiatePhonePe',
-  async ({ orderId, bookingId, email, mobile, amount }, { rejectWithValue }) => {
+  async ({ orderRef, orderId, bookingId, email, mobile, amount }, { rejectWithValue }) => {
     try {
-      const id = orderId || bookingId;
+      const id = orderRef || orderId || bookingId;
       if (!id) {
-        return rejectWithValue({ message: 'Order ID is required to initiate PhonePe payment', status: 400, code: 'MISSING_ORDER_ID' });
+        return rejectWithValue({ message: 'Order reference is required to initiate PhonePe payment', status: 400, code: 'MISSING_ORDER_ID' });
       }
       const res = await api.post(endpoints.bookings.phonepe.initiate(id), {
         email,
@@ -432,11 +433,11 @@ export const initiatePhonePe = createAsyncThunk(
 
 export const checkPhonePeStatus = createAsyncThunk(
   'bookings/checkPhonePeStatus',
-  async ({ orderId, bookingId }, { rejectWithValue }) => {
+  async ({ orderRef, orderId, bookingId }, { rejectWithValue }) => {
     try {
-      const id = orderId || bookingId;
+      const id = orderRef || orderId || bookingId;
       if (!id) {
-        return rejectWithValue({ message: 'Order ID is required to check PhonePe status', status: 400, code: 'MISSING_ORDER_ID' });
+        return rejectWithValue({ message: 'Order reference is required to check PhonePe status', status: 400, code: 'MISSING_ORDER_ID' });
       }
       const res = await api.get(endpoints.bookings.phonepe.status(id));
       return { bookingId: id, success: !!res?.success, response: res?.response || res };
@@ -619,6 +620,7 @@ const bookingsSlice = createSlice({
       s.creating.booking_id = first.booking_id || null;
       s.creating.booking_ref = first.booking_ref || null;
       s.creating.order_id = a.payload?.order_id || null;
+      s.creating.order_ref = a.payload?.order_ref || null;
     });
     b.addCase(createBooking.rejected, (s, a) => {
       s.creating.status = 'failed';

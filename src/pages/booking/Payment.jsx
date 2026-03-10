@@ -279,7 +279,7 @@ export default function Payment({
                         </label>
 
                     
-                        {/* <label
+                        <label
                             className={`relative flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${paymentGateway === 'phonepe'
                                 ? 'border-purple-500 bg-purple-50/60 shadow-md ring-1 ring-purple-200'
                                 : 'border-gray-150 bg-white hover:border-purple-200 hover:shadow-sm'
@@ -310,8 +310,12 @@ export default function Payment({
 
                                 <p className="text-[11px] text-gray-500">UPI · Wallet · Cards</p>
                             </div>
-                        </label> */}
+                            
+                        </label>
+                        <p className="text-[11px] text-red-500">Currently Phonepe Server Down</p>
+
                     </div>
+                    
                 </div>
 
                 {/* Payment Summary */}
