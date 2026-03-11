@@ -56,6 +56,59 @@ export default function AttractionCard({ item, featured = false }) {
     navigate(attrId ? `/tickets-offers?attraction_id=${attrId}&type=attraction&openDrawer=true` : '/tickets-offers');
   };
 
+  const renderHighlights = (isFeaturedCard) => {
+    const chipClass = isFeaturedCard ? "feat-chip" : "feat-chip-dark";
+    const containerClass = isFeaturedCard ? "exp-feat-highlights" : "flex flex-wrap gap-2 mt-4 mb-2";
+    
+    const isSnowPark = title.toLowerCase().includes('snow park');
+    const isMadLab = title.toLowerCase().includes('mad lab') || title.toLowerCase().includes('madlab');
+    const isEyelusion = title.toLowerCase().includes('eyelusion');
+
+    return (
+      <div className={containerClass}>
+        {(isSnowPark) && (
+          <>
+            <span className={chipClass}>❄️ Real Snow Fall</span>
+            <span className={chipClass}>🌡️ -7°C Temperature</span>
+          </>
+        )}
+
+        {isSnowPark && (
+          <>
+            <span className={chipClass}>🛝 Snow Slides</span>
+            <span className={chipClass}>🧗 Ice Wall Climb</span>
+            <span className={chipClass}>🪩 Snow Disco</span>
+            <span className={chipClass}>🧤 Gear Provided</span>
+            <span className={chipClass}>👶 Toddler Friendly</span>
+          </>
+        )}
+
+        {isMadLab && (
+          <>
+            <span className={chipClass}>⏱ Duration: 60–90 min</span>
+            <span className={chipClass}>👥 Best For Families</span>
+          </>
+        )}
+
+        {isEyelusion && (
+          <>
+            <span className={chipClass}>⏱ Duration: 45–75 min</span>
+            <span className={chipClass}>📱 Bring Your Phone</span>
+          </>
+        )}
+
+        {/* Default Fallback for other attractions */}
+        {!isSnowPark && !isMadLab && !isEyelusion && (
+            <>
+     
+              <span className={chipClass}>👨‍👩‍👧‍👦 Kids Favour</span>
+              <span className={chipClass}>👨‍👩‍👧‍👦 Family Friendly</span>
+            </>
+          )}
+      </div>
+    );
+  };
+
   if (featured) {
     return (
       <div className="exp-featured rounded-xl group cursor-pointer" onClick={goDetail}>
@@ -67,17 +120,15 @@ export default function AttractionCard({ item, featured = false }) {
           <div>
             <h2 className="exp-feat-title">{title}</h2>
             <p className="exp-feat-desc">{desc}</p>
-
-            <div className="exp-feat-highlights">
-              <span className="feat-chip">❄️ Real Snow Fall</span>
-              <span className="feat-chip">🌡️ -7°C Temperature</span>
-              <span className="feat-chip">👨‍👩‍👧‍👦 Family Friendly</span>
-            </div>
+            {renderHighlights(true)}
           </div>
 
           <div className="exp-feat-footer">
-            <div className="exp-feat-price">
-              <sub>From / Per Person</sub> ₹{Math.round(displayPrice)}
+            <div>
+              <p className="text-[10px] text-white/80 uppercase font-bold tracking-wider mb-1">FROM / PER PERSON</p>
+              <div className="exp-feat-price">
+                ₹{Math.round(displayPrice)}
+              </div>
             </div>
             <button
               className={`btn-book-new px-10 py-5 text-lg ${title.toLowerCase().includes('snow park') ? '!bg-white !text-[#0099ff]' : ''}`}
@@ -103,10 +154,12 @@ export default function AttractionCard({ item, featured = false }) {
                   <div key="video-cell" className="feat-vg-cell">
                     <video
                       src={snowParkVideo}
+                      poster={img}
                       autoPlay
                       muted
                       loop
                       playsInline
+                      preload="none"
                       className="w-full h-full object-cover"
                     />
                   </div>
@@ -131,7 +184,12 @@ export default function AttractionCard({ item, featured = false }) {
 
               return (
                 <div key={idx} className="feat-vg-cell">
-                  <img src={displayImg} alt={`${title} view ${idx + 1}`} loading="lazy" />
+                  <img
+                    src={displayImg}
+                    alt={`${title} view ${idx + 1}`}
+                    loading={idx === 0 ? "eager" : "lazy"}
+                    fetchPriority={idx === 0 ? "high" : "auto"}
+                  />
                 </div>
               );
             })}
@@ -149,14 +207,20 @@ export default function AttractionCard({ item, featured = false }) {
   return (
     <div className="exp-card-new rounded-xl group cursor-pointer" onClick={goDetail}>
       <div className="exp-card-visual">
-        <img src={img} alt={item?.image_alt || title} loading="lazy" />
+        <img
+          src={img}
+          alt={item?.image_alt || title}
+          loading={featured ? "eager" : "lazy"}
+          fetchPriority={featured ? "high" : "auto"}
+        />
       </div>
 
       <div className="exp-card-body">
         <h3 className="exp-card-title">{title}</h3>
-        <p className="exp-card-desc line-clamp-3">{desc}</p>
+        <p className="exp-card-desc line-clamp-2">{desc}</p>
+        {renderHighlights(false)}
 
-        <div className="exp-card-footer">
+        <div className="exp-card-footer mt-auto">
           <div>
             <p className="text-[10px] text-[#6B7280] uppercase font-bold tracking-wider mb-1">FROM / PER PERSON</p>
             <div className="price-val-new">

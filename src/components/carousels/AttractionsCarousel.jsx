@@ -5,6 +5,7 @@ import { Autoplay, Pagination } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/pagination";
 import AttractionCard from "../cards/AttractionCard";
+import { useMediaQuery } from "../../hooks/useMediaQuery";
 
 export default function AttractionsCarousel({ items = [] }) {
   // Sort items to ensure a consistent experience with priority given to Snow Park and Mad Lab
@@ -15,8 +16,10 @@ export default function AttractionsCarousel({ items = [] }) {
 
       const isSnowParkA = titleA.includes('snow park');
       const isSnowParkB = titleB.includes('snow park');
-      const isMadLabA = titleA.includes('mad lab');
-      const isMadLabB = titleB.includes('mad lab');
+      const isMadLabA = titleA.includes('mad lab') || titleA.includes('madlab');
+      const isMadLabB = titleB.includes('mad lab') || titleB.includes('madlab');
+      const isEyelusionA = titleA.includes('eyelusion');
+      const isEyelusionB = titleB.includes('eyelusion');
 
       // Rank 1: Snow Park
       if (isSnowParkA && !isSnowParkB) return -1;
@@ -26,6 +29,10 @@ export default function AttractionsCarousel({ items = [] }) {
       if (isMadLabA && !isMadLabB) return -1;
       if (!isMadLabA && isMadLabB) return 1;
 
+      // Rank 3: Eyelusion
+      if (isEyelusionA && !isEyelusionB) return -1;
+      if (!isEyelusionA && isEyelusionB) return 1;
+
       // Otherwise maintain ID order
       const idA = a?.attraction_id ?? a?.id ?? 0;
       const idB = b?.attraction_id ?? b?.id ?? 0;
@@ -33,6 +40,7 @@ export default function AttractionsCarousel({ items = [] }) {
     });
   }, [items]);
 
+  const isDesktop = useMediaQuery('(min-width: 1024px)');
   const [activeIndex, setActiveIndex] = React.useState(0);
 
   // For smooth loop behavior when item count is low relative to slidesPerView
@@ -65,67 +73,68 @@ export default function AttractionsCarousel({ items = [] }) {
       </div>
 
       {/* DESKTOP GRID - FEATURED LOGIC */}
-      <div className="hidden lg:flex flex-col gap-10 w-full mb-16">
-        {/* Featured Row */}
-        {sortedItems.length > 0 && (
-          <div className="w-full">
-            <AttractionCard item={sortedItems[0]} featured={true} />
-          </div>
-        )}
-
-        {/* Sub Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {sortedItems.slice(1, 4).map((item, idx) => (
-            <div key={`${item?.id || item?.attraction_id}-desktop-${idx}`}>
-              <AttractionCard item={item} />
+      {isDesktop ? (
+        <div className="flex flex-col gap-10 w-full mb-16">
+          {/* Featured Row */}
+          {sortedItems.length > 0 && (
+            <div className="w-full">
+              <AttractionCard item={sortedItems[0]} featured={true} />
             </div>
-          ))}
-        </div>
-      </div>
+          )}
 
-      {/* MOBILE & TABLET SLIDER */}
-      <div className="lg:hidden relative z-10 premium-carousel mb-8">
-        {/* Row 1: Snow Park Standalone */}
-        {sortedItems.length > 0 && (
-          <div className="px-2 mb-10">
-            <AttractionCard item={sortedItems[0]} />
-          </div>
-        )}
-
-        {/* Row 2: Remaining Items Auto-sliding */}
-        {sortedItems.length > 1 && (
-          <Swiper
-            modules={[Autoplay, Pagination]}
-            spaceBetween={16}
-            slidesPerView={1.2}
-            centeredSlides={false}
-            loop={true}
-            autoplay={{ delay: 3000, disableOnInteraction: false }}
-            grabCursor={true}
-            onSlideChange={(swiper) => setActiveIndex(swiper.realIndex + 1)} // offset by 1 because of the standalone card
-            className="pb-12"
-          >
-            {sortedItems.slice(1).map((item, idx) => (
-              <SwiperSlide key={`${item?.id ?? idx}-mobile-${idx}`} className="h-auto">
+          {/* Sub Row */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {sortedItems.slice(1, 4).map((item, idx) => (
+              <div key={`${item?.id || item?.attraction_id}-desktop-${idx}`}>
                 <AttractionCard item={item} />
-              </SwiperSlide>
+              </div>
             ))}
-          </Swiper>
-        )}
-
-        {/* CUSTOM PAGINATION DOTS - Reflecting all items */}
-        <div className="flex justify-center items-center gap-2 mt-2">
-          {sortedItems.map((_, idx) => (
-            <div
-              key={idx}
-              className={`h-1.5 transition-all duration-300 rounded-xl ${(realIndex === idx || (idx === 0 && activeIndex === 0))
-                ? "w-6 bg-blue-600"
-                : "w-1.5 bg-gray-300"
-                }`}
-            />
-          ))}
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="relative z-10 premium-carousel mb-8">
+          {/* Row 1: Snow Park Standalone */}
+          {sortedItems.length > 0 && (
+            <div className="px-2 mb-10">
+              <AttractionCard item={sortedItems[0]} featured={true} />
+            </div>
+          )}
+
+          {/* Row 2: Remaining Items Auto-sliding */}
+          {sortedItems.length > 1 && (
+            <Swiper
+              modules={[Autoplay, Pagination]}
+              spaceBetween={16}
+              slidesPerView={1.2}
+              centeredSlides={false}
+              loop={true}
+              autoplay={{ delay: 3000, disableOnInteraction: false }}
+              grabCursor={true}
+              onSlideChange={(swiper) => setActiveIndex(swiper.realIndex + 1)} // offset by 1 because of the standalone card
+              className="pb-12"
+            >
+              {sortedItems.slice(1).map((item, idx) => (
+                <SwiperSlide key={`${item?.id ?? idx}-mobile-${idx}`} className="h-auto">
+                  <AttractionCard item={item} />
+                </SwiperSlide>
+              ))}
+            </Swiper>
+          )}
+
+          {/* CUSTOM PAGINATION DOTS - Reflecting all items */}
+          <div className="flex justify-center items-center gap-2 mt-2">
+            {sortedItems.map((_, idx) => (
+              <div
+                key={idx}
+                className={`h-1.5 transition-all duration-300 rounded-xl ${(realIndex === idx || (idx === 0 && activeIndex === 0))
+                  ? "w-6 bg-blue-600"
+                  : "w-1.5 bg-gray-300"
+                  }`}
+              />
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="relative z-10 flex justify-center mt-12">
         <Link

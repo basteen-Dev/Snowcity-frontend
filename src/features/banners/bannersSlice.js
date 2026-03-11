@@ -27,11 +27,13 @@ export const fetchBanners = createAsyncThunk(
 );
 
 const cached = loadSliceCache('banners');
+const initialBanners = typeof window !== 'undefined' && window.__INITIAL_BANNERS__ ? window.__INITIAL_BANNERS__ : null;
+
 const initialState = {
-  items: cached?.items || [],
-  status: 'idle',
+  items: initialBanners || cached?.items || [],
+  status: initialBanners ? 'succeeded' : 'idle',
   error: null,
-  lastFetched: cached?.lastFetched || null
+  lastFetched: initialBanners ? Date.now() : (cached?.lastFetched || null)
 };
 
 const bannersSlice = createSlice({

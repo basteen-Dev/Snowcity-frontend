@@ -1270,15 +1270,28 @@ export default function Booking() {
     'https://images.pexels.com/photos/338515/pexels-photo-338515.jpeg?auto=compress&cs=tinysrgb&w=1200';
 
   const currentItemAddons = useMemo(() => {
-    if (!activeItemKey) return new Map();
-    const val = cartAddons.get(activeItemKey);
+      const val = cartAddons.get(activeItemKey);
     // Ensure it's always a Map (Addons.jsx calls .get() on it)
     if (val instanceof Map) return val;
     return new Map();
   }, [cartAddons, activeItemKey]);
 
-  const addSelectionToCart = useCallback(() => {
+  const addSelectionToCart = useCallback((skipGTM = false) => {
     if (!selectionReady) return false;
+
+    // 🔹 GTM ADD_TO_CART EVENT
+    if (!skipGTM) {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: 'add_to_cart',
+        attraction_name: selectedMeta.title,
+        ticket_type: sel.itemType === 'combo' ? 'Combo' : 'Attraction',
+        ticket_quantity: qty,
+        total_pax: qty,
+        ticket_price: selectedMeta.price || 0,
+        currency: 'INR'
+      });
+    }
 
     const item_type = sel.itemType === 'combo' ? 'Combo' : 'Attraction';
     const slotId =
@@ -1345,6 +1358,18 @@ export default function Booking() {
       return;
     }
 
+    // 🔹 GTM ADD_TO_CART EVENT (Direct Buy)
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+      event: 'add_to_cart',
+      attraction_name: selectedMeta.title,
+      ticket_type: sel.itemType === 'combo' ? 'Combo' : 'Attraction',
+      ticket_quantity: qty,
+      total_pax: qty,
+      ticket_price: selectedMeta.price || 0,
+      currency: 'INR'
+    });
+
     // Check if already in cart (avoid duplicates)
     const item_type = sel.itemType === 'combo' ? 'Combo' : 'Attraction';
     const fingerprint = [
@@ -1357,7 +1382,7 @@ export default function Booking() {
     const alreadyInCart = cartItems.some((item) => item.fingerprint === fingerprint);
 
     if (!alreadyInCart) {
-      addSelectionToCart();
+      addSelectionToCart(true); // skip redundant GTM push
     }
 
     // Navigate directly to add-ons/checkout without repeating
@@ -1373,7 +1398,20 @@ export default function Booking() {
           alert('Please select date, time slot and quantity.');
           return;
         }
-        const added = addSelectionToCart();
+
+        // 🔹 GTM ADD_TO_CART EVENT (Handle Next as Book Now)
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({
+          event: 'add_to_cart',
+          attraction_name: selectedMeta.title,
+          ticket_type: sel.itemType === 'combo' ? 'Combo' : 'Attraction',
+          ticket_quantity: qty,
+          total_pax: qty,
+          ticket_price: selectedMeta.price || 0,
+          currency: 'INR'
+        });
+
+        const added = addSelectionToCart(true); // skip redundant GTM push
         if (added) dispatch(setStep(2));
       }
     } else if (step === 2) {

@@ -32,7 +32,7 @@ export default function LazyVisible({
   const style = minHeight ? { minHeight } : undefined;
   return (
     <div ref={ref} className={className} style={style}>
-      {visible ? children : placeholder}
+      {visible ? <React.Suspense fallback={placeholder}>{children}</React.Suspense> : placeholder}
     </div>
   );
 }

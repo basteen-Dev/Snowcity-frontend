@@ -18,26 +18,61 @@
 
   <!-- Critical Font Preload -->
   <link rel="preload"
-    href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
     as="style">
   <link rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+    href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap">
+  <!-- Native Banner Fetch & Preload for LCP Optimization -->
+  <script>
+    (async function preloadHero() {
+      try {
+        const rawUrl = '%VITE_API_BASE_URL%';
+        const baseUrl = (rawUrl.startsWith('%') || !rawUrl || rawUrl === 'http://localhost:4000') 
+          ? 'https://app.snowcityblr.com' 
+          : rawUrl;
+        const url = `${baseUrl}/api/banners/public?active=true&page=1&limit=12`;
+        const res = await fetch(url, { priority: 'high' });
+        if (!res.ok) return;
+        const data = await res.json();
+        const banners = data.data || data;
+        const bDate = (b) => new Date(b.created_at || b.inserted_at || 0);
+        banners.sort((a,b) => bDate(a) - bDate(b));
+        
+        if (banners && banners.length > 0) {
+          const b = banners[0];
+          const deskImg = b.web_image || b.image_web || b.desktop_image || b.image_url || b.image;
+          const mobImg = b.mobile_image || b.image_mobile || b.mobile || b.image_url_mobile || deskImg;
+          
+          if (deskImg) {
+            const lD = document.createElement('link');
+            lD.rel = 'preload'; lD.as = 'image'; lD.href = deskImg; lD.media = '(min-width: 768px)';
+            lD.fetchPriority = 'high';
+            document.head.appendChild(lD);
+          }
+          if (mobImg && mobImg !== deskImg) {
+            const lM = document.createElement('link');
+            lM.rel = 'preload'; lM.as = 'image'; lM.href = mobImg; lM.media = '(max-width: 767px)';
+            lM.fetchPriority = 'high';
+            document.head.appendChild(lM);
+          }
+          // Cache for Redux to pick up immediately without waiting for hydration
+          window.__INITIAL_BANNERS__ = banners;
+        }
+      } catch (e) {}
+    })();
+  </script>
 
-  <!-- Hero Image Preload for LCP -->
-  <link rel="preload" as="image" href="https://app.snowcityblr.com/api/uploads/1/raw"
-    imagesrcset="https://app.snowcityblr.com/api/uploads/1/raw 1200w, https://app.snowcityblr.com/api/uploads/1/raw 800w"
-    imagesizes="100vw">
 
-  <!-- Logo Preload -->
-  <link rel="preload" as="image" href="/logo.svg" type="image/svg+xml">
+
+  <link rel="preload" as="image" href="/logo.png" type="image/png">
 
   <link
-    href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
     rel="stylesheet" />
 
 
   <!-- Meta Pixel & gtag — deferred to idle time to avoid blocking LCP -->
-  <script>
+  <!-- <script>
     function _scLoadAnalytics() {
       // Meta Pixel
       !function (f, b, e, v, n, t, s) {
@@ -63,7 +98,7 @@
     } else {
       window.addEventListener('load', _scLoadAnalytics);
     }
-  </script>
+  </script> -->
 </head>
 
 <body>

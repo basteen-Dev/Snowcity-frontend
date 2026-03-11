@@ -5,7 +5,7 @@ import { logout, setCredentials } from "../../features/auth/authSlice";
 import api from "../../services/apiClient";
 import endpoints from "../../services/endpoints";
 import { getAttrId } from "../../utils/ids";
-import Logo from '../../assets/images/Snowcity_B.png';
+const Logo = '/logo.png';
 import { Menu, X, Ticket, ChevronDown, User, LogOut, ClipboardList, Home, Mountain, Gift, BookOpen, Phone, Newspaper, Lock } from "lucide-react";
 import { prioritizeSnowcityFirst } from "../../utils/attractions";
 

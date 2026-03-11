@@ -82,11 +82,23 @@ export default function PaymentSuccess() {
           // Fire conversion tracking (once)
           if (!conversionFiredRef.current) {
             conversionFiredRef.current = true;
+
             const orderId = data?.order_id || (data?.items && data.items[0]?.order_id);
             const totalAmount = Number(data?.total_amount || data?.final_amount || 0);
+
+            // 🔹 GTM PURCHASE EVENT
+            window.dataLayer = window.dataLayer || [];
+            window.dataLayer.push({
+              event: "purchase",
+              transaction_id: orderId,
+              value: totalAmount,
+              currency: "INR"
+            });
+
             trackBookingConversion({ order_id: orderId, amount: totalAmount });
+
             if (totalAmount > 0) {
-              fireConversionEvent({ value: totalAmount, currency: 'INR' });
+              fireConversionEvent({ value: totalAmount, currency: "INR" });
             }
           }
         } else {

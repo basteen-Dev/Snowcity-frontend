@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect, useRef } from 'react';
 import funworldHero from '../../assets/images/fun.png';
 
 
@@ -11,12 +10,24 @@ const stats = [
 
 export default function NearbyAttractionSection() {
   const [hovered, setHovered] = useState(null);
+  const ref = useRef(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        setIsVisible(true);
+        observer.disconnect();
+      }
+    }, { threshold: 0.1 });
+
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
 
   return (
-    <section className="sec-nearby">
+    <section className="sec-nearby" ref={ref}>
       <div className="bg-grid" aria-hidden="true" />
-
-
 
       {/* Decorative blobs */}
       <div className="blob blob-1" aria-hidden="true" />
@@ -25,12 +36,8 @@ export default function NearbyAttractionSection() {
       <div className="nearby-container">
 
         {/* ── Left: Content ── */}
-        <motion.div
-          className="nearby-content"
-          initial={{ opacity: 0, y: 28 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.65, ease: [0.4, 0, 0.2, 1] }}
+        <div
+          className={`nearby-content transition-all duration-700 transform ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-7'}`}
         >
           {/* Tag */}
           <span className="nearby-eyebrow">
@@ -58,17 +65,14 @@ export default function NearbyAttractionSection() {
           {/* Stats row */}
           <div className="stats-row">
             {stats.map((s, i) => (
-              <motion.div
-                className="stat-item"
+              <div
+                className={`stat-item transition-all duration-500 transform ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+                style={{ transitionDelay: `${300 + i * 150}ms` }}
                 key={i}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: 0.15 * i + 0.3 }}
               >
                 <span className="stat-value">{s.value}</span>
                 <span className="stat-label">{s.label}</span>
-              </motion.div>
+              </div>
             ))}
           </div>
 
@@ -85,21 +89,18 @@ export default function NearbyAttractionSection() {
             </a>
            
           </div>
-        </motion.div>
+        </div>
 
         {/* ── Right: Hero Image ── */}
-        <motion.div
-          className="nearby-hero-wrap"
-          initial={{ opacity: 0, x: 40 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
+        <div
+          className={`nearby-hero-wrap transition-all duration-700 transform ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'}`}
         >
           <div className="hero-img-inner">
             <img
               src={funworldHero}
               alt="Fun World Theme Park"
               className="hero-img"
+              loading="lazy"
             />
             <div className="hero-img-overlay" />
 
@@ -109,7 +110,7 @@ export default function NearbyAttractionSection() {
               Fun World Theme Park
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
 
       <style>{`

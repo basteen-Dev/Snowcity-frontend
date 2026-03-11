@@ -53,7 +53,7 @@ export default function SelectTickets({
         {/* Toggle */}
         <div className="mb-2">
           <div className="bg-sky-50 p-1 rounded-xl inline-flex border border-sky-100">
-            {['attraction', 'combo'].map((t) => (
+            {['combo','attraction'].map((t) => (
               <button
                 key={t}
                 onClick={() => {

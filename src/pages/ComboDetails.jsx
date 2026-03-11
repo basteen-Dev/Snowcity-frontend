@@ -904,6 +904,18 @@ export default function ComboDetails() {
     const comboSlotId = slot?.combo_slot_id ?? slot?.id ?? slot?._id ?? null;
     if (!comboSlotId) return;
 
+    // 🔹 GTM ADD_TO_CART EVENT
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+      event: 'add_to_cart',
+      attraction_name: combo?.title || combo?.name || combo?.combo_name || `Combo #${comboId}`,
+      ticket_type: 'Combo',
+      ticket_quantity: q,
+      total_pax: q,
+      ticket_price: unitPrice,
+      currency: 'INR'
+    });
+
     dispatch(
       addCartItem({
         itemType: 'combo',

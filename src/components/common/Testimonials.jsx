@@ -1,5 +1,4 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useEffect, useRef, useState } from 'react';
 
 const testimonials = [
   {
@@ -30,18 +29,26 @@ const testimonials = [
 
 export default function Testimonials() {
   const doubledTestimonials = [...testimonials, ...testimonials];
+  const ref = useRef(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        setIsVisible(true);
+        observer.disconnect();
+      }
+    }, { threshold: 0.2 });
+
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <>
-      <section className="trust-section">
+      <section className="trust-section" ref={ref}>
         <div className="trust-inner">
-          <motion.div
-            className="trust-left"
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-          >
+          <div className={`trust-left ${isVisible ? 'animate-fade-in-left' : 'opacity-0'}`}>
             <span className="eyebrow">✦ What Visitors Say</span>
             <h2 className="section-title" style={{ color: 'white', fontSize: 'clamp(32px, 5vw, 48px)', lineHeight: 1.1, fontWeight: 800 }}>
               Thousands of<br />unforgettable<br />moments.
@@ -59,10 +66,10 @@ export default function Testimonials() {
               <div style={{ width: '1px', height: '72px', background: 'rgba(255,255,255,.15)' }}></div>
               <div>
                 <div style={{ fontFamily: "'Red Hat Display', sans-serif", fontSize: '32px', fontWeight: 800, color: 'white', lineHeight: 1, letterSpacing: '-1px' }}>5L+</div>
-                <div style={{ fontSzie: '12px', color: 'rgba(255,255,255,.55)', marginTop: '4px', fontWeight: 600 }}>Happy visitors</div>
+                <div style={{ fontSize: '12px', color: 'rgba(255,255,255,.55)', marginTop: '4px', fontWeight: 600 }}>Happy visitors</div>
               </div>
             </div>
-          </motion.div>
+          </div>
 
           <div className="reviews-container">
             <div className="reviews-stack">

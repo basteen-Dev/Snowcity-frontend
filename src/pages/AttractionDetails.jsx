@@ -789,6 +789,18 @@ export default function AttractionDetails() {
     const aId = getAttrId(a);
     const sanitizedQty = qtyNumber;
 
+    // 🔹 GTM ADD_TO_CART EVENT
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+      event: 'add_to_cart',
+      attraction_name: a?.title || a?.name || `Attraction #${aId}`,
+      ticket_type: isTimeSlotDisabled ? 'Open Entry' : getSlotLabel(selectedSlot),
+      ticket_quantity: sanitizedQty,
+      total_pax: sanitizedQty,
+      ticket_price: Number(effectiveUnitPrice ?? selectedSlot?.price ?? baseUnitPrice),
+      currency: 'INR'
+    });
+
     dispatch(
       addCartItem({
         itemType: 'attraction',
@@ -1062,7 +1074,7 @@ export default function AttractionDetails() {
                 ) : null}
               </div>
               <div className="text-right">
-                <div className="text-xs text-gray-500">per ticket</div>
+                
                 {hasDiscount && (
                   <div className="text-xs font-semibold text-emerald-600">
                     Save {discountPercent}%
@@ -1132,9 +1144,6 @@ export default function AttractionDetails() {
             {/* Time Slot Selection */}
             {!isBookingStopped && !isTimeSlotDisabled && (
               <div className="space-y-3">
-                <label className="text-xs font-medium text-gray-700">
-                  Select Time Slot
-                </label>
                 {slots.status === 'loading' ? (
                   <div className="py-3">
                     <Loader size="sm" />
@@ -1453,7 +1462,6 @@ export default function AttractionDetails() {
                   </div>
 
                   <div className="text-right">
-                    <div className="text-xs text-gray-500">per ticket</div>
                     {hasDiscount && (
                       <div className="text-xs font-semibold text-emerald-600">
                         Save {discountPercent}%
@@ -1524,9 +1532,7 @@ export default function AttractionDetails() {
                   {/* Slot */}
                   {!isBookingStopped && !isTimeSlotDisabled && (
                     <div className="space-y-2">
-                      <label className="text-xs font-medium text-gray-700">
-                        Select Time Slot
-                      </label>
+                     
 
                       {slots.status === 'loading' ? (
                         <div className="py-2">
@@ -1543,7 +1549,7 @@ export default function AttractionDetails() {
                           onChange={(e) => setSlotKey(e.target.value)}
                           disabled={!slots.items.length}
                         >
-                          <option value="">Select the ticket</option>
+                          <option value="">Select the time slot</option>
                           {!slots.items.length ? (
                             <option disabled>No slots available</option>
                           ) : (
@@ -1644,7 +1650,7 @@ export default function AttractionDetails() {
 
                   {!date || (!isTimeSlotDisabled && !selectedSlotForBar) ? (
                     <div className="mt-4 rounded-2xl border bg-gray-50 px-3 py-2 text-sm text-center text-gray-500">
-                      Please select {!date ? 'a date' : 'a time slot'} to book.
+                      Please select {!date ? 'a date' : 'a time slot'}
                     </div>
                   ) : null}
 

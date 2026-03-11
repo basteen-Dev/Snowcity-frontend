@@ -375,6 +375,26 @@ export default function BookingsList() {
   const userRoles = React.useMemo(() => Array.isArray(user?.roles) ? user.roles.map(r => String(r).toLowerCase()) : [], [user]);
   const isSubadmin = userRoles.includes('subadmin') && !userRoles.includes('admin') && !userRoles.includes('root');
 
+  /* ─── Auto-sync control based on filters ───────────────── */
+  const isFiltering = React.useMemo(() => {
+    return Boolean(
+      filters.search ||
+      filters.payment_status ||
+      filters.booking_status ||
+      filters.attraction_id ||
+      filters.combo_id ||
+      filters.offer_id ||
+      filters.user_email ||
+      filters.user_phone ||
+      filters.item_type ||
+      activeRange !== 'today'
+    );
+  }, [filters, activeRange]);
+
+  React.useEffect(() => {
+    setAutoSync(!isFiltering);
+  }, [isFiltering]);
+
   /* ─── Active filter count ──────────────────────────────── */
   const activeFilterCount = React.useMemo(() => {
     let count = 0;
@@ -386,9 +406,9 @@ export default function BookingsList() {
     if (filters.user_email) count++;
     if (filters.user_phone) count++;
     if (filters.item_type) count++;
-    if (filters.date_from) count++;
+    if (activeRange !== 'today') count++;
     return count;
-  }, [filters]);
+  }, [filters, activeRange]);
 
   /* ─── Render ───────────────────────────────────────────── */
 
@@ -438,10 +458,11 @@ export default function BookingsList() {
           </div>
           <button
             onClick={() => setAutoSync(!autoSync)}
+            disabled={isFiltering}
             className={`flex items-center gap-1.5 rounded-xl px-3 py-1 text-xs font-semibold border transition-all ${autoSync
               ? 'bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-900/20 dark:border-emerald-700 dark:text-emerald-400'
-              : 'bg-gray-50 border-gray-200 text-gray-500 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-400'}`}
-            title={autoSync ? 'Auto-sync ON (every 15s) — click to disable' : 'Auto-sync OFF — click to enable'}
+              : 'bg-gray-50 border-gray-200 text-gray-500 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-400'} ${isFiltering ? 'opacity-60 cursor-not-allowed' : ''}`}
+            title={isFiltering ? 'Live sync is disabled while filters are active' : autoSync ? 'Auto-sync ON (every 15s) — click to disable' : 'Auto-sync OFF — click to enable'}
           >
             <span className={`inline-block w-2 h-2 rounded-xl ${autoSync ? 'bg-emerald-500 animate-pulse' : 'bg-gray-400'}`} />
             {autoSync ? 'Live' : 'Paused'}

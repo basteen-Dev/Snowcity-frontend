@@ -1,0 +1,63 @@
+{
+  "type": "table",
+  "headings": [
+    {
+      "key": "node",
+      "valueType": "node",
+      "subItemsHeading": {
+        "key": "extra"
+      },
+      "label": "Element"
+    },
+    {
+      "key": "score",
+      "valueType": "numeric",
+      "subItemsHeading": {
+        "key": "cause",
+        "valueType": "text"
+      },
+      "granularity": 0.001,
+      "label": "Layout shift score"
+    }
+  ],
+  "items": [
+    {
+      "node": {
+        "type": "node",
+        "lhId": "page-1-MAIN",
+        "path": "1,HTML,1,BODY,0,DIV,1,MAIN,0,DIV,1,MAIN",
+        "selector": "div#root > main.min-h-screen > div.relative > main.bg-gradient-to-b",
+        "boundingRect": {
+          "top": 84,
+          "bottom": 3100,
+          "left": 0,
+          "right": 412,
+          "width": 412,
+          "height": 3016
+        },
+        "snippet": "<main class=\"bg-gradient-to-b from-[#f5f8ff] to-white\">",
+        "nodeLabel": "Network Error\n\n✦ WHAT VISITORS SAY\nThousands of\nunforgettable\nmoments.\n\nFamilie…"
+      },
+      "score": 0.7479305893074119
+    },
+    {
+      "node": {
+        "type": "node",
+        "lhId": "page-3-DIV",
+        "path": "1,HTML,1,BODY,0,DIV,1,MAIN,0,DIV,1,MAIN,2,DIV",
+        "selector": "main.min-h-screen > div.relative > main.bg-gradient-to-b > div",
+        "boundingRect": {
+          "top": 564,
+          "bottom": 984,
+          "left": 0,
+          "right": 412,
+          "width": 412,
+          "height": 420
+        },
+        "snippet": "<div class=\"\" style=\"min-height: 420px;\">",
+        "nodeLabel": "main.min-h-screen > div.relative > main.bg-gradient-to-b > div"
+      },
+      "score": 0.31470230862697446
+    }
+  ]
+}

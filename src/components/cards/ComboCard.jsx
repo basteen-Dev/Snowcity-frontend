@@ -125,37 +125,37 @@ export default function ComboCard({ item, isUltimate = false }) {
     return (
       <div
         onClick={() => navigate(comboHref)}
-        className="group relative w-full overflow-hidden rounded-[var(--r-xl)] bg-gradient-to-br from-[#0b1a33] via-[#123a63] to-[#0b1a33] p-1 shadow-2xl transition-all duration-500 hover:scale-[1.01] hover:shadow-blue-500/20 cursor-pointer"
+        className="group relative w-full overflow-hidden rounded-[var(--r-xl)] bg-gradient-to-br from-[#0b1a33] via-[#123a63] to-[#0b1a33] p-1 shadow-2xl transition-all duration-500 hover:scale-[1.01] hover:shadow-blue-500/20 cursor-pointer lg:h-[380px]"
         role="button"
         tabIndex={0}
       >
         <div className="relative flex flex-col lg:flex-row h-full w-full overflow-hidden rounded-[calc(var(--r-xl)-4px)] bg-[#0b1a33]/40 backdrop-blur-xl">
           {/* Combo Hero Image */}
-          <div className="relative w-full lg:w-3/5 overflow-hidden flex items-center bg-[#040e21]">
+          <div className="relative w-full lg:w-1/2 overflow-hidden m:h-[150px] flex items-center bg-[#040e21] min-h-[150px] sm:min-h-[300px] lg:min-h-0">
             {heroImage ? (
               <img
                 src={heroImage}
                 alt={title}
-                className="w-full h-auto object-contain lg:absolute lg:inset-0 lg:h-full lg:object-cover transition-transform duration-700 group-hover:scale-105"
+                className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
               />
             ) : (
-              <div className="w-full min-h-[220px] bg-slate-800" />
+              <div className="w-full h-full min-h-[220px] bg-slate-800" />
             )}
           </div>
 
           {/* Content Area */}
-          <div className="flex flex-1 flex-col justify-center p-8 lg:p-12">
-            <div className="mb-4 inline-flex items-center gap-2">
+          <div className="flex flex-1 flex-col justify-center p-6 lg:p-10">
+            <div className="mb-2 lg:mb-3 inline-flex items-center gap-2">
               <span className="rounded-full bg-sky-500/20 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-sky-400 border border-sky-500/30">
                 Ultimate Experience
               </span>
             </div>
 
-            <h3 className="mb-4 text-3xl lg:text-5xl font-black text-white leading-tight">
+            <h3 className="mb-2 lg:mb-3 text-2xl lg:text-4xl font-black text-white leading-tight">
               {title}
             </h3>
 
-            <p className="mb-8 text-sm lg:text-lg text-slate-300 line-clamp-2 max-w-xl">
+            <p className="mb-4 lg:mb-6 text-sm lg:text-base text-slate-300 line-clamp-2 max-w-xl">
               {desc}
             </p>
 
@@ -208,7 +208,7 @@ export default function ComboCard({ item, isUltimate = false }) {
           <img
             src={heroImage}
             alt={item?.image_alt || title}
-            className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+            className="absolute inset-0 h-full w-full object-cover  transition-transform duration-500 group-hover:scale-110"
             width={640}
             height={400}
             loading="lazy"

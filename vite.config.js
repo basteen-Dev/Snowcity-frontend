@@ -26,7 +26,8 @@ export default defineConfig({
           'swiper-vendor': ['swiper'],
           'motion-vendor': ['framer-motion'],
           'chart-vendor': ['recharts'],
-          'ui-vendor': ['lucide-react', 'react-hot-toast', 'clsx']
+          'ui-vendor': ['lucide-react', 'react-hot-toast', 'clsx'],
+          'editor-vendor': ['react-quill-new', 'dompurify', 'html-react-parser']
         }
       }
     }

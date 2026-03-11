@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 
 const faqs = [
@@ -59,40 +58,47 @@ const FAQItem = ({ faq, isOpen, onClick }) => (
         </svg>
       </div>
     </div>
-    <AnimatePresence initial={false}>
-      {isOpen && (
-        <motion.div
-          key="answer"
-          initial={{ height: 0, opacity: 0 }}
-          animate={{ height: 'auto', opacity: 1 }}
-          exit={{ height: 0, opacity: 0 }}
-          transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
-          className="faq-a"
-          style={{ overflow: 'hidden' }}
-        >
-          <p className="faq-a-inner">{faq.a}</p>
-        </motion.div>
-      )}
-    </AnimatePresence>
+    <div
+      className="faq-a"
+      style={{
+        display: 'grid',
+        gridTemplateRows: isOpen ? '1fr' : '0fr',
+        transition: 'grid-template-rows 0.28s cubic-bezier(0.4,0,0.2,1)',
+      }}
+    >
+      <div style={{ overflow: 'hidden' }}>
+        <p className="faq-a-inner">{faq.a}</p>
+      </div>
+    </div>
   </div>
 );
 
 export default function PlanVisitSection() {
   const [openIndex, setOpenIndex] = useState(0);
+  const ref = useRef(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        setIsVisible(true);
+        observer.disconnect();
+      }
+    }, { threshold: 0.1 });
+
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
 
   return (
-    <section className="sec-faq">
+    <section className="sec-faq" ref={ref}>
       {/* Subtle background grid */}
       <div className="bg-grid" aria-hidden="true" />
 
       <div className="faq-container">
         {/* Left: FAQs */}
-        <motion.div
-          className="faq-col"
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
+        <div
+          className={`faq-col transition-all duration-700 transform ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}
         >
           <div className="col-header">
             <span className="eyebrow">
@@ -112,18 +118,14 @@ export default function PlanVisitSection() {
               />
             ))}
           </div>
-        </motion.div>
+        </div>
 
         {/* Divider */}
         <div className="col-divider" aria-hidden="true" />
 
         {/* Right: Visit Guide */}
-        <motion.div
-          className="visit-col"
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.12, ease: [0.4, 0, 0.2, 1] }}
+        <div
+          className={`visit-col transition-all duration-700 delay-100 transform ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}
         >
           <div className="col-header">
             <span className="eyebrow">
@@ -135,13 +137,10 @@ export default function PlanVisitSection() {
           </div>
           <div className="visit-cards">
             {visitItems.map((item, idx) => (
-              <motion.div
-                className="vq-card"
+              <div
+                className={`vq-card transition-all duration-500 transform ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+                style={{ transitionDelay: `${200 + idx * 100}ms` }}
                 key={idx}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: 0.1 * idx + 0.2 }}
               >
                 <div className="vq-icon-wrap">
                   <span className="vq-icon" role="img" aria-label={item.title}>{item.icon}</span>
@@ -156,10 +155,10 @@ export default function PlanVisitSection() {
                     </svg>
                   </Link>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
-        </motion.div>
+        </div>
       </div>
 
       <style>{`

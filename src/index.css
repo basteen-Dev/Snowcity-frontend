@@ -1065,6 +1065,9 @@ body {
     grid-template-columns: 1fr;
     min-height: auto;
   }
+  .exp-feat-right {
+    order: -1;
+  }
 }
 
 .exp-featured:hover {
@@ -1141,6 +1144,19 @@ body {
   gap: 6px;
 }
 
+.feat-chip-dark {
+  background: rgba(20, 96, 232, 0.05);
+  border: 1px solid rgba(20, 96, 232, 0.1);
+  border-radius: 30px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #1460E8;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .exp-feat-footer {
   display: flex;
   align-items: center;
@@ -1150,8 +1166,9 @@ body {
 
 @media (max-width: 640px) {
   .exp-feat-footer {
-    flex-direction: column;
-    align-items: flex-start;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
     gap: 16px;
   }
 }
@@ -1268,6 +1285,12 @@ body {
   position: relative;
   overflow: hidden;
   background: #f1f5f9;
+}
+
+@media (max-width: 768px) {
+  .exp-card-visual {
+    height: 160px;
+  }
 }
 
 .exp-card-visual img {

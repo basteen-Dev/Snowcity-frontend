@@ -22,22 +22,57 @@
     as="style">
   <link rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap">
+  <!-- Native Banner Fetch & Preload for LCP Optimization -->
+  <script>
+    (async function preloadHero() {
+      try {
+        const rawUrl = 'http://localhost:4000';
+        const baseUrl = (rawUrl.startsWith('%') || !rawUrl || rawUrl === 'http://localhost:4000') 
+          ? 'https://app.snowcityblr.com' 
+          : rawUrl;
+        const url = `${baseUrl}/api/banners/public?active=true&page=1&limit=12`;
+        const res = await fetch(url, { priority: 'high' });
+        if (!res.ok) return;
+        const data = await res.json();
+        const banners = data.data || data;
+        const bDate = (b) => new Date(b.created_at || b.inserted_at || 0);
+        banners.sort((a,b) => bDate(a) - bDate(b));
+        
+        if (banners && banners.length > 0) {
+          const b = banners[0];
+          const deskImg = b.web_image || b.image_web || b.desktop_image || b.image_url || b.image;
+          const mobImg = b.mobile_image || b.image_mobile || b.mobile || b.image_url_mobile || deskImg;
+          
+          if (deskImg) {
+            const lD = document.createElement('link');
+            lD.rel = 'preload'; lD.as = 'image'; lD.href = deskImg; lD.media = '(min-width: 768px)';
+            lD.fetchPriority = 'high';
+            document.head.appendChild(lD);
+          }
+          if (mobImg && mobImg !== deskImg) {
+            const lM = document.createElement('link');
+            lM.rel = 'preload'; lM.as = 'image'; lM.href = mobImg; lM.media = '(max-width: 767px)';
+            lM.fetchPriority = 'high';
+            document.head.appendChild(lM);
+          }
+          // Cache for Redux to pick up immediately without waiting for hydration
+          window.__INITIAL_BANNERS__ = banners;
+        }
+      } catch (e) {}
+    })();
+  </script>
 
-  <!-- Hero Image Preload for LCP -->
-  <link rel="preload" as="image" href="https://app.snowcityblr.com/api/uploads/1/raw"
-    imagesrcset="https://app.snowcityblr.com/api/uploads/1/raw 1200w, https://app.snowcityblr.com/api/uploads/1/raw 800w"
-    imagesizes="100vw">
 
-  <!-- Logo Preload -->
-  <link rel="preload" as="image" href="/logo.svg" type="image/svg+xml">
+
+  <link rel="preload" as="image" href="/logo.png" type="image/png">
 
   <link
-    href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
     rel="stylesheet" />
 
 
   <!-- Meta Pixel & gtag — deferred to idle time to avoid blocking LCP -->
-  <script>
+  <!-- <script>
     function _scLoadAnalytics() {
       // Meta Pixel
       !function (f, b, e, v, n, t, s) {
@@ -63,13 +98,14 @@
     } else {
       window.addEventListener('load', _scLoadAnalytics);
     }
-  </script>
-  <script type="module" crossorigin src="/assets/index-CKfSxg3J.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/redux-vendor-BGbt3ZNI.js">
-  <link rel="modulepreload" crossorigin href="/assets/motion-vendor-Djw4W2S3.js">
-  <link rel="modulepreload" crossorigin href="/assets/react-vendor-BEehhNFt.js">
-  <link rel="modulepreload" crossorigin href="/assets/ui-vendor-qlgf-QTY.js">
-  <link rel="stylesheet" crossorigin href="/assets/index-DQ0hu3ws.css">
+  </script> -->
+  <script type="module" crossorigin src="/assets/index-Dc9ajTyF.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/redux-vendor-D47-Hlyr.js">
+  <link rel="modulepreload" crossorigin href="/assets/ui-vendor-BAN7jhgc.js">
+  <link rel="modulepreload" crossorigin href="/assets/react-vendor-DZdpvFu6.js">
+  <link rel="modulepreload" crossorigin href="/assets/chart-vendor-DDw-lzld.js">
+  <link rel="modulepreload" crossorigin href="/assets/editor-vendor-ueXB0940.js">
+  <link rel="stylesheet" crossorigin href="/assets/index-Bj1Hzke4.css">
 </head>
 
 <body>

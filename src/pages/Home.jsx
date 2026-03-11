@@ -12,17 +12,19 @@ import { fetchBlogs } from '../features/blogs/blogsSlice';
 import { fetchActiveAnnouncements } from '../features/announcements/announcementsSlice';
 
 import HeroCarousel from '../components/hero/HeroCarousel';
+
 import AttractionsCarousel from '../components/carousels/AttractionsCarousel';
 import CombosCarousel from '../components/carousels/CombosCarousel';
 import OffersMarquee from '../components/common/OffersMarquee';
-import PlanVisitSection from '../components/common/PlanVisitSection';
-import Testimonials from '../components/common/Testimonials';
-import VideoBlock from '../components/common/VideoBlock';
-import BlogCard from '../components/cards/BlogCard';
-import AttractionCard from '../components/cards/AttractionCard';
-import ComboCard from '../components/cards/ComboCard';
-import NearbyAttractionSection from '../components/common/Nearbyattractionsection';
-import NavigationAccordion from '../components/common/NavigationAccordion';
+
+const PlanVisitSection = React.lazy(() => import('../components/common/PlanVisitSection'));
+const Testimonials = React.lazy(() => import('../components/common/Testimonials'));
+const VideoBlock = React.lazy(() => import('../components/common/VideoBlock'));
+const BlogCard = React.lazy(() => import('../components/cards/BlogCard'));
+const AttractionCard = React.lazy(() => import('../components/cards/AttractionCard'));
+const ComboCard = React.lazy(() => import('../components/cards/ComboCard'));
+const NearbyAttractionSection = React.lazy(() => import('../components/common/Nearbyattractionsection'));
+const NavigationAccordion = React.lazy(() => import('../components/common/NavigationAccordion'));
 import Loader from '../components/common/Loader';
 import ErrorState from '../components/common/ErrorState';
 import LazyVisible from '../components/common/LazyVisible';
@@ -158,32 +160,28 @@ export default function Home() {
           )}
         </div>
 
-        <div id="hero-sentinel" className="absolute bottom-0 left-0 right-0 h-1" />
+        <div id="hero-sentinel" className="absolute bottom left-0 right-0 h-1" />
       </section>
 
       <main className="bg-gradient-to-b from-[#f5f8ff] to-white">
         {/* Offers Marquee */}
-        <LazyVisible minHeight={60} shadow={false}>
-          {marqueeItems.length ? <OffersMarquee items={marqueeItems} /> : null}
-        </LazyVisible>
+        {marqueeItems.length > 0 && <OffersMarquee items={marqueeItems} />}
 
         {/* Attractions */}
-        <LazyVisible minHeight={420} placeholder={<div className="py-8"><SkeletonCarousel items={3} /></div>}>
-          {attractions.status === 'failed' ? (
-            <ErrorState message={attractions.error?.message || 'Failed to load attractions'} />
-          ) : attractionItems.length ? (
-            <AttractionsCarousel items={attractionItems} />
-          ) : (
-            <SkeletonCarousel items={3} />
-          )}
-        </LazyVisible>
+        {attractions.status === 'failed' ? (
+          <ErrorState message={attractions.error?.message || 'Failed to load attractions'} />
+        ) : attractionItems.length ? (
+          <AttractionsCarousel items={attractionItems} />
+        ) : (
+          <div className="py-8"><SkeletonCarousel items={3} /></div>
+        )}
 
         {/* Combos */}
-        <LazyVisible minHeight={420} placeholder={<div className="py-8"><SkeletonCarousel items={4} /></div>}>
-          {comboItems.length > 0 && (
-            <CombosCarousel items={comboItems} />
-          )}
-        </LazyVisible>
+        {comboItems.length > 0 ? (
+          <CombosCarousel items={comboItems} />
+        ) : (
+          <div className="py-8"><SkeletonCarousel items={4} /></div>
+        )}
 
         {/* Testimonials */}
         <LazyVisible minHeight={320} placeholder={<div className="py-6"><SkeletonTestimonial /></div>}>

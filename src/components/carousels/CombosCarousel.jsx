@@ -5,6 +5,7 @@ import { Autoplay, Pagination } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/pagination";
 import ComboCard from "../cards/ComboCard";
+import { useMediaQuery } from "../../hooks/useMediaQuery";
 
 export default function CombosCarousel({ items = [] }) {
     // Sort items to ensure a consistent experience
@@ -16,6 +17,7 @@ export default function CombosCarousel({ items = [] }) {
         });
     }, [items]);
 
+    const isDesktop = useMediaQuery('(min-width: 768px)');
     const [activeIndex, setActiveIndex] = React.useState(0);
 
     // For smooth loop behavior when item count is low relative to slidesPerView
@@ -41,99 +43,100 @@ export default function CombosCarousel({ items = [] }) {
                     <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto font-medium leading-relaxed">Save more when you bundle your favorite experiences together</p>
                 </div>
 
-                {/* DESKTOP GRID */}
-                <div className="hidden md:block mb-16">
-                    {(() => {
-                        const ultimateOrder = ["Snowcity + Madlabs + Eyelusion", "Snow City + Madlabs + Eyelusion"];
-                        const ultimateItem = sortedItems.find(item =>
-                            ultimateOrder.some(name => (item?.name || item?.title)?.toLowerCase() === name.toLowerCase())
-                        );
-                        const otherItems = sortedItems.filter(item => item !== ultimateItem);
+                {/* CONDITIONAL RENDER FOR DESKTOP OR MOBILE */}
+                {isDesktop ? (
+                    <div className="mb-16">
+                        {(() => {
+                            const ultimateOrder = ["Snowcity + Madlabs + Eyelusion", "Snow City + Madlabs + Eyelusion"];
+                            const ultimateItem = sortedItems.find(item =>
+                                ultimateOrder.some(name => (item?.name || item?.title)?.toLowerCase() === name.toLowerCase())
+                            );
+                            const otherItems = sortedItems.filter(item => item !== ultimateItem);
 
-                        return (
-                            <div className="space-y-12">
-                                {ultimateItem && (
-                                    <div className="w-full">
-                                        <ComboCard item={ultimateItem} isUltimate={true} />
-                                    </div>
-                                )}
+                            return (
+                                <div className="space-y-12">
+                                    {ultimateItem && (
+                                        <div className="w-full">
+                                            <ComboCard item={ultimateItem} isUltimate={true} />
+                                        </div>
+                                    )}
 
-                                {otherItems.length > 0 && (
-                                    <div className="grid grid-cols-2 gap-8">
-                                        {otherItems.map((item, idx) => (
-                                            <div key={`${item?.id ?? item?.combo_id}-desktop-${idx}`}>
-                                                <ComboCard item={item} />
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        );
-                    })()}
-                </div>
-
-                {/* MOBILE SLIDER */}
-                <div className="md:hidden relative z-10 premium-carousel mb-8">
-                    {(() => {
-                        const ultimateOrder = ["Snowcity + Madlabs + Eyelusion", "Snow City + Madlabs + Eyelusion"];
-                        const ultimateItem = sortedItems.find(item =>
-                            ultimateOrder.some(name => (item?.name || item?.title)?.toLowerCase() === name.toLowerCase())
-                        );
-                        const otherItems = sortedItems.filter(item => item !== ultimateItem);
-                        const sliderItems = otherItems.length > 0 ? [...otherItems, ...otherItems, ...otherItems] : [];
-
-                        return (
-                            <>
-                                {ultimateItem && (
-                                    <div className="mb-6 px-4">
-                                        <ComboCard item={ultimateItem} isUltimate={true} />
-                                    </div>
-                                )}
-
-                                {otherItems.length > 0 && (
-                                    <>
-                                        <Swiper
-                                            modules={[Autoplay]}
-                                            spaceBetween={16}
-                                            slidesPerView={1.3}
-                                            centeredSlides={true}
-                                            loop={true}
-                                            loopedslides={otherItems.length}
-                                            loopPreventsSliding={false}
-                                            grabCursor={true}
-                                            watchSlidesProgress={true}
-                                            onSlideChange={(swiper) => setActiveIndex(swiper.realIndex)}
-                                            autoplay={{
-                                                delay: 3000,
-                                                disableOnInteraction: false,
-                                            }}
-                                            className="pt-10 pb-10 !overflow-visible"
-                                        >
-                                            {sliderItems.map((item, idx) => (
-                                                <SwiperSlide key={`${item?.id ?? idx}-${idx}`} className="h-auto">
+                                    {otherItems.length > 0 && (
+                                        <div className="grid grid-cols-2 gap-8">
+                                            {otherItems.map((item, idx) => (
+                                                <div key={`${item?.id ?? item?.combo_id}-desktop-${idx}`}>
                                                     <ComboCard item={item} />
-                                                </SwiperSlide>
-                                            ))}
-                                        </Swiper>
-
-                                        {/* CUSTOM PAGINATION DOTS */}
-                                        <div className="flex justify-center items-center gap-2 mt-8">
-                                            {otherItems.map((_, idx) => (
-                                                <div
-                                                    key={idx}
-                                                    className={`h-2 transition-all duration-300 rounded-xl ${realIndex === idx
-                                                        ? "w-8 bg-blue-600"
-                                                        : "w-2 bg-gray-300"
-                                                        }`}
-                                                />
+                                                </div>
                                             ))}
                                         </div>
-                                    </>
-                                )}
-                            </>
-                        );
-                    })()}
-                </div>
+                                    )}
+                                </div>
+                            );
+                        })()}
+                    </div>
+                ) : (
+                    <div className="relative z-10 premium-carousel mb-8">
+                        {(() => {
+                            const ultimateOrder = ["Snowcity + Madlabs + Eyelusion", "Snow City + Madlabs + Eyelusion"];
+                            const ultimateItem = sortedItems.find(item =>
+                                ultimateOrder.some(name => (item?.name || item?.title)?.toLowerCase() === name.toLowerCase())
+                            );
+                            const otherItems = sortedItems.filter(item => item !== ultimateItem);
+                            const sliderItems = otherItems.length > 0 ? [...otherItems, ...otherItems, ...otherItems] : [];
+
+                            return (
+                                <>
+                                    {ultimateItem && (
+                                        <div className="mb-6 px-4">
+                                            <ComboCard item={ultimateItem} isUltimate={true} />
+                                        </div>
+                                    )}
+
+                                    {otherItems.length > 0 && (
+                                        <>
+                                            <Swiper
+                                                modules={[Autoplay]}
+                                                spaceBetween={16}
+                                                slidesPerView={1.3}
+                                                centeredSlides={true}
+                                                loop={true}
+                                                loopedSlides={otherItems.length}
+                                                loopPreventsSliding={false}
+                                                grabCursor={true}
+                                                watchSlidesProgress={true}
+                                                onSlideChange={(swiper) => setActiveIndex(swiper.realIndex)}
+                                                autoplay={{
+                                                    delay: 3000,
+                                                    disableOnInteraction: false,
+                                                }}
+                                                className="pt-10 pb-10 !overflow-visible"
+                                            >
+                                                {sliderItems.map((item, idx) => (
+                                                    <SwiperSlide key={`${item?.id ?? idx}-${idx}`} className="h-auto">
+                                                        <ComboCard item={item} />
+                                                    </SwiperSlide>
+                                                ))}
+                                            </Swiper>
+
+                                            {/* CUSTOM PAGINATION DOTS */}
+                                            <div className="flex justify-center items-center gap-2 mt-8">
+                                                {otherItems.map((_, idx) => (
+                                                    <div
+                                                        key={idx}
+                                                        className={`h-2 transition-all duration-300 rounded-xl ${realIndex === idx
+                                                            ? "w-8 bg-blue-600"
+                                                            : "w-2 bg-gray-300"
+                                                            }`}
+                                                    />
+                                                ))}
+                                            </div>
+                                        </>
+                                    )}
+                                </>
+                            );
+                        })()}
+                    </div>
+                )}
 
                 <div className="relative z-10 flex justify-center mt-2">
                     <Link

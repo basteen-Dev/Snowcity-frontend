@@ -35,8 +35,10 @@ export default function Attractions() {
 
       const isSnowParkA = titleA.includes('snow park');
       const isSnowParkB = titleB.includes('snow park');
-      const isMadLabA = titleA.includes('mad lab');
-      const isMadLabB = titleB.includes('mad lab');
+      const isMadLabA = titleA.includes('mad lab') || titleA.includes('madlab');
+      const isMadLabB = titleB.includes('mad lab') || titleB.includes('madlab');
+      const isEyelusionA = titleA.includes('eyelusion');
+      const isEyelusionB = titleB.includes('eyelusion');
 
       // Rank 1: Snow Park
       if (isSnowParkA && !isSnowParkB) return -1;
@@ -45,6 +47,10 @@ export default function Attractions() {
       // Rank 2: Mad Lab
       if (isMadLabA && !isMadLabB) return -1;
       if (!isMadLabA && isMadLabB) return 1;
+
+      // Rank 3: Eyelusion
+      if (isEyelusionA && !isEyelusionB) return -1;
+      if (!isEyelusionA && isEyelusionB) return 1;
 
       // Otherwise maintain ID order
       const idA = a?.attraction_id ?? a?.id ?? 0;
