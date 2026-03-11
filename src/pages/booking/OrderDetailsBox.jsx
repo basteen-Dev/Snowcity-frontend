@@ -67,7 +67,7 @@ export default function OrderDetailsBox({
                                         {offerTitle && (
                                             <div className="mt-1.5 flex items-center gap-1.5">
                                                 <span className="inline-flex items-center px-2 py-0.5 rounded-xl text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100">
-                                                    🏷️ {offerTitle}
+                                                    🏷️ {(offerTitle || '').replace(/<[^>]*>/g, '')}
                                                 </span>
                                             </div>
                                         )}

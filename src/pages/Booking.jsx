@@ -1689,7 +1689,7 @@ export default function Booking() {
                     ) : (
                       <div className="text-xs text-gray-500 mt-1">
                         <div className={expandedCardId === id ? "" : "line-clamp-1 break-words"}>
-                          {item.short_description || item.subtitle || 'Instant confirmation • Best experience'}
+                          {(item.short_description || item.subtitle || 'Instant confirmation • Best experience').replace(/<[^>]*>/g, '')}
                         </div>
                         <button
                           type="button"
@@ -2294,11 +2294,12 @@ export default function Booking() {
                                   selectedAttraction?.summary ||
                                   selectedAttraction?.about ||
                                   '';
-                              return (desc || '').split('\n').map((line, i) => (
-                                <p key={i} className="mb-2">
-                                  {line}
-                                </p>
-                              ));
+                              return (
+                                <div
+                                  className="prose prose-sm max-w-none prose-sky prose-p:my-1 prose-li:my-0.5"
+                                  dangerouslySetInnerHTML={{ __html: desc || '' }}
+                                />
+                              );
                             })()}
                           </div>
 
