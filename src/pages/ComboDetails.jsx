@@ -790,11 +790,22 @@ export default function ComboDetails() {
   const heroCaption = heroTiles.map((a) => a.title).join(' + ');
 
   const rawPrice = getPrice(combo);
-  const comboPrice =
+  const dbComboPrice =
     rawPrice > 0
       ? rawPrice
       : Number(combo?.combo_price || combo?.total_price || 0);
-  const comboBasePrice = getBasePrice(combo);
+
+  // Reflect dynamic pricing: if slots are loaded for the selected date, use the first slot's price
+  const comboPrice = slots.length > 0 && Number(slots[0].price) > 0
+    ? Number(slots[0].price)
+    : dbComboPrice;
+
+  console.log('ComboDetails Debug -> slots:', slots.length, 'comboPrice:', comboPrice, 'slots0 price:', slots[0]?.price, 'slots0 pricing:', slots[0]?.pricing);
+
+  const dbComboBasePrice = getBasePrice(combo);
+  const comboBasePrice = slots.length > 0 && Number(slots[0].original_price) > 0
+    ? Number(slots[0].original_price)
+    : dbComboBasePrice;
   const baseSum =
     comboBasePrice ||
     normalizedAttractions.reduce(
@@ -1170,14 +1181,19 @@ export default function ComboDetails() {
                           <span>{comboSlotInfoMessage}</span>
                         </div>
                       )}
-                      <select
-                        className="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-sky-500 outline-none text-base font-medium appearance-none cursor-pointer"
-                        value={slotState.selectedKey}
-                        onChange={(e) => setSlotState(s => ({ ...s, selectedKey: e.target.value }))}
-                      >
-                        <option value="">Select the ticket</option>
-                        {slots.filter(s => isSlotBookableForDate(s, date)).map(s => <option key={buildSlotKey(s)} value={buildSlotKey(s)}>{labelTime(s)}</option>)}
-                      </select>
+                      <div className="relative">
+                        <select
+                          className="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-sky-500 outline-none text-base font-medium appearance-none cursor-pointer pr-12"
+                          value={slotState.selectedKey}
+                          onChange={(e) => setSlotState(s => ({ ...s, selectedKey: e.target.value }))}
+                        >
+                          <option value="">Select the ticket</option>
+                          {slots.filter(s => isSlotBookableForDate(s, date)).map(s => <option key={buildSlotKey(s)} value={buildSlotKey(s)}>{labelTime(s)}</option>)}
+                        </select>
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                          <ChevronDown size={20} />
+                        </div>
+                      </div>
                     </div>
                   )}
 
@@ -1204,19 +1220,23 @@ export default function ComboDetails() {
                     </div>
                   )}
 
-                  {selectedSlot && (
-                    <div className="p-5 bg-[#0099FF] rounded-3xl text-white shadow-xl shadow-[#0099FF]/20">
+                  {!isBookingStopped && (
+                    <div className={`p-5 rounded-3xl text-white shadow-xl transition-all ${selectedSlot ? 'bg-[#0099FF] shadow-[#0099FF]/20' : 'bg-gray-400 opacity-60'}`}>
                       <div className="flex justify-between items-end mb-4">
                         <div>
                           <p className="text-[10px] font-black uppercase tracking-widest text-blue-200 mb-1">Total Payable</p>
-                          <p className="text-2xl font-black rupee">{formatCurrency(totalPrice)}</p>
+                          <p className="text-2xl font-black rupee">{formatCurrency(selectedSlot ? totalPrice : 0)}</p>
                         </div>
                         <div className="text-right">
                           <p className="text-xs font-bold text-blue-100">{qty} {qty === 1 ? 'Ticket' : 'Tickets'}</p>
                         </div>
                       </div>
-                      <button onClick={() => onBook(selectedSlot, selectedSlotPricing)} disabled={isBookingStopped} className="w-full py-4 bg-white text-[#0099FF] rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-white/90 transition-all hover:scale-[1.02] active:scale-[0.98]">
-                        Secure My Spot
+                      <button 
+                        onClick={() => selectedSlot && onBook(selectedSlot, selectedSlotPricing)} 
+                        disabled={isBookingStopped || !selectedSlot} 
+                        className={`w-full py-4 rounded-2xl font-black text-sm uppercase tracking-widest transition-all ${selectedSlot ? 'bg-white text-[#0099FF] hover:bg-white/90 hover:scale-[1.02] active:scale-[0.98]' : 'bg-gray-200 text-gray-500 cursor-not-allowed'}`}
+                      >
+                        {selectedSlot ? 'Secure My Spot' : 'Select a Slot'}
                       </button>
                     </div>
                   )}
@@ -1325,8 +1345,8 @@ export default function ComboDetails() {
                           <button
                             type="button"
                             onClick={() => onBook(s, pricing)}
-                            disabled={isUnavailable || (slots.length > 0 && !selectedSlot)}
-                            className={`w-full py-3 rounded-xl font-bold text-sm transition-all ${isUnavailable || (slots.length > 0 && !selectedSlot)
+                            disabled={isUnavailable}
+                            className={`w-full py-3 rounded-xl font-bold text-sm transition-all ${isUnavailable
                               ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
                               : 'bg-[#0099FF] text-white hover:bg-[#007ACC] shadow-sm'
                               }`}
@@ -1415,14 +1435,19 @@ export default function ComboDetails() {
                         <span>{comboSlotInfoMessage}</span>
                       </div>
                     )}
-                    <select
-                      className="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-sky-500 outline-none text-base font-medium appearance-none cursor-pointer"
-                      value={slotState.selectedKey}
-                      onChange={(e) => setSlotState(s => ({ ...s, selectedKey: e.target.value }))}
-                    >
-                      <option value="">Select the ticket</option>
-                      {slots.filter(s => isSlotBookableForDate(s, date)).map(s => <option key={buildSlotKey(s)} value={buildSlotKey(s)}>{labelTime(s)}</option>)}
-                    </select>
+                    <div className="relative">
+                      <select
+                        className="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-sky-500 outline-none text-base font-medium appearance-none cursor-pointer pr-12"
+                        value={slotState.selectedKey}
+                        onChange={(e) => setSlotState(s => ({ ...s, selectedKey: e.target.value }))}
+                      >
+                        <option value="">Select the ticket</option>
+                        {slots.filter(s => isSlotBookableForDate(s, date)).map(s => <option key={buildSlotKey(s)} value={buildSlotKey(s)}>{labelTime(s)}</option>)}
+                      </select>
+                      <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                        <ChevronDown size={20} />
+                      </div>
+                    </div>
                   </div>
                 )}
 
@@ -1451,23 +1476,23 @@ export default function ComboDetails() {
                 )}
 
                 {/* Summary Box */}
-                {selectedSlot && (
-                  <div className="p-5 bg-[#0099FF] rounded-3xl text-white shadow-xl shadow-[#0099FF]/20">
+                {!isBookingStopped && (
+                  <div className={`p-5 rounded-3xl text-white shadow-xl transition-all ${selectedSlot ? 'bg-[#0099FF] shadow-[#0099FF]/20' : 'bg-gray-400 opacity-60'}`}>
                     <div className="flex justify-between items-end mb-4">
                       <div>
                         <p className="text-[10px] font-black uppercase tracking-widest text-blue-200 mb-1">Total Payable</p>
-                        <p className="text-2xl font-black rupee">{formatCurrency(totalPrice)}</p>
+                        <p className="text-2xl font-black rupee">{formatCurrency(selectedSlot ? totalPrice : 0)}</p>
                       </div>
                       <div className="text-right">
                         <p className="text-xs font-bold text-blue-100">{qty} {qty === 1 ? 'Ticket' : 'Tickets'}</p>
                       </div>
                     </div>
                     <button
-                      onClick={() => onBook(selectedSlot, selectedSlotPricing)}
-                      disabled={isBookingStopped}
-                      className="w-full py-4 bg-white text-[#0099FF] rounded-xl font-black text-sm uppercase tracking-widest hover:bg-white/90 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                      onClick={() => selectedSlot && onBook(selectedSlot, selectedSlotPricing)}
+                      disabled={isBookingStopped || !selectedSlot}
+                      className={`w-full py-4 rounded-xl font-black text-sm uppercase tracking-widest transition-all ${selectedSlot ? 'bg-white text-[#0099FF] hover:bg-white/90 hover:scale-[1.02] active:scale-[0.98]' : 'bg-gray-200 text-gray-500 cursor-not-allowed'}`}
                     >
-                      Secure My Spot
+                      {selectedSlot ? 'Secure My Spot' : 'Select a Slot'}
                     </button>
                   </div>
                 )}

@@ -64,6 +64,20 @@ export default function AddonForm() {
     }
   };
 
+  const handleDelete = async () => {
+    if (!window.confirm(`Delete addon "${state.form.title}"? This cannot be undone.`)) return;
+    setSaving(true);
+    const loadingToast = toast.loading('Deleting addon...');
+    try {
+      await adminApi.delete(`${A.addons()}/${id}`);
+      toast.success('Addon deleted successfully', { id: loadingToast });
+      navigate('/parkpanel/catalog/addons');
+    } catch (err) {
+      toast.error(err.message || 'Delete failed', { id: loadingToast });
+      setSaving(false);
+    }
+  };
+
   if (state.status === 'loading') return <div>Loading…</div>;
   if (state.status === 'failed') return <div className="text-red-600">{state.error?.message || 'Failed to load'}</div>;
 
@@ -100,9 +114,16 @@ export default function AddonForm() {
           </div>
         </div>
 
-        <div className="mt-4 flex gap-2">
-          <button type="submit" disabled={saving} className="rounded-md bg-gray-900 text-white px-4 py-2 text-sm disabled:opacity-60 disabled:cursor-not-allowed">{saving ? 'Saving…' : 'Save'}</button>
-          <button type="button" className="rounded-md border px-4 py-2 text-sm" onClick={() => navigate(-1)}>Cancel</button>
+        <div className="mt-6 flex items-center justify-between border-t border-gray-200 dark:border-neutral-800 pt-5">
+          <div className="flex gap-2">
+            <button type="submit" disabled={saving} className="rounded-md bg-gray-900 dark:bg-blue-600 text-white px-4 py-2 text-sm disabled:opacity-60 disabled:cursor-not-allowed">{saving ? 'Saving…' : 'Save'}</button>
+            <button type="button" className="rounded-md border border-gray-300 dark:border-neutral-700 px-4 py-2 text-sm text-gray-700 dark:text-neutral-300" onClick={() => navigate(-1)}>Cancel</button>
+          </div>
+          {isEdit && (
+            <button type="button" onClick={handleDelete} disabled={saving} className="rounded-md border border-red-200 bg-red-50 text-red-600 px-4 py-2 text-sm hover:bg-red-100 transition-colors disabled:opacity-50">
+              Delete Addon
+            </button>
+          )}
         </div>
       </form>
     </div>

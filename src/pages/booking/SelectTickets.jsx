@@ -38,6 +38,7 @@ export default function SelectTickets({
   step,
   paymentLoading,
   cartAddons,
+  setEditingKey,
 }) {
   const [expandedCardId, setExpandedCardId] = React.useState(null);
 
@@ -97,16 +98,8 @@ export default function SelectTickets({
               sel.itemType === 'combo' ? getComboPrimaryImage(item) : getAttractionImage(item);
 
             const onSelect = () => {
-              const isCombo = sel.itemType === 'combo';
-              const existing = cartItems.find((ci) =>
-                isCombo
-                  ? ci.item_type === 'Combo' && idsMatch(ci.combo_id, id)
-                  : (ci.item_type === 'Attraction' || ci.item_type === undefined) && idsMatch(ci.attraction_id, id)
-              );
-              if (existing) {
-                onEditCartItem(existing);
-                return;
-              }
+              // Reset editing key since we are selecting a NEW item from the gallery
+              if (typeof setEditingKey === 'function') setEditingKey(null);
 
               setSel((prev) => ({
                 ...prev,

@@ -37,7 +37,19 @@ export default function CombosList() {
       );
 
       setState((s) => ({ ...s, status: 'succeeded', items, attractions, slotCounts }));
-    } catch (err) { setState((s) => ({ ...s, status: 'failed', error: err })); }
+  const toggleActive = async (row, e) => {
+    e?.stopPropagation?.();
+    try {
+      const id = row.combo_id || row.id;
+      await adminApi.put(A.comboById(id), { active: !row.active });
+      setState((s) => ({
+        ...s,
+        items: s.items.map((it) => ((it.combo_id || it.id) === id ? { ...it, active: !row.active } : it))
+      }));
+      toast.success(`Combo ${!row.active ? 'activated' : 'deactivated'}`);
+    } catch (err) {
+      toast.error(err?.message || 'Failed to update status');
+    }
   };
 
   React.useEffect(() => { load(); /* eslint-disable-next-line */ }, []);
@@ -114,23 +126,30 @@ export default function CombosList() {
               </button>
             )
           },
-          {
-            key: 'active', title: 'Status', render: (r) => (
               <div className="flex items-center gap-2">
                 <StatusBadge status={r?.active ? 'active' : 'inactive'} />
                 <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (!window.confirm(`Delete "${r.name || `Combo #${r.combo_id}`}"?`)) return;
-                    adminApi.delete(A.comboById(r.combo_id))
-                      .then(() => load())
-                      .catch(error => alert(error.message || 'Failed to delete'));
-                  }}
-                  className="text-red-500 hover:text-red-700 text-sm font-medium"
+                  onClick={(e) => toggleActive(r, e)}
+                  className={`text-xs font-medium px-2 py-1 rounded-md transition-colors ${r.active ? 'text-orange-600 hover:bg-orange-50' : 'text-emerald-600 hover:bg-emerald-50'}`}
                 >
-                  Delete
+                  {r.active ? 'Deactivate' : 'Activate'}
                 </button>
               </div>
+            )
+          },
+          {
+            key: '__actions',
+            title: 'Actions',
+            render: (r) => (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/parkpanel/catalog/combos/${r.combo_id}`);
+                }}
+                className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium"
+              >
+                Edit
+              </button>
             )
           }
         ]}

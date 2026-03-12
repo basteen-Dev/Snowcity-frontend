@@ -184,11 +184,11 @@ export default function Footer() {
             <div>
               <FooterHeader>Visit</FooterHeader>
               <ul className="space-y-1 pt-2">
-                <li><Link to="/park-timings" className={linkClass}>Park Timing</Link></li>
+                <li><Link to="/park-timings" className={linkClass}>Park Timings</Link></li>
                 <li><Link to="/getting-here" className={linkClass}>Getting Here</Link></li>
                 <li><Link to="/faqs" className={linkClass}>FAQS</Link></li>
                 <li><Link to="/safety" className={linkClass}>Safety Guidelines</Link></li>
-                <li><Link to="/cancellation-policy" className={linkClass}>Cancellation Policy</Link></li>
+                <li><Link to="/cancellation-policy" target="_blank" rel="noopener noreferrer" className={linkClass}>Cancellation Policy</Link></li>
               </ul>
             </div>
 
@@ -199,8 +199,8 @@ export default function Footer() {
                 <li><Link to="/about-us" className={linkClass}>About Snowcity</Link></li>
                 <li><Link to="/contact" className={linkClass}>Contact Us</Link></li>
                 <li><Link to="/blog" className={linkClass}>Blog</Link></li>
-                <li><Link to="/privacy-policy" className={linkClass}>Privacy Policy</Link></li>
-                <li><Link to="/terms-and-conditions" className={linkClass}>Terms & Conditions</Link></li>
+                <li><Link to="/privacy-policy" target="_blank" rel="noopener noreferrer" className={linkClass}>Privacy Policy</Link></li>
+                <li><Link to="/terms-and-conditions" target="_blank" rel="noopener noreferrer" className={linkClass}>Terms & Conditions</Link></li>
               </ul>
             </div>
           </div>

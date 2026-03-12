@@ -43,6 +43,7 @@ const A = {
   comboDatePrices: (id) => `/api/parkpanel/combo-date-prices/${encodeSeg(id)}`,
   comboDatePricesBulk: (id) => `/api/parkpanel/combo-date-prices/${encodeSeg(id)}/bulk`,
   comboDatePricesByDate: (id, date) => `/api/parkpanel/combo-date-prices/${encodeSeg(id)}/${encodeSeg(date)}`,
+  comboChildDatePrices: (id, date) => `/api/parkpanel/combo-date-prices/${encodeSeg(id)}/children/${encodeSeg(date)}`,
   combos: () => '/api/parkpanel/combos',
   comboById: (id) => `/api/parkpanel/combos/${encodeSeg(id)}`,
   comboSlots: () => '/api/parkpanel/combo-slots',

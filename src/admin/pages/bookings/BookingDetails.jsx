@@ -324,11 +324,11 @@ export default function BookingDetails() {
             <InfoRow icon={IndianRupee} label="Total" value={money(payment.total)} />
             <InfoRow icon={IndianRupee} label="Transaction Amount" value={money(payment.paid)} />
             <InfoRow icon={Clock} label="Transaction Date & Time" value={fmtPayTime(payment.datetime)} />
-            
+
             <InfoRow icon={CreditCard} label="Gateway" value={payment.mode || '—'} />
             <InfoRow icon={CreditCard} label="Payment Mode" value={payment.method || '—'} />
             <InfoRow icon={Ticket} label="Booking Ref" value={b.order_ref || '—'} />
-            
+
             <InfoRow icon={Ticket} label="Transaction Id" value={payment.ref || '—'} />
             <InfoRow icon={Ticket} label="Merchent Ref No" value={payment.txn_no || '—'} />
           </div>
@@ -597,8 +597,20 @@ export default function BookingDetails() {
                         <div className="sub">{user.phone || '—'}</div>
                       </div>
                       <div className="ticket-meta-item">
-                        <label>Date</label>
-                        <div className="val">{fmtDate(bookingDate)}</div>
+                        <label>Items</label>
+                        <div className="flex flex-col gap-1 mt-1">
+                          {(Array.isArray(b.items) ? b.items.filter(it => !it.parent_booking_id) : []).map((item, idx) => (
+                            <div key={idx} className="flex items-center gap-1.5">
+                              <div className="val">{item.item_title}</div>
+                              {item.quantity > 1 && (
+                                <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-blue-50 text-blue-600 text-[10px] font-bold dark:bg-blue-900/30 dark:text-blue-400">
+                                  x{item.quantity}
+                                </span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                        <div className="sub mt-1">{fmtDate(bookingDate)}</div>
                       </div>
                     </div>
                   </div>

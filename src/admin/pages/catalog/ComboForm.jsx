@@ -156,6 +156,20 @@ export default function ComboForm() {
     }
   };
 
+  const handleDelete = async () => {
+    if (!window.confirm(`Delete combo "${state.form.name}"? This cannot be undone.`)) return;
+    setSaving(true);
+    const loadingToast = toast.loading('Deleting combo...');
+    try {
+      await adminApi.delete(A.comboById(id));
+      toast.success('Combo deleted successfully', { id: loadingToast });
+      navigate('/parkpanel/catalog/combos');
+    } catch (err) {
+      toast.error(err.message || 'Delete failed', { id: loadingToast });
+      setSaving(false);
+    }
+  };
+
   if (state.status === 'loading') return <div>Loading…</div>;
   if (state.status === 'failed') return <div className="text-red-600">{state.error?.message || 'Failed to load'}</div>;
 
@@ -604,18 +618,26 @@ export default function ComboForm() {
           </div>
         </div>
 
-        <div className="mt-8 flex gap-2 pt-6 border-t border-gray-200 dark:border-neutral-800">
-          <button type="submit" disabled={saving} className="rounded-md bg-gray-900 text-white px-4 py-2 text-sm disabled:opacity-50">{saving ? 'Saving...' : 'Save'}</button>
+        <div className="mt-8 flex items-center justify-between pt-6 border-t border-gray-200 dark:border-neutral-800">
+          <div className="flex gap-2">
+            <button type="submit" disabled={saving} className="rounded-md bg-gray-900 dark:bg-blue-600 text-white px-4 py-2 text-sm disabled:opacity-50">{saving ? 'Saving...' : 'Save'}</button>
+            {isEdit && (
+              <button
+                type="button"
+                className="rounded-md bg-gray-100 dark:bg-neutral-800 text-gray-700 dark:text-neutral-300 px-4 py-2 text-sm hover:bg-gray-200"
+                onClick={() => navigate(`/parkpanel/catalog/combo-slots?combo_id=${id}`)}
+              >
+                View Slots
+              </button>
+            )}
+            <button type="button" className="rounded-md border border-gray-300 dark:border-neutral-700 px-4 py-2 text-sm text-gray-700 dark:text-neutral-300" onClick={() => navigate(-1)}>Cancel</button>
+          </div>
+
           {isEdit && (
-            <button
-              type="button"
-              className="rounded-md bg-blue-600 text-white px-4 py-2 text-sm hover:bg-blue-700"
-              onClick={() => navigate(`/parkpanel/catalog/combo-slots?combo_id=${id}`)}
-            >
-              View Slots
+            <button type="button" onClick={handleDelete} disabled={saving} className="rounded-md border border-red-200 bg-red-50 text-red-600 px-4 py-2 text-sm hover:bg-red-100 transition-colors disabled:opacity-50">
+              Delete Combo
             </button>
           )}
-          <button type="button" className="rounded-md border px-4 py-2 text-sm" onClick={() => navigate(-1)}>Cancel</button>
         </div>
 
         {state.error ? <div className="mt-2 text-sm text-red-600">{state.error?.message || 'Error'}</div> : null}

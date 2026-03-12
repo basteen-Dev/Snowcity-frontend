@@ -188,10 +188,10 @@ export default function TransactionReport() {
                     <div className="tbl-toolbar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                         <div className="tbl-info">
                             Showing <strong>{Math.min(shown, rows.length)}</strong> of <strong>{rows.length}</strong> records &nbsp;·&nbsp;
-                            <span className="vd-legend"><span className="vd-dot" /> <span style={{ color: 'var(--visit-col)', fontWeight: 600 }}>Green date</span> = Visit Date · Grey = Booking Date</span>
+                            <span className="vd-legend"><span className="vd-dot" /> <span style={{ color: 'var(--visit-col)', fontWeight: 500 }}>Green date</span> = Visit Date · Grey = Booking Date</span>
                         </div>
                         <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search Booking ID/Desc…"
-                            style={{ padding: '6px 14px', borderRadius: 8, border: '1px solid var(--border)', fontFamily: 'inherit', fontSize: 13, outline: 'none', width: '240px', color: 'var(--text)' }} />
+                            style={{ padding: '6px 14px', borderRadius: 8, border: '1px solid var(--border)', fontSize: 13, outline: 'none', width: '240px', color: 'var(--text)' }} />
                     </div>
                     <div className="tbl-scroll">
                         <table>

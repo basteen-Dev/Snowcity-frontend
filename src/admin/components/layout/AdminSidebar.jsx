@@ -143,12 +143,12 @@ export default function AdminSidebar({ collapsed, mobileOpen, onCloseMobile, onT
   if (canListAdmins) {
     const items = [
       { to: '/parkpanel/users', label: 'Customers', icon: Users },
-      { to: '/parkpanel/roles', label: 'Admin Roles', icon: ShieldCheck },
-      { to: '/parkpanel/admins', label: 'Admin Team', icon: UserCog },
+      { to: '/parkpanel/roles', label: 'User Roles', icon: ShieldCheck },
+      { to: '/parkpanel/admins', label: 'Users', icon: UserCog },
     ];
     if (canManageAdmins) {
       items.push(
-        { to: '/parkpanel/admins/new', label: 'Create Admin', icon: UserCog },
+        { to: '/parkpanel/admins/new', label: 'Create User', icon: UserCog },
         { to: '/parkpanel/admins/access', label: 'Grant Access', icon: KeyRound }
       );
     }

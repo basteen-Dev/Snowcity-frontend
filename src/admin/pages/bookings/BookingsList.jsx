@@ -627,15 +627,38 @@ export default function BookingsList() {
             )
           },
           {
-            key: 'item_title', title: 'Item', render: (r) => (
-              <div className="flex flex-col min-w-[120px]">
-                <span className="font-medium text-gray-600 truncate max-w-[200px]">{r.item_title || '—'}</span>
-                <span className="text-xs text-gray-400">
-                  {r.item_count > 1 ? `${r.item_count} items` : (r.items?.[0]?.item_type === 'Combo' ? 'Combo' : 'Attraction')}
-                  {r.quantity && r.quantity > 1 ? ` × ${r.quantity}` : ''}
-                </span>
-              </div>
-            )
+            key: 'item_title', title: 'Item', render: (r) => {
+              // Group items by title to avoid redundant entries in the same order
+              const items = Array.isArray(r.items) ? r.items : [];
+              const groupedItems = items.reduce((acc, it) => {
+                const title = it.item_title || 'Ticket';
+                if (!acc[title]) acc[title] = 0;
+                acc[title] += (it.quantity || 1);
+                return acc;
+              }, {});
+
+              const groupEntries = Object.entries(groupedItems);
+
+              return (
+                <div className="flex flex-col min-w-[150px] gap-1">
+                  {groupEntries.map(([title, qty], idx) => (
+                    <div key={idx} className="flex items-center gap-1.5">
+                      <span className="font-medium text-gray-700 dark:text-neutral-200 truncate max-w-[180px]" title={title}>
+                        {title}
+                      </span>
+                      {qty > 1 && (
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-blue-50 text-blue-600 text-[10px] font-bold dark:bg-blue-900/30 dark:text-blue-400">
+                          x{qty}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                  {groupEntries.length === 0 && (
+                    <span className="text-gray-400 italic text-xs">No items</span>
+                  )}
+                </div>
+              );
+            }
           },
           { key: 'final_amount', title: 'Amount', tdClass: 'whitespace-nowrap font-bold', render: (r) => `₹${Number(r?.final_amount ?? r?.total_amount ?? 0).toLocaleString()}` },
           {
@@ -787,9 +810,26 @@ export default function BookingsList() {
                         <div className="sub">{selectedTicket.user_phone || '—'}</div>
                       </div>
                       <div className="ticket-meta-item">
-                        <label>Item</label>
-                        <div className="val">{selectedTicket.item_title || '—'}</div>
-                        <div className="sub">{selectedTicket.booking_date ? dayjs(selectedTicket.booking_date).format('DD MMM, YYYY') : '—'}</div>
+                        <label>Items</label>
+                        <div className="flex flex-col gap-1 mt-1">
+                          {(Array.isArray(selectedTicket.items) ? selectedTicket.items : []).reduce((acc, it) => {
+                            const title = it.item_title || 'Ticket';
+                            const found = acc.find(x => x.title === title);
+                            if (found) found.qty += (it.quantity || 1);
+                            else acc.push({ title, qty: (it.quantity || 1) });
+                            return acc;
+                          }, []).map((item, idx) => (
+                            <div key={idx} className="flex items-center gap-1.5">
+                              <div className="val">{item.title}</div>
+                              {item.qty > 1 && (
+                                <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-blue-50 text-blue-600 text-[10px] font-bold dark:bg-blue-900/30 dark:text-blue-400">
+                                  x{item.qty}
+                                </span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                        <div className="sub mt-1">{selectedTicket.booking_date ? dayjs(selectedTicket.booking_date).format('DD MMM, YYYY') : '—'}</div>
                       </div>
                     </div>
                   </div>

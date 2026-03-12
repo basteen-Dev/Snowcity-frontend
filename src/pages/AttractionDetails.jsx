@@ -1153,41 +1153,46 @@ export default function AttractionDetails() {
                     <ErrorState message={slots.error || 'Failed to load slots'} />
                   </div>
                 ) : (
-                  <select
-                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-900 outline-none"
-                    value={slotKey}
-                    onChange={(e) => setSlotKey(e.target.value)}
-                    disabled={!slots.items.length}
-                  >
-                    {!slots.items.length ? (
-                      <option>No slots</option>
-                    ) : (
-                      <>
-                        {!slotKey && <option value="">Select slot</option>}
-                        {slots.items
-                          .filter((s) => isSlotAvailable(s, date))
-                          .map((s, i) => {
-                            const sid = getSlotKey(s, i);
-                            const disabled =
-                              s?.available === 0 || s?.capacity === 0;
-                            const pricingBase =
-                              getSlotUnitPrice(s, fallbackUnitPrice) ||
-                              fallbackUnitPrice ||
-                              0;
+                  <div className="relative">
+                    <select
+                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-900 outline-none appearance-none pr-10"
+                      value={slotKey}
+                      onChange={(e) => setSlotKey(e.target.value)}
+                      disabled={!slots.items.length}
+                    >
+                      {!slots.items.length ? (
+                        <option>No slots</option>
+                      ) : (
+                        <>
+                          {!slotKey && <option value="">Select slot</option>}
+                          {slots.items
+                            .filter((s) => isSlotAvailable(s, date))
+                            .map((s, i) => {
+                              const sid = getSlotKey(s, i);
+                              const disabled =
+                                s?.available === 0 || s?.capacity === 0;
+                              const pricingBase =
+                                getSlotUnitPrice(s, fallbackUnitPrice) ||
+                                fallbackUnitPrice ||
+                                0;
 
-                            return (
-                              <option key={sid} value={sid} disabled={disabled}>
-                                {getSlotLabel(s)}
-                                {pricingBase
-                                  ? ` • ${formatCurrency(pricingBase)}`
-                                  : ''}
-                                {disabled ? ' — Unavailable' : ''}
-                              </option>
-                            );
-                          })}
-                      </>
-                    )}
-                  </select>
+                              return (
+                                <option key={sid} value={sid} disabled={disabled}>
+                                  {getSlotLabel(s)}
+                                  {pricingBase
+                                    ? ` • ${formatCurrency(pricingBase)}`
+                                    : ''}
+                                  {disabled ? ' — Unavailable' : ''}
+                                </option>
+                              );
+                            })}
+                        </>
+                      )}
+                    </select>
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                      <ChevronDown size={18} />
+                    </div>
+                  </div>
                 )}
               </div>
             )}
@@ -1543,41 +1548,46 @@ export default function AttractionDetails() {
                           message={slots.error || 'Failed to load slots'}
                         />
                       ) : (
-                        <select
-                          className="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-sky-500 outline-none text-base font-medium appearance-none cursor-pointer"
-                          value={slotKey}
-                          onChange={(e) => setSlotKey(e.target.value)}
-                          disabled={!slots.items.length}
-                        >
-                          <option value="">Select the time slot</option>
-                          {!slots.items.length ? (
-                            <option disabled>No slots available</option>
-                          ) : (
-                            <>
-                              {slots.items
-                                .filter((s) => isSlotAvailable(s, date))
-                                .map((s, i) => {
-                                  const sid = getSlotKey(s, i);
-                                  const disabled =
-                                    s?.available === 0 || s?.capacity === 0;
-                                  const pricingBase =
-                                    getSlotUnitPrice(s, fallbackUnitPrice) ||
-                                    fallbackUnitPrice ||
-                                    0;
+                        <div className="relative">
+                          <select
+                            className="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-sky-500 outline-none text-base font-medium appearance-none cursor-pointer pr-12"
+                            value={slotKey}
+                            onChange={(e) => setSlotKey(e.target.value)}
+                            disabled={!slots.items.length}
+                          >
+                            <option value="">Select the time slot</option>
+                            {!slots.items.length ? (
+                              <option disabled>No slots available</option>
+                            ) : (
+                              <>
+                                {slots.items
+                                  .filter((s) => isSlotAvailable(s, date))
+                                  .map((s, i) => {
+                                    const sid = getSlotKey(s, i);
+                                    const disabled =
+                                      s?.available === 0 || s?.capacity === 0;
+                                    const pricingBase =
+                                      getSlotUnitPrice(s, fallbackUnitPrice) ||
+                                      fallbackUnitPrice ||
+                                      0;
 
-                                  return (
-                                    <option key={sid} value={sid} disabled={disabled}>
-                                      {getSlotLabel(s)}
-                                      {pricingBase
-                                        ? ` • ${formatCurrency(pricingBase)}`
-                                        : ''}
-                                      {disabled ? ' — Unavailable' : ''}
-                                    </option>
-                                  );
-                                })}
-                            </>
-                          )}
-                        </select>
+                                    return (
+                                      <option key={sid} value={sid} disabled={disabled}>
+                                        {getSlotLabel(s)}
+                                        {pricingBase
+                                          ? ` • ${formatCurrency(pricingBase)}`
+                                          : ''}
+                                        {disabled ? ' — Unavailable' : ''}
+                                      </option>
+                                    );
+                                  })}
+                              </>
+                            )}
+                          </select>
+                          <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                            <ChevronDown size={20} />
+                          </div>
+                        </div>
                       )}
                     </div>
                   )}

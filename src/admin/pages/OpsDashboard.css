@@ -1,6 +1,6 @@
 /* c:/Users/dfuser/Desktop/New/snowcity-main/src/admin/pages/OpsDashboard.css */
 
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
 
 .ops-wrapper {
   --bg: #eef0f4;
@@ -27,7 +27,6 @@
   --sh: 0 1px 3px rgba(0, 0, 0, 0.07), 0 0 0 1px rgba(0, 0, 0, 0.04);
   --sh2: 0 4px 18px rgba(0, 0, 0, 0.10);
 
-  font-family: 'IBM Plex Sans', sans-serif;
   background: var(--bg);
   color: var(--text);
   font-size: 14px;
@@ -75,9 +74,9 @@
 }
 
 .ops-wrapper .b-name {
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: -.3px;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -.5px;
 }
 
 .ops-wrapper .b-sub {
@@ -140,7 +139,7 @@
 
 .ops-wrapper .fl {
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: .9px;
   color: var(--muted);
@@ -196,8 +195,6 @@
 }
 
 .ops-wrapper .active-date {
-  margin-left: auto;
-  font-family: 'IBM Plex Mono', monospace;
   font-size: 12px;
   font-weight: 600;
   color: var(--slate);
@@ -232,7 +229,7 @@
 .ops-wrapper .sec-hd-pill {
   padding: 10px 18px;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: .7px;
   display: flex;
@@ -255,7 +252,6 @@
 
 .ops-wrapper .sec-hd-date {
   padding: 10px 16px;
-  font-family: 'IBM Plex Mono', monospace;
   font-size: 11px;
   font-weight: 600;
   background: var(--white);
@@ -356,7 +352,6 @@
 }
 
 .ops-wrapper .sc-val {
-  font-family: 'IBM Plex Mono', monospace;
   font-size: 30px;
   font-weight: 600;
   line-height: 1;
@@ -537,7 +532,6 @@
 }
 
 .ops-wrapper .bcv {
-  font-family: 'IBM Plex Mono', monospace;
   font-size: 11px;
   font-weight: 600;
 }
@@ -586,7 +580,6 @@
 
 .ops-wrapper .tbl td:not(:first-child) {
   text-align: right;
-  font-family: 'IBM Plex Mono', monospace;
 }
 
 .ops-wrapper .tbl tr:last-child td {
@@ -702,7 +695,6 @@
 }
 
 .ops-wrapper .ri-amt {
-  font-family: 'IBM Plex Mono', monospace;
   font-size: 13px;
   font-weight: 600;
   min-width: 75px;
@@ -713,7 +705,7 @@
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: .9px;
-  font-weight: 700;
+  font-weight: 600;
   padding: 10px 0 6px;
   color: var(--muted);
   border-bottom: 1px solid var(--border);

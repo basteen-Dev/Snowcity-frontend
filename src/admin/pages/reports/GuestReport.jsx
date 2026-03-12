@@ -137,7 +137,7 @@ export default function GuestReport() {
                         </div>
                     </div>
                     <div className="fs-sep" />
-                    <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--slate)', fontFamily: '"IBM Plex Mono", monospace' }}>Visit Date: {activeDateLabel}</div>
+                    <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--slate)' }}>Visit Date: {activeDateLabel}</div>
                     <div className="export-btns">
                         <button className="exp-btn exp-excel" onClick={exportExcel}>⬇ Excel</button>
                         <button className="exp-btn exp-csv" onClick={exportCSV}>⬇ CSV</button>

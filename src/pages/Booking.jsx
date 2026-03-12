@@ -1054,14 +1054,16 @@ export default function Booking() {
     if (sel.itemType === 'combo' && selectedCombo) {
       const fallbackPrice = toAmount(getComboDisplayPrice(selectedCombo));
       const fallbackBasePrice = toAmount(getBasePrice(selectedCombo) || fallbackPrice);
-      const slotPricing = selectedSlot?.pricing || {};
-      const slotOffer = selectedSlot?.offer || null;
+      
+      const referenceSlot = selectedSlot || (slots.items && slots.items.length > 0 ? slots.items[0] : null);
+      const slotPricing = referenceSlot?.pricing || {};
+      const slotOffer = referenceSlot?.offer || null;
 
-      const preOfferBase = selectedSlot
-        ? getSlotBasePrice(selectedSlot, fallbackBasePrice)
+      const preOfferBase = referenceSlot
+        ? getSlotBasePrice(referenceSlot, fallbackBasePrice)
         : fallbackBasePrice;
-      const preOfferUnit = selectedSlot
-        ? getSlotUnitPrice(selectedSlot, fallbackPrice)
+      const preOfferUnit = referenceSlot
+        ? getSlotUnitPrice(referenceSlot, fallbackPrice)
         : fallbackPrice;
 
       let originalPrice = toAmount(slotPricing.base_price ?? preOfferBase);
@@ -1270,7 +1272,7 @@ export default function Booking() {
     'https://images.pexels.com/photos/338515/pexels-photo-338515.jpeg?auto=compress&cs=tinysrgb&w=1200';
 
   const currentItemAddons = useMemo(() => {
-      const val = cartAddons.get(activeItemKey);
+    const val = cartAddons.get(activeItemKey);
     // Ensure it's always a Map (Addons.jsx calls .get() on it)
     if (val instanceof Map) return val;
     return new Map();
@@ -1358,61 +1360,27 @@ export default function Booking() {
       return;
     }
 
-    // 🔹 GTM ADD_TO_CART EVENT (Direct Buy)
-    window.dataLayer = window.dataLayer || [];
-    window.dataLayer.push({
-      event: 'add_to_cart',
-      attraction_name: selectedMeta.title,
-      ticket_type: sel.itemType === 'combo' ? 'Combo' : 'Attraction',
-      ticket_quantity: qty,
-      total_pax: qty,
-      ticket_price: selectedMeta.price || 0,
-      currency: 'INR'
-    });
+    // Always add to cart even if same item exists (as per user request: "set add to cart ... some of the want book different slots same date same attraction")
+    addSelectionToCart(false); // allow GTM push
 
-    // Check if already in cart (avoid duplicates)
-    const item_type = sel.itemType === 'combo' ? 'Combo' : 'Attraction';
-    const fingerprint = [
-      item_type,
-      sel.itemType === 'combo' ? sel.comboId : sel.attractionId || 'na',
-      sel.itemType === 'attraction' ? sel.slotKey || 'na' : sel.slotKey || 'na',
-      sel.date || 'na'
-    ].join(':');
-
-    const alreadyInCart = cartItems.some((item) => item.fingerprint === fingerprint);
-
-    if (!alreadyInCart) {
-      addSelectionToCart(true); // skip redundant GTM push
-    }
-
-    // Navigate directly to add-ons/checkout without repeating
+    // Navigate directly to add-ons/checkout
     dispatch(setStep(2));
-  }, [selectionReady, sel, cartItems, addSelectionToCart, dispatch, hasToken]);
+  }, [selectionReady, sel, addSelectionToCart, dispatch]);
 
   const handleNext = async () => {
     if (step === 1) {
+      // If there's a pending selection that's ready, add it first
+      if (selectionReady) {
+        addSelectionToCart(false);
+        dispatch(setStep(2));
+        return;
+      }
+
       if (hasCartItems) {
         dispatch(setStep(2));
       } else {
-        if (!selectionReady) {
-          alert('Please select date, time slot and quantity.');
-          return;
-        }
-
-        // 🔹 GTM ADD_TO_CART EVENT (Handle Next as Book Now)
-        window.dataLayer = window.dataLayer || [];
-        window.dataLayer.push({
-          event: 'add_to_cart',
-          attraction_name: selectedMeta.title,
-          ticket_type: sel.itemType === 'combo' ? 'Combo' : 'Attraction',
-          ticket_quantity: qty,
-          total_pax: qty,
-          ticket_price: selectedMeta.price || 0,
-          currency: 'INR'
-        });
-
-        const added = addSelectionToCart(true); // skip redundant GTM push
-        if (added) dispatch(setStep(2));
+        alert('Please select date, time slot and quantity.');
+        return;
       }
     } else if (step === 2) {
       if (hasToken) {
@@ -2064,6 +2032,7 @@ export default function Booking() {
                   step={step}
                   paymentLoading={paymentLoading}
                   cartAddons={cartAddons}
+                  setEditingKey={setEditingKey}
                 />
               )}
 
@@ -2238,7 +2207,11 @@ export default function Booking() {
               {/* Details drawer: mobile bottom-sheet & desktop right-side drawer */}
               {drawerOpen && selectedMeta.title && (
                 <div className="fixed inset-0 z-[160] flex justify-end items-end md:items-stretch bg-black/40 backdrop-blur-[2px] md:bg-black/20">
-                  <div className="flex-1 hidden md:block" onClick={() => setDrawerOpen(false)} />
+                  <div className="flex-1 hidden md:block" onClick={() => {
+                    setEditingKey(null);
+                    setSel(createDefaultSelection());
+                    setDrawerOpen(false);
+                  }} />
                   <div className="w-full md:w-1/3 bg-white rounded-2xl  md:rounded-l-3xl shadow-2xl flex flex-col transform translate-y-0 transition-all h-[66vh] md:h-screen max-h-[66vh] md:max-h-screen md:mt-0">
                     <div className="md:hidden flex justify-center pt-2 pb-1">
                       <div className="h-1.5 w-12 rounded-xl bg-gray-300" />
@@ -2249,7 +2222,11 @@ export default function Booking() {
                       </h2>
                       <button
                         type="button"
-                        onClick={() => setDrawerOpen(false)}
+                        onClick={() => {
+                          setEditingKey(null);
+                          setSel(createDefaultSelection());
+                          setDrawerOpen(false);
+                        }}
                         className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 flex-shrink-0"
                       >
                         <X size={20} />

@@ -221,7 +221,7 @@ export default function Dashboard() {
                   <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--green)', textTransform: 'uppercase', letterSpacing: '.5px' }}>Grand Total</div>
                   <div style={{ fontSize: '11px', color: 'var(--sub)', marginTop: '2px' }}>Ticketing {moneyFmt(revenue.ticketing)} + Add-ons {moneyFmt(revenue.addons)}</div>
                 </div>
-                <div style={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: '26px', fontWeight: '600', color: 'var(--green)' }}>{moneyFmt(totalRev)}</div>
+                <div style={{ fontSize: '26px', fontWeight: '700', color: 'var(--green)' }}>{moneyFmt(totalRev)}</div>
               </div>
             </div>
           </div>

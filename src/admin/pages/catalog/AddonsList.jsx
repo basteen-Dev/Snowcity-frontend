@@ -46,17 +46,6 @@ export default function AddonsList() {
     }
   };
 
-  const remove = async (row, e) => {
-    e?.stopPropagation?.();
-    if (!window.confirm(`Delete addon "${row.title}"? This cannot be undone.`)) return;
-    try {
-      const id = row.addon_id || row.id;
-      await adminApi.delete(`${A.addons()}/${id}`);
-      setState((s) => ({ ...s, items: s.items.filter((it) => (it.addon_id || it.id) !== id) }));
-    } catch (err) {
-      alert(err?.message || 'Delete failed');
-    }
-  };
 
   const meta = state.meta || {};
   const canPrev = state.page > 1;
@@ -96,11 +85,17 @@ export default function AddonsList() {
             title: 'Actions',
             render: (row) => (
               <div className="flex flex-wrap gap-2">
-                <button className={`rounded-md px-2 py-1 text-xs ${row.active ? 'border text-red-600' : 'bg-blue-600 text-white'}`} onClick={(e) => toggleActive(row, e)}>
-                  {row.active ? 'Deactivate' : 'Activate'}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/parkpanel/catalog/addons/${row.addon_id || row.id}`);
+                  }}
+                  className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium"
+                >
+                  Edit
                 </button>
-                <button className="rounded-md border px-2 py-1 text-xs text-red-600" onClick={(e) => remove(row, e)}>
-                  Delete
+                <button className={`rounded-md px-2 py-1 text-xs ${row.active ? 'border text-orange-600' : 'bg-emerald-600 text-white'}`} onClick={(e) => toggleActive(row, e)}>
+                  {row.active ? 'Deactivate' : 'Activate'}
                 </button>
               </div>
             )

@@ -40,15 +40,18 @@ export default function AttractionsList() {
 
   React.useEffect(() => { load(1); /* eslint-disable-line */ }, []);
 
-  const remove = async (row, e) => {
+  const toggleActive = async (row, e) => {
     e?.stopPropagation?.();
-    if (!window.confirm(`Delete attraction "${row.title}"? This cannot be undone.`)) return;
     try {
       const id = row.attraction_id || row.id;
-      await adminApi.delete(`${A.attractions()}/${id}`);
-      setState((s) => ({ ...s, items: s.items.filter((it) => (it.attraction_id || it.id) !== id) }));
+      await adminApi.put(`${A.attractions()}/${id}`, { active: !row.active });
+      setState((s) => ({
+        ...s,
+        items: s.items.map((it) => ((it.attraction_id || it.id) === id ? { ...it, active: !row.active } : it))
+      }));
+      toast.success(`Attraction ${!row.active ? 'activated' : 'deactivated'}`);
     } catch (err) {
-      alert(err?.message || 'Delete failed');
+      toast.error(err?.message || 'Failed to update status');
     }
   };
 
@@ -135,7 +138,15 @@ export default function AttractionsList() {
                 key: 'active',
                 title: 'Status',
                 render: (row) => (
-                  <StatusBadge status={row?.active ? 'active' : 'inactive'} />
+                  <div className="flex items-center gap-2">
+                    <StatusBadge status={row?.active ? 'active' : 'inactive'} />
+                    <button
+                      onClick={(e) => toggleActive(row, e)}
+                      className={`text-xs font-medium px-2 py-1 rounded-md transition-colors ${row.active ? 'text-orange-600 hover:bg-orange-50' : 'text-emerald-600 hover:bg-emerald-50'}`}
+                    >
+                      {row.active ? 'Deactivate' : 'Activate'}
+                    </button>
+                  </div>
                 )
               },
               {
@@ -155,13 +166,16 @@ export default function AttractionsList() {
               },
               {
                 key: '__actions',
-                title: '',
+                title: 'Actions',
                 render: (row) => (
                   <button
-                    onClick={(e) => remove(row, e)}
-                    className="text-red-500 hover:text-red-700 text-sm font-medium"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/parkpanel/catalog/attractions/${row.attraction_id || row.id}`);
+                    }}
+                    className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium"
                   >
-                    Delete
+                    Edit
                   </button>
                 )
               }

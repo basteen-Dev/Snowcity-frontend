@@ -42,9 +42,9 @@ const BASE_RULE = {
   specific_days: [],
   is_holiday: false,
   specific_date: '',
-  specific_time: '',
   specific_dates: [],
   next_specific_date: '',
+  combo_child_adjustments: {},
 };
 
 const RULE_TEMPLATES = [
@@ -229,6 +229,7 @@ export default function OfferForm() {
                     : [],
                   specific_time: r.specific_time || '',
                   next_specific_date: '',
+                  combo_child_adjustments: r.combo_child_adjustments || {},
                 })
               )
               : [],
@@ -253,7 +254,11 @@ export default function OfferForm() {
           : combos.some(c => c.id === Number(nextRules[idx].target_id));
         if (!isValidTarget) {
           nextRules[idx].target_id = '';
+          nextRules[idx].combo_child_adjustments = {};
         }
+      }
+      if (partial.target_id) {
+         nextRules[idx].combo_child_adjustments = {};
       }
       return { ...s, form: { ...s.form, rules: nextRules } };
     });
@@ -371,6 +376,7 @@ export default function OfferForm() {
           rule_discount_type: normalizeString(rule.rule_discount_type),
           slot_type: normalizeString(rule.slot_type),
           day_type: normalizeString(rule.day_type),
+          combo_child_adjustments: rule.combo_child_adjustments && Object.keys(rule.combo_child_adjustments).length > 0 ? rule.combo_child_adjustments : null,
           specific_dates: undefined,
           next_specific_date: undefined,
         })),
@@ -588,7 +594,42 @@ export default function OfferForm() {
                     <input type="time" className="w-full rounded-md border px-3 py-2" value={rule.time_to || ''} onChange={(e) => updateRule(idx, { time_to: e.target.value })} />
                   </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {f.rule_type === 'dynamic_pricing' && rule.target_type === 'combo' && rule.target_id ? (
+                  <div className="border-t pt-3 mt-3">
+                    <label className="block text-xs font-semibold text-gray-700 mb-2">Child Attraction Price Increments (Dynamic Pricing)</label>
+                    <div className="text-xs text-gray-500 mb-3">
+                      Instead of a flat discount, specify a price increment for individual attractions within this combo. 
+                      Use negative values to decrease the price (e.g. -100) or positive to increase (+50).
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {combos.find(c => c.id === Number(rule.target_id))?.attraction_ids?.map((attrId, i) => {
+                        const attr = attractions.find(a => a.id === Number(attrId));
+                        return (
+                          <div key={attrId} className="flex flex-col">
+                            <label className="text-xs text-gray-600 mb-1">{attr?.title || `Attraction #${attrId}`}</label>
+                            <input
+                              type="number"
+                              className="w-full rounded-md border px-3 py-2"
+                              placeholder="0"
+                              value={rule.combo_child_adjustments?.[attrId] ?? ''}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                const currentAdjustments = { ...(rule.combo_child_adjustments || {}) };
+                                if (val === '') {
+                                  delete currentAdjustments[attrId];
+                                } else {
+                                  currentAdjustments[attrId] = Number(val);
+                                }
+                                updateRule(idx, { combo_child_adjustments: currentAdjustments });
+                              }}
+                            />
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                ) : null}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
                   <div>
                     <label className="block text-xs text-gray-500 mb-1">Slot Type</label>
                     <select className="w-full rounded-md border px-3 py-2" value={rule.slot_type || ''} onChange={(e) => updateRule(idx, { slot_type: e.target.value })}>

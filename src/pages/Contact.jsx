@@ -123,7 +123,7 @@ export default function Contact() {
           </div>
           <div>
             <h3 className="text-xs font-bold uppercase tracking-wider text-[#0099FF] mb-2">Email</h3>
-            <a href="mailto:[EMAIL_ADDRESS]" className="text-sm text-gray-700 font-medium hover:text-[#0099FF] transition-colors">info@snowcityblr.com</a>
+            <a href="mailto:info@snowcityblr.com" className="text-sm text-gray-700 font-medium hover:text-[#0099FF] transition-colors">info@snowcityblr.com</a>
           </div>
         </div>
       </div>

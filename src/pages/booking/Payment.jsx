@@ -361,7 +361,7 @@ export default function Payment({
 
                 {/* Terms and Conditions Disclaimer */}
                 <p className="text-[11px] text-gray-500 text-center mb-3">
-                    By continuing, you agree to the <Link to="/terms-and-conditions" className="text-sky-600 hover:underline">General Terms</Link>, <Link to="/privacy-policy" className="text-sky-600 hover:underline">Privacy Policy</Link>, and the <Link to="/cancellation-policy" className="text-sky-600 hover:underline">Cancellation Policy</Link>.
+                    By continuing, you agree to the <Link to="/terms-and-conditions" target="_blank" rel="noopener noreferrer" className="text-sky-600 hover:underline">General Terms</Link>, <Link to="/privacy-policy" target="_blank" rel="noopener noreferrer" className="text-sky-600 hover:underline">Privacy Policy</Link>, and the <Link to="/cancellation-policy" target="_blank" rel="noopener noreferrer" className="text-sky-600 hover:underline">Cancellation Policy</Link>.
                 </p>
 
                 {/* Pay Button */}

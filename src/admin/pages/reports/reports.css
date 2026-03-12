@@ -1,5 +1,5 @@
 /* ─── Reports shared styles (matches transactions-report.html + guest-report.html design) ─── */
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
 
 .rpt-wrapper {
     --bg: #eef0f4;
@@ -63,9 +63,9 @@
 }
 
 .rpt-b-name {
-    font-size: 15px;
-    font-weight: 600;
-    letter-spacing: -.3px;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -.5px;
 }
 
 .rpt-b-sub {
@@ -125,7 +125,7 @@
 
 .rpt-wrapper .fs-label {
     font-size: 10px;
-    font-weight: 700;
+    font-weight: 600;
     text-transform: uppercase;
     letter-spacing: .8px;
     color: var(--muted);
@@ -330,7 +330,6 @@
 }
 
 .rpt-wrapper .tot-val {
-    font-family: 'IBM Plex Mono', monospace;
     font-size: 22px;
     font-weight: 600;
     line-height: 1;
@@ -420,7 +419,7 @@
     text-transform: uppercase;
     letter-spacing: .7px;
     color: var(--muted);
-    font-weight: 700;
+    font-weight: 600;
     padding: 10px 14px;
     text-align: left;
     border-bottom: 2px solid var(--border);
@@ -502,34 +501,29 @@
     background: var(--slate);
     color: #fff;
     font-weight: 700;
-    font-family: 'IBM Plex Mono', monospace;
     font-size: 13px;
     border-bottom: none;
 }
 
 /* Cell styles */
 .rpt-wrapper .bk-id {
-    font-family: 'IBM Plex Mono', monospace;
     font-size: 12px;
     color: var(--blue);
     font-weight: 500;
 }
 
 .rpt-wrapper .visit-date {
-    font-family: 'IBM Plex Mono', monospace;
     font-size: 12px;
     color: var(--visit-col);
     font-weight: 600;
 }
 
 .rpt-wrapper .bk-date {
-    font-family: 'IBM Plex Mono', monospace;
     font-size: 12px;
     color: var(--sub);
 }
 
 .rpt-wrapper .date-cell {
-    font-family: 'IBM Plex Mono', monospace;
     font-size: 13px;
     font-weight: 600;
     color: var(--slate);
@@ -577,13 +571,11 @@
 
 .rpt-wrapper .disc {
     color: var(--red);
-    font-family: 'IBM Plex Mono', monospace;
     font-size: 12px;
 }
 
 .rpt-wrapper .nett {
     color: var(--green);
-    font-family: 'IBM Plex Mono', monospace;
     font-size: 13px;
     font-weight: 600;
 }
@@ -594,7 +586,6 @@
 }
 
 .rpt-wrapper .amt-cell {
-    font-family: 'IBM Plex Mono', monospace;
     font-size: 14px;
     font-weight: 600;
     color: var(--green);
@@ -609,7 +600,6 @@
 }
 
 .rpt-wrapper .gc-num {
-    font-family: 'IBM Plex Mono', monospace;
     font-size: 14px;
     font-weight: 600;
 }
