@@ -37,6 +37,11 @@ export default function CombosList() {
       );
 
       setState((s) => ({ ...s, status: 'succeeded', items, attractions, slotCounts }));
+    } catch (err) {
+      setState((s) => ({ ...s, status: 'failed', error: err.message }));
+    }
+  };
+
   const toggleActive = async (row, e) => {
     e?.stopPropagation?.();
     try {
@@ -126,6 +131,10 @@ export default function CombosList() {
               </button>
             )
           },
+          {
+            key: 'active',
+            title: 'Status',
+            render: (r) => (
               <div className="flex items-center gap-2">
                 <StatusBadge status={r?.active ? 'active' : 'inactive'} />
                 <button

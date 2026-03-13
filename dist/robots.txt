@@ -1,2 +1,14 @@
+User-agent: Googlebot
+Disallow: /parkpanel
+
+User-agent: GPTBot
+Disallow: /parkpanel
+
+User-agent: ChatGPT-User
+Disallow: /parkpanel
+
+User-agent: Google-Extended
+Disallow: /parkpanel
+
 User-agent: *
-Allow: /
+Disallow: /parkpanel
