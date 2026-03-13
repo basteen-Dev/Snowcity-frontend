@@ -125,13 +125,13 @@ export default function ComboCard({ item, isUltimate = false }) {
     return (
       <div
         onClick={() => navigate(comboHref)}
-        className="group relative w-full overflow-hidden rounded-[var(--r-xl)] bg-gradient-to-br from-[#0b1a33] via-[#123a63] to-[#0b1a33] p-1 shadow-2xl transition-all duration-500 hover:scale-[1.01] hover:shadow-blue-500/20 cursor-pointer lg:h-[380px]"
+        className="group relative w-full overflow-hidden rounded-xl bg-gradient-to-br from-[#0b1a33] via-[#123a63] to-[#0b1a33] p-1 shadow-2xl transition-all duration-500 hover:scale-[1.01] hover:shadow-blue-500/20 cursor-pointer lg:h-[380px]"
         role="button"
         tabIndex={0}
       >
-        <div className="relative flex flex-col lg:flex-row h-full w-full overflow-hidden rounded-[calc(var(--r-xl)-4px)] bg-[#0b1a33]/40 backdrop-blur-xl">
+        <div className="relative flex flex-col lg:flex-row h-full w-full overflow-hidden rounded-xl bg-[#0b1a33]/40 backdrop-blur-xl">
           {/* Combo Hero Image */}
-          <div className="relative w-full lg:w-1/2 overflow-hidden m:h-[150px] flex items-center bg-[#040e21] min-h-[150px] sm:min-h-[300px] lg:min-h-0">
+          <div className="relative w-full lg:w-2/3 overflow-hidden m:h-[150px] flex items-center bg-[#040e21] min-h-[150px] sm:min-h-[300px] lg:min-h-0">
             {heroImage ? (
               <img
                 src={heroImage}

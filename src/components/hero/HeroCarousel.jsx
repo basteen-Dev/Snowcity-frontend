@@ -94,7 +94,7 @@ export default function HeroCarousel({ banners = [], waveColor = "#0b1a33" }) {
     });
 
     return (
-        <section id="hero" className="relative w-full overflow-hidden">
+        <section id="hero" className="relative w-full overflow-hidden mt-14 md:mt-0">
             <span id="hero-sentinel" className="pointer-events-none absolute bottom-0 left-0 h-px w-px" />
 
             <Swiper
@@ -130,7 +130,7 @@ export default function HeroCarousel({ banners = [], waveColor = "#0b1a33" }) {
                     return (
                         <SwiperSlide key={uniqueKey}>
                             <div className="relative w-full">
-                                <div className="w-full aspect-[1/1] sm:aspect-[2.5/1] overflow-hidden bg-[#0b1a33]">
+                                <div className="w-full aspect-[800/1000] sm:aspect-[2.5/1] overflow-hidden bg-[#0b1a33]">
                                     <picture>
                                         <source media="(max-width: 767px)" srcSet={mobileImg} />
                                         <img

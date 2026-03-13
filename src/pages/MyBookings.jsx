@@ -110,6 +110,7 @@ export default function MyBookings() {
         grouped.set(key, {
           id: key,
           ref: item.order_ref || item.booking_ref, // Prefer Order Ref
+          booking_id: item.booking_id, // 6-digit booking ID
           date: item.created_at,
           status: item.payment_status,
           items: [],
@@ -196,9 +197,9 @@ export default function MyBookings() {
       const mode = orderItems[0]?.payment_mode || 'PayPhi';
 
       if (mode === 'PhonePe') {
-        await dispatch(checkPhonePeStatus({ orderRef: orderItems[0]?.order_ref, orderId: orderId })).unwrap();
+        await dispatch(checkPhonePeStatus({ orderRef: orderItems[0]?.order_ref || orderItems[0]?.booking_ref, orderId: orderId })).unwrap();
       } else {
-        await dispatch(checkPayPhiStatus({ orderRef: orderItems[0]?.order_ref, orderId: orderId })).unwrap();
+        await dispatch(checkPayPhiStatus({ orderRef: orderItems[0]?.order_ref || orderItems[0]?.booking_ref, orderId: orderId })).unwrap();
       }
       refresh();
     } catch (err) {
@@ -282,7 +283,9 @@ export default function MyBookings() {
                       <Icon size={20} />
                     </div>
                     <div className="flex items-center gap-2 min-w-0 flex-1">
-                      <span className="text-base sm:text-lg font-bold text-gray-900 tracking-wide truncate">{order.ref || `#${order.id}`}</span>
+                      <span className="text-base sm:text-lg font-bold text-gray-900 tracking-wide truncate">
+                        {order.booking_id ? `#${order.booking_id}` : (order.ref || `#${order.id}`)}
+                      </span>
                       <Pill text={meta.label} tone={meta.tone} />
                     </div>
                     <div className="text-gray-400 shrink-0">
@@ -408,7 +411,11 @@ export default function MyBookings() {
 
                       {canPay && !isRetry && (
                         <button
-                          onClick={(e) => { e.stopPropagation(); setRetryOrder(order.id); }}
+                          onClick={(e) => { 
+                            e.stopPropagation(); 
+                            setRetryOrder(order.id); 
+                            setExpandedOrder(order.id); // Ensure it stays expanded
+                          }}
                           className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-blue-600 text-white rounded-lg text-xs sm:text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm sm:ml-auto"
                         >
                           <CreditCard size={18} /> Pay Now
@@ -437,7 +444,7 @@ export default function MyBookings() {
                     {/* Retry Payment Form */}
                     {isRetry && (
                       <div className="mt-4 bg-white border border-blue-100 rounded-xl p-4 shadow-sm animate-in fade-in slide-in-from-top-2">
-                        <h5 className="text-sm font-bold text-gray-800 mb-3">Complete Payment for Order #{order.ref}</h5>
+                        <h5 className="text-sm font-bold text-gray-800 mb-3">Complete Payment for Order {order.booking_id ? `#${order.booking_id}` : (order.ref ? `#${order.ref}` : `Id: ${order.id}`)}</h5>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                           <div>
                             <label className="block text-xs text-gray-500 mb-1">Email</label>
@@ -560,7 +567,7 @@ export default function MyBookings() {
                   <h4 className="font-bold text-red-800">Payment Failed</h4>
                 </div>
                 <p className="text-red-700 text-sm mb-3">
-                  Your payment for order <span className="font-bold">#{selectedOrder.ref}</span> could not be processed.
+                  Your payment for order <span className="font-bold">{selectedOrder.booking_id ? `#${selectedOrder.booking_id}` : (selectedOrder.ref ? `#${selectedOrder.ref}` : `Id: ${selectedOrder.id}`)}</span> could not be processed.
                   Please try again or contact support if the issue persists.
                 </p>
                 <div className="text-xs text-red-600 bg-red-100 rounded-lg p-2">
@@ -574,7 +581,11 @@ export default function MyBookings() {
 
               <div className="space-y-3">
                 <button
-                  onClick={() => { setRetryOrder(selectedOrder.id); setShowNewBooking(false); }}
+                  onClick={() => { 
+                    setRetryOrder(selectedOrder.id); 
+                    setExpandedOrder(selectedOrder.id);
+                    setShowNewBooking(false); 
+                  }}
                   className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors shadow-lg"
                 >
                   <CreditCard size={20} />

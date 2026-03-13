@@ -100,12 +100,7 @@ export default function AdminTopbar({ onToggleSidebar, onToggleMobile }) {
                   <p className="text-sm font-semibold text-gray-900 dark:text-neutral-50 truncate">{user?.name || 'Admin'}</p>
                   <p className="text-xs text-gray-500 dark:text-neutral-400 truncate">{user?.email}</p>
                 </div>
-                <div className="py-1">
-                  <div className="px-4 py-2.5 flex items-center justify-between">
-                    <span className="text-xs text-gray-500 dark:text-neutral-400">Theme</span>
-                    <ThemeToggle />
-                  </div>
-                </div>
+
                 <div className="border-t border-gray-100 dark:border-neutral-800 py-1">
                   <Link
                     to="/parkpanel/profile"

@@ -116,9 +116,8 @@ export default function TransactionReport() {
             <div className="rpt-topbar a1">
                 <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
                     <div className="rpt-brand">
-                        <div className="rpt-b-icon">🎡</div>
                         <div>
-                            <div className="rpt-b-name">Transactions - Reports</div>
+                            <div className="rpt-b-name">Transaction Reports</div>
                         </div>
                     </div>
                 </div>

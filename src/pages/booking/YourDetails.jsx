@@ -119,8 +119,9 @@ export default function YourDetails({
                         <div className="flex gap-3">
                             <div className="relative w-28">
                                 <select
-                                    className="w-full px-3 py-3.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-sky-500 outline-none appearance-none font-medium text-sm"
+                                    className="w-full px-3 py-3.5 bg-white border border-gray-200 rounded-xl outline-none appearance-none font-medium text-sm"
                                     value={countryCode}
+                                    tabIndex="-1"
                                     onChange={(e) => setCountryCode(e.target.value)}
                                 >
                                     {COUNTRY_CODES.map((c) => (

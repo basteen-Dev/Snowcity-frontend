@@ -491,7 +491,7 @@ export default function BookingsList() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
             <input
               className={`${inputClasses} pl-9`}
-              placeholder="Search ref, email, phone…"
+              placeholder="Search Booking ID, Customer Name, Phone or Email"
               value={filters.search}
               onChange={(e) => handleSearchChange('search', e.target.value)}
               onKeyDown={handleFilterKeyDown}
@@ -524,50 +524,68 @@ export default function BookingsList() {
 
             {/* Row 1: Payment + Booking Status + Item Type */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              <select className={selectClasses} value={filters.payment_status} onChange={(e) => handleSelectChange('payment_status', e.target.value)}>
-                <option value="">Payment: All</option>
-                <option value="INITIATED">Initiated</option>
-                <option value="Pending">Pending</option>
-                <option value="Completed">Success</option>
-                <option value="Failed">Failed</option>
-                <option value="TIMED_OUT">Timed Out</option>
-                <option value="Cancelled">Cancelled</option>
-              </select>
-              <select className={selectClasses} value={filters.booking_status} onChange={(e) => handleSelectChange('booking_status', e.target.value)}>
-                <option value="">Booking: All</option>
-                <option value="PENDING_PAYMENT">Pending Payment</option>
-                <option value="CONFIRMED">Confirmed</option>
-                <option value="Cancelled">Cancelled</option>
-                <option value="ABANDONED">Abandoned</option>
-                <option value="REFUNDED">Refunded</option>
-              </select>
-              <select className={selectClasses} value={filters.item_type} onChange={(e) => handleSelectChange('item_type', e.target.value)}>
-                <option value="">Item Type: All</option>
-                <option value="Attraction">Attraction</option>
-                <option value="Combo">Combo</option>
-              </select>
+              <div className="relative">
+                <select className={selectClasses} value={filters.payment_status} onChange={(e) => handleSelectChange('payment_status', e.target.value)}>
+                  <option value="">Payment: All</option>
+                  <option value="INITIATED">Initiated</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Completed">Success</option>
+                  <option value="Failed">Failed</option>
+                  <option value="TIMED_OUT">Timed Out</option>
+                  <option value="Cancelled">Cancelled</option>
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+              </div>
+              <div className="relative">
+                <select className={selectClasses} value={filters.booking_status} onChange={(e) => handleSelectChange('booking_status', e.target.value)}>
+                  <option value="">Booking: All</option>
+                  <option value="PENDING_PAYMENT">Pending Payment</option>
+                  <option value="CONFIRMED">Confirmed</option>
+                  <option value="Cancelled">Cancelled</option>
+                  <option value="ABANDONED">Abandoned</option>
+                  <option value="REFUNDED">Refunded</option>
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+              </div>
+              <div className="relative">
+                <select className={selectClasses} value={filters.item_type} onChange={(e) => handleSelectChange('item_type', e.target.value)}>
+                  <option value="">Item Type: All</option>
+                  <option value="Attraction">Attraction</option>
+                  <option value="Combo">Combo</option>
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+              </div>
             </div>
 
             {/* Row 2: Attraction + Combo + Offer */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              <select className={selectClasses} value={filters.attraction_id} onChange={(e) => handleSelectChange('attraction_id', e.target.value)} disabled={options.status === 'loading'}>
-                <option value="">{options.status === 'loading' ? 'Loading…' : 'All Attractions'}</option>
-                {options.status === 'succeeded' && (options.attractions || []).map((a) => (
-                  <option key={a.attraction_id || a.id} value={a.attraction_id || a.id}>{a.title || a.name || `#${a.attraction_id || a.id}`}</option>
-                ))}
-              </select>
-              <select className={selectClasses} value={filters.combo_id} onChange={(e) => handleSelectChange('combo_id', e.target.value)} disabled={options.status === 'loading'}>
-                <option value="">{options.status === 'loading' ? 'Loading…' : 'All Combos'}</option>
-                {options.status === 'succeeded' && (options.combos || []).map((c) => (
-                  <option key={c.combo_id || c.id} value={c.combo_id || c.id}>{c.name || c.title || `Combo #${c.combo_id || c.id}`}</option>
-                ))}
-              </select>
-              <select className={selectClasses} value={filters.offer_id} onChange={(e) => handleSelectChange('offer_id', e.target.value)} disabled={options.status === 'loading'}>
-                <option value="">{options.status === 'loading' ? 'Loading…' : 'All Offers'}</option>
-                {options.status === 'succeeded' && (options.offers || []).map((o) => (
-                  <option key={o.offer_id || o.id} value={o.offer_id || o.id}>{o.title || o.name || o.code || `Offer #${o.offer_id || o.id}`}</option>
-                ))}
-              </select>
+              <div className="relative">
+                <select className={selectClasses} value={filters.attraction_id} onChange={(e) => handleSelectChange('attraction_id', e.target.value)} disabled={options.status === 'loading'}>
+                  <option value="">{options.status === 'loading' ? 'Loading…' : 'All Attractions'}</option>
+                  {options.status === 'succeeded' && (options.attractions || []).map((a) => (
+                    <option key={a.attraction_id || a.id} value={a.attraction_id || a.id}>{a.title || a.name || `#${a.attraction_id || a.id}`}</option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+              </div>
+              <div className="relative">
+                <select className={selectClasses} value={filters.combo_id} onChange={(e) => handleSelectChange('combo_id', e.target.value)} disabled={options.status === 'loading'}>
+                  <option value="">{options.status === 'loading' ? 'Loading…' : 'All Combos'}</option>
+                  {options.status === 'succeeded' && (options.combos || []).map((c) => (
+                    <option key={c.combo_id || c.id} value={c.combo_id || c.id}>{c.name || c.title || `Combo #${c.combo_id || c.id}`}</option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+              </div>
+              <div className="relative">
+                <select className={selectClasses} value={filters.offer_id} onChange={(e) => handleSelectChange('offer_id', e.target.value)} disabled={options.status === 'loading'}>
+                  <option value="">{options.status === 'loading' ? 'Loading…' : 'All Offers'}</option>
+                  {options.status === 'succeeded' && (options.offers || []).map((o) => (
+                    <option key={o.offer_id || o.id} value={o.offer_id || o.id}>{o.title || o.name || o.code || `Offer #${o.offer_id || o.id}`}</option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+              </div>
             </div>
 
             {/* Row 3: Email + Phone + Dates + Actions */}

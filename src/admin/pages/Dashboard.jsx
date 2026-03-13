@@ -75,10 +75,10 @@ export default function Dashboard() {
       {/* TOPBAR */}
       <div className="topbar a1">
         <div className="brand">
-          <div className="b-icon">🎡</div>
+    
           <div>
-            <div className="b-name">Snowcity Dashboard</div>
-            <div className="b-sub">Counter · Manager · Management</div>
+            <div className="b-name">Dashboard</div>
+            
           </div>
         </div>
         <div className="tr">

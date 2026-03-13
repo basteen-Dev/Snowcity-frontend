@@ -6,7 +6,6 @@ import { fetchBanners } from '../features/banners/bannersSlice';
 import { fetchAttractions } from '../features/attractions/attractionsSlice';
 import { fetchCombos } from '../features/combos/combosSlice';
 import { fetchOffers } from '../features/offers/offersSlice';
-import { fetchCoupons } from '../features/coupons/couponsSlice';
 import { fetchPages } from '../features/pages/pagesSlice';
 import { fetchBlogs } from '../features/blogs/blogsSlice';
 import { fetchActiveAnnouncements } from '../features/announcements/announcementsSlice';
@@ -54,7 +53,6 @@ export default function Home() {
   const attractions = useSelector((s) => s.attractions);
   const combos = useSelector((s) => s.combos);
   const offers = useSelector((s) => s.offers);
-  const coupons = useSelector((s) => s.coupons);
   const pages = useSelector((s) => s.pages);
   const blogs = useSelector((s) => s.blogs);
   const announcements = useSelector((s) => s.announcements);
@@ -77,7 +75,6 @@ export default function Home() {
       onIdle(() => {
         dispatch(fetchCombos());
         dispatch(fetchOffers());
-        dispatch(fetchCoupons({ active: true, limit: 100 }));
         dispatch(fetchPages());
         dispatch(fetchBlogs());
         dispatch(fetchActiveAnnouncements());
@@ -94,7 +91,6 @@ export default function Home() {
   }, [attractions.items]);
   const comboItems = combos.items || [];
   const offerItems = offers.items || [];
-  const couponItems = coupons.items || [];
   const pageItems = pages.items || [];
   const blogItems = blogs.items || [];
 
@@ -108,30 +104,8 @@ export default function Home() {
       });
     }
 
-    // 2. Coupons (existing logic)
-    if (couponItems?.length) {
-      couponItems.forEach((coupon) => {
-        const code = (coupon.code || '').toString().toUpperCase();
-        const type = String(coupon.type || '').toLowerCase();
-        const value = Number(coupon.value || 0);
-        const minAmount = Number(coupon.min_amount || coupon.minAmount || 0);
-        const desc = coupon.description || '';
-        const discountLabel = type === 'percent' && value > 0
-          ? `Save ${value}%`
-          : type === 'amount' && value > 0
-            ? `Flat ₹${value} off`
-            : '';
-        const minText = minAmount > 0 ? `Min spend ₹${minAmount}` : '';
-        entries.push([
-          code ? `Coupon ${code}` : 'Coupon',
-          discountLabel,
-          minText,
-          desc
-        ].filter(Boolean).join(' • '));
-      });
-    }
     return entries;
-  }, [announcements.items, couponItems]);
+  }, [announcements.items]);
 
   // brand colors (still used for HeroCarousel waveColor)
   const arcticTop = "#0b1a33";      // deep arctic blue

@@ -1,30 +1,6 @@
 import React from 'react';
 import { Sparkles } from 'lucide-react';
 
-const defaultOffers = [
-  {
-    id: 'default-wed',
-    icon: '🎉',
-    label: 'Wednesday Special',
-    badge: '20% OFF',
-    description: 'All attractions the entire day'
-  },
-  {
-    id: 'default-happy',
-    icon: '⚡',
-    label: 'Happy Hours',
-    badge: 'BOGO',
-    description: '2PM-4PM buy 1 get 1 free'
-  },
-  {
-    id: 'default-birthday',
-    icon: '🎂',
-    label: 'Birthday Treat',
-    badge: 'Free Entry',
-    description: 'Birthday kid gets free access'
-  }
-];
-
 const normalizePromo = (item, idx) => {
   if (!item) return null;
   if (typeof item === 'string') {
@@ -47,11 +23,11 @@ const normalizePromo = (item, idx) => {
 
 export default function OffersMarquee({ items }) {
   const promos = React.useMemo(() => {
-    const src = Array.isArray(items) && items.length ? items : defaultOffers;
+    const src = Array.isArray(items) && items.length ? items : [];
     const mapped = src
       .map((item, idx) => normalizePromo(item, idx))
       .filter(Boolean);
-    return [...mapped, ...mapped];
+    return mapped.length ? [...mapped, ...mapped] : [];
   }, [items]);
 
   return (
@@ -94,7 +70,7 @@ export default function OffersMarquee({ items }) {
           100% { transform: translateX(-33.33%); }
         }
         .animate-offers-marquee {
-          animation: offersMarquee 26s linear infinite;
+          animation: offersMarquee 35s linear infinite;
         }
         .animate-offers-marquee p {
           margin: 0 !important;

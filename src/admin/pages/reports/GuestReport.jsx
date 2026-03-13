@@ -107,9 +107,9 @@ export default function GuestReport() {
             <div className="rpt-topbar a1">
                 <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
                     <div className="rpt-brand">
-                        <div className="rpt-b-icon">🎡</div>
+             
                         <div>
-                            <div className="rpt-b-name">Guest - Reports</div>
+                            <div className="rpt-b-name">Guest Report</div>
                         </div>
                     </div>
                 </div>
