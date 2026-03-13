@@ -329,8 +329,8 @@ export default function BookingDetails() {
             <InfoRow icon={CreditCard} label="Payment Mode" value={payment.method || '—'} />
             <InfoRow icon={Ticket} label="Booking Ref" value={b.order_ref || '—'} />
 
-            <InfoRow icon={Ticket} label="Transaction Id" value={payment.ref || '—'} />
-            <InfoRow icon={Ticket} label="Merchent Ref No" value={payment.txn_no || '—'} />
+            <InfoRow icon={Ticket} label="Transaction Id" value={payment.txn_no || '—'} />
+            <InfoRow icon={Ticket} label="Merchant Ref No" value={payment.ref || '—'} />
           </div>
         </Card>
       </div>

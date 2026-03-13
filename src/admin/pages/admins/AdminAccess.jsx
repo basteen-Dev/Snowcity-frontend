@@ -12,6 +12,8 @@ const MODULE_PERMISSIONS = [
   { key: 'catalog', label: 'Catalog', desc: 'Access catalog management' },
   { key: 'offers', label: 'Offers', desc: 'Create and manage offers' },
   { key: 'dynamic_pricing', label: 'Dynamic Pricing', desc: 'Manage dynamic pricing rules' },
+  { key: 'people', label: 'People', desc: 'Manage customers, roles and team members' },
+  { key: 'site_settings', label: 'Site Settings', desc: 'Manage SEO and global site settings' },
 ];
 
 function ResourceSection({ title, items, sel, setSel, disabled }) {
@@ -190,13 +192,13 @@ export default function AdminAccess() {
     []
   );
 
-  // Detect if selected admin is a staff role
-  const isStaffAdmin = React.useMemo(() => {
+  // Detect if selected admin should have module selection (staff, subadmin, gm)
+  const canSelectModules = React.useMemo(() => {
     if (!selectedAdmin) return false;
     const roles = Array.isArray(selectedAdmin.roles) ? selectedAdmin.roles : [];
     return roles.some((r) => {
       const n = (typeof r === 'string' ? r : String(r.role_name || r)).toLowerCase();
-      return n === 'staff' || n === 'subadmin';
+      return ['staff', 'subadmin', 'gm', 'admin'].includes(n);
     });
   }, [selectedAdmin]);
 
@@ -244,9 +246,9 @@ export default function AdminAccess() {
           {/* Info banner */}
           <div className="rounded-xl border-l-4 border-blue-500 bg-blue-50 dark:bg-blue-500/10 p-4 text-sm text-gray-700 dark:text-neutral-200">
             <strong>{selectedAdmin?.name || 'This admin'}</strong> will only see analytics, bookings, and catalog items for the attractions and combos checked below.
-            {!isStaffAdmin && (
+            {!canSelectModules && (
               <span className="block mt-1 text-xs text-amber-600 dark:text-amber-400">
-                ⚠ This admin's role may not be "Staff" — scoping only applies to staff accounts.
+                ⚠ This admin's role may not support scoping — scoping only applies to specific accounts.
               </span>
             )}
           </div>
@@ -267,12 +269,12 @@ export default function AdminAccess() {
             disabled={loadingAccess}
           />
 
-          {/* Module permissions (staff only) */}
-          {isStaffAdmin && (
+          {/* Module permissions (staff/gm only) */}
+          {canSelectModules && (
             <div className="rounded-2xl border p-5 dark:border-neutral-800 bg-white dark:bg-neutral-900">
               <h3 className="font-semibold text-gray-900 dark:text-neutral-100 mb-1">Module Permissions</h3>
               <p className="text-xs text-gray-500 dark:text-neutral-400 mb-4">
-                Choose which modules this staff member can access within their scoped attractions.
+                Choose which modules this user can access.
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {MODULE_PERMISSIONS.map((m) => {

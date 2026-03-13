@@ -35,19 +35,21 @@ export function useAdminRole() {
         const isStaff = !isSuperLevel && !isGM && (roles.includes('staff') || roles.includes('subadmin'));
         const isEditor = !isSuperLevel && !isGM && !isStaff && roles.includes('editor');
 
-        // What modules can staff access (from module_permissions)
-        const staffModules = Array.isArray(scopes?.module_permissions) ? scopes.module_permissions : [];
+        // What modules can staff/gm access (from module_permissions)
+        const assignedModules = Array.isArray(scopes?.module_permissions) ? scopes.module_permissions : [];
 
         // Permission check helpers
-        const hasModule = (mod) => isSuperLevel || isGM || (isStaff && staffModules.includes(mod));
+        const hasModule = (mod) => isSuperLevel || (isGM && assignedModules.includes(mod)) || (isStaff && assignedModules.includes(mod));
 
         const canSeeDashboard = hasModule('dashboard');
         const canSeeAnalytics = hasModule('analytics');
         const canSeeReports = hasModule('reports');
         const canSeeBookings = hasModule('bookings');
-        const canSeeCatalog = isSuperLevel || isGM || isEditor || (isStaff && staffModules.includes('catalog'));
+        const canSeeCatalog = isSuperLevel || isEditor || hasModule('catalog');
         const canSeeOffers = hasModule('offers');
         const canSeeDynamicPricing = hasModule('dynamic_pricing');
+        const canSeeSettings = hasModule('site_settings');
+        const canSeeUsers = hasModule('people');
 
         return {
             roles,
@@ -56,13 +58,13 @@ export function useAdminRole() {
             isStaff,
             isEditor,
             scopes,
-            staffModules,
+            assignedModules,
             // Utility: does this user have a specific role?
             hasRole: (role) => isSuperLevel || roles.includes(normalizeRole(role)),
             // Can access admin management section (list + create)?
             canManageAdmins: isSuperLevel,
             // Can list admins (view only)?
-            canListAdmins: isSuperLevel || isGM,
+            canListAdmins: canSeeUsers,
             // Can see analytics?
             canSeeAnalytics,
             // Can see bookings?
@@ -74,10 +76,10 @@ export function useAdminRole() {
             // Can see editor catalog (attractions, combos, addons, banners, pages, blogs, gallery)?
             canSeeEditorCatalog: isEditor,
             // Can see revenue/settings?
-            canSeeRevenue: isSuperLevel || isGM,
-            canSeeSettings: isSuperLevel || isGM,
+            canSeeRevenue: isSuperLevel || (isGM && (canSeeAnalytics || canSeeReports)),
+            canSeeSettings,
             // Can see people/users section?
-            canSeeUsers: isSuperLevel || isGM,
+            canSeeUsers,
 
             // Granular module flags
             canSeeDashboard,

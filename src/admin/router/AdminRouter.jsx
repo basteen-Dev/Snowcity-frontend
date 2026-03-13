@@ -148,8 +148,8 @@ function RequireRole({ allowed, module, children }) {
     return <Navigate to={isEditor ? '/parkpanel/catalog/attractions' : '/parkpanel'} replace />;
   }
 
-  // If role is ok, check module permission specifically for staff
-  if (isStaff && module) {
+  // If role is ok, check module permission specifically for staff/gm
+  if ((isStaff || isGM) && module) {
     if (module === 'dashboard' && !canSeeDashboard) return <Navigate to="/parkpanel/catalog/attractions" replace />;
     if (module === 'analytics' && !canSeeAnalytics) return <Navigate to="/parkpanel/catalog/attractions" replace />;
     if (module === 'bookings' && !canSeeBookings) return <Navigate to="/parkpanel/catalog/attractions" replace />;
@@ -157,6 +157,8 @@ function RequireRole({ allowed, module, children }) {
     if (module === 'catalog' && !canSeeCatalog) return <Navigate to="/parkpanel" replace />;
     if (module === 'offers' && !canSeeOffers) return <Navigate to="/parkpanel/catalog/attractions" replace />;
     if (module === 'dynamic_pricing' && !canSeeDynamicPricing) return <Navigate to="/parkpanel/catalog/attractions" replace />;
+    if (module === 'people' && !canSeeUsers) return <Navigate to="/parkpanel/catalog/attractions" replace />;
+    if (module === 'site_settings' && !canSeeSettings) return <Navigate to="/parkpanel/catalog/attractions" replace />;
   }
 
   return children;
@@ -466,61 +468,61 @@ export default function AdminRouter() {
 
           {/* ──── Users — SuperAdmin + GM ──── */}
           <Route path="users" element={
-            <RequireRole allowed={['superadmin', 'gm']}>
+            <RequireRole allowed={['superadmin', 'gm']} module="people">
               <UsersList />
             </RequireRole>
           } />
           <Route path="users/new" element={
-            <RequireRole allowed={['superadmin', 'gm']}>
+            <RequireRole allowed={['superadmin', 'gm']} module="people">
               <UserNew />
             </RequireRole>
           } />
           <Route path="users/:id" element={
-            <RequireRole allowed={['superadmin', 'gm']}>
+            <RequireRole allowed={['superadmin', 'gm']} module="people">
               <UserEdit />
             </RequireRole>
           } />
 
           {/* ──── RBAC — SuperAdmin + GM (read) ──── */}
           <Route path="roles" element={
-            <RequireRole allowed={['superadmin', 'gm']}>
+            <RequireRole allowed={['superadmin', 'gm']} module="people">
               <RolesList />
             </RequireRole>
           } />
           <Route path="roles/new" element={
-            <RequireRole allowed={['superadmin']}>
+            <RequireRole allowed={['superadmin']} module="people">
               <RoleForm />
             </RequireRole>
           } />
           <Route path="roles/:id" element={
-            <RequireRole allowed={['superadmin']}>
+            <RequireRole allowed={['superadmin']} module="people">
               <RoleForm />
             </RequireRole>
           } />
           <Route path="roles/:id/permissions" element={
-            <RequireRole allowed={['superadmin']}>
+            <RequireRole allowed={['superadmin']} module="people">
               <RolePermissions />
             </RequireRole>
           } />
 
           {/* ──── Admin Management — SuperAdmin only for create ──── */}
           <Route path="admins" element={
-            <RequireRole allowed={['superadmin', 'gm']}>
+            <RequireRole allowed={['superadmin', 'gm']} module="people">
               <AdminsList />
             </RequireRole>
           } />
           <Route path="admins/new" element={
-            <RequireRole allowed={['superadmin']}>
+            <RequireRole allowed={['superadmin']} module="people">
               <AdminNew />
             </RequireRole>
           } />
           <Route path="admins/access" element={
-            <RequireRole allowed={['superadmin']}>
+            <RequireRole allowed={['superadmin']} module="people">
               <AdminAccess />
             </RequireRole>
           } />
           <Route path="admins/:id/access" element={
-            <RequireRole allowed={['superadmin']}>
+            <RequireRole allowed={['superadmin']} module="people">
               <AdminAccess />
             </RequireRole>
           } />
@@ -539,7 +541,7 @@ export default function AdminRouter() {
 
           {/* ──── Site Settings — SuperAdmin + GM ──── */}
           <Route path="site-settings" element={
-            <RequireRole allowed={['superadmin', 'gm']}>
+            <RequireRole allowed={['superadmin', 'gm']} module="site_settings">
               <SiteSettings />
             </RequireRole>
           } />

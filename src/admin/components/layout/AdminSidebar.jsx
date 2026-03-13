@@ -97,21 +97,28 @@ export default function AdminSidebar({ collapsed, mobileOpen, onCloseMobile, onT
 
   if (canSeeCatalog) {
     if (isSuperAdmin || isGM) {
+      const catalogItems = [
+        { to: '/parkpanel/catalog/attractions', label: 'Attractions', icon: Gift },
+        { to: '/parkpanel/catalog/combos', label: 'Combos', icon: Boxes },
+        { to: '/parkpanel/catalog/addons', label: 'Add-ons', icon: Gift },
+      ];
+      if (canSeeOffers) catalogItems.push({ to: '/parkpanel/catalog/offers', label: 'Offers', icon: BadgePercent });
+      catalogItems.push({ to: '/parkpanel/catalog/announcements', label: 'Announcements', icon: Megaphone });
+      if (canSeeDynamicPricing) catalogItems.push({ to: '/parkpanel/catalog/dynamic-pricing', label: 'Dynamic Pricing', icon: DollarSign });
+      
+      // Coupons, Banners, Pages, Blogs, Gallery are usually GM+
+      // We could also wrap these in permissions if needed, but for now GM usually has them
+      catalogItems.push(
+        { to: '/parkpanel/catalog/coupons', label: 'Coupons', icon: Ticket },
+        { to: '/parkpanel/catalog/banners', label: 'Banners', icon: ImageIcon },
+        { to: '/parkpanel/catalog/gallery', label: 'Gallery', icon: ImageIcon },
+        { to: '/parkpanel/catalog/pages', label: 'Pages', icon: FileText },
+        { to: '/parkpanel/catalog/blogs', label: 'Blogs', icon: Newspaper },
+      );
+
       NAV_SECTIONS.push({
         key: 'Catalog', label: 'Catalog',
-        items: [
-          { to: '/parkpanel/catalog/attractions', label: 'Attractions', icon: Gift },
-          { to: '/parkpanel/catalog/combos', label: 'Combos', icon: Boxes },
-          { to: '/parkpanel/catalog/addons', label: 'Add-ons', icon: Gift },
-          { to: '/parkpanel/catalog/offers', label: 'Offers', icon: BadgePercent },
-          { to: '/parkpanel/catalog/announcements', label: 'Announcements', icon: Megaphone },
-          { to: '/parkpanel/catalog/dynamic-pricing', label: 'Dynamic Pricing', icon: DollarSign },
-          { to: '/parkpanel/catalog/coupons', label: 'Coupons', icon: Ticket },
-          { to: '/parkpanel/catalog/banners', label: 'Banners', icon: ImageIcon },
-          { to: '/parkpanel/catalog/gallery', label: 'Gallery', icon: ImageIcon },
-          { to: '/parkpanel/catalog/pages', label: 'Pages', icon: FileText },
-          { to: '/parkpanel/catalog/blogs', label: 'Blogs', icon: Newspaper },
-        ]
+        items: catalogItems
       });
     } else if (isStaff) {
       const items = [

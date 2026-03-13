@@ -109,8 +109,8 @@ export default function MyBookings() {
       if (!grouped.has(key)) {
         grouped.set(key, {
           id: key,
-          ref: item.order_ref || item.booking_ref, // Prefer Order Ref
-          booking_id: item.booking_id, // 6-digit booking ID
+          ref: item.order_ref, // EXPLICITLY use mapped parent_order_ref -> order_ref 
+          booking_id: item.booking_id, 
           date: item.created_at,
           status: item.payment_status,
           items: [],
@@ -284,7 +284,7 @@ export default function MyBookings() {
                     </div>
                     <div className="flex items-center gap-2 min-w-0 flex-1">
                       <span className="text-base sm:text-lg font-bold text-gray-900 tracking-wide truncate">
-                        {order.booking_id ? `#${order.booking_id}` : (order.ref || `#${order.id}`)}
+                        #{order.ref || order.id}
                       </span>
                       <Pill text={meta.label} tone={meta.tone} />
                     </div>
@@ -422,14 +422,6 @@ export default function MyBookings() {
                         </button>
                       )}
 
-                      {meta.label === 'Failed' && (
-                        <button
-                          onClick={(e) => { e.stopPropagation(); handlePaymentFailure(order); }}
-                          className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-orange-600 text-white rounded-lg text-xs sm:text-sm font-medium hover:bg-orange-700 transition-colors shadow-sm sm:ml-auto"
-                        >
-                          <RefreshCcw size={18} /> Try Again
-                        </button>
-                      )}
 
                       {order.items.length > 0 && order.items.some(item => item.attraction_id) && (
                         <button
@@ -444,7 +436,7 @@ export default function MyBookings() {
                     {/* Retry Payment Form */}
                     {isRetry && (
                       <div className="mt-4 bg-white border border-blue-100 rounded-xl p-4 shadow-sm animate-in fade-in slide-in-from-top-2">
-                        <h5 className="text-sm font-bold text-gray-800 mb-3">Complete Payment for Order {order.booking_id ? `#${order.booking_id}` : (order.ref ? `#${order.ref}` : `Id: ${order.id}`)}</h5>
+                        <h5 className="text-sm font-bold text-gray-800 mb-3">Complete Payment for Order #{order.ref || order.id}</h5>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                           <div>
                             <label className="block text-xs text-gray-500 mb-1">Email</label>
@@ -567,7 +559,7 @@ export default function MyBookings() {
                   <h4 className="font-bold text-red-800">Payment Failed</h4>
                 </div>
                 <p className="text-red-700 text-sm mb-3">
-                  Your payment for order <span className="font-bold">{selectedOrder.booking_id ? `#${selectedOrder.booking_id}` : (selectedOrder.ref ? `#${selectedOrder.ref}` : `Id: ${selectedOrder.id}`)}</span> could not be processed.
+                  Your payment for order <span className="font-bold">#{selectedOrder.ref || selectedOrder.id}</span> could not be processed.
                   Please try again or contact support if the issue persists.
                 </p>
                 <div className="text-xs text-red-600 bg-red-100 rounded-lg p-2">

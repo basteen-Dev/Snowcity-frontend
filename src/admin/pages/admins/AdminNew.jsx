@@ -52,8 +52,8 @@ export default function AdminNew() {
         roles: [form.role],
       });
       toast.success('Admin created successfully', { id: loadingToast });
-      // For staff, redirect to access grant page so scopes can be assigned
-      if (form.role === 'staff' && res?.user_id) {
+      // For staff and gm, redirect to access grant page so scopes/modules can be assigned
+      if (['staff', 'gm'].includes(form.role) && res?.user_id) {
         nav(`/parkpanel/admins/${res.user_id}/access`);
       } else {
         nav('/parkpanel/admins');
@@ -169,9 +169,9 @@ export default function AdminNew() {
             })}
           </div>
 
-          {form.role === 'staff' && (
+          {['staff', 'gm'].includes(form.role) && (
             <div className="mt-4 p-3 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-sm text-blue-700 dark:text-blue-300">
-              ℹ️ After creating, you'll be redirected to the <strong>Grant Access</strong> page to assign specific attractions.
+              ℹ️ After creating, you'll be redirected to the <strong>Grant Access</strong> page to assign specific modules and/or attractions.
             </div>
           )}
         </div>
