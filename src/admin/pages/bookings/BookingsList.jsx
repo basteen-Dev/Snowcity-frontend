@@ -128,7 +128,7 @@ export default function BookingsList() {
   });
   const [options, setOptions] = React.useState({ status: 'idle', attractions: [], combos: [], offers: [] });
   const [activeRange, setActiveRange] = React.useState('today');
-  const [rowsPerPage, setRowsPerPage] = React.useState(20);
+  const [rowsPerPage, setRowsPerPage] = React.useState(100);
   const [showFilters, setShowFilters] = React.useState(false); // Default: collapsed
   const searchTimerRef = React.useRef(null);
   const [statusUpdating, setStatusUpdating] = React.useState(null);

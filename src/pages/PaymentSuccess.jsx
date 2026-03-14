@@ -85,14 +85,40 @@ export default function PaymentSuccess() {
             const orderId = data?.order_id || (data?.items && data.items[0]?.order_id);
             const totalAmount = Number(data?.total_amount || data?.final_amount || 0);
 
-            // 🔹 GTM PURCHASE EVENT
-            window.dataLayer = window.dataLayer || [];
-            window.dataLayer.push({
-              event: "purchase",
-              transaction_id: orderId,
-              value: totalAmount,
-              currency: "INR"
-            });
+            // 🔹 GTM PURCHASE EVENT — with duplicate prevention
+            const purchaseFiredKey = `purchase_fired_${orderId}`;
+            if (!localStorage.getItem(purchaseFiredKey)) {
+              window.dataLayer = window.dataLayer || [];
+              window.dataLayer.push({
+                event: 'purchase',
+                order_id: orderId || '',
+                total_value: totalAmount,
+                total_tickets: Number(data?.total_tickets || data?.quantity || 1),
+                total_pax: Number(data?.total_tickets || data?.quantity || 1),
+                currency: 'INR',
+                payment_gateway: data?.payment_mode || data?.gateway || '',
+                has_addons: Number(data?.addons_value || data?.addon_total || 0) > 0,
+                addons_value: Number(data?.addons_value || data?.addon_total || 0),
+                promo_code: data?.promo_code || data?.coupon_code || '',
+                discount_value: Number(data?.discount_value || data?.discount_amount || 0),
+                items: Array.isArray(data?.items) ? data.items.map(item => ({
+                  item_name: item.title || item.name || item.attraction_name || '',
+                  product_type: item.item_type === 'Combo' ? 'combo' : 'single',
+                  quantity: Number(item.quantity || 1),
+                  price: Number(item.unit_price || item.price || 0),
+                  time_slot: item.slot_label || item.time_slot || '',
+                  selected_date: item.booking_date || ''
+                })) : [{
+                  item_name: data?.title || data?.attraction_name || '',
+                  product_type: data?.item_type === 'Combo' ? 'combo' : 'single',
+                  quantity: Number(data?.quantity || 1),
+                  price: totalAmount,
+                  time_slot: data?.slot_label || '',
+                  selected_date: data?.booking_date || ''
+                }]
+              });
+              localStorage.setItem(purchaseFiredKey, 'true');
+            }
 
 
             if (totalAmount > 0) {

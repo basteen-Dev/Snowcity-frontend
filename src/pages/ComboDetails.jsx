@@ -920,11 +920,25 @@ export default function ComboDetails() {
     window.dataLayer.push({
       event: 'add_to_cart',
       attraction_name: combo?.title || combo?.name || combo?.combo_name || `Combo #${comboId}`,
-      ticket_type: 'Combo',
-      ticket_quantity: q,
-      total_pax: q,
+      product_type: 'combo',
       ticket_price: unitPrice,
-      currency: 'INR'
+      ticket_quantity: q,
+      total_price: unitPrice * q,
+      total_pax: q,
+      time_slot: labelTime(slot),
+      selected_date: toYMD(date),
+      currency: 'INR',
+      button_type: 'buy_now',
+      items: [
+        {
+          item_name: combo?.title || combo?.name || combo?.combo_name || `Combo #${comboId}`,
+          product_type: 'combo',
+          quantity: q,
+          price: unitPrice,
+          time_slot: labelTime(slot),
+          selected_date: toYMD(date)
+        }
+      ]
     });
 
     dispatch(

@@ -794,11 +794,25 @@ export default function AttractionDetails() {
     window.dataLayer.push({
       event: 'add_to_cart',
       attraction_name: a?.title || a?.name || `Attraction #${aId}`,
-      ticket_type: isTimeSlotDisabled ? 'Open Entry' : getSlotLabel(selectedSlot),
-      ticket_quantity: sanitizedQty,
-      total_pax: sanitizedQty,
+      product_type: 'single',
       ticket_price: Number(effectiveUnitPrice ?? selectedSlot?.price ?? baseUnitPrice),
-      currency: 'INR'
+      ticket_quantity: sanitizedQty,
+      total_price: Number(effectiveUnitPrice ?? selectedSlot?.price ?? baseUnitPrice) * sanitizedQty,
+      total_pax: sanitizedQty,
+      time_slot: isTimeSlotDisabled ? '' : getSlotLabel(selectedSlot),
+      selected_date: toYMD(date),
+      currency: 'INR',
+      button_type: 'buy_now',
+      items: [
+        {
+          item_name: a?.title || a?.name || `Attraction #${aId}`,
+          product_type: 'single',
+          quantity: sanitizedQty,
+          price: Number(effectiveUnitPrice ?? selectedSlot?.price ?? baseUnitPrice),
+          time_slot: isTimeSlotDisabled ? '' : getSlotLabel(selectedSlot),
+          selected_date: toYMD(date)
+        }
+      ]
     });
 
     dispatch(

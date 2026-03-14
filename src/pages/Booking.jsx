@@ -882,6 +882,40 @@ export default function Booking() {
     }
   }, [step, hasToken, dispatch]);
 
+  // 🔹 GTM BEGIN_CHECKOUT EVENT — fires when Payment page (step 4) loads
+  const beginCheckoutFiredRef = useRef(false);
+  useEffect(() => {
+    if (step === 4 && hasCartItems && !beginCheckoutFiredRef.current) {
+      beginCheckoutFiredRef.current = true;
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: 'begin_checkout',
+        total_value: finalTotal,
+        total_tickets: cartItems.reduce((sum, item) => sum + Number(item.quantity || 0), 0),
+        total_pax: cartItems.reduce((sum, item) => sum + Number(item.quantity || 0), 0),
+        currency: 'INR',
+        product_type: cartItems[0]?.item_type === 'Combo' ? 'combo' : 'single',
+        time_slot: cartItems[0]?.slotLabel || '',
+        selected_date: cartItems[0]?.booking_date || '',
+        has_addons: totalAddonsCost > 0,
+        addons_value: totalAddonsCost,
+        promo_code: coupon?.code || promoInput || '',
+        items: cartItems.map(item => ({
+          item_name: item.title || '',
+          product_type: item.item_type === 'Combo' ? 'combo' : 'single',
+          quantity: Number(item.quantity || 0),
+          price: Number(item.unitPrice || 0),
+          time_slot: item.slotLabel || '',
+          selected_date: item.booking_date || ''
+        }))
+      });
+    }
+    // Reset flag when leaving step 4
+    if (step !== 4) {
+      beginCheckoutFiredRef.current = false;
+    }
+  }, [step, hasCartItems]);
+
   useEffect(() => {
     const pendingOrderData = localStorage.getItem('pendingOrderData');
     if (pendingOrderData) {
@@ -1287,11 +1321,25 @@ export default function Booking() {
       window.dataLayer.push({
         event: 'add_to_cart',
         attraction_name: selectedMeta.title,
-        ticket_type: sel.itemType === 'combo' ? 'Combo' : 'Attraction',
+        product_type: sel.itemType === 'combo' ? 'combo' : 'single',
+        ticket_price: Number(selectedMeta.price || 0),
         ticket_quantity: qty,
+        total_price: Number(selectedMeta.price || 0) * qty,
         total_pax: qty,
-        ticket_price: selectedMeta.price || 0,
-        currency: 'INR'
+        time_slot: selectedSlot ? getSlotLabel(selectedSlot) : '',
+        selected_date: toYMD(sel.date),
+        currency: 'INR',
+        button_type: 'add_to_cart',
+        items: [
+          {
+            item_name: selectedMeta.title,
+            product_type: sel.itemType === 'combo' ? 'combo' : 'single',
+            quantity: qty,
+            price: Number(selectedMeta.price || 0),
+            time_slot: selectedSlot ? getSlotLabel(selectedSlot) : '',
+            selected_date: toYMD(sel.date)
+          }
+        ]
       });
     }
 

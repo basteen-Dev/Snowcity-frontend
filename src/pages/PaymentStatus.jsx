@@ -64,6 +64,35 @@ export default function PaymentStatus() {
                 const resolvedTicket = absoluteUrl(data.ticketUrl || '');
                 setTicketUrl(resolvedTicket);
                 setPhase('success');
+
+                // 🔹 GTM PURCHASE EVENT — with duplicate prevention
+                const purchaseOrderId = data.orderId || data.orderRef || txnId;
+                const purchaseFiredKey = `purchase_fired_${purchaseOrderId}`;
+                if (!localStorage.getItem(purchaseFiredKey)) {
+                    window.dataLayer = window.dataLayer || [];
+                    window.dataLayer.push({
+                        event: 'purchase',
+                        order_id: purchaseOrderId,
+                        total_value: Number(data.totalPaid || data.totalValue || data.amount || 0),
+                        total_tickets: Number(data.totalTickets || data.quantity || 1),
+                        total_pax: Number(data.totalTickets || data.quantity || 1),
+                        currency: 'INR',
+                        payment_gateway: gateway,
+                        has_addons: Number(data.addonsValue || 0) > 0,
+                        addons_value: Number(data.addonsValue || 0),
+                        promo_code: data.promoCode || '',
+                        discount_value: Number(data.discountValue || 0),
+                        items: Array.isArray(data.items) ? data.items.map(item => ({
+                            item_name: item.title || item.name || '',
+                            product_type: item.type || (item.item_type === 'Combo' ? 'combo' : 'single'),
+                            quantity: Number(item.quantity || 1),
+                            price: Number(item.pricePerTicket || item.unit_price || item.price || 0),
+                            time_slot: item.timeSlot || item.slot_label || '',
+                            selected_date: item.date || item.booking_date || ''
+                        })) : []
+                    });
+                    localStorage.setItem(purchaseFiredKey, 'true');
+                }
             } else {
                 // Payment pending or failed
                 const status = (data.status || '').toUpperCase();
@@ -119,6 +148,23 @@ export default function PaymentStatus() {
         // For PayPhi, ALWAYS call backend to verify regardless of code param
         verify();
     }, [retryCount]); // Re-run when retryCount increments (auto-retry)
+
+    // 🔹 GTM PAYMENT_FAILED EVENT — fires when payment fails
+    useEffect(() => {
+        if (phase === 'failed' || phase === 'error') {
+            window.dataLayer = window.dataLayer || [];
+            window.dataLayer.push({
+                event: 'payment_failed',
+                total_value: 0, // actual value not available after gateway redirect
+                total_tickets: 0,
+                total_pax: 0,
+                currency: 'INR',
+                payment_gateway: gateway,
+                has_addons: false,
+                addons_value: 0
+            });
+        }
+    }, [phase, gateway]);
 
     const handleDownloadTicket = (e) => {
         e.stopPropagation();

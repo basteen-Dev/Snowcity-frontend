@@ -148,7 +148,7 @@ export default function Dashboard() {
 
         <div className="scards sc5 a2">
           <div className="sc c-dark">
-            <div className="sc-lbl">Total Guests</div>
+            <div className="sc-lbl">Total Passes</div>
             <div className="sc-val">{numberFmt(visitor.totalGuests)}</div>
             <div className="sc-sub">All parks & attractions</div>
           </div>
@@ -177,7 +177,7 @@ export default function Dashboard() {
         {/* §2 REVENUE SUMMARY */}
         <div className="sec-hd s2 a3">
           <div className="sec-hd-pill">💰 Revenue Summary</div>
-          <div className="sec-hd-body">Revenue for visitors on the <strong>selected visit date</strong></div>
+          <div className="sec-hd-body"></div>
           <div className="sec-hd-date">Visit Date: {activeDateLabel}</div>
         </div>
 
@@ -230,7 +230,7 @@ export default function Dashboard() {
         {/* §3 ATTRACTION-WISE BREAKDOWN */}
         <div className="sec-hd s3 a4">
           <div className="sec-hd-pill">📊 Attraction-wise Breakdown</div>
-          <div className="sec-hd-body">Guest count and revenue split <strong>per attraction</strong> for the selected period</div>
+          <div className="sec-hd-body"> </div>
           <div className="sec-hd-date">{activeDateLabel}</div>
         </div>
 
@@ -324,7 +324,7 @@ export default function Dashboard() {
         {/* §4 TRANSACTION SUMMARY */}
         <div className="sec-hd s4 a5" style={{ marginTop: '32px' }}>
           <div className="sec-hd-pill">📋 Booking Summary</div>
-          <div className="sec-hd-body">Confirmed bookings for the <strong>selected visit date</strong></div>
+          <div className="sec-hd-body"></div>
           <div className="sec-hd-date">Visit Date: {activeDateLabel}</div>
         </div>
 
