@@ -886,35 +886,44 @@ export default function Booking() {
   const beginCheckoutFiredRef = useRef(false);
   useEffect(() => {
     if (step === 4 && hasCartItems && !beginCheckoutFiredRef.current) {
-      beginCheckoutFiredRef.current = true;
-      window.dataLayer = window.dataLayer || [];
-      window.dataLayer.push({
-        event: 'begin_checkout',
-        total_value: finalTotal,
-        total_tickets: cartItems.reduce((sum, item) => sum + Number(item.quantity || 0), 0),
-        total_pax: cartItems.reduce((sum, item) => sum + Number(item.quantity || 0), 0),
-        currency: 'INR',
-        product_type: cartItems[0]?.item_type === 'Combo' ? 'combo' : 'single',
-        time_slot: cartItems[0]?.slotLabel || '',
-        selected_date: cartItems[0]?.booking_date || '',
-        has_addons: totalAddonsCost > 0,
-        addons_value: totalAddonsCost,
-        promo_code: coupon?.code || promoInput || '',
-        items: cartItems.map(item => ({
-          item_name: item.title || '',
-          product_type: item.item_type === 'Combo' ? 'combo' : 'single',
-          quantity: Number(item.quantity || 0),
-          price: Number(item.unitPrice || 0),
-          time_slot: item.slotLabel || '',
-          selected_date: item.booking_date || ''
-        }))
-      });
+      // Small delay to ensure all computed values (finalTotal, addons) are ready
+      const timer = setTimeout(() => {
+        if (beginCheckoutFiredRef.current) return;
+        beginCheckoutFiredRef.current = true;
+
+        const totalTickets = cartItems.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
+
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({
+          event: 'begin_checkout',
+          total_value: finalTotal || grossTotal || 0,
+          total_tickets: totalTickets,
+          total_pax: totalTickets,
+          currency: 'INR',
+          product_type: cartItems[0]?.item_type === 'Combo' ? 'combo' : 'single',
+          time_slot: cartItems[0]?.slotLabel || '',
+          selected_date: cartItems[0]?.booking_date || '',
+          has_addons: totalAddonsCost > 0,
+          addons_value: totalAddonsCost || 0,
+          promo_code: coupon?.code || promoInput || '',
+          items: cartItems.map(item => ({
+            item_name: item.title || '',
+            product_type: item.item_type === 'Combo' ? 'combo' : 'single',
+            quantity: Number(item.quantity || 0),
+            price: Number(item.unitPrice || 0),
+            time_slot: item.slotLabel || '',
+            selected_date: item.booking_date || ''
+          }))
+        });
+      }, 100);
+
+      return () => clearTimeout(timer);
     }
     // Reset flag when leaving step 4
     if (step !== 4) {
       beginCheckoutFiredRef.current = false;
     }
-  }, [step, hasCartItems]);
+  }, [step, hasCartItems, finalTotal, grossTotal, cartItems, totalAddonsCost, coupon?.code, promoInput]);
 
   useEffect(() => {
     const pendingOrderData = localStorage.getItem('pendingOrderData');

@@ -31,6 +31,7 @@ export default function PaymentStatus() {
     const [ticketUrl, setTicketUrl] = useState(null);
     const [errorMsg, setErrorMsg] = useState('');
     const [retryCount, setRetryCount] = useState(0);
+    const [failedOrderData, setFailedOrderData] = useState(null);
 
     const verify = useCallback(async () => {
         if (!txnId) {
@@ -103,10 +104,12 @@ export default function PaymentStatus() {
                             setRetryCount((c) => c + 1);
                         }, 3000);
                     } else {
+                        setFailedOrderData(data);
                         setPhase('failed');
                         setErrorMsg('Payment is taking longer than expected. Your booking will be confirmed once we receive payment. Check your email in a few minutes.');
                     }
                 } else {
+                    setFailedOrderData(data);
                     setPhase('failed');
                     setErrorMsg(data.message || data.error || 'Payment could not be verified.');
                 }
@@ -152,19 +155,35 @@ export default function PaymentStatus() {
     // 🔹 GTM PAYMENT_FAILED EVENT — fires when payment fails
     useEffect(() => {
         if (phase === 'failed' || phase === 'error') {
+            const d = failedOrderData || {};
+            const totalTickets = Number(d.totalTickets || d.quantity || d.total_tickets || 0);
+            const totalVal = Number(d.totalPaid || d.totalValue || d.amount || d.total_amount || 0);
+            const addonsVal = Number(d.addonsValue || d.addon_total || 0);
+
             window.dataLayer = window.dataLayer || [];
             window.dataLayer.push({
                 event: 'payment_failed',
-                total_value: 0, // actual value not available after gateway redirect
-                total_tickets: 0,
-                total_pax: 0,
+                order_id: d.orderId || d.orderRef || txnId || '',
+                total_value: totalVal,
+                total_tickets: totalTickets,
+                total_pax: totalTickets,
                 currency: 'INR',
                 payment_gateway: gateway,
-                has_addons: false,
-                addons_value: 0
+                has_addons: addonsVal > 0,
+                addons_value: addonsVal,
+                promo_code: d.promoCode || d.coupon_code || '',
+                discount_value: Number(d.discountValue || d.discount_amount || 0),
+                items: Array.isArray(d.items) ? d.items.map(item => ({
+                    item_name: item.title || item.name || '',
+                    product_type: item.type || (item.item_type === 'Combo' ? 'combo' : 'single'),
+                    quantity: Number(item.quantity || 1),
+                    price: Number(item.pricePerTicket || item.unit_price || item.price || 0),
+                    time_slot: item.timeSlot || item.slot_label || '',
+                    selected_date: item.date || item.booking_date || ''
+                })) : []
             });
         }
-    }, [phase, gateway]);
+    }, [phase, gateway, failedOrderData, txnId]);
 
     const handleDownloadTicket = (e) => {
         e.stopPropagation();
