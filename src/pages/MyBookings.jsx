@@ -101,11 +101,12 @@ export default function MyBookings() {
   const orders = useMemo(() => {
     if (!Array.isArray(items)) return [];
 
-    // Filter items to show only relevant statuses (Pending and Confirmed)
-    const filteredItems = items.filter(item => 
-      ['PENDING_PAYMENT', 'CONFIRMED', 'Booked', 'Redeemed'].includes(String(item.booking_status).toUpperCase()) ||
-      ['PENDING_PAYMENT', 'CONFIRMED', 'Booked', 'Redeemed'].includes(item.booking_status)
-    );
+    // Filter out Failed and Cancelled booking statuses — only show active bookings
+    const excludedStatuses = ['FAILED', 'CANCELLED', 'CANCELED'];
+    const filteredItems = items.filter(item => {
+      const bs = String(item.booking_status || '').toUpperCase();
+      return !excludedStatuses.includes(bs);
+    });
 
     const grouped = new Map();
 
