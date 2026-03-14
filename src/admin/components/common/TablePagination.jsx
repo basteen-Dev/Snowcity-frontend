@@ -7,10 +7,10 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 export default function TablePagination({
     count = 0,
     page = 1,
-    rowsPerPage = 25,
+    rowsPerPage = 100,
     onPageChange,
     onRowsPerPageChange,
-    rowsPerPageOptions = [10, 25, 50, 100],
+    rowsPerPageOptions = [100, 50, 25, 10],
     component: Component = 'div',
     className = ''
 }) {

@@ -101,9 +101,15 @@ export default function MyBookings() {
   const orders = useMemo(() => {
     if (!Array.isArray(items)) return [];
 
+    // Filter items to show only relevant statuses (Pending and Confirmed)
+    const filteredItems = items.filter(item => 
+      ['PENDING_PAYMENT', 'CONFIRMED', 'Booked', 'Redeemed'].includes(String(item.booking_status).toUpperCase()) ||
+      ['PENDING_PAYMENT', 'CONFIRMED', 'Booked', 'Redeemed'].includes(item.booking_status)
+    );
+
     const grouped = new Map();
 
-    items.forEach(item => {
+    filteredItems.forEach(item => {
       const key = item.order_id || item.booking_id || item.id;
 
       if (!grouped.has(key)) {
@@ -436,7 +442,7 @@ export default function MyBookings() {
                     {/* Retry Payment Form */}
                     {isRetry && (
                       <div className="mt-4 bg-white border border-blue-100 rounded-xl p-4 shadow-sm animate-in fade-in slide-in-from-top-2">
-                        <h5 className="text-sm font-bold text-gray-800 mb-3">Complete Payment for Order #{order.ref || order.id}</h5>
+                        <h5 className="text-sm font-bold text-gray-800 mb-3">Complete Payment for Order {order.ref || order.id}</h5>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                           <div>
                             <label className="block text-xs text-gray-500 mb-1">Email</label>

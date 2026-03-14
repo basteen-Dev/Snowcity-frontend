@@ -1,6 +1,10 @@
 import React, { Suspense, lazy } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation, useParams } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
+import { useSelector, Provider } from 'react-redux';
+import { Toaster } from 'react-hot-toast';
+import store from '../app/store';
+import { ChatbotProvider } from '../context/ChatbotContext';
+import { useSiteSettings } from '../hooks/useSiteSettings';
 import Loader from '../components/common/Loader';
 const AdminApp = lazy(() => import('../admin/AdminApp.jsx'));
 
@@ -76,6 +80,18 @@ function AppLayout() {
   );
 }
 
+function WebsiteLayout({ children }) {
+  useSiteSettings();
+  return (
+    <Provider store={store}>
+      <ChatbotProvider>
+        {children}
+        <Toaster position="top-right" />
+      </ChatbotProvider>
+    </Provider>
+  );
+}
+
 export default function AppRouter() {
   return (
     <BrowserRouter>
@@ -84,8 +100,8 @@ export default function AppRouter() {
           {/* 👇 Admin routes are now independent (no public navbar/footer) */}
           <Route path="/parkpanel/*" element={<AdminApp />} />
 
-          {/* 👇 Main public layout */}
-          <Route element={<AppLayout />}>
+          {/* 👇 Main public layout wrapped in website-specific providers */}
+          <Route element={<WebsiteLayout><AppLayout /></WebsiteLayout>}>
             <Route index element={<Home />} />
             <Route path="/attractions" element={<Attractions />} />
             <Route path="/offers" element={<Offers />} />

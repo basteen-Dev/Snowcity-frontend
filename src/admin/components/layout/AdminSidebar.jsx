@@ -87,7 +87,6 @@ export default function AdminSidebar({ collapsed, mobileOpen, onCloseMobile, onT
         { to: '/parkpanel/analytics/custom', label: 'Custom Report', icon: FileText },
         { to: '/parkpanel/analytics/people', label: 'People', icon: Users },
         { to: '/parkpanel/analytics/views', label: 'Views', icon: Eye },
-        { to: '/parkpanel/analytics/conversion', label: 'Conversion', icon: TrendingUp },
         { to: '/parkpanel/revenue/attractions', label: 'Attraction Revenue', icon: DollarSign },
         { to: '/parkpanel/revenue/combos', label: 'Combo Revenue', icon: DollarSign },
       );

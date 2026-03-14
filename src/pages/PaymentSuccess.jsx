@@ -5,7 +5,6 @@ import { CheckCircle, Loader2, FileDown, PhoneCall } from 'lucide-react';
 import api from '../services/apiClient';
 import endpoints from '../services/endpoints';
 import { absoluteUrl } from '../utils/media';
-import { trackBookingConversion } from '../hooks/useTracking';
 import { fireConversionEvent } from '../hooks/useConversionPixels';
 
 const statusCopy = {
@@ -95,7 +94,6 @@ export default function PaymentSuccess() {
               currency: "INR"
             });
 
-            trackBookingConversion({ order_id: orderId, amount: totalAmount });
 
             if (totalAmount > 0) {
               fireConversionEvent({ value: totalAmount, currency: "INR" });

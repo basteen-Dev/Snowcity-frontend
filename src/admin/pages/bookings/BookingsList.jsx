@@ -112,7 +112,6 @@ export default function BookingsList() {
   const navigate = useNavigate();
   const { list } = useSelector((s) => s.adminBookings);
   const { user } = useSelector((s) => s.adminAuth);
-  const rows = React.useMemo(() => (Array.isArray(list.data) ? list.data : []), [list.data]);
 
   const [filters, setFilters] = React.useState({
     search: '',
@@ -134,6 +133,24 @@ export default function BookingsList() {
   const searchTimerRef = React.useRef(null);
   const [statusUpdating, setStatusUpdating] = React.useState(null);
   const [autoSync, setAutoSync] = React.useState(true);
+
+  const rows = React.useMemo(() => {
+    let data = Array.isArray(list.data) ? list.data : [];
+
+    // Check if a time filter is active (today, tomorrow, or custom range)
+    const hasTimeFilter = !!(filters.date_from || filters.date_to);
+    // Check if the user has explicitly selected a status filter
+    const hasStatusFilter = !!filters.booking_status;
+    // Check if a search is active
+    const hasSearch = !!filters.search?.trim();
+
+    // If filtering by time and no explicit status/search is active, hide cancelled bookings
+    if (hasTimeFilter && !hasStatusFilter && !hasSearch) {
+      return data.filter(it => it.booking_status !== 'Cancelled');
+    }
+
+    return data;
+  }, [list.data, filters.date_from, filters.date_to, filters.booking_status, filters.search]);
 
   // Auto-sync: poll every 15s for new bookings
   React.useEffect(() => {

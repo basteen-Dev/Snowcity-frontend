@@ -82,7 +82,6 @@ const AnalyticsPeople = lazy(() => import('../pages/analytics/People.jsx'));
 const AnalyticsViews = lazy(() => import('../pages/analytics/Views.jsx'));
 const AnalyticsSplit = lazy(() => import('../pages/analytics/Split.jsx'));
 const AnalyticsTop = lazy(() => import('../pages/analytics/TopAttractions'));
-const ConversionDashboard = lazy(() => import('../pages/analytics/ConversionDashboard'));
 
 // Revenue pages
 const AttractionsRevenue = lazy(() => import('../pages/revenue/AttractionRevenue'));
@@ -224,7 +223,6 @@ export default function AdminRouter() {
             <Route path="views" element={<AnalyticsViews />} />
             <Route path="split" element={<AnalyticsSplit />} />
             <Route path="top-attractions" element={<AnalyticsTop />} />
-            <Route path="conversion" element={<ConversionDashboard />} />
           </Route>
 
           {/* ──── Bookings — SuperAdmin + GM + Staff ──── */}

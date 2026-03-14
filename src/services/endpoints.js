@@ -187,11 +187,6 @@ const endpoints = {
     }
   },
 
-  // Conversion Tracking (Public)
-  tracking: {
-    visit: () => '/api/track/visit',        // POST
-    booking: () => '/api/track/booking',     // POST
-  }
 };
 
 export default endpoints;

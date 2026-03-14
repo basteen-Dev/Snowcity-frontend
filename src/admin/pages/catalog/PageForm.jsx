@@ -13,12 +13,12 @@ import toast from 'react-hot-toast';
 const NAV_GROUPS = [
   { key: '', label: 'No nav' },
   { key: 'visitors_guide', label: 'Visitors Guide' },
-  { key: 'more_info', label: 'More info' },
 ];
 
 const PLACEMENTS = [
   { key: 'none', label: 'No special placement' },
   { key: 'home_bottom', label: 'Home - Bottom section' },
+  { key: 'more_info', label: 'Home - More info accordion' },
   { key: 'attraction_details', label: 'Attraction - Details section (select attraction)' },
 ];
 
@@ -91,6 +91,9 @@ export default function PageForm() {
       };
 
       const payload = { ...form };
+      if (payload.placement === 'more_info' && !payload.slug) {
+        payload.slug = null;
+      }
       payload.section_type = form.section_type || 'none';
       payload.section_ref_id = payload.section_type === 'none' ? null : normalizeId(form.section_ref_id);
       payload.placement_ref_id = form.placement === 'attraction_details' ? normalizeId(form.placement_ref_id) : null;
@@ -225,18 +228,18 @@ export default function PageForm() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">
-                  Slug *
+                  Slug {form.placement === 'more_info' ? '' : '*'}
                 </label>
                 <input
                   type="text"
-                  required
+                  required={form.placement !== 'more_info'}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-neutral-700 dark:text-neutral-100"
-                  value={form.slug}
+                  value={form.slug || ''}
                   onChange={(e) => onChange({ slug: e.target.value })}
-                  placeholder="my-custom-page"
+                  placeholder={form.placement === 'more_info' ? 'Optional for home accordion' : 'my-custom-page'}
                 />
                 <p className="mt-1 text-xs text-gray-500 dark:text-neutral-400">
-                  Live URL: <span className="text-blue-600 dark:text-blue-400">{window.location.origin}/{form.slug || 'slug'}</span>
+                  Live URL: <span className="text-blue-600 dark:text-blue-400">{window.location.origin}/{form.slug || (form.placement === 'more_info' ? 'no-slug' : 'slug')}</span>
                 </p>
               </div>
             </div>
