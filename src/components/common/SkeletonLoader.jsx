@@ -53,8 +53,8 @@ export const SkeletonCarousel = ({ items = 3, className = "" }) => (
 
 // Hero section skeleton
 export const SkeletonHeroSection = () => (
-  <div className="w-full">
-    <SkeletonHero />
+  <div className="w-full mt-14 md:mt-0">
+    <div className="w-full aspect-[800/1000] sm:aspect-[2.5/1] skeleton" style={{ minHeight: 200 }} />
   </div>
 );
 

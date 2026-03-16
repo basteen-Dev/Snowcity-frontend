@@ -3,6 +3,7 @@ module.exports = {
   darkMode: 'class',
   content: [
     './index.html',
+    './parkpanel/**/*.html',
     './src/**/*.{js,jsx}'
   ],
   // tailwind.config.js

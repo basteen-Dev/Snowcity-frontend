@@ -5,7 +5,7 @@ import { imgSrc } from '../../utils/media';
 import { getPrice, getBasePrice } from '../../utils/pricing';
 import api from '../../services/apiClient';
 import endpoints from '../../services/endpoints';
-import snowParkVideo from '../../assets/images/Web gif_GStory_1772876679.mp4';
+// Video loaded dynamically below — not statically imported (saves ~1.79 MB from initial bundle)
 
 const AttractionCardInner = function AttractionCard({ item, featured = false }) {
   const navigate = useNavigate();
@@ -20,6 +20,7 @@ const AttractionCardInner = function AttractionCard({ item, featured = false }) 
   const displayPrice = finalPrice || basePrice || 699;
 
   const [gallery, setGallery] = React.useState([]);
+  const [videoSrc, setVideoSrc] = React.useState(null);
 
   React.useEffect(() => {
     if (featured && attrId) {
@@ -41,6 +42,13 @@ const AttractionCardInner = function AttractionCard({ item, featured = false }) 
       })();
     }
   }, [featured, attrId]);
+
+  // Dynamically load video only for Snow Park featured card
+  React.useEffect(() => {
+    if (featured && title.toLowerCase().includes('snow park')) {
+      import('../../assets/images/Web gif_GStory_1772876679.mp4').then(mod => setVideoSrc(mod.default));
+    }
+  }, [featured, title]);
 
   const stop = (e) => e.stopPropagation();
 
@@ -160,8 +168,9 @@ const AttractionCardInner = function AttractionCard({ item, featured = false }) 
               if (isSnowPark && idx === 1) {
                 return (
                   <div key="video-cell" className="feat-vg-cell">
+                    {videoSrc ? (
                     <video
-                      src={snowParkVideo}
+                      src={videoSrc}
                       poster={img}
                       autoPlay
                       muted
@@ -170,6 +179,9 @@ const AttractionCardInner = function AttractionCard({ item, featured = false }) 
                       preload="none"
                       className="w-full h-full object-cover"
                     />
+                    ) : (
+                      <img src={img} alt="Snow Park" className="w-full h-full object-cover" />
+                    )}
                   </div>
                 );
               }

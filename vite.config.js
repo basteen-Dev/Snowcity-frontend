@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite'
+import { resolve } from 'path'
 import react from '@vitejs/plugin-react'
 import { visualizer } from 'rollup-plugin-visualizer'
 import { compression } from 'vite-plugin-compression2'
@@ -19,6 +20,17 @@ export default defineConfig({
       exclude: [/\.(gz)$/i],
       threshold: 1024,
     }),
+    {
+      name: 'rewrite-parkpanel',
+      configureServer(server) {
+        server.middlewares.use((req, res, next) => {
+          if (req.url.startsWith('/parkpanel')) {
+            req.url = '/parkpanel/index.html';
+          }
+          next();
+        });
+      },
+    },
   ],
   build: {
     target: 'es2020',
@@ -32,6 +44,10 @@ export default defineConfig({
       },
     },
     rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html'),
+        admin: resolve(__dirname, 'parkpanel/index.html'),
+      },
       plugins: [
         visualizer({
           filename: 'dist/stats.html',
@@ -46,9 +62,7 @@ export default defineConfig({
           'redux-vendor': ['@reduxjs/toolkit', 'react-redux'],
           'swiper-vendor': ['swiper'],
           'motion-vendor': ['framer-motion'],
-          'chart-vendor': ['recharts'],
           'ui-vendor': ['lucide-react', 'react-hot-toast', 'clsx'],
-          'editor-vendor': ['react-quill-new', 'dompurify', 'html-react-parser'],
           'date-vendor': ['dayjs'],
           'style-vendor': ['styled-components'],
         }

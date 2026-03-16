@@ -4,20 +4,35 @@ function apiBaseUrl() {
   try { return http?.defaults?.baseURL || ''; } catch { return ''; }
 }
 
+const CDN_DOMAIN = import.meta.env.VITE_CDN_DOMAIN || '';
+
+function toCdn(url) {
+  if (!url || typeof url !== 'string') return url;
+  // If it's an S3 URL, replace it with CloudFront
+  if (url.includes('snowparkblr.s3.ap-south-1.amazonaws.com')) {
+    return url.replace('snowparkblr.s3.ap-south-1.amazonaws.com', CDN_DOMAIN);
+  }
+  return url;
+}
+
 function toAbsolute(path) {
   if (!path) return '';
-  if (/^https?:\/\//i.test(path)) return path;
+  if (/^https?:\/\//i.test(path)) return toCdn(path);
   const base = apiBaseUrl();
   try {
+    let finalUrl;
     // If base URL includes /api and path starts with /, 
     // we need to ensure we don't jump to the root of the domain.
     if (base && base.endsWith('/api') && path.startsWith('/') && !path.startsWith('/api')) {
-      return `${base}${path}`;
+      finalUrl = `${base}${path}`;
+    } else if (path.startsWith('/')) {
+      finalUrl = base ? new URL(path, base).toString() : path;
+    } else {
+      finalUrl = base ? new URL(`/${path}`, base).toString() : path;
     }
-    if (path.startsWith('/')) return base ? new URL(path, base).toString() : path;
-    return base ? new URL(`/${path}`, base).toString() : path;
+    return toCdn(finalUrl);
   } catch {
-    return path;
+    return toCdn(path);
   }
 }
 

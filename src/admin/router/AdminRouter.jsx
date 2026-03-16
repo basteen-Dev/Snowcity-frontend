@@ -147,20 +147,20 @@ function RequireRole({ allowed, module, children }) {
   });
 
   if (!roleOk) {
-    return <Navigate to={isEditor ? '/parkpanel/catalog/attractions' : '/parkpanel'} replace />;
+    return <Navigate to={isEditor ? '/catalog/attractions' : '/'} replace />;
   }
 
   // If role is ok, check module permission specifically for staff/gm
   if ((isStaff || isGM) && module) {
-    if (module === 'dashboard' && !canSeeDashboard) return <Navigate to="/parkpanel/catalog/attractions" replace />;
-    if (module === 'analytics' && !canSeeAnalytics) return <Navigate to="/parkpanel/catalog/attractions" replace />;
-    if (module === 'bookings' && !canSeeBookings) return <Navigate to="/parkpanel/catalog/attractions" replace />;
-    if (module === 'reports' && !canSeeReports) return <Navigate to="/parkpanel/catalog/attractions" replace />;
-    if (module === 'catalog' && !canSeeCatalog) return <Navigate to="/parkpanel" replace />;
-    if (module === 'offers' && !canSeeOffers) return <Navigate to="/parkpanel/catalog/attractions" replace />;
-    if (module === 'dynamic_pricing' && !canSeeDynamicPricing) return <Navigate to="/parkpanel/catalog/attractions" replace />;
-    if (module === 'people' && !canSeeUsers) return <Navigate to="/parkpanel/catalog/attractions" replace />;
-    if (module === 'site_settings' && !canSeeSettings) return <Navigate to="/parkpanel/catalog/attractions" replace />;
+    if (module === 'dashboard' && !canSeeDashboard) return <Navigate to="/catalog/attractions" replace />;
+    if (module === 'analytics' && !canSeeAnalytics) return <Navigate to="/catalog/attractions" replace />;
+    if (module === 'bookings' && !canSeeBookings) return <Navigate to="/catalog/attractions" replace />;
+    if (module === 'reports' && !canSeeReports) return <Navigate to="/catalog/attractions" replace />;
+    if (module === 'catalog' && !canSeeCatalog) return <Navigate to="/" replace />;
+    if (module === 'offers' && !canSeeOffers) return <Navigate to="/catalog/attractions" replace />;
+    if (module === 'dynamic_pricing' && !canSeeDynamicPricing) return <Navigate to="/catalog/attractions" replace />;
+    if (module === 'people' && !canSeeUsers) return <Navigate to="/catalog/attractions" replace />;
+    if (module === 'site_settings' && !canSeeSettings) return <Navigate to="/catalog/attractions" replace />;
   }
 
   return children;
@@ -171,12 +171,12 @@ function RequireRole({ allowed, module, children }) {
  */
 function DashboardIndex() {
   const { isEditor, canSeeDashboard, canSeeBookings, canSeeCatalog } = useAdminRole();
-  if (isEditor) return <Navigate to="/parkpanel/catalog/attractions" replace />;
+  if (isEditor) return <Navigate to="/catalog/attractions" replace />;
   
   // If user cannot see dashboard, redirect to bookings or catalog
   if (!canSeeDashboard) {
-    if (canSeeBookings) return <Navigate to="/parkpanel/bookings" replace />;
-    if (canSeeCatalog) return <Navigate to="/parkpanel/catalog/attractions" replace />;
+    if (canSeeBookings) return <Navigate to="/bookings" replace />;
+    if (canSeeCatalog) return <Navigate to="/catalog/attractions" replace />;
     return <div className="p-8 text-center text-sm text-gray-500">You do not have access to any modules.</div>;
   }
 
@@ -569,7 +569,7 @@ export default function AdminRouter() {
       </Route>
 
       {/* Global fallback */}
-      <Route path="*" element={<Navigate to="/parkpanel" replace />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }

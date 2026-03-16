@@ -6,8 +6,8 @@ import { Link, useLocation } from 'react-router-dom';
 import { Bell, Menu, LogOut, User } from 'lucide-react';
 
 const quickLinks = [
-  { label: 'Reports', to: '/parkpanel/analytics/overview' },
-  { label: 'Bookings', to: '/parkpanel/bookings' },
+  { label: 'Reports', to: '/analytics/overview' },
+  { label: 'Bookings', to: '/bookings' },
 ];
 
 // Simple breadcrumb from path
@@ -16,7 +16,7 @@ function useBreadcrumbs() {
   const parts = pathname.replace(/^\/admin\/?/, '').split('/').filter(Boolean);
   return parts.map((p, i) => ({
     label: p.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
-    to: '/parkpanel/' + parts.slice(0, i + 1).join('/'),
+    to: '/' + parts.slice(0, i + 1).join('/'),
     isLast: i === parts.length - 1,
   }));
 }
@@ -61,7 +61,7 @@ export default function AdminTopbar({ onToggleSidebar, onToggleMobile }) {
           </button>
           {/* Breadcrumbs */}
           <nav className="hidden md:flex items-center gap-1 text-sm" aria-label="Breadcrumb">
-            <Link to="/parkpanel" className="text-gray-400 dark:text-neutral-500 hover:text-gray-600 dark:hover:text-neutral-300 transition-colors">
+            <Link to="/" className="text-gray-400 dark:text-neutral-500 hover:text-gray-600 dark:hover:text-neutral-300 transition-colors">
               Home
             </Link>
             {breadcrumbs.map((crumb) => (
@@ -103,7 +103,7 @@ export default function AdminTopbar({ onToggleSidebar, onToggleMobile }) {
 
                 <div className="border-t border-gray-100 dark:border-slate-700 py-1">
                   <Link
-                    to="/parkpanel/profile"
+                    to="/profile"
                     className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-neutral-200 hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors"
                     onClick={() => setOpen(false)}
                   >

@@ -6,7 +6,6 @@ import store from '../app/store';
 import { ChatbotProvider } from '../context/ChatbotContext';
 import { useSiteSettings } from '../hooks/useSiteSettings';
 import Loader from '../components/common/Loader';
-const AdminApp = lazy(() => import('../admin/AdminApp.jsx'));
 
 function safeLazy(factory, FallbackComp) {
   return lazy(() =>
@@ -97,9 +96,6 @@ export default function AppRouter() {
     <BrowserRouter>
       <Suspense fallback={<FallbackPage />}>
         <Routes>
-          {/* 👇 Admin routes are now independent (no public navbar/footer) */}
-          <Route path="/parkpanel/*" element={<AdminApp />} />
-
           {/* 👇 Main public layout wrapped in website-specific providers */}
           <Route element={<WebsiteLayout><AppLayout /></WebsiteLayout>}>
             <Route index element={<Home />} />
@@ -126,6 +122,7 @@ export default function AppRouter() {
             <Route path="/login" element={<Navigate to="/?authRequired=1" replace />} />
 
             {/* 👇 Catch-all routes for slugs - combos first, then attractions */}
+            <Route path="/parkpanel/*" element={null} />
             <Route path="/:slug" element={<SlugRouter />} />
 
             <Route path="*" element={<NotFound />} />

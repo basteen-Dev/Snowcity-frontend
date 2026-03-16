@@ -1,6 +1,7 @@
 import React from 'react';
 import uploadAdminMedia from '../../utils/uploadMedia';
 import { absoluteUrl } from '../../../utils/media';
+import '../../../styles/quill-overrides.css';
 
 const resolveAssetUrl = (url) => {
   const resolved = absoluteUrl(url);

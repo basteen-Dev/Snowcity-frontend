@@ -68,100 +68,7 @@ body {
   font-display: swap;
 }
 
-/* Updated Quill font classes */
-.ql-snow .ql-picker.ql-font .ql-picker-label::before,
-.ql-snow .ql-picker.ql-font .ql-picker-item::before {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-}
-
-.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="serif"]::before,
-/* Default to body font */
-
-/* Quill font-size picker labels */
-.ql-snow .ql-picker.ql-size .ql-picker-label[data-value="small"]::before,
-.ql-snow .ql-picker.ql-size .ql-picker-item[data-value="small"]::before {
-  content: 'Small' !important;
-  font-size: 12px !important;
-}
-
-.ql-snow .ql-picker.ql-size .ql-picker-label[data-value="large"]::before,
-.ql-snow .ql-picker.ql-size .ql-picker-item[data-value="large"]::before {
-  content: 'Large' !important;
-  font-size: 18px !important;
-}
-
-.ql-snow .ql-picker.ql-size .ql-picker-label[data-value="huge"]::before,
-.ql-snow .ql-picker.ql-size .ql-picker-item[data-value="huge"]::before {
-  content: 'Huge' !important;
-  font-size: 24px !important;
-}
-
-/* Quill font size rendering */
-.ql-size-small {
-  font-size: 0.75em;
-}
-
-.ql-size-large {
-  font-size: 1.5em;
-}
-
-.ql-size-huge {
-  font-size: 2em;
-}
-
-/* Quill font picker labels (display name in dropdown) */
-.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="plusjakartasans"]::before,
-.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="plusjakartasans"]::before {
-  content: 'Plus Jakarta Sans' !important;
-}
-
-.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="redhatdisplay"]::before,
-.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="redhatdisplay"]::before {
-  content: 'Red Hat Display' !important;
-  font-family: 'Red Hat Display', sans-serif;
-}
-
-.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="serif"]::before,
-.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="serif"]::before {
-  content: 'Serif' !important;
-}
-
-.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="monospace"]::before,
-.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="monospace"]::before {
-  content: 'Monospace' !important;
-}
-
-/* Quill editor spacing — ensure paragraphs have visible gaps */
-.ql-editor p {
-  margin-bottom: 0.75em;
-}
-
-.ql-editor h1,
-.ql-editor h2,
-.ql-editor h3 {
-  margin-top: 1.2em;
-  margin-bottom: 0.5em;
-}
-
-.ql-editor ul,
-.ql-editor ol {
-  margin-bottom: 0.75em;
-  padding-left: 1.5em;
-}
-
-.ql-editor blockquote {
-  border-left: 4px solid #0099FF;
-  padding-left: 1em;
-  margin: 1em 0;
-  color: #6B7280;
-  font-style: italic;
-}
-
-.ql-editor img {
-  max-width: 100%;
-  height: auto;
-  border-radius: 8px;
-}
+/* Quill editor styles extracted to src/styles/quill-overrides.css (admin-only) */
 
 /* ── Frontend content rendering ── */
 /* These styles ensure CMS content renders exactly like the editor */
@@ -721,20 +628,21 @@ body {
 
 /* Skeleton Loader Styles */
 .skeleton {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-  background-size: 200% 100%;
-  animation: skeleton-loading 1.5s ease-in-out infinite;
+  background-color: #e5e7eb;
   border-radius: 0.5rem;
-  will-change: background-position;
+  animation: skeleton-pulse 1.5s ease-in-out 0.5s infinite;
+  will-change: opacity;
 }
 
-@keyframes skeleton-loading {
+@keyframes skeleton-pulse {
   0% {
-    background-position: 200% 0;
+    opacity: 1;
   }
-
+  50% {
+    opacity: 0.5;
+  }
   100% {
-    background-position: -200% 0;
+    opacity: 1;
   }
 }
 

@@ -9,6 +9,14 @@
             "destination": "/api/payphi-return"
         },
         {
+            "source": "/parkpanel",
+            "destination": "/parkpanel/index.html"
+        },
+        {
+            "source": "/parkpanel/:path*",
+            "destination": "/parkpanel/index.html"
+        },
+        {
             "source": "/(.*)",
             "destination": "/index.html"
         }

@@ -86,11 +86,11 @@ export function useSiteSettings() {
                     }
                 };
 
-                // Use requestIdleCallback to defer script injection
+                // Use requestIdleCallback to defer script injection well after page is interactive
                 if ('requestIdleCallback' in window) {
-                    window.requestIdleCallback(runInjection, { timeout: 2000 });
+                    window.requestIdleCallback(runInjection, { timeout: 5000 });
                 } else {
-                    setTimeout(runInjection, 1000);
+                    setTimeout(runInjection, 3500);
                 }
 
             } catch (e) {
