@@ -1323,7 +1323,7 @@ export default function Booking() {
     return new Map();
   }, [cartAddons, activeItemKey]);
 
-  const addSelectionToCart = useCallback((skipGTM = false) => {
+  const addSelectionToCart = useCallback(({ skipGTM = false, buttonType = 'add_to_cart' } = {}) => {
     if (!selectionReady) return false;
 
     // 🔹 GTM ADD_TO_CART EVENT
@@ -1340,7 +1340,7 @@ export default function Booking() {
         time_slot: selectedSlot ? getSlotLabel(selectedSlot) : '',
         selected_date: toYMD(sel.date),
         currency: 'INR',
-        button_type: 'add_to_cart',
+        button_type: buttonType,
         items: [
           {
             item_name: selectedMeta.title,
@@ -1420,7 +1420,7 @@ export default function Booking() {
     }
 
     // Always add to cart even if same item exists (as per user request: "set add to cart ... some of the want book different slots same date same attraction")
-    addSelectionToCart(false); // allow GTM push
+    addSelectionToCart({ buttonType: 'buy_now' }); // allow GTM push with buy_now type
 
     // Navigate directly to add-ons/checkout
     dispatch(setStep(2));
@@ -1430,7 +1430,7 @@ export default function Booking() {
     if (step === 1) {
       // If there's a pending selection that's ready, add it first
       if (selectionReady) {
-        addSelectionToCart(false);
+        addSelectionToCart({ buttonType: 'add_to_cart' });
         dispatch(setStep(2));
         return;
       }
@@ -2519,7 +2519,7 @@ export default function Booking() {
                           <div className="flex items-center gap-2">
                             <button
                               type="button"
-                              onClick={addSelectionToCart}
+                              onClick={() => addSelectionToCart({ buttonType: 'add_to_cart' })}
                               disabled={!selectionReady}
                               className={`w-full px-2 py-1.5 rounded-xl text-white font-bold shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 ${!selectionReady ? 'bg-gray-300 cursor-not-allowed' : 'bg-sky-600 hover:bg-sky-700'
                                 }`}

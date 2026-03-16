@@ -53,7 +53,7 @@ function ScrollToTop() {
   const location = useLocation();
   React.useEffect(() => {
     if (location.hash) return;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: 'instant' });
   }, [location.key]);
   return null;
 }

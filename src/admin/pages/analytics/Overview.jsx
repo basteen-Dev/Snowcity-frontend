@@ -7,7 +7,7 @@ import { formatCurrency } from '../../../utils/formatters';
 
 // Dynamic loader for Recharts (works fine with React 19)
 const SectionCard = ({ title, subtitle, children, className = '' }) => (
-  <div className={`rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:bg-neutral-900 dark:border-neutral-800 ${className}`}>
+  <div className={`rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:bg-slate-800 dark:border-slate-700 ${className}`}>
     <div className="flex items-start justify-between mb-4">
       <div>
         <p className="text-sm font-semibold text-gray-900 dark:text-neutral-100">{title}</p>
@@ -19,7 +19,7 @@ const SectionCard = ({ title, subtitle, children, className = '' }) => (
 );
 
 const MetricCard = ({ label, value, note, accent = 'from-gray-500 to-gray-700' }) => (
-  <div className="rounded-2xl border border-gray-100 bg-white shadow-sm p-4 dark:bg-neutral-900 dark:border-neutral-800">
+  <div className="rounded-2xl border border-gray-100 bg-white shadow-sm p-4 dark:bg-slate-800 dark:border-slate-700">
     <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{label}</div>
     <div className={`mt-3 text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r ${accent}`}>{value}</div>
     {note ? <div className="text-xs text-gray-500 mt-2">{note}</div> : null}
@@ -50,17 +50,17 @@ function MiniOverviewChart({ data }) {
     })();
     return () => { mounted = false; };
   }, []);
-  if (lib === null) return <div className="h-60 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl p-3 animate-pulse" />;
+  if (lib === null) return <div className="h-60 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-3 animate-pulse" />;
   if (lib === false) {
     return (
-      <div className="h-60 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl p-3 text-sm text-gray-600 dark:text-neutral-300 flex items-center justify-center">
+      <div className="h-60 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-3 text-sm text-gray-600 dark:text-neutral-300 flex items-center justify-center">
         Charts unavailable (install: npm i recharts --legacy-peer-deps)
       </div>
     );
   }
   const { ResponsiveContainer, AreaChart, Area, CartesianGrid, XAxis, YAxis, Tooltip } = lib;
   return (
-    <div className="h-60 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl p-3">
+    <div className="h-60 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-3">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data}>
           <CartesianGrid stroke="#eee" strokeDasharray="5 5" />
@@ -98,10 +98,10 @@ function MiniPieChart({ data }) {
     })();
     return () => { mounted = false; };
   }, []);
-  if (lib === null) return <div className="h-60 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl p-3 animate-pulse" />;
+  if (lib === null) return <div className="h-60 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-3 animate-pulse" />;
   if (lib === false) {
     return (
-      <div className="h-60 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl p-3 text-sm text-gray-600 dark:text-neutral-300 flex items-center justify-center">
+      <div className="h-60 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-3 text-sm text-gray-600 dark:text-neutral-300 flex items-center justify-center">
         Charts unavailable (install: npm i recharts --legacy-peer-deps)
       </div>
     );
@@ -110,7 +110,7 @@ function MiniPieChart({ data }) {
   const palette = ['#60a5fa', '#f59e0b', '#10b981', '#ef4444', '#a78bfa', '#f472b6'];
   const series = Array.isArray(data) ? data.map((r) => ({ name: String(r.booking_status || r.name), value: Number(r.count || r.value || 0) })) : [];
   return (
-    <div className="h-60 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl p-3">
+    <div className="h-60 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-3">
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie data={series} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={70} label>

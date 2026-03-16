@@ -113,7 +113,7 @@ export default function ImageUploader({
       <div className="flex items-center gap-2">
         <input
           type="text"
-          className="flex-1 rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200"
+          className="flex-1 rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200"
           placeholder="https://..."
           value={value || ''}
           onChange={(e) => onChange?.(e.target.value)}
@@ -128,7 +128,7 @@ export default function ImageUploader({
           </label>
           <input
             type="text"
-            className="w-full rounded-md border px-3 py-2 text-sm dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200"
+            className="w-full rounded-md border px-3 py-2 text-sm dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200"
             placeholder="Describe the image for SEO and accessibility..."
             value={altText || ''}
             onChange={(e) => onAltChange?.(e.target.value)}
@@ -138,7 +138,7 @@ export default function ImageUploader({
 
       {/* Drop zone + Choose */}
       <div
-        className="mt-2 rounded-md border border-dashed px-3 py-3 text-sm text-gray-600 dark:text-neutral-300 dark:border-neutral-700"
+        className="mt-2 rounded-md border border-dashed px-3 py-3 text-sm text-gray-600 dark:text-neutral-300 dark:border-slate-600"
         onDrop={onDrop}
         onDragOver={onDragOver}
       >
@@ -153,7 +153,7 @@ export default function ImageUploader({
           />
           <label
             htmlFor={inputId}
-            className="inline-flex items-center rounded-md border px-3 py-2 text-sm cursor-pointer dark:border-neutral-700 dark:text-neutral-200"
+            className="inline-flex items-center rounded-md border px-3 py-2 text-sm cursor-pointer dark:border-slate-600 dark:text-neutral-200"
             role="button"
           >
             Choose
@@ -171,7 +171,7 @@ export default function ImageUploader({
           {fileName ? <span className="text-xs text-gray-500 dark:text-neutral-400">Selected: {fileName}</span> : null}
           {file ? (
             <button
-              className="inline-flex items-center rounded-md border px-2 py-1 text-xs dark:border-neutral-700 dark:text-neutral-200"
+              className="inline-flex items-center rounded-md border px-2 py-1 text-xs dark:border-slate-600 dark:text-neutral-200"
               onClick={clearSelected}
               type="button"
             >
@@ -187,7 +187,7 @@ export default function ImageUploader({
       {/* Previews */}
       <div className="mt-2 flex items-center gap-3">
         {preview ? (
-          <div className="w-16 h-16 rounded-md border dark:border-neutral-800 overflow-hidden bg-gray-100">
+          <div className="w-16 h-16 rounded-md border dark:border-slate-700 overflow-hidden bg-gray-100">
             {getFileType(file) === 'video' ? (
               preview && <video src={preview} className="w-full h-full object-cover" muted />
             ) : getFileType(file) === 'pdf' ? (
@@ -200,7 +200,7 @@ export default function ImageUploader({
           </div>
         ) : null}
         {resolvedValue ? (
-          <div className="w-16 h-16 rounded-md border dark:border-neutral-800 overflow-hidden bg-gray-100">
+          <div className="w-16 h-16 rounded-md border dark:border-slate-700 overflow-hidden bg-gray-100">
             {resolvedValue.match(/\.(mp4|webm|ogg)$/i) ? (
               resolvedValue && <video src={resolvedValue} className="w-full h-full object-cover" muted />
             ) : resolvedValue.match(/\.pdf$/i) ? (

@@ -172,7 +172,7 @@ export default function BlogsList() {
             render: (row) => {
               const cover = imgSrc(row);
               return (
-                <div className="w-20 h-14 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center border dark:border-neutral-700">
+                <div className="w-20 h-14 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center border dark:border-slate-600">
                   <img
                     src={imgSrc(row)}
                     alt={row.title || 'Blog cover'}

@@ -96,7 +96,7 @@ export default function RawEditor({ value = {}, onChange }) {
 
   return (
     <div className="space-y-3">
-      <div className="rounded-lg border dark:border-neutral-800 p-3">
+      <div className="rounded-lg border dark:border-slate-700 p-3">
         <div className="text-sm font-medium mb-2">Upload assets (images/videos) to use in your HTML/CSS</div>
         <ImageUploader
           label="Upload"
@@ -109,7 +109,7 @@ export default function RawEditor({ value = {}, onChange }) {
         {assets.length ? (
           <div className="mt-3 space-y-2">
             {assets.map((asset) => (
-              <div key={asset.id} className="rounded-md border border-dashed dark:border-neutral-700 p-2 space-y-1 text-xs">
+              <div key={asset.id} className="rounded-md border border-dashed dark:border-slate-600 p-2 space-y-1 text-xs">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="flex-1 break-all text-gray-700 dark:text-neutral-200">{asset.absolute}</span>
                   <button
@@ -144,29 +144,29 @@ export default function RawEditor({ value = {}, onChange }) {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-        <div className="rounded-lg border dark:border-neutral-800 p-2">
+        <div className="rounded-lg border dark:border-slate-700 p-2">
           <div className="text-xs font-medium mb-1">HTML</div>
-          <textarea className="w-full h-64 rounded-md border px-2 py-2 dark:bg-neutral-900 dark:border-neutral-700"
+          <textarea className="w-full h-64 rounded-md border px-2 py-2 dark:bg-slate-800 dark:border-slate-600"
             ref={htmlRef}
             value={html} onChange={(e) => setHtml(e.target.value)} placeholder="<div>Hello</div>" />
         </div>
-        <div className="rounded-lg border dark:border-neutral-800 p-2">
+        <div className="rounded-lg border dark:border-slate-700 p-2">
           <div className="text-xs font-medium mb-1">CSS</div>
-          <textarea className="w-full h-64 rounded-md border px-2 py-2 dark:bg-neutral-900 dark:border-neutral-700"
+          <textarea className="w-full h-64 rounded-md border px-2 py-2 dark:bg-slate-800 dark:border-slate-600"
             value={css} onChange={(e) => setCss(e.target.value)} placeholder="body { font-family: system-ui; }" />
         </div>
-        <div className="rounded-lg border dark:border-neutral-800 p-2">
+        <div className="rounded-lg border dark:border-slate-700 p-2">
           <div className="text-xs font-medium mb-1">JS</div>
-          <textarea className="w-full h-64 rounded-md border px-2 py-2 dark:bg-neutral-900 dark:border-neutral-700"
+          <textarea className="w-full h-64 rounded-md border px-2 py-2 dark:bg-slate-800 dark:border-slate-600"
             value={js} onChange={(e) => setJs(e.target.value)} placeholder="console.log('ready');" />
         </div>
       </div>
 
-      <div className="rounded-lg border dark:border-neutral-800 p-2">
+      <div className="rounded-lg border dark:border-slate-700 p-2">
         <div className="text-sm font-medium mb-2">Live Preview</div>
         <iframe
           title="preview"
-          className="w-full h-[360px] rounded-md border dark:border-neutral-800 bg-white"
+          className="w-full h-[360px] rounded-md border dark:border-slate-700 bg-white"
           sandbox="allow-scripts allow-same-origin"
           srcDoc={srcDoc}
         />

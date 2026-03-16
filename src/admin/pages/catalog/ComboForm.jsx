@@ -305,7 +305,7 @@ export default function ComboForm() {
   return (
     <div className="relative">
       <SaveOverlay visible={saving} label={isEdit ? 'Updating combo…' : 'Saving combo…'} />
-      <form onSubmit={save} className="max-w-4xl bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl p-4">
+      <form onSubmit={save} className="max-w-4xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-4">
         <h1 className="text-xl font-semibold mb-4">{isEdit ? 'Edit' : 'New'} Combo</h1>
 
         {/* Combo Name */}
@@ -313,7 +313,7 @@ export default function ComboForm() {
           <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Combo Name *</label>
           <input
             type="text"
-            className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200"
+            className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200"
             value={f.name}
             onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, name: e.target.value } }))}
             placeholder="Enter combo name"
@@ -326,7 +326,7 @@ export default function ComboForm() {
           <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Slug (URL-friendly identifier)</label>
           <input
             type="text"
-            className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200"
+            className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200"
             value={f.slug}
             onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, slug: e.target.value } }))}
             placeholder="auto-generated-from-name"
@@ -340,7 +340,7 @@ export default function ComboForm() {
         <div className="mb-4">
           <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Short Description (for lists/previews)</label>
           <textarea
-            className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200"
+            className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200"
             rows={2}
             value={f.short_description}
             onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, short_description: e.target.value } }))}
@@ -352,7 +352,7 @@ export default function ComboForm() {
         <div className="mb-4">
           <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Long Description (HTML content)</label>
           <textarea
-            className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200"
+            className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200"
             rows={6}
             value={f.description}
             onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, description: e.target.value } }))}
@@ -365,7 +365,7 @@ export default function ComboForm() {
           <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Meta Title (SEO title)</label>
           <input
             type="text"
-            className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200"
+            className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200"
             value={f.meta_title}
             onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, meta_title: e.target.value } }))}
             placeholder="Custom page title for SEO (leave empty to use default)"
@@ -395,7 +395,7 @@ export default function ComboForm() {
           {f.attraction_ids.map((attractionId, index) => (
             <div key={index} className="flex gap-2 mb-2">
               <select
-                className="flex-1 rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200"
+                className="flex-1 rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200"
                 value={attractionId}
                 onChange={(e) => updateAttraction(index, e.target.value)}
               >
@@ -414,7 +414,7 @@ export default function ComboForm() {
               {attractionId && (
                 <input
                   type="number"
-                  className="w-32 rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200"
+                  className="w-32 rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200"
                   value={f.attraction_prices[attractionId] || ''}
                   onChange={(e) => updateAttractionPrice(attractionId, e.target.value)}
                   placeholder="Price"
@@ -479,7 +479,7 @@ export default function ComboForm() {
             <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Discount %</label>
             <input
               type="number"
-              className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200"
+              className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200"
               value={f.discount_percent}
               onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, discount_percent: Number(e.target.value || 0) } }))}
               min="0"
@@ -499,7 +499,7 @@ export default function ComboForm() {
         </div>
 
         {/* Stop Booking Control */}
-        <div className="mb-4 p-4 border border-gray-200 dark:border-neutral-700 rounded-lg bg-gray-50 dark:bg-neutral-800">
+        <div className="mb-4 p-4 border border-gray-200 dark:border-slate-600 rounded-lg bg-gray-50 dark:bg-neutral-800">
           <h3 className="text-sm font-semibold text-gray-700 dark:text-neutral-200 mb-3">Booking Settings</h3>
           <label className="flex items-center gap-2 cursor-pointer">
             <input
@@ -523,7 +523,7 @@ export default function ComboForm() {
           <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Override Total Price (optional)</label>
           <input
             type="number"
-            className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200"
+            className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200"
             value={f.total_price}
             onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, total_price: Number(e.target.value || 0) } }))}
             min="0"
@@ -533,7 +533,7 @@ export default function ComboForm() {
         </div>
 
         {/* FAQ Section */}
-        <div className="mt-8 pt-6 border-t border-gray-200 dark:border-neutral-800">
+        <div className="mt-8 pt-6 border-t border-gray-200 dark:border-slate-700">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="text-lg font-semibold text-gray-900 dark:text-neutral-100">FAQ Section</h2>
@@ -551,7 +551,7 @@ export default function ComboForm() {
             </button>
           </div>
           {(f.faq_items || []).map((faq, idx) => (
-            <div key={idx} className="mb-4 p-4 border border-gray-200 dark:border-neutral-700 rounded-lg bg-gray-50 dark:bg-neutral-800">
+            <div key={idx} className="mb-4 p-4 border border-gray-200 dark:border-slate-600 rounded-lg bg-gray-50 dark:bg-neutral-800">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-sm font-medium text-gray-700 dark:text-neutral-300">FAQ #{idx + 1}</span>
                 <button
@@ -571,7 +571,7 @@ export default function ComboForm() {
                   <label className="block text-xs font-medium text-gray-600 dark:text-neutral-400 mb-1">Question</label>
                   <input
                     type="text"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-neutral-900 dark:text-neutral-100 text-sm"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-neutral-100 text-sm"
                     value={faq.question || ''}
                     onChange={(e) => {
                       const items = [...f.faq_items];
@@ -584,7 +584,7 @@ export default function ComboForm() {
                 <div>
                   <label className="block text-xs font-medium text-gray-600 dark:text-neutral-400 mb-1">Answer</label>
                   <textarea
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-neutral-900 dark:text-neutral-100 text-sm"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-neutral-100 text-sm"
                     rows={3}
                     value={faq.answer || ''}
                     onChange={(e) => {
@@ -604,12 +604,12 @@ export default function ComboForm() {
         </div>
 
         {/* Schema Markup */}
-        <div className="mt-8 pt-6 border-t border-gray-200 dark:border-neutral-800">
+        <div className="mt-8 pt-6 border-t border-gray-200 dark:border-slate-700">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-neutral-100 mb-2">Custom Schema / Scripts</h2>
           <p className="text-sm text-gray-500 dark:text-neutral-400 mb-4">Paste your schema markup or custom scripts here. It will be added exactly as provided to the combo page head.</p>
           <div>
             <textarea
-              className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-neutral-900 dark:text-neutral-100 text-sm"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-neutral-100 text-sm"
               rows={10}
               value={f.head_schema || ''}
               onChange={(e) => setState(s => ({ ...s, form: { ...s.form, head_schema: e.target.value } }))}
@@ -618,7 +618,7 @@ export default function ComboForm() {
           </div>
         </div>
 
-        <div className="mt-8 flex items-center justify-between pt-6 border-t border-gray-200 dark:border-neutral-800">
+        <div className="mt-8 flex items-center justify-between pt-6 border-t border-gray-200 dark:border-slate-700">
           <div className="flex gap-2">
             <button type="submit" disabled={saving} className="rounded-md bg-gray-900 dark:bg-blue-600 text-white px-4 py-2 text-sm disabled:opacity-50">{saving ? 'Saving...' : 'Save'}</button>
             {isEdit && (
@@ -630,7 +630,7 @@ export default function ComboForm() {
                 View Slots
               </button>
             )}
-            <button type="button" className="rounded-md border border-gray-300 dark:border-neutral-700 px-4 py-2 text-sm text-gray-700 dark:text-neutral-300" onClick={() => navigate(-1)}>Cancel</button>
+            <button type="button" className="rounded-md border border-gray-300 dark:border-slate-600 px-4 py-2 text-sm text-gray-700 dark:text-neutral-300" onClick={() => navigate(-1)}>Cancel</button>
           </div>
 
           {isEdit && (

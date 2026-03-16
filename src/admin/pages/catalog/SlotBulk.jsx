@@ -58,12 +58,12 @@ export default function SlotBulk() {
   };
 
   return (
-    <form onSubmit={submit} className="max-w-2xl bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl p-4">
+    <form onSubmit={submit} className="max-w-2xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-4">
       <h1 className="text-xl font-semibold mb-4">Bulk Create Slots</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div>
           <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Attraction</label>
-          <select className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" value={form.attraction_id} onChange={(e) => change('attraction_id', e.target.value)} required>
+          <select className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200" value={form.attraction_id} onChange={(e) => change('attraction_id', e.target.value)} required>
             <option value="">— Select attraction —</option>
             {attractions.map((a) => (
               <option key={a.attraction_id} value={a.attraction_id}>{a.title}</option>
@@ -72,31 +72,31 @@ export default function SlotBulk() {
         </div>
         <div>
           <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Capacity</label>
-          <input type="number" className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" value={form.capacity} onChange={(e) => change('capacity', Number(e.target.value || 0))} />
+          <input type="number" className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200" value={form.capacity} onChange={(e) => change('capacity', Number(e.target.value || 0))} />
         </div>
         <div>
           <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Start Date</label>
-          <input type="date" className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" value={form.start_date} onChange={(e) => change('start_date', e.target.value)} />
+          <input type="date" className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200" value={form.start_date} onChange={(e) => change('start_date', e.target.value)} />
         </div>
         <div>
           <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">End Date</label>
-          <input type="date" className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" value={form.end_date} onChange={(e) => change('end_date', e.target.value)} />
+          <input type="date" className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200" value={form.end_date} onChange={(e) => change('end_date', e.target.value)} />
         </div>
         <div>
           <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Start Time</label>
-          <input type="time" className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" value={form.start_time} onChange={(e) => change('start_time', e.target.value)} />
+          <input type="time" className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200" value={form.start_time} onChange={(e) => change('start_time', e.target.value)} />
         </div>
         <div>
           <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">End Time</label>
-          <input type="time" className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" value={form.end_time} onChange={(e) => change('end_time', e.target.value)} />
+          <input type="time" className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200" value={form.end_time} onChange={(e) => change('end_time', e.target.value)} />
         </div>
         <div>
           <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Duration Minutes</label>
-          <input type="number" className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" value={form.duration_minutes} onChange={(e) => change('duration_minutes', Number(e.target.value || 0))} />
+          <input type="number" className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200" value={form.duration_minutes} onChange={(e) => change('duration_minutes', Number(e.target.value || 0))} />
         </div>
         <div>
           <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Price (optional)</label>
-          <input type="number" step="0.01" className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" value={form.price} onChange={(e) => change('price', e.target.value)} />
+          <input type="number" step="0.01" className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200" value={form.price} onChange={(e) => change('price', e.target.value)} />
         </div>
         <div className="flex items-center gap-2 md:col-span-2">
           <input id="available" type="checkbox" checked={!!form.available} onChange={(e) => change('available', e.target.checked)} />

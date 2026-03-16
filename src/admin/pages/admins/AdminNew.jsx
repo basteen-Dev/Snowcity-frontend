@@ -70,7 +70,7 @@ export default function AdminNew() {
   return (
     <div className="max-w-2xl mx-auto">
       {/* Header */}
-      <div className="bg-white dark:bg-neutral-800 rounded-2xl shadow-sm border border-gray-200 dark:border-neutral-700 p-6 mb-6">
+      <div className="bg-white dark:bg-neutral-800 rounded-2xl shadow-sm border border-gray-200 dark:border-slate-600 p-6 mb-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100">Create Admin</h1>
@@ -88,7 +88,7 @@ export default function AdminNew() {
 
       <form onSubmit={submit} className="space-y-5">
         {/* Basic info */}
-        <div className="bg-white dark:bg-neutral-800 rounded-2xl shadow-sm border border-gray-200 dark:border-neutral-700 p-6 space-y-5">
+        <div className="bg-white dark:bg-neutral-800 rounded-2xl shadow-sm border border-gray-200 dark:border-slate-600 p-6 space-y-5">
           <h2 className="text-base font-semibold text-gray-900 dark:text-neutral-100">Personal Details</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
@@ -135,7 +135,7 @@ export default function AdminNew() {
         </div>
 
         {/* Role selector */}
-        <div className="bg-white dark:bg-neutral-800 rounded-2xl shadow-sm border border-gray-200 dark:border-neutral-700 p-6">
+        <div className="bg-white dark:bg-neutral-800 rounded-2xl shadow-sm border border-gray-200 dark:border-slate-600 p-6">
           <h2 className="text-base font-semibold text-gray-900 dark:text-neutral-100 mb-4">Assign Role</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {ASSIGNABLE_ROLES.map((r) => {
@@ -150,7 +150,7 @@ export default function AdminNew() {
                     'relative p-4 rounded-2xl border-2 text-left transition-all',
                     selected
                       ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                      : 'border-gray-200 dark:border-neutral-700 hover:border-blue-300 dark:hover:border-neutral-500',
+                      : 'border-gray-200 dark:border-slate-600 hover:border-blue-300 dark:hover:border-neutral-500',
                   ].join(' ')}
                 >
                   <div className={`inline-flex items-center px-2 py-0.5 rounded-xl text-xs font-semibold text-white bg-gradient-to-r ${conf.color} mb-2`}>

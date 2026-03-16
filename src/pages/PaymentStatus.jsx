@@ -78,6 +78,7 @@ export default function PaymentStatus() {
                         total_tickets: Number(data.totalTickets || data.quantity || 1),
                         total_pax: Number(data.totalTickets || data.quantity || 1),
                         currency: 'INR',
+                        payment_type: gateway || '',
                         payment_gateway: gateway,
                         has_addons: Number(data.addonsValue || 0) > 0,
                         addons_value: Number(data.addonsValue || 0),

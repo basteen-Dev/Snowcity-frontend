@@ -1,30 +1,19 @@
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
 import { ChevronDown } from 'lucide-react';
 import AttractionCard from '../cards/AttractionCard';
 import ComboCard from '../cards/ComboCard';
-
-const toSlugUrl = (page) => {
-    if (!page) return '#';
-    if (page.slug) {
-        let slug = page.slug;
-        if (slug.startsWith('/page/')) slug = slug.substring(6);
-        else if (slug.startsWith('page/')) slug = slug.substring(5);
-        return `/${slug}`;
-    }
-    if (page.page_id || page.id) return `/${page.page_id || page.id}`;
-    return '#';
-};
 
 export default function NavigationAccordion() {
     const [isOpen, setIsOpen] = useState(false);
     const pages = useSelector((s) => s.pages);
     const attractions = useSelector((s) => s.attractions?.items || []);
     const combos = useSelector((s) => s.combos?.items || []);
-    const items = (pages.items || []).filter(p => p.placement === 'more_info');
+    const items = (pages.items || [])
+        .filter(p => p.placement === 'section_more_info' && p.active !== false)
+        .sort((a, b) => (a.nav_order || 0) - (b.nav_order || 0));
 
-    if (pages.status === 'failed') return null;
+    if (pages.status === 'failed' || !items.length) return null;
 
     return (
         <section className="bg-white border-t border-gray-100">
@@ -53,17 +42,15 @@ export default function NavigationAccordion() {
                     }}
                 >
                     <div style={{ overflow: 'hidden' }}>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {items.length > 0 ? items.map((page) => (
-                                <SubAccordionItem
+                        <div className="more-info-sections">
+                            {items.map((page) => (
+                                <MoreInfoSection
                                     key={page.page_id || page.id || page.slug}
                                     page={page}
                                     attractions={attractions}
                                     combos={combos}
                                 />
-                            )) : (
-                                <p className="py-2 italic opacity-60">No additional information sections available.</p>
-                            )}
+                            ))}
                         </div>
                     </div>
                 </div>
@@ -73,70 +60,106 @@ export default function NavigationAccordion() {
                 .nav-acc-content {
                     transition: grid-template-rows 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
                 }
-                .sub-acc-item {
-                    border: 1px solid #f1f5f9;
+                .more-info-sections {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 32px;
+                }
+                .more-info-block {
                     border-radius: 12px;
                     background: #f8fafc;
-                    transition: all 0.3s ease;
+                    border: 1px solid #e2e8f0;
                     overflow: hidden;
                 }
-                .sub-acc-item:hover {
-                    border-color: #38bdf8;
-                    background: #ffffff;
-                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+                .more-info-block-title {
+                    font-size: 20px;
+                    font-weight: 800;
+                    color: #0f172a;
+                    padding: 20px 24px 0;
+                    margin: 0;
                 }
-                .sub-acc-header {
-                    width: 100%;
-                    padding: 16px 20px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: space-between;
-                    cursor: pointer;
-                    text-align: left;
-                    outline: none;
-                }
-                .sub-acc-title {
-                    font-size: 15px;
-                    font-weight: 700;
-                    color: #1e293b;
-                }
-                .sub-acc-body {
-                    display: grid;
-                    transition: grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                }
-                .sub-acc-inner {
-                    overflow: hidden;
-                    padding: 0 20px 20px;
+                .more-info-block-content {
+                    padding: 16px 24px 24px;
                     font-size: 14px;
                     color: #475569;
-                    line-height: 1.6;
+                    line-height: 1.7;
                 }
-                .sub-acc-inner h1, .sub-acc-inner h2, .sub-acc-inner h3 {
+                .more-info-block-content h1,
+                .more-info-block-content h2,
+                .more-info-block-content h3,
+                .more-info-block-content h4 {
                     color: #0f172a;
                     font-weight: 700;
-                    margin: 16px 0 8px;
+                    margin: 20px 0 10px;
                 }
-                .sub-acc-inner p {
+                .more-info-block-content h1 { font-size: 22px; }
+                .more-info-block-content h2 { font-size: 18px; }
+                .more-info-block-content h3 { font-size: 16px; }
+                .more-info-block-content p {
                     margin-bottom: 12px;
                 }
-                .sub-acc-inner ul {
-                    list-style-type: disc;
+                .more-info-block-content ul,
+                .more-info-block-content ol {
                     padding-left: 20px;
                     margin-bottom: 12px;
                 }
-                .sub-acc-inner img {
+                .more-info-block-content ul { list-style-type: disc; }
+                .more-info-block-content ol { list-style-type: decimal; }
+                .more-info-block-content li {
+                    margin-bottom: 4px;
+                }
+                .more-info-block-content img {
                     max-width: 100%;
                     height: auto;
                     border-radius: 8px;
                     margin: 12px 0;
                 }
-                .sub-acc-linked-card {
+                .more-info-block-content a {
+                    color: #0284c7;
+                    text-decoration: underline;
+                }
+                .more-info-block-content a:hover {
+                    color: #0369a1;
+                }
+                .more-info-block-content strong,
+                .more-info-block-content b {
+                    font-weight: 700;
+                    color: #1e293b;
+                }
+                .more-info-block-content em,
+                .more-info-block-content i {
+                    font-style: italic;
+                }
+                .more-info-block-content blockquote {
+                    border-left: 3px solid #38bdf8;
+                    padding-left: 16px;
+                    margin: 12px 0;
+                    color: #64748b;
+                    font-style: italic;
+                }
+                .more-info-block-content table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin: 12px 0;
+                }
+                .more-info-block-content th,
+                .more-info-block-content td {
+                    border: 1px solid #e2e8f0;
+                    padding: 8px 12px;
+                    text-align: left;
+                }
+                .more-info-block-content th {
+                    background: #f1f5f9;
+                    font-weight: 700;
+                    color: #0f172a;
+                }
+                .more-info-linked-card {
                     margin-top: 20px;
+                    padding: 0 24px 24px;
                     overflow: hidden;
                 }
-                /* Ensure cards look good inside the accordion */
-                .sub-acc-linked-card .exp-card-new,
-                .sub-acc-linked-card .exp-featured {
+                .more-info-linked-card .exp-card-new,
+                .more-info-linked-card .exp-featured {
                     margin: 0;
                     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
                 }
@@ -145,9 +168,7 @@ export default function NavigationAccordion() {
     );
 }
 
-function SubAccordionItem({ page, attractions, combos }) {
-    const [isOpen, setIsOpen] = useState(false);
-
+function MoreInfoSection({ page, attractions, combos }) {
     const linkedItem = React.useMemo(() => {
         if (!page.section_type || page.section_type === 'none' || !page.section_ref_id) return null;
         if (page.section_type === 'attraction') {
@@ -160,42 +181,29 @@ function SubAccordionItem({ page, attractions, combos }) {
     }, [page, attractions, combos]);
 
     return (
-        <div className={`sub-acc-item ${isOpen ? 'active-sub-acc' : ''}`}>
-            <button className="sub-acc-header" onClick={() => setIsOpen(!isOpen)}>
-                <span className="sub-acc-title">{page.title || page.name}</span>
-                <ChevronDown
-                    size={16}
-                    className={`text-sky-500 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
-                />
-            </button>
-            <div
-                className="sub-acc-body"
-                style={{ gridTemplateRows: isOpen ? '1fr' : '0fr' }}
-            >
-                <div className="sub-acc-inner">
-                    {page.editor_mode === 'raw' ? (
-                        <>
-                            <div dangerouslySetInnerHTML={{ __html: page.raw_html || '' }} />
-                            {page.raw_css && <style>{page.raw_css}</style>}
-                            {page.raw_js && <script dangerouslySetInnerHTML={{ __html: page.raw_js }} />}
-                        </>
+        <div className="more-info-block">
+            {page.title && (
+                <h4 className="more-info-block-title">{page.title}</h4>
+            )}
+            <div className="more-info-block-content">
+                {page.editor_mode === 'raw' ? (
+                    <>
+                        <div dangerouslySetInnerHTML={{ __html: page.raw_html || '' }} />
+                        {page.raw_css && <style>{page.raw_css}</style>}
+                    </>
+                ) : (
+                    <div dangerouslySetInnerHTML={{ __html: page.content || '' }} />
+                )}
+            </div>
+            {linkedItem && (
+                <div className="more-info-linked-card">
+                    {page.section_type === 'attraction' ? (
+                        <AttractionCard item={linkedItem} />
                     ) : (
-                        <div
-                            className="prose prose-sm max-w-none"
-                            dangerouslySetInnerHTML={{ __html: page.content }}
-                        />
-                    )}
-                    {linkedItem && (
-                        <div className="sub-acc-linked-card">
-                            {page.section_type === 'attraction' ? (
-                                <AttractionCard item={linkedItem} />
-                            ) : (
-                                <ComboCard item={linkedItem} />
-                            )}
-                        </div>
+                        <ComboCard item={linkedItem} />
                     )}
                 </div>
-            </div>
+            )}
         </div>
     );
 }

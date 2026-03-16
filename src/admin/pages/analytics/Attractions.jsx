@@ -23,13 +23,13 @@ export default function Attractions() {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
-        <input type="datetime-local" className="rounded-md border px-2 py-1 text-sm dark:bg-neutral-900 dark:border-neutral-700" value={dayjs(from).format('YYYY-MM-DDTHH:mm')} onChange={(e) => setFrom(dayjs(e.target.value).toISOString())} />
-        <input type="datetime-local" className="rounded-md border px-2 py-1 text-sm dark:bg-neutral-900 dark:border-neutral-700" value={dayjs(to).format('YYYY-MM-DDTHH:mm')} onChange={(e) => setTo(dayjs(e.target.value).toISOString())} />
+        <input type="datetime-local" className="rounded-md border px-2 py-1 text-sm dark:bg-slate-800 dark:border-slate-600" value={dayjs(from).format('YYYY-MM-DDTHH:mm')} onChange={(e) => setFrom(dayjs(e.target.value).toISOString())} />
+        <input type="datetime-local" className="rounded-md border px-2 py-1 text-sm dark:bg-slate-800 dark:border-slate-600" value={dayjs(to).format('YYYY-MM-DDTHH:mm')} onChange={(e) => setTo(dayjs(e.target.value).toISOString())} />
         <a href={csvUrl} className="ml-auto px-3 py-1 rounded-md border text-sm">Download CSV</a>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="rounded-xl border bg-white dark:bg-neutral-900 border-gray-200 dark:border-neutral-800 p-3">
+        <div className="rounded-xl border bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 p-3">
           <div className="text-sm font-medium mb-2">Attractions-wise Bookings</div>
           <div style={{ height: 320 }}>
             <ResponsiveContainer width="100%" height="100%">
@@ -43,7 +43,7 @@ export default function Attractions() {
           </div>
         </div>
 
-        <div className="rounded-xl border bg-white dark:bg-neutral-900 border-gray-200 dark:border-neutral-800 p-3 overflow-auto">
+        <div className="rounded-xl border bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 p-3 overflow-auto">
           <table className="min-w-full text-sm">
             <thead>
               <tr className="bg-gray-50 dark:bg-neutral-800">
@@ -55,7 +55,7 @@ export default function Attractions() {
             </thead>
             <tbody>
               {data.map((r) => (
-                <tr key={r.attraction_id} className="border-t dark:border-neutral-800">
+                <tr key={r.attraction_id} className="border-t dark:border-slate-700">
                   <td className="px-3 py-2">{r.title}</td>
                   <td className="px-3 py-2 text-right">{r.bookings}</td>
                   <td className="px-3 py-2 text-right">{r.people ?? 0}</td>

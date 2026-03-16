@@ -308,21 +308,37 @@
   z-index: 40;
 }
 
-/* Dark mode overrides (to blend if the rest of app is dark) */
+/* Dark mode overrides – comprehensive dark theme for all admin pages */
 html.dark .admin-panel-theme {
   --bg: #0f172a;
   --white: #1e293b;
-  --text: #f8fafc;
+  --text: #f1f5f9;
   --text-2: #cbd5e1;
   --text-3: #64748b;
   --border: #334155;
   --brand-light: #1e293b;
-  /* Maybe a slight tint */
-  --brand: #6366f1;
+  --brand: #818cf8;
+  --brand-dark: #6366f1;
+  --green: #4ade80;
+  --green-light: #14532d;
+  --orange: #fbbf24;
+  --orange-light: #78350f;
+  --red: #f87171;
+  --red-light: #7f1d1d;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, .3);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, .4);
+  --shadow-lg: 0 20px 60px rgba(0, 0, 0, .5);
 }
 
+/* Sidebar */
 html.dark .admin-panel-theme .nav-item:hover {
   background: #334155;
+  color: #f1f5f9;
+}
+
+html.dark .admin-panel-theme .collapse-btn {
+  border-color: #475569;
+  background: #1e293b;
 }
 
 html.dark .admin-panel-theme .collapse-btn:hover {
@@ -330,8 +346,21 @@ html.dark .admin-panel-theme .collapse-btn:hover {
 }
 
 html.dark .admin-panel-theme .nav-item.active {
-  background: #2e3048;
-  border-left-color: #6366f1;
+  background: #312e81;
+  border-left-color: #818cf8;
+  color: #c7d2fe;
+}
+
+html.dark .admin-panel-theme .nav-body::-webkit-scrollbar-thumb {
+  background: #475569;
+}
+
+html.dark .admin-panel-theme .nav-section-label {
+  color: #64748b;
+}
+
+html.dark .admin-panel-theme .logo-icon {
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
 }
 
 @media (max-width: 768px) {
@@ -741,4 +770,178 @@ html.dark .admin-panel-theme .nav-item.active {
 .admin-panel-theme .success-sub {
   font-size: 13px;
   color: #a0aec0;
+}
+
+/* ══════════════════════════════════════════════════
+   COMPREHENSIVE DARK MODE – badges, modals, tables,
+   inputs, ticket cards, warn boxes, success states
+   ══════════════════════════════════════════════════ */
+
+/* ── Badges ── */
+html.dark .admin-panel-theme .badge-green {
+  background: #14532d;
+  color: #4ade80;
+}
+html.dark .admin-panel-theme .badge-blue {
+  background: #1e3a5f;
+  color: #60a5fa;
+}
+html.dark .admin-panel-theme .badge-orange {
+  background: #78350f;
+  color: #fbbf24;
+}
+html.dark .admin-panel-theme .badge-success {
+  background: #14532d;
+  color: #4ade80;
+}
+html.dark .admin-panel-theme .badge-red {
+  background: #7f1d1d;
+  color: #f87171;
+}
+html.dark .admin-panel-theme .badge-gray {
+  background: #334155;
+  color: #94a3b8;
+}
+html.dark .admin-panel-theme .badge-purple {
+  background: #2e1065;
+  color: #a78bfa;
+}
+
+/* ── Redeem button ── */
+html.dark .admin-panel-theme .redeem-btn {
+  background: #1e293b;
+  border-color: #fbbf24;
+  color: #fbbf24;
+}
+html.dark .admin-panel-theme .redeem-btn:hover {
+  background: #78350f;
+  box-shadow: 0 2px 8px rgba(251, 191, 36, .2);
+}
+
+/* ── Modal ── */
+html.dark .admin-panel-theme .custom-overlay {
+  background: rgba(0, 0, 0, .6);
+}
+html.dark .admin-panel-theme .custom-modal {
+  background: #1e293b;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, .5);
+}
+html.dark .admin-panel-theme .custom-modal-header {
+  border-bottom-color: #334155;
+}
+html.dark .admin-panel-theme .custom-modal-icon {
+  background: #78350f;
+}
+html.dark .admin-panel-theme .custom-modal-title {
+  color: #f1f5f9;
+}
+html.dark .admin-panel-theme .custom-modal-sub {
+  color: #64748b;
+}
+
+/* ── Ticket card ── */
+html.dark .admin-panel-theme .ticket-card {
+  background: #0f172a;
+  border-color: #475569;
+}
+html.dark .admin-panel-theme .ticket-card::before,
+html.dark .admin-panel-theme .ticket-card::after {
+  background: #1e293b;
+  border-color: #475569;
+}
+html.dark .admin-panel-theme .ticket-field label,
+html.dark .admin-panel-theme .ticket-meta-item label {
+  color: #64748b;
+}
+html.dark .admin-panel-theme .ticket-field .val {
+  color: #f1f5f9;
+}
+html.dark .admin-panel-theme .ticket-field .val.highlight {
+  color: #fbbf24;
+}
+html.dark .admin-panel-theme .ticket-meta-item .val {
+  color: #e2e8f0;
+}
+html.dark .admin-panel-theme .ticket-meta-item .sub {
+  color: #64748b;
+}
+html.dark .admin-panel-theme .ticket-divider {
+  border-top-color: #475569;
+}
+
+/* ── Warn box ── */
+html.dark .admin-panel-theme .warn-box {
+  background: #78350f;
+  border-color: #92400e;
+}
+html.dark .admin-panel-theme .warn-box p {
+  color: #fde68a;
+}
+html.dark .admin-panel-theme .warn-box strong {
+  color: #fbbf24;
+}
+
+/* ── Modal buttons ── */
+html.dark .admin-panel-theme .btn-cancel {
+  border-color: #475569;
+  background: #0f172a;
+  color: #94a3b8;
+}
+html.dark .admin-panel-theme .btn-cancel:hover {
+  border-color: #64748b;
+  background: #1e293b;
+}
+
+/* ── Success state ── */
+html.dark .admin-panel-theme .check-circle {
+  background: #14532d;
+}
+html.dark .admin-panel-theme .success-title {
+  color: #4ade80;
+}
+html.dark .admin-panel-theme .success-sub {
+  color: #64748b;
+}
+
+/* ── Form inputs & selects ── */
+html.dark .admin-panel-theme input[type="text"],
+html.dark .admin-panel-theme input[type="email"],
+html.dark .admin-panel-theme input[type="password"],
+html.dark .admin-panel-theme input[type="number"],
+html.dark .admin-panel-theme input[type="date"],
+html.dark .admin-panel-theme input[type="time"],
+html.dark .admin-panel-theme input[type="search"],
+html.dark .admin-panel-theme input[type="tel"],
+html.dark .admin-panel-theme input[type="url"],
+html.dark .admin-panel-theme textarea,
+html.dark .admin-panel-theme select {
+  background-color: #0f172a;
+  border-color: #475569;
+  color: #f1f5f9;
+}
+html.dark .admin-panel-theme input::placeholder,
+html.dark .admin-panel-theme textarea::placeholder {
+  color: #64748b;
+}
+
+/* ── Tables (generic admin tables) ── */
+html.dark .admin-panel-theme table {
+  color: #f1f5f9;
+}
+html.dark .admin-panel-theme table thead,
+html.dark .admin-panel-theme table thead th {
+  background: #0f172a;
+  color: #94a3b8;
+  border-color: #334155;
+}
+html.dark .admin-panel-theme table tbody td {
+  border-color: #334155;
+}
+html.dark .admin-panel-theme table tbody tr:hover td {
+  background: #334155;
+}
+
+/* ── Mobile overlay ── */
+html.dark .admin-panel-theme .mobile-overlay {
+  background: rgba(0, 0, 0, 0.6);
 }

@@ -632,47 +632,53 @@ export default function FloatingNavBar() {
         </div>
 
         <div
-          className={`md:hidden h-14 flex items-center justify-between px-3 ${isWhite
+          className={`md:hidden h-14 relative flex items-center justify-between px-3 ${isWhite
             ? "text-gray-900"
             : "text-white"
             }`}
         >
           {/* LEFT: Menu Button */}
-          <button
-            className="p-2 shrink-0"
-            onClick={() => setMobileOpen((v) => !v)}
-            aria-expanded={mobileOpen}
-            aria-label="Open menu"
-          >
-            {mobileOpen ? (
-              <X className="w-6 h-6" />
-            ) : (
-              <Menu className="w-6 h-6" />
-            )}
-          </button>
+          <div className="flex-1 flex justify-start">
+            <button
+              className="p-2"
+              onClick={() => setMobileOpen((v) => !v)}
+              aria-expanded={mobileOpen}
+              aria-label="Open menu"
+            >
+              {mobileOpen ? (
+                <X className="w-6 h-6" />
+              ) : (
+                <Menu className="w-6 h-6" />
+              )}
+            </button>
+          </div>
 
-          {/* MIDDLE: Logo */}
-          <Link to="/" aria-label="Home" className="flex items-center shrink-0">
-            <img
-              src={Logo}
-              alt="SnowCity Logo"
-              className="h-9 w-auto object-contain"
-              width={80}
-              height={36}
-            />
-          </Link>
+          {/* MIDDLE: Logo - Centered absolutely */}
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+            <Link to="/" aria-label="Home" className="flex items-center">
+              <img
+                src={Logo}
+                alt="SnowCity Logo"
+                className="h-9 w-auto object-contain"
+                width={80}
+                height={36}
+              />
+            </Link>
+          </div>
 
           {/* RIGHT: Book Button */}
-          <button
-            className="inline-flex items-center rounded-xl px-4 py-2 text-xs font-bold bg-[#0099FF] text-white shadow-sm shrink-0"
-            onClick={() => {
-              setMobileOpen(false);
-              sessionStorage.removeItem('snowcity_booking_state');
-              navigate('/tickets-offers');
-            }}
-          >
-            <Ticket className="w-4 bg-[#0099FF] h-4 mr-1" /> BUY
-          </button>
+          <div className="flex-1 flex justify-end">
+            <button
+              className="inline-flex items-center rounded-xl px-4 py-2 text-xs font-bold bg-[#0099FF] text-white shadow-sm shrink-0"
+              onClick={() => {
+                setMobileOpen(false);
+                sessionStorage.removeItem('snowcity_booking_state');
+                navigate('/tickets-offers');
+              }}
+            >
+              <Ticket className="w-4 bg-[#0099FF] h-4 mr-1" /> BUY
+            </button>
+          </div>
         </div>
 
         {/* ------------------- MOBILE MENU PANEL -------------------- */}

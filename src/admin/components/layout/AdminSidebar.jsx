@@ -112,6 +112,7 @@ export default function AdminSidebar({ collapsed, mobileOpen, onCloseMobile, onT
         { to: '/parkpanel/catalog/banners', label: 'Banners', icon: ImageIcon },
         { to: '/parkpanel/catalog/gallery', label: 'Gallery', icon: ImageIcon },
         { to: '/parkpanel/catalog/pages', label: 'Pages', icon: FileText },
+        { to: '/parkpanel/catalog/sections', label: 'Sections', icon: Layers },
         { to: '/parkpanel/catalog/blogs', label: 'Blogs', icon: Newspaper },
       );
 
@@ -140,6 +141,7 @@ export default function AdminSidebar({ collapsed, mobileOpen, onCloseMobile, onT
           { to: '/parkpanel/catalog/banners', label: 'Banners', icon: ImageIcon },
           { to: '/parkpanel/catalog/gallery', label: 'Gallery', icon: ImageIcon },
           { to: '/parkpanel/catalog/pages', label: 'Pages', icon: FileText },
+          { to: '/parkpanel/catalog/sections', label: 'Sections', icon: Layers },
           { to: '/parkpanel/catalog/blogs', label: 'Blogs', icon: Newspaper },
         ]
       });

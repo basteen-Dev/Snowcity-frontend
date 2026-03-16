@@ -18,8 +18,11 @@
 
   <!-- Critical Font Preload -->
 
-  <link rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap">
+  <link rel="preload" as="style"
+    href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+    onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"></noscript>
   <!-- Native Banner Fetch & Preload for LCP Optimization -->
   <script>
     if (!window.location.pathname.startsWith('/parkpanel')) {
@@ -64,17 +67,19 @@
 
 
 
-  <link rel="preload" as="image" href="/logo.png" type="image/png"> 
+  <!-- logo.png preload removed — not LCP element, saves 81KB from critical path -->
 
 
   
-  <script type="module" crossorigin src="/assets/index-DlZnmVto.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/react-vendor-Cx8wce6-.js">
-  <link rel="modulepreload" crossorigin href="/assets/ui-vendor-CrZhbACs.js">
-  <link rel="modulepreload" crossorigin href="/assets/redux-vendor-DITZe7HQ.js">
-  <link rel="modulepreload" crossorigin href="/assets/chart-vendor-BkvlDOch.js">
-  <link rel="modulepreload" crossorigin href="/assets/editor-vendor-Dx2ACaNw.js">
-  <link rel="stylesheet" crossorigin href="/assets/index-BgqFlgNs.css">
+  <script type="module" crossorigin src="/assets/index-DJQKy6tg.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/react-vendor-DI9twNis.js">
+  <link rel="modulepreload" crossorigin href="/assets/ui-vendor-B3CZbJ2I.js">
+  <link rel="modulepreload" crossorigin href="/assets/redux-vendor-BpA8_WyY.js">
+  <link rel="modulepreload" crossorigin href="/assets/chart-vendor-BfPw6sIo.js">
+  <link rel="modulepreload" crossorigin href="/assets/editor-vendor-DyHM9bUV.js">
+  <link rel="modulepreload" crossorigin href="/assets/date-vendor-Cumbaa0h.js">
+  <link rel="modulepreload" crossorigin href="/assets/style-vendor-9ySgDTdY.js">
+  <link rel="stylesheet" crossorigin href="/assets/index-fzqhaL14.css">
 </head>
 
 <body>

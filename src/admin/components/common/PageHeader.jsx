@@ -10,7 +10,7 @@ import React from 'react';
  */
 export default function PageHeader({ title, subtitle, children, className = '' }) {
     return (
-        <div className={`bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200/80 dark:border-neutral-800 shadow-sm px-6 py-5 mb-6 ${className}`}>
+        <div className={`bg-white dark:bg-slate-800 rounded-2xl border border-gray-200/80 dark:border-slate-700 shadow-sm px-6 py-5 mb-6 ${className}`}>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div className="min-w-0">
                     <h1 className="text-xl font-bold tracking-tight text-gray-900 dark:text-neutral-50 truncate">

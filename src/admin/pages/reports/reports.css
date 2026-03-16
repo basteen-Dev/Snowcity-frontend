@@ -686,3 +686,149 @@
 .rpt-wrapper .a4 {
     animation: rptUp .3s .18s ease both;
 }
+
+/* ─── DARK MODE ─── */
+html.dark .rpt-wrapper {
+    --bg: #0f172a;
+    --white: #1e293b;
+    --border: #334155;
+    --text: #f1f5f9;
+    --sub: #94a3b8;
+    --muted: #64748b;
+    --blue: #60a5fa;
+    --blue-bg: #1e3a5f;
+    --green: #4ade80;
+    --green-bg: #14532d;
+    --amber: #fbbf24;
+    --amber-bg: #78350f;
+    --red: #f87171;
+    --red-bg: #7f1d1d;
+    --purple: #a78bfa;
+    --purple-bg: #2e1065;
+    --pink: #f472b6;
+    --pink-bg: #831843;
+    --slate: #94a3b8;
+    --visit-col: #34d399;
+}
+
+html.dark .rpt-wrapper .tv-devil {
+    color: #94a3b8;
+}
+
+html.dark .rpt-wrapper tr:not(.tot-row):hover td {
+    background: #334155;
+}
+
+html.dark .rpt-wrapper tr.striped td {
+    background: #1a2536;
+}
+
+html.dark .rpt-wrapper tr:hover.striped td {
+    background: #2d3a4d;
+}
+
+html.dark .rpt-wrapper .at-devil {
+    background: #334155;
+    color: #e2e8f0;
+}
+
+html.dark .rpt-wrapper .exp-excel {
+    background: #14532d;
+    color: #4ade80;
+    border-color: #166534;
+}
+
+html.dark .rpt-wrapper .exp-excel:hover {
+    background: #166534;
+}
+
+html.dark .rpt-wrapper .exp-pdf {
+    background: #7f1d1d;
+    color: #f87171;
+    border-color: #991b1b;
+}
+
+html.dark .rpt-wrapper .exp-pdf:hover {
+    background: #991b1b;
+}
+
+html.dark .rpt-wrapper .exp-csv {
+    background: #78350f;
+    color: #fbbf24;
+    border-color: #92400e;
+}
+
+html.dark .rpt-wrapper .exp-csv:hover {
+    background: #92400e;
+}
+
+html.dark .rpt-wrapper .at-mad {
+    background: #2e1065;
+    color: #a78bfa;
+}
+
+html.dark .rpt-wrapper .at-eye {
+    background: #831843;
+    color: #f472b6;
+}
+
+html.dark .rpt-wrapper .at-retail {
+    background: #78350f;
+    color: #fbbf24;
+}
+
+html.dark .rpt-wrapper .at-fb {
+    background: #14532d;
+    color: #4ade80;
+}
+
+html.dark .rpt-wrapper .date-cell {
+    color: #94a3b8;
+}
+
+html.dark .rpt-wrapper thead tr {
+    background: #0f172a;
+}
+
+html.dark .rpt-wrapper .dp-custom input[type="date"] {
+    background: #0f172a;
+    color: #94a3b8;
+    border-color: #334155;
+}
+
+html.dark .rpt-wrapper .totals-hd {
+    background: #475569;
+}
+
+html.dark .rpt-wrapper th.col-devil {
+    border-bottom-color: #94a3b8;
+}
+
+html.dark .rpt-wrapper .at-snow {
+    background: #1e3a5f;
+    color: #60a5fa;
+}
+
+html.dark .rpt-wrapper .tbl-wrap {
+    background: var(--white);
+    border-color: var(--border);
+}
+
+html.dark .rpt-wrapper .filter-strip {
+    background: var(--white);
+    border-color: var(--border);
+}
+
+html.dark .rpt-wrapper .totals-bar {
+    background: var(--white);
+    border-color: var(--border);
+}
+
+html.dark .rpt-wrapper .tbl-info strong {
+    color: #f1f5f9;
+}
+
+html.dark .rpt-wrapper .rpt-topbar {
+    background: var(--white);
+    border-bottom-color: var(--border);
+}

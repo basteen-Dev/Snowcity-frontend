@@ -131,7 +131,7 @@ export default function ComboSlotBulk() {
 
       <label className="block text-sm">Combo</label>
       <select
-        className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700"
+        className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600"
         value={form.combo_id}
         onChange={(e) => onChange('combo_id', e.target.value)}
         required
@@ -149,7 +149,7 @@ export default function ComboSlotBulk() {
           <label className="block text-sm">Start date</label>
           <input
             type="date"
-            className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700"
+            className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600"
             value={form.start_date}
             onChange={(e) => onChange('start_date', e.target.value)}
             required
@@ -159,7 +159,7 @@ export default function ComboSlotBulk() {
           <label className="block text-sm">End date</label>
           <input
             type="date"
-            className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700"
+            className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600"
             value={form.end_date}
             onChange={(e) => onChange('end_date', e.target.value)}
             required
@@ -172,7 +172,7 @@ export default function ComboSlotBulk() {
           <label className="block text-sm">From</label>
           <input
             type="time"
-            className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700"
+            className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600"
             value={form.start_time}
             onChange={(e) => onChange('start_time', e.target.value)}
             required
@@ -182,7 +182,7 @@ export default function ComboSlotBulk() {
           <label className="block text-sm">To</label>
           <input
             type="time"
-            className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700"
+            className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600"
             value={form.end_time}
             onChange={(e) => onChange('end_time', e.target.value)}
             required
@@ -193,7 +193,7 @@ export default function ComboSlotBulk() {
           <input
             type="number"
             min="1"
-            className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700"
+            className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600"
             value={form.duration_minutes}
             onChange={(e) => onChange('duration_minutes', e.target.value)}
             required
@@ -207,7 +207,7 @@ export default function ComboSlotBulk() {
           <input
             type="number"
             min="1"
-            className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700"
+            className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600"
             value={form.capacity}
             onChange={(e) => onChange('capacity', e.target.value)}
             required
@@ -218,7 +218,7 @@ export default function ComboSlotBulk() {
           <input
             type="number"
             step="0.01"
-            className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700"
+            className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600"
             value={form.price}
             onChange={(e) => onChange('price', e.target.value)}
           />
@@ -247,7 +247,7 @@ export default function ComboSlotBulk() {
       </div>
 
       {result?.conflicts?.length ? (
-        <div className="rounded-md border p-3 mt-2 text-sm dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="rounded-md border p-3 mt-2 text-sm dark:border-slate-700 dark:bg-slate-800">
           <div className="font-medium mb-1">Conflicts</div>
           <ul className="list-disc pl-5">
             {result.conflicts.map((c, i) => (

@@ -33,13 +33,13 @@ function LineChartAsync({ data }) {
   if (lib === null) {
     // Loading skeleton
     return (
-      <div className="h-80 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl p-3 animate-pulse" />
+      <div className="h-80 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-3 animate-pulse" />
     );
   }
   if (lib === false) {
     // Fallback if recharts is unavailable
     return (
-      <div className="h-80 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl p-3 flex items-center justify-center text-sm text-gray-600 dark:text-neutral-300">
+      <div className="h-80 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-3 flex items-center justify-center text-sm text-gray-600 dark:text-neutral-300">
         Charts unavailable (recharts not installed). Install with: npm i recharts --legacy-peer-deps
       </div>
     );
@@ -48,7 +48,7 @@ function LineChartAsync({ data }) {
   const { ResponsiveContainer, LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, Legend } = lib;
 
   return (
-    <div className="h-80 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl p-3">
+    <div className="h-80 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-3">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data}>
           <CartesianGrid stroke="#eee" strokeDasharray="5 5" />
@@ -96,18 +96,18 @@ export default function Trend() {
       <div className="mb-3 grid grid-cols-1 md:grid-cols-4 gap-2">
         <input
           type="date"
-          className="rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200"
+          className="rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200"
           value={state.from}
           onChange={(e) => setState((s) => ({ ...s, from: e.target.value }))}
         />
         <input
           type="date"
-          className="rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200"
+          className="rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200"
           value={state.to}
           onChange={(e) => setState((s) => ({ ...s, to: e.target.value }))}
         />
         <select
-          className="rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200"
+          className="rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200"
           value={state.granularity}
           onChange={(e) => setState((s) => ({ ...s, granularity: e.target.value }))}
         >
@@ -116,7 +116,7 @@ export default function Trend() {
           <option value="month">Month</option>
         </select>
         <button
-          className="rounded-md border px-3 py-2 text-sm dark:border-neutral-700 dark:text-neutral-200"
+          className="rounded-md border px-3 py-2 text-sm dark:border-slate-600 dark:text-neutral-200"
           onClick={load}
         >
           Apply

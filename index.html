@@ -18,8 +18,11 @@
 
   <!-- Critical Font Preload -->
 
-  <link rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap">
+  <link rel="preload" as="style"
+    href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+    onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"></noscript>
   <!-- Native Banner Fetch & Preload for LCP Optimization -->
   <script>
     if (!window.location.pathname.startsWith('/parkpanel')) {
@@ -64,7 +67,7 @@
 
 
 
-  <link rel="preload" as="image" href="/logo.png" type="image/png"> 
+  <!-- logo.png preload removed — not LCP element, saves 81KB from critical path -->
 
 
   

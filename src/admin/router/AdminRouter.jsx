@@ -45,6 +45,9 @@ const BannerForm = lazy(() => import('../pages/catalog/BannerForm'));
 const PagesList = lazy(() => import('../pages/catalog/PagesList'));
 const PageForm = lazy(() => import('../pages/catalog/PageForm'));
 
+const SectionsList = lazy(() => import('../pages/catalog/SectionsList'));
+const SectionForm = lazy(() => import('../pages/catalog/SectionForm'));
+
 const BlogsList = lazy(() => import('../pages/catalog/BlogsList'));
 const BlogForm = lazy(() => import('../pages/catalog/BlogForm'));
 
@@ -428,6 +431,22 @@ export default function AdminRouter() {
           <Route path="catalog/pages/:id" element={
             <RequireRole allowed={['superadmin', 'gm', 'editor']}>
               <PageForm />
+            </RequireRole>
+          } />
+
+          <Route path="catalog/sections" element={
+            <RequireRole allowed={['superadmin', 'gm', 'editor']}>
+              <SectionsList />
+            </RequireRole>
+          } />
+          <Route path="catalog/sections/new" element={
+            <RequireRole allowed={['superadmin', 'gm', 'editor']}>
+              <SectionForm />
+            </RequireRole>
+          } />
+          <Route path="catalog/sections/:id" element={
+            <RequireRole allowed={['superadmin', 'gm', 'editor']}>
+              <SectionForm />
             </RequireRole>
           } />
 

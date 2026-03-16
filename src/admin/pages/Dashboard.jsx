@@ -142,7 +142,7 @@ export default function Dashboard() {
         {/* §1 VISITOR SUMMARY */}
         <div className="sec-hd s1 a2">
           <div className="sec-hd-pill">🎢 Visitor Summary</div>
-          <div className="sec-hd-body">Guests who physically visits the park  on the selected date</div>
+          <div className="sec-hd-body"></div>
           <div className="sec-hd-date">Visit Date: {activeDateLabel}</div>
         </div>
 

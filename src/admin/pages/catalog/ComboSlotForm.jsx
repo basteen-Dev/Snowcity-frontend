@@ -111,7 +111,7 @@ export default function ComboSlotForm() {
 
       <label className="block text-sm">Combo</label>
       <select
-        className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700"
+        className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600"
         value={form.combo_id}
         onChange={(e) => onChange('combo_id', e.target.value)}
         required
@@ -129,7 +129,7 @@ export default function ComboSlotForm() {
           <label className="block text-sm">Start date</label>
           <input
             type="date"
-            className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700"
+            className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600"
             value={form.start_date}
             onChange={(e) => onChange('start_date', e.target.value)}
             required
@@ -139,7 +139,7 @@ export default function ComboSlotForm() {
           <label className="block text-sm">End date</label>
           <input
             type="date"
-            className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700"
+            className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600"
             value={form.end_date}
             onChange={(e) => onChange('end_date', e.target.value)}
           />
@@ -151,7 +151,7 @@ export default function ComboSlotForm() {
           <label className="block text-sm">Start time</label>
           <input
             type="time"
-            className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700"
+            className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600"
             value={form.start_time}
             onChange={(e) => onChange('start_time', e.target.value)}
             required
@@ -161,7 +161,7 @@ export default function ComboSlotForm() {
           <label className="block text-sm">End time</label>
           <input
             type="time"
-            className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700"
+            className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600"
             value={form.end_time}
             onChange={(e) => onChange('end_time', e.target.value)}
             required
@@ -175,7 +175,7 @@ export default function ComboSlotForm() {
           <input
             type="number"
             min="1"
-            className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700"
+            className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600"
             value={form.capacity}
             onChange={(e) => onChange('capacity', e.target.value)}
             required
@@ -186,7 +186,7 @@ export default function ComboSlotForm() {
           <input
             type="number"
             step="0.01"
-            className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700"
+            className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600"
             value={form.price}
             onChange={(e) => onChange('price', e.target.value)}
           />

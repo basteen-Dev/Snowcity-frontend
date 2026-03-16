@@ -36,11 +36,11 @@ export default function AdminTable({
   const colCount = columns.length + (showSelection ? 1 : 0) + (actions.length > 0 ? 1 : 0);
 
   return (
-    <div className="rounded-2xl border border-gray-200/80 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-sm overflow-hidden">
+    <div className="rounded-2xl border border-gray-200/80 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm overflow-hidden">
       <div className="overflow-x-auto">
         <table className="min-w-full text-sm">
           <thead>
-            <tr className="bg-gray-50/80 dark:bg-neutral-800/60 border-b border-gray-200 dark:border-neutral-700">
+            <tr className="bg-gray-50/80 dark:bg-neutral-800/60 border-b border-gray-200 dark:border-slate-600">
               {showSelection && (
                 <th className="w-10 px-4 py-3">
                   <input
@@ -77,7 +77,7 @@ export default function AdminTable({
                   'transition-colors duration-100',
                   onRowClick ? 'cursor-pointer' : '',
                   i % 2 === 0
-                    ? 'bg-white dark:bg-neutral-900'
+                    ? 'bg-white dark:bg-slate-800'
                     : 'bg-gray-50/40 dark:bg-neutral-800/20',
                   'hover:bg-blue-50/50 dark:hover:bg-neutral-800/60',
                 ].join(' ')}

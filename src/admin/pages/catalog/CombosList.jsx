@@ -72,7 +72,7 @@ export default function CombosList() {
 
       <FilterBar onApply={load} onReset={() => { setState((s) => ({ ...s, active: '' })); setTimeout(load, 0); }} loading={state.status === 'loading'} columns={3}>
         <select
-          className="w-full rounded-lg border border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 text-sm dark:text-neutral-200 focus:ring-1 focus:ring-blue-500"
+          className="w-full rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-neutral-800 px-3 py-2 text-sm dark:text-neutral-200 focus:ring-1 focus:ring-blue-500"
           value={state.active}
           onChange={(e) => setState({ ...state, active: e.target.value })}
         >
@@ -92,7 +92,7 @@ export default function CombosList() {
               <img
                 src={imgSrc(r)}
                 alt={r.name || `Combo #${r.combo_id}`}
-                className="w-10 h-10 object-cover rounded-lg shadow-sm border border-gray-200 dark:border-neutral-700"
+                className="w-10 h-10 object-cover rounded-lg shadow-sm border border-gray-200 dark:border-slate-600"
                 onError={(e) => { e.target.src = '/placeholder-image.png'; }}
               />
             )

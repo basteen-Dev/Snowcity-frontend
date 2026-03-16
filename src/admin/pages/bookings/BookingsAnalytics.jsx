@@ -9,13 +9,13 @@ import { FileText, FileSpreadsheet, Search, Filter, TrendingUp, DollarSign, Cale
 const formatCurrency = (v) => `₹${Number(v || 0).toLocaleString()}`;
 const formatNumber = (v) => Number(v || 0).toLocaleString();
 
-const inputClasses = 'w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-700 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all placeholder:text-gray-400';
+const inputClasses = 'w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-700 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all placeholder:text-gray-400';
 const selectClasses = `${inputClasses} appearance-none cursor-pointer`;
 const btnPrimary = 'inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2.5 text-sm font-semibold shadow-sm shadow-blue-500/20 hover:shadow-md hover:shadow-blue-500/30 transition-all';
-const btnSecondary = 'inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800 transition-all';
+const btnSecondary = 'inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200 dark:hover:bg-neutral-800 transition-all';
 
 const SummaryCard = ({ icon, label, value, note, accent = 'from-blue-500 to-indigo-600' }) => (
-    <div className="relative overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm p-5 dark:bg-neutral-900 dark:border-neutral-800 group hover:shadow-md transition-shadow">
+    <div className="relative overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm p-5 dark:bg-slate-800 dark:border-slate-700 group hover:shadow-md transition-shadow">
         <div className="flex items-start justify-between">
             <div className="space-y-1">
                 <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{label}</div>
@@ -29,7 +29,7 @@ const SummaryCard = ({ icon, label, value, note, accent = 'from-blue-500 to-indi
 );
 
 const SectionCard = ({ title, subtitle, children, className = '' }) => (
-    <div className={`rounded-2xl border border-gray-200/80 bg-white shadow-sm dark:bg-neutral-900 dark:border-neutral-800 ${className}`}>
+    <div className={`rounded-2xl border border-gray-200/80 bg-white shadow-sm dark:bg-slate-800 dark:border-slate-700 ${className}`}>
         {title && (
             <div className="px-5 pt-5 pb-2">
                 <p className="text-sm font-semibold text-gray-900 dark:text-neutral-100">{title}</p>
@@ -182,7 +182,7 @@ export default function BookingsAnalytics() {
                             onClick={() => applyQuickRange(range.key)}
                             className={`rounded-xl px-3.5 py-1.5 text-xs font-semibold border transition-all ${activeRange === range.key
                                 ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-transparent shadow-sm shadow-blue-500/20'
-                                : 'border-gray-200 text-gray-600 hover:border-gray-400 hover:bg-gray-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800'}`}
+                                : 'border-gray-200 text-gray-600 hover:border-gray-400 hover:bg-gray-50 dark:border-slate-600 dark:text-neutral-300 dark:hover:bg-neutral-800'}`}
                         >
                             {range.label}
                         </button>
@@ -221,7 +221,7 @@ export default function BookingsAnalytics() {
                         <button className={btnSecondary} onClick={() => downloadReport('attraction-revenue', 'csv')}><FileSpreadsheet className="h-4 w-4" />CSV</button>
                         <button className={btnSecondary} onClick={() => downloadReport('attraction-revenue', 'pdf')}><FileText className="h-4 w-4" />PDF</button>
                     </div>
-                    <div className="rounded-xl border border-gray-100 dark:border-neutral-800 p-4 bg-gray-50/50 dark:bg-neutral-800/30">
+                    <div className="rounded-xl border border-gray-100 dark:border-slate-700 p-4 bg-gray-50/50 dark:bg-neutral-800/30">
                         {revenueData.attraction.status === 'loading' ? (
                             <div className="text-sm text-gray-500">Loading…</div>
                         ) : revenueData.attraction.status === 'failed' ? (
@@ -266,7 +266,7 @@ export default function BookingsAnalytics() {
                         <button className={btnSecondary} onClick={() => downloadReport('combo-revenue', 'csv')}><FileSpreadsheet className="h-4 w-4" />CSV</button>
                         <button className={btnSecondary} onClick={() => downloadReport('combo-revenue', 'pdf')}><FileText className="h-4 w-4" />PDF</button>
                     </div>
-                    <div className="rounded-xl border border-gray-100 dark:border-neutral-800 p-4 bg-gray-50/50 dark:bg-neutral-800/30">
+                    <div className="rounded-xl border border-gray-100 dark:border-slate-700 p-4 bg-gray-50/50 dark:bg-neutral-800/30">
                         {revenueData.combo.status === 'loading' ? (
                             <div className="text-sm text-gray-500">Loading…</div>
                         ) : revenueData.combo.status === 'failed' ? (

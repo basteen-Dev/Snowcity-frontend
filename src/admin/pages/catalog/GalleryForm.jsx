@@ -144,7 +144,7 @@ export default function GalleryForm() {
   const f = state.form;
 
   return (
-    <form onSubmit={save} className="max-w-2xl bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl p-4">
+    <form onSubmit={save} className="max-w-2xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-4">
       <h1 className="text-xl font-semibold mb-4">{isEdit ? 'Edit' : 'New'} Gallery Item</h1>
       {state.error ? (
         <div className="mb-3 text-sm text-red-600">{state.error?.message || 'Save failed'}</div>
@@ -154,7 +154,7 @@ export default function GalleryForm() {
         <div>
           <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Gallery Category</label>
           <select
-            className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200"
+            className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200"
             value={f.target_type}
             onChange={(e) => onChange({ target_type: e.target.value, target_ref_id: null })}
           >
@@ -172,7 +172,7 @@ export default function GalleryForm() {
         <div>
           <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Media Type</label>
           <select
-            className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200"
+            className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200"
             value={f.media_type}
             onChange={(e) => onChange({ media_type: e.target.value })}
           >
@@ -225,7 +225,7 @@ export default function GalleryForm() {
             <>
               <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Video URL</label>
               <input
-                className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200"
+                className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200"
                 placeholder="https://…"
                 value={f.url}
                 onChange={(e) => onChange({ url: e.target.value })}
@@ -237,7 +237,7 @@ export default function GalleryForm() {
         <div className="md:col-span-2">
           <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Title</label>
           <input
-            className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200"
+            className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200"
             value={f.title}
             onChange={(e) => onChange({ title: e.target.value })}
           />
@@ -247,7 +247,7 @@ export default function GalleryForm() {
           <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Description</label>
           <textarea
             rows={3}
-            className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200"
+            className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200"
             value={f.description}
             onChange={(e) => onChange({ description: e.target.value })}
           />
@@ -259,7 +259,7 @@ export default function GalleryForm() {
               {f.target_type === 'attraction' ? 'Select attraction' : 'Select combo'}
             </label>
             <select
-              className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200"
+              className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200"
               value={f.target_ref_id || ''}
               onChange={(e) => onChange({ target_ref_id: e.target.value ? Number(e.target.value) : null })}
               disabled={targetStatus === 'loading'}

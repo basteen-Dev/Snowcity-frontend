@@ -130,8 +130,8 @@ export default function AdminProfile() {
       </div>
 
       {/* Profile Information */}
-      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+      <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-600 shadow-sm">
+        <div className="p-6 border-b border-gray-200 dark:border-slate-600">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Profile Information</h2>
           <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Update your personal information</p>
         </div>
@@ -200,8 +200,8 @@ export default function AdminProfile() {
       </div>
 
       {/* Password Change */}
-      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+      <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-600 shadow-sm">
+        <div className="p-6 border-b border-gray-200 dark:border-slate-600">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Change Password</h2>
           <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Update your account password</p>
         </div>

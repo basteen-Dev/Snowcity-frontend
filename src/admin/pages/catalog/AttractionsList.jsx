@@ -91,7 +91,7 @@ export default function AttractionsList() {
     <div>
       <PageHeader title="Attractions" subtitle="Manage your attractions catalog">
         <button
-          className="rounded-lg border border-gray-300 dark:border-neutral-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors"
+          className="rounded-lg border border-gray-300 dark:border-slate-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors"
           onClick={() => setState((s) => ({ ...s, reorder: !s.reorder }))}
         >
           {state.reorder ? 'Exit Reorder' : 'Reorder'}
@@ -127,7 +127,7 @@ export default function AttractionsList() {
                   <img
                     src={imgSrc(row)}
                     alt={row.title}
-                    className="w-10 h-10 object-cover rounded-lg shadow-sm border border-gray-200 dark:border-neutral-700"
+                    className="w-10 h-10 object-cover rounded-lg shadow-sm border border-gray-200 dark:border-slate-600"
                     onError={(e) => { e.target.src = '/placeholder-image.png'; }}
                   />
                 )
@@ -194,12 +194,12 @@ export default function AttractionsList() {
           />
         </>
       ) : (
-        <div className="rounded-2xl border border-gray-200/80 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-sm overflow-hidden">
+        <div className="rounded-2xl border border-gray-200/80 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm overflow-hidden">
           <DndContext collisionDetection={closestCenter} onDragEnd={onDragEnd}>
             <SortableContext items={state.items.map((a) => String(a.attraction_id))} strategy={verticalListSortingStrategy}>
               <table className="min-w-full text-sm">
                 <thead>
-                  <tr className="bg-gray-50/80 dark:bg-neutral-800/60 border-b border-gray-200 dark:border-neutral-700">
+                  <tr className="bg-gray-50/80 dark:bg-neutral-800/60 border-b border-gray-200 dark:border-slate-600">
                     <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Drag</th>
                     <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Title</th>
                     <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Base Price</th>

@@ -28,16 +28,16 @@ export default function TablePagination({
     }, [page, totalPages]);
 
     return (
-        <Component className={`flex flex-col sm:flex-row items-center justify-between gap-3 py-3 px-4 text-sm text-gray-600 dark:text-neutral-400 bg-white dark:bg-neutral-900 rounded-b-2xl border-t border-gray-100 dark:border-neutral-800 ${className}`}>
+        <Component className={`flex flex-col sm:flex-row items-center justify-between gap-3 py-3 px-4 text-sm text-gray-600 dark:text-neutral-400 bg-white dark:bg-slate-800 rounded-b-2xl border-t border-gray-100 dark:border-slate-700 ${className}`}>
             <div className="flex items-center gap-2">
                 <span className="whitespace-nowrap text-gray-500 dark:text-neutral-500">Rows:</span>
                 <select
-                    className="bg-transparent border border-gray-200 dark:border-neutral-700 rounded-lg px-2 py-1 text-sm focus:ring-1 focus:ring-blue-500 cursor-pointer dark:bg-neutral-900"
+                    className="bg-transparent border border-gray-200 dark:border-slate-600 rounded-lg px-2 py-1 text-sm focus:ring-1 focus:ring-blue-500 cursor-pointer dark:bg-slate-800"
                     value={rowsPerPage}
                     onChange={(e) => onRowsPerPageChange && onRowsPerPageChange(Number(e.target.value))}
                 >
                     {rowsPerPageOptions.map((opt) => (
-                        <option key={opt} value={opt} className="bg-white dark:bg-neutral-900">
+                        <option key={opt} value={opt} className="bg-white dark:bg-slate-800">
                             {opt}
                         </option>
                     ))}
@@ -51,7 +51,7 @@ export default function TablePagination({
                 <button
                     onClick={() => onPageChange && onPageChange(page - 1)}
                     disabled={page <= 1}
-                    className="inline-flex items-center justify-center h-8 w-8 rounded-lg border border-gray-200 dark:border-neutral-700 hover:bg-gray-100 dark:hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                    className="inline-flex items-center justify-center h-8 w-8 rounded-lg border border-gray-200 dark:border-slate-600 hover:bg-gray-100 dark:hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                     aria-label="Previous page"
                 >
                     <ChevronLeft size={16} />
@@ -65,7 +65,7 @@ export default function TablePagination({
                             'inline-flex items-center justify-center h-8 w-8 rounded-lg text-sm font-medium transition-colors',
                             p === page
                                 ? 'bg-gray-900 dark:bg-blue-600 text-white shadow-sm'
-                                : 'border border-gray-200 dark:border-neutral-700 hover:bg-gray-100 dark:hover:bg-neutral-800 text-gray-700 dark:text-neutral-300',
+                                : 'border border-gray-200 dark:border-slate-600 hover:bg-gray-100 dark:hover:bg-neutral-800 text-gray-700 dark:text-neutral-300',
                         ].join(' ')}
                     >
                         {p}
@@ -75,7 +75,7 @@ export default function TablePagination({
                 <button
                     onClick={() => onPageChange && onPageChange(page + 1)}
                     disabled={page >= totalPages}
-                    className="inline-flex items-center justify-center h-8 w-8 rounded-lg border border-gray-200 dark:border-neutral-700 hover:bg-gray-100 dark:hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                    className="inline-flex items-center justify-center h-8 w-8 rounded-lg border border-gray-200 dark:border-slate-600 hover:bg-gray-100 dark:hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                     aria-label="Next page"
                 >
                     <ChevronRight size={16} />

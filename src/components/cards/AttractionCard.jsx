@@ -7,7 +7,7 @@ import api from '../../services/apiClient';
 import endpoints from '../../services/endpoints';
 import snowParkVideo from '../../assets/images/Web gif_GStory_1772876679.mp4';
 
-export default function AttractionCard({ item, featured = false }) {
+const AttractionCardInner = function AttractionCard({ item, featured = false }) {
   const navigate = useNavigate();
   const title = item?.name || item?.title || 'Attraction';
   const desc = item?.short_description || item?.subtitle || '';
@@ -56,13 +56,14 @@ export default function AttractionCard({ item, featured = false }) {
     navigate(attrId ? `/tickets-offers?attraction_id=${attrId}&type=attraction&openDrawer=true` : '/tickets-offers');
   };
 
+  const isSnowPark = title.toLowerCase().includes('snow park');
+  const isEyelusion = title.toLowerCase().includes('eyelusion');
+  const isMadLab = title.toLowerCase().includes('mad lab') || title.toLowerCase().includes('madlab');
+  const isDarkHouse = title.toLowerCase().includes('dark house') || title.toLowerCase().includes('devil');
+
   const renderHighlights = (isFeaturedCard) => {
     const chipClass = isFeaturedCard ? "feat-chip" : "feat-chip-dark";
     const containerClass = isFeaturedCard ? "exp-feat-highlights" : "flex flex-wrap gap-2 mt-4 mb-2";
-    
-    const isSnowPark = title.toLowerCase().includes('snow park');
-    const isMadLab = title.toLowerCase().includes('mad lab') || title.toLowerCase().includes('madlab');
-    const isEyelusion = title.toLowerCase().includes('eyelusion');
 
     return (
       <div className={containerClass}>
@@ -126,8 +127,15 @@ export default function AttractionCard({ item, featured = false }) {
           <div className="exp-feat-footer">
             <div>
               <p className="text-[10px] text-white/80 uppercase font-bold tracking-wider mb-1">FROM / PER PERSON</p>
-              <div className="exp-feat-price">
-                ₹{Math.round(displayPrice)}
+              <div className="flex items-center gap-2">
+                <div className="exp-feat-price">
+                  ₹{Math.round(displayPrice)}
+                </div>
+                {Math.round(basePrice) > Math.round(displayPrice) && (
+                  <span className="text-sm text-white/60 line-through decoration-white/40">
+                    ₹{Math.round(basePrice)}
+                  </span>
+                )}
               </div>
             </div>
             <button
@@ -206,13 +214,81 @@ export default function AttractionCard({ item, featured = false }) {
 
   return (
     <div className="exp-card-new rounded-xl group cursor-pointer" onClick={goDetail}>
-      <div className="exp-card-visual">
-        <img
-          src={img}
-          alt={item?.image_alt || title}
-          loading={featured ? "eager" : "lazy"}
-          fetchPriority={featured ? "high" : "auto"}
-        />
+      <div className="exp-card-visual relative">
+          {isMadLab && (
+            <>
+              {/* Top Badge */}
+              <div className="absolute top-3 left-3 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-full px-3 py-1 text-xs font-bold shadow-lg flex items-center gap-1 z-10 border border-white/20">
+                🔥 Fan Favourite
+              </div>
+              
+              {/* Bottom Glassmorphism Badges */}
+              <div className="absolute bottom-3 left-3 right-3 flex flex-wrap gap-2 z-10">
+                <span className="bg-white/20 backdrop-blur-md text-white text-[10px] font-semibold tracking-wide px-2.5 py-1 rounded-md border border-white/30 shadow-sm">
+                  🔬 Science
+                </span>
+                <span className="bg-white/20 backdrop-blur-md text-white text-[10px] font-semibold tracking-wide px-2.5 py-1 rounded-md border border-white/30 shadow-sm">
+                  ✨ Interactive
+                </span>
+                <span className="bg-white/20 backdrop-blur-md text-white text-[10px] font-semibold tracking-wide px-2.5 py-1 rounded-md border border-white/30 shadow-sm">
+                  👨‍👩‍👧‍👦 All Ages
+                </span>
+              </div>
+            </>
+          )}
+
+          {isEyelusion && (
+            <>
+              {/* Top Badge */}
+              <div className="absolute top-3 left-3 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-full px-3 py-1 text-xs font-bold shadow-lg flex items-center gap-1 z-10 border border-white/20">
+                📸 Instagram Worthy
+              </div>
+              
+              {/* Bottom Glassmorphism Badges */}
+              <div className="absolute bottom-3 left-3 right-3 flex flex-wrap gap-2 z-10">
+                <span className="bg-white/20 backdrop-blur-md text-white text-[10px] font-semibold tracking-wide px-2.5 py-1 rounded-md border border-white/30 shadow-sm">
+                  ✨ Illusion
+                </span>
+                <span className="bg-white/20 backdrop-blur-md text-white text-[10px] font-semibold tracking-wide px-2.5 py-1 rounded-md border border-white/30 shadow-sm">
+                  🤳 Photo Ops
+                </span>
+                <span className="bg-white/20 backdrop-blur-md text-white text-[10px] font-semibold tracking-wide px-2.5 py-1 rounded-md border border-white/30 shadow-sm">
+                  🖼️ 24 Setups
+                </span>
+              </div>
+            </>
+          )}
+
+          {isDarkHouse && (
+            <>
+              {/* Top Badge */}
+              <div className="absolute top-3 left-3 bg-gradient-to-r from-green-700 to-green-900 border border-green-500/30 text-white rounded-full px-3 py-1 text-xs font-bold shadow-lg flex items-center gap-1 z-10">
+                👻 Thrill Seekers
+              </div>
+              
+              {/* Bottom Glassmorphism Badges */}
+              <div className="absolute bottom-3 left-3 right-3 flex flex-wrap gap-2 z-10">
+                <span className="bg-black/40 backdrop-blur-md text-red-200 border-red-500/30 text-[10px] font-semibold tracking-wide px-2.5 py-1 rounded-md border shadow-sm">
+                  🩸 Horror
+                </span>
+                <span className="bg-black/40 backdrop-blur-md text-gray-200 border-gray-500/30 text-[10px] font-semibold tracking-wide px-2.5 py-1 rounded-md border shadow-sm">
+                  🏚️ Immersive
+                </span>
+                <span className="bg-red-900/40 backdrop-blur-md text-white text-[10px] font-bold tracking-wide px-2.5 py-1 rounded-md border border-red-500/50 shadow-sm">
+                  🔞 12+ Years
+                </span>
+              </div>
+            </>
+          )}
+          <img
+            src={img}
+            alt={item?.image_alt || title}
+            width={640}
+            height={400}
+            loading={featured ? "eager" : "lazy"}
+            fetchPriority={featured ? "high" : "auto"}
+            className="w-full h-full object-cover"
+          />
       </div>
 
       <div className="exp-card-body">
@@ -223,8 +299,15 @@ export default function AttractionCard({ item, featured = false }) {
         <div className="exp-card-footer mt-auto">
           <div>
             <p className="text-[10px] text-[#6B7280] uppercase font-bold tracking-wider mb-1">FROM / PER PERSON</p>
-            <div className="price-val-new">
-              ₹{Math.round(displayPrice)}
+            <div className="flex items-center gap-2">
+              <div className="price-val-new">
+                ₹{Math.round(displayPrice)}
+              </div>
+              {Math.round(basePrice) > Math.round(displayPrice) && (
+                <span className="text-xs text-gray-400 line-through decoration-gray-300">
+                  ₹{Math.round(basePrice)}
+                </span>
+              )}
             </div>
           </div>
           <button
@@ -238,3 +321,5 @@ export default function AttractionCard({ item, featured = false }) {
     </div>
   );
 }
+
+export default React.memo(AttractionCardInner);

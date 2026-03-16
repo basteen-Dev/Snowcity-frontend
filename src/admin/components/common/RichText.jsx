@@ -376,7 +376,7 @@ export default function RichText({ value, onChange, placeholder = 'Type here…'
         onChange={(e) => onChange?.(e.target.value)}
         placeholder={placeholder}
         style={{ minHeight: height }}
-        className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200"
+        className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200"
       />
     );
   }

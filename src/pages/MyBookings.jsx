@@ -246,14 +246,6 @@ export default function MyBookings() {
             <h1 className="text-2xl font-bold text-gray-900">My Bookings</h1>
             <p className="text-gray-500 text-sm">Track your tickets and payment status</p>
           </div>
-          <button
-            onClick={refresh}
-            disabled={status === 'loading'}
-            className="p-2 rounded-xl hover:bg-gray-100 text-gray-600 transition-colors"
-            title="Refresh List"
-          >
-            <RefreshCcw size={20} className={status === 'loading' ? 'animate-spin' : ''} />
-          </button>
         </div>
 
         {status === 'failed' && (
@@ -408,28 +400,6 @@ export default function MyBookings() {
                           <FileText size={18} /> Download Ticket(s)
                         </button>
                       )}
-
-                      <button
-                        onClick={(e) => { e.stopPropagation(); onCheckStatus(order.id); }}
-                        className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-white border border-gray-300 rounded-lg text-xs sm:text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-                      >
-                        <RefreshCcw size={18} /> Check Status
-                      </button>
-
-                      {canPay && !isRetry && (
-                        <button
-                          onClick={(e) => { 
-                            e.stopPropagation(); 
-                            setRetryOrder(order.id); 
-                            setExpandedOrder(order.id); // Ensure it stays expanded
-                          }}
-                          className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-blue-600 text-white rounded-lg text-xs sm:text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm sm:ml-auto"
-                        >
-                          <CreditCard size={18} /> Pay Now
-                        </button>
-                      )}
-
-
                       {order.items.length > 0 && order.items.some(item => item.attraction_id) && (
                         <button
                           onClick={(e) => { e.stopPropagation(); startNewBooking(order); }}

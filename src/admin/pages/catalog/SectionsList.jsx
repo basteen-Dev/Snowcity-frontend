@@ -1,14 +1,18 @@
-// src/parkpanel/pages/catalog/PagesList.jsx
+// src/parkpanel/pages/catalog/SectionsList.jsx
 import React from 'react';
 import { Link } from 'react-router-dom';
 import adminApi from '../../services/adminApi';
 import TablePagination from '../../components/common/TablePagination';
-import { imgSrc } from '../../../utils/media';
 
-export default function PagesList() {
+const PLACEMENT_LABELS = {
+  section_more_info: 'More Info (Home)',
+  section_attraction: 'Attraction Detail',
+  section_combo: 'Combo Detail',
+};
+
+export default function SectionsList() {
   const [rows, setRows] = React.useState([]);
   const [q, setQ] = React.useState('');
-  const [active, setActive] = React.useState(''); // '' | 'true' | 'false'
   const [page, setPage] = React.useState(1);
   const [limit, setLimit] = React.useState(20);
   const [total, setTotal] = React.useState(0);
@@ -19,15 +23,16 @@ export default function PagesList() {
     try {
       setLoading(true);
       setErr('');
-      const params = { q, page, limit };
-      if (active) params.active = active; // only send if user picked
+      const params = { q, page, limit, placement: 'section_more_info,section_attraction,section_combo' };
       const res = await adminApi.get('/api/parkpanel/pages', { params });
       const list = Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : []);
       const meta = res?.meta || null;
-      setRows(list);
-      setTotal(meta?.total ?? list.length);
+      // filter only section placements client-side as a fallback
+      const sections = list.filter(r => r.placement?.startsWith('section_'));
+      setRows(sections);
+      setTotal(meta?.total ?? sections.length);
     } catch (e) {
-      setErr(e.message || 'Failed to load pages');
+      setErr(e.message || 'Failed to load sections');
     } finally {
       setLoading(false);
     }
@@ -44,32 +49,33 @@ export default function PagesList() {
     fetchList();
   };
 
+  const onDelete = async (id) => {
+    if (!window.confirm('Delete this section?')) return;
+    try {
+      await adminApi.delete(`/api/parkpanel/pages/${id}`);
+      fetchList();
+    } catch (e) {
+      alert(e.message || 'Delete failed');
+    }
+  };
+
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-2">
         <form onSubmit={onSearch} className="flex items-center gap-2">
           <input
             className="rounded-md border px-3 py-2 text-sm dark:bg-slate-800 dark:border-slate-600"
-            placeholder="Search title/slug"
+            placeholder="Search title"
             value={q}
             onChange={(e) => setQ(e.target.value)}
           />
-          <select
-            className="rounded-md border px-2 py-2 text-sm dark:bg-slate-800 dark:border-slate-600"
-            value={active}
-            onChange={(e) => setActive(e.target.value)}
-          >
-            <option value="">All</option>
-            <option value="true">Active</option>
-            <option value="false">Inactive</option>
-          </select>
           <button className="px-3 py-2 rounded-md border text-sm" type="submit">
             Search
           </button>
         </form>
         <div className="ml-auto flex items-center gap-2">
-          <Link to="/parkpanel/catalog/pages/new" className="px-5 py-2 rounded-md bg-gray-900 text-white text-sm font-semibold">
-            New Page
+          <Link to="/parkpanel/catalog/sections/new" className="px-5 py-2 rounded-md bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700">
+            New Section
           </Link>
         </div>
       </div>
@@ -80,11 +86,9 @@ export default function PagesList() {
         <table className="min-w-full text-sm">
           <thead className="bg-gray-50 dark:bg-neutral-800">
             <tr>
-              <th className="px-3 py-2 text-left">Hero</th>
               <th className="px-3 py-2 text-left">Title</th>
-              <th className="px-3 py-2 text-left">Slug</th>
-              <th className="px-3 py-2 text-left">Nav</th>
-              <th className="px-3 py-2 text-left">Placement</th>
+              <th className="px-3 py-2 text-left">Display In</th>
+              <th className="px-3 py-2 text-left">Order</th>
               <th className="px-3 py-2 text-left">Active</th>
               <th className="px-3 py-2 text-right">Actions</th>
             </tr>
@@ -92,37 +96,32 @@ export default function PagesList() {
           <tbody>
             {rows.map((r) => (
               <tr key={r.page_id} className="border-t dark:border-slate-700">
+                <td className="px-3 py-2 font-medium">{r.title}</td>
                 <td className="px-3 py-2">
-                  <div className="h-10 w-16 overflow-hidden rounded bg-gray-100 dark:bg-neutral-800">
-                    <img
-                      src={imgSrc(r.hero_image)}
-                      alt=""
-                      className="h-full w-full object-cover"
-                      onError={(e) => { e.target.src = 'https://placehold.co/600x400?text=No+Image'; }}
-                    />
-                  </div>
+                  <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                    {PLACEMENT_LABELS[r.placement] || r.placement}
+                  </span>
+                  {r.placement_ref_id ? <span className="ml-1 text-xs text-gray-500">#{r.placement_ref_id}</span> : null}
                 </td>
-                <td className="px-3 py-2">{r.title}</td>
-                <td className="px-3 py-2">{r.slug}</td>
-                <td className="px-3 py-2">{r.nav_group || '-'}</td>
+                <td className="px-3 py-2">{r.nav_order ?? 0}</td>
                 <td className="px-3 py-2">
-                  {r.placement === 'none' ? '-' :
-                    r.placement === 'home_bottom' ? 'Home: bottom' :
-                      r.placement === 'attraction_details' ? `Attraction details (${r.placement_ref_id || '-'})` :
-                        r.placement}
+                  <span className={`inline-block h-2 w-2 rounded-full ${r.active ? 'bg-green-500' : 'bg-gray-300'}`} />
+                  <span className="ml-1">{r.active ? 'Yes' : 'No'}</span>
                 </td>
-                <td className="px-3 py-2">{r.active ? 'Yes' : 'No'}</td>
-                <td className="px-3 py-2 text-right">
-                  <Link className="px-2 py-1 rounded-md border text-xs" to={`/parkpanel/catalog/pages/${r.page_id}`}>
+                <td className="px-3 py-2 text-right space-x-2">
+                  <Link className="px-2 py-1 rounded-md border text-xs hover:bg-gray-50" to={`/parkpanel/catalog/sections/${r.page_id}`}>
                     Edit
                   </Link>
+                  <button className="px-2 py-1 rounded-md border text-xs text-red-600 hover:bg-red-50" onClick={() => onDelete(r.page_id)}>
+                    Delete
+                  </button>
                 </td>
               </tr>
             ))}
             {!rows.length && !loading && (
               <tr>
-                <td className="px-3 py-6 text-center text-gray-500" colSpan={7}>
-                  No pages
+                <td className="px-3 py-8 text-center text-gray-500" colSpan={5}>
+                  No sections yet. Click "New Section" to create one.
                 </td>
               </tr>
             )}

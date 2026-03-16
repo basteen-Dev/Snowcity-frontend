@@ -41,19 +41,19 @@ export default function AdminTopbar({ onToggleSidebar, onToggleMobile }) {
   }, []);
 
   return (
-    <header className="sticky top-0 z-40 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xl border-b border-gray-200/80 dark:border-neutral-800">
+    <header className="sticky top-0 z-40 bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl border-b border-gray-200/80 dark:border-slate-700">
       <div className="h-16 px-4 md:px-6 flex items-center justify-between gap-4">
         {/* Left: Toggle + Branding */}
         <div className="flex items-center gap-3">
           <button
-            className="md:hidden inline-flex items-center justify-center h-9 w-9 rounded-xl border border-gray-200 dark:border-neutral-700 text-gray-600 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors"
+            className="md:hidden inline-flex items-center justify-center h-9 w-9 rounded-xl border border-gray-200 dark:border-slate-600 text-gray-600 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors"
             onClick={onToggleMobile}
             aria-label="Open navigation"
           >
             <Menu className="h-4 w-4" />
           </button>
           <button
-            className="hidden md:inline-flex items-center justify-center h-9 w-9 rounded-xl border border-gray-200 dark:border-neutral-700 text-gray-600 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors"
+            className="hidden md:inline-flex items-center justify-center h-9 w-9 rounded-xl border border-gray-200 dark:border-slate-600 text-gray-600 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors"
             onClick={onToggleSidebar}
             aria-label="Toggle sidebar"
           >
@@ -95,13 +95,13 @@ export default function AdminTopbar({ onToggleSidebar, onToggleMobile }) {
               {initial}
             </button>
             {open && (
-              <div className="absolute right-0 top-full mt-2 w-64 rounded-2xl border border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-200">
+              <div className="absolute right-0 top-full mt-2 w-64 rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-200">
                 <div className="px-4 py-3 bg-gray-50 dark:bg-neutral-800/50">
                   <p className="text-sm font-semibold text-gray-900 dark:text-neutral-50 truncate">{user?.name || 'Admin'}</p>
                   <p className="text-xs text-gray-500 dark:text-neutral-400 truncate">{user?.email}</p>
                 </div>
 
-                <div className="border-t border-gray-100 dark:border-neutral-800 py-1">
+                <div className="border-t border-gray-100 dark:border-slate-700 py-1">
                   <Link
                     to="/parkpanel/profile"
                     className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-neutral-200 hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors"

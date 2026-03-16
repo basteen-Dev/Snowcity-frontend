@@ -110,7 +110,7 @@ export default function SiteSettings() {
                 </button>
             </div>
 
-            <form onSubmit={save} className="max-w-4xl bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl p-6 shadow-sm">
+            <form onSubmit={save} className="max-w-4xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-6 shadow-sm">
                 {state.error ? <div className="mb-4 text-sm text-red-600 bg-red-50 p-3 rounded-md border border-red-200">{state.error?.message || 'Save failed'}</div> : null}
 
                 <div className="space-y-6">
@@ -122,7 +122,7 @@ export default function SiteSettings() {
                             This schema is injected as a <code>&lt;script type="application/ld+json"&gt;</code> in the document head. Do not include the <code>&lt;script&gt;</code> tags yourself.
                         </p>
                         <textarea
-                            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm bg-gray-50 dark:bg-neutral-950 dark:border-neutral-700 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500"
+                            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm bg-gray-50 dark:bg-slate-900 dark:border-slate-600 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500"
                             rows={8}
                             value={f.organization_schema}
                             onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, organization_schema: e.target.value } }))}
@@ -140,7 +140,7 @@ export default function SiteSettings() {
                             Raw HTML for Google Analytics, Meta Pixel, or other global meta tags. Must include <code>&lt;script&gt;</code> or <code>&lt;meta&gt;</code> tags.
                         </p>
                         <textarea
-                            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm bg-gray-50 dark:bg-neutral-950 dark:border-neutral-700 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500"
+                            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm bg-gray-50 dark:bg-slate-900 dark:border-slate-600 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500"
                             rows={6}
                             value={f.head_schema}
                             onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, head_schema: e.target.value } }))}
@@ -158,7 +158,7 @@ export default function SiteSettings() {
                             Raw HTML for scripts that must be placed immediately after the opening body tag (e.g., Google Tag Manager no-script).
                         </p>
                         <textarea
-                            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm bg-gray-50 dark:bg-neutral-950 dark:border-neutral-700 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500"
+                            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm bg-gray-50 dark:bg-slate-900 dark:border-slate-600 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500"
                             rows={4}
                             value={f.body_schema}
                             onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, body_schema: e.target.value } }))}
@@ -176,7 +176,7 @@ export default function SiteSettings() {
                             Raw HTML for scripts that load at the end of the page. Must include <code>&lt;script&gt;</code> tags.
                         </p>
                         <textarea
-                            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm bg-gray-50 dark:bg-neutral-950 dark:border-neutral-700 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500"
+                            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm bg-gray-50 dark:bg-slate-900 dark:border-slate-600 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500"
                             rows={4}
                             value={f.footer_schema}
                             onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, footer_schema: e.target.value } }))}
@@ -185,7 +185,7 @@ export default function SiteSettings() {
                     </div>
                 </div>
 
-                <div className="mt-8 flex gap-3 pt-4 border-t border-gray-200 dark:border-neutral-800">
+                <div className="mt-8 flex gap-3 pt-4 border-t border-gray-200 dark:border-slate-700">
                     <button type="submit" disabled={saving} className="rounded-lg bg-blue-600 hover:bg-blue-700 transition-colors text-white px-6 py-2.5 text-sm font-medium disabled:opacity-60 disabled:cursor-not-allowed">
                         {saving ? 'Saving Changes…' : 'Save Site Settings'}
                     </button>

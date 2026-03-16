@@ -6,7 +6,7 @@ import A from '../../services/adminEndpoints';
 import { FileText, FileSpreadsheet } from 'lucide-react';
 
 const SectionCard = ({ title, subtitle, children, className = '' }) => (
-  <div className={`rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:bg-neutral-900 dark:border-neutral-800 ${className}`}>
+  <div className={`rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:bg-slate-800 dark:border-slate-700 ${className}`}>
     <div className="flex items-center justify-between mb-4">
       <div>
         <p className="text-sm font-semibold text-gray-900 dark:text-neutral-100">{title}</p>
@@ -18,7 +18,7 @@ const SectionCard = ({ title, subtitle, children, className = '' }) => (
 );
 
 const SummaryCard = ({ icon, label, value, note, accent = 'from-blue-500 to-indigo-600' }) => (
-  <div className="rounded-2xl border border-gray-100 bg-white shadow-sm p-4 dark:bg-neutral-900 dark:border-neutral-800">
+  <div className="rounded-2xl border border-gray-100 bg-white shadow-sm p-4 dark:bg-slate-800 dark:border-slate-700">
     <div className="flex items-center justify-between">
       <div>
         <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{label}</div>

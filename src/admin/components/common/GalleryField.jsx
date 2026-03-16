@@ -39,7 +39,7 @@ export default function GalleryField({
   };
 
   return (
-    <div className="rounded-lg border dark:border-neutral-800 p-3 space-y-3">
+    <div className="rounded-lg border dark:border-slate-700 p-3 space-y-3">
       <div>
         <div className="text-sm font-medium text-gray-800 dark:text-neutral-100">{label}</div>
         {helper ? <div className="text-xs text-gray-500 dark:text-neutral-400">{helper}</div> : null}
@@ -52,7 +52,7 @@ export default function GalleryField({
       ) : null}
 
       {list.map((url, idx) => (
-        <div key={`gallery-${idx}`} className="rounded-md border border-dashed dark:border-neutral-700 p-2 space-y-2">
+        <div key={`gallery-${idx}`} className="rounded-md border border-dashed dark:border-slate-600 p-2 space-y-2">
           <div className="flex items-center justify-between text-xs text-gray-600 dark:text-neutral-300">
             <span>Image #{idx + 1}</span>
             <button

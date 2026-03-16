@@ -402,30 +402,30 @@ export default function OfferForm() {
   return (
     <div className="relative">
       <SaveOverlay visible={saving} label={isEdit ? 'Updating offer…' : 'Saving offer…'} />
-      <form onSubmit={save} className="max-w-2xl bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl p-4">
+      <form onSubmit={save} className="max-w-2xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-4">
         <h1 className="text-xl font-semibold mb-4">{isEdit ? 'Edit' : 'New'} Offer</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div className="md:col-span-2">
             <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Title</label>
-            <input className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" value={f.title} onChange={(e) => updateForm({ title: e.target.value })} />
+            <input className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200" value={f.title} onChange={(e) => updateForm({ title: e.target.value })} />
           </div>
           <div className="md:col-span-2">
             <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Description</label>
-            <textarea rows={4} className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" value={f.description} onChange={(e) => updateForm({ description: e.target.value })} />
+            <textarea rows={4} className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200" value={f.description} onChange={(e) => updateForm({ description: e.target.value })} />
           </div>
           <div className="md:col-span-2">
             <ImageUploader label="Image" value={f.image_url} onChange={(url) => updateForm({ image_url: url })} altText={f.image_alt} onAltChange={(alt) => updateForm({ image_alt: alt })} folder="offers" requiredPerm="uploads:write" />
           </div>
           <div>
             <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Rule Type</label>
-            <select className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" value={f.rule_type} onChange={(e) => updateForm({ rule_type: e.target.value })}>
+            <select className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200" value={f.rule_type} onChange={(e) => updateForm({ rule_type: e.target.value })}>
               <option key="__default-rule-type__" value="">—</option>
               {RULES.map((r) => <option key={r} value={r}>{r}</option>)}
             </select>
           </div>
           <div>
             <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Discount Type</label>
-            <select className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" value={f.discount_type} onChange={(e) => updateForm({ discount_type: e.target.value })}>
+            <select className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200" value={f.discount_type} onChange={(e) => updateForm({ discount_type: e.target.value })}>
               {DISCOUNT_TYPES.map((opt) => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
               ))}
@@ -433,19 +433,19 @@ export default function OfferForm() {
           </div>
           <div>
             <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Discount Value</label>
-            <input type="number" className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" value={f.discount_value} onChange={(e) => updateForm({ discount_value: e.target.value })} />
+            <input type="number" className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200" value={f.discount_value} onChange={(e) => updateForm({ discount_value: e.target.value })} />
           </div>
           <div>
             <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Max Discount (optional)</label>
-            <input type="number" className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" value={f.max_discount ?? ''} onChange={(e) => updateForm({ max_discount: e.target.value })} />
+            <input type="number" className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200" value={f.max_discount ?? ''} onChange={(e) => updateForm({ max_discount: e.target.value })} />
           </div>
           <div>
             <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Valid From</label>
-            <input type="date" className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" value={f.valid_from || ''} onChange={(e) => updateForm({ valid_from: e.target.value })} />
+            <input type="date" className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200" value={f.valid_from || ''} onChange={(e) => updateForm({ valid_from: e.target.value })} />
           </div>
           <div>
             <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Valid To</label>
-            <input type="date" className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" value={f.valid_to || ''} onChange={(e) => updateForm({ valid_to: e.target.value })} />
+            <input type="date" className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200" value={f.valid_to || ''} onChange={(e) => updateForm({ valid_to: e.target.value })} />
           </div>
           <div className="flex items-center gap-2 md:col-span-2">
             <input id="active" type="checkbox" checked={!!f.active} onChange={(e) => updateForm({ active: e.target.checked })} />
@@ -468,7 +468,7 @@ export default function OfferForm() {
                 key={tpl.key}
                 type="button"
                 onClick={() => applyTemplate(tpl)}
-                className="rounded-2xl border border-gray-200 hover:border-gray-400 text-left p-3 bg-white/70 dark:bg-neutral-900/60 shadow-sm"
+                className="rounded-2xl border border-gray-200 hover:border-gray-400 text-left p-3 bg-white/70 dark:bg-slate-800/60 shadow-sm"
               >
                 <div className="flex items-center justify-between text-xs uppercase tracking-wide text-gray-500">
                   <span>{tpl.badge}</span>

@@ -90,29 +90,29 @@ export default function AttractionForm() {
   return (
     <div className="relative">
       <SaveOverlay visible={saving} label={isEdit ? 'Updating attraction…' : 'Saving attraction…'} />
-      <form onSubmit={save} className="max-w-2xl bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl p-4">
+      <form onSubmit={save} className="max-w-2xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-4">
         <h1 className="text-xl font-semibold mb-4">{isEdit ? 'Edit' : 'New'} Attraction</h1>
         {state.error ? <div className="mb-3 text-sm text-red-600">{state.error?.message || 'Save failed'}</div> : null}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
             <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Title</label>
-            <input className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" value={f.title} onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, title: e.target.value } }))} />
+            <input className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200" value={f.title} onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, title: e.target.value } }))} />
           </div>
           <div>
             <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Slug (URL-friendly identifier)</label>
-            <input className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" value={f.slug} onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, slug: e.target.value } }))} placeholder="auto-generated-from-title" />
+            <input className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200" value={f.slug} onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, slug: e.target.value } }))} placeholder="auto-generated-from-title" />
           </div>
           <div className="md:col-span-2">
             <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Short Description (for lists/previews)</label>
-            <textarea className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" rows={2} value={f.short_description} onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, short_description: e.target.value } }))} />
+            <textarea className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200" rows={2} value={f.short_description} onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, short_description: e.target.value } }))} />
           </div>
           <div>
             <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Meta Title (SEO title)</label>
-            <input className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" value={f.meta_title} onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, meta_title: e.target.value } }))} placeholder="Custom page title for SEO" />
+            <input className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200" value={f.meta_title} onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, meta_title: e.target.value } }))} placeholder="Custom page title for SEO" />
           </div>
           <div>
             <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Base Price</label>
-            <input type="number" className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" value={f.base_price} onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, base_price: Number(e.target.value || 0) } }))} />
+            <input type="number" className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200" value={f.base_price} onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, base_price: Number(e.target.value || 0) } }))} />
           </div>
           <div className="md:col-span-2">
             <ImageUploader label="Image" value={f.image_url} onChange={(url) => setState((s) => ({ ...s, form: { ...s.form, image_url: url } }))} altText={f.image_alt} onAltChange={(alt) => setState((s) => ({ ...s, form: { ...s.form, image_alt: alt } }))} folder="attractions" requiredPerm="uploads:write" />
@@ -122,7 +122,7 @@ export default function AttractionForm() {
           </div>
           <div className="md:col-span-2">
             <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Long Description (HTML content)</label>
-            <textarea className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" rows={6} value={f.description} onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, description: e.target.value } }))} />
+            <textarea className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200" rows={6} value={f.description} onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, description: e.target.value } }))} />
           </div>
           <div className="flex items-center gap-2">
             <input id="active" type="checkbox" checked={!!f.active} onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, active: e.target.checked } }))} />
@@ -130,7 +130,7 @@ export default function AttractionForm() {
           </div>
 
           {/* Time Slot & Stop Booking Controls */}
-          <div className="md:col-span-2 mt-2 p-4 border border-gray-200 dark:border-neutral-700 rounded-lg bg-gray-50 dark:bg-neutral-800">
+          <div className="md:col-span-2 mt-2 p-4 border border-gray-200 dark:border-slate-600 rounded-lg bg-gray-50 dark:bg-neutral-800">
             <h3 className="text-sm font-semibold text-gray-700 dark:text-neutral-200 mb-3">Booking Settings</h3>
             <div className="flex flex-wrap gap-6">
               <label className="flex items-center gap-2 cursor-pointer">
@@ -168,7 +168,7 @@ export default function AttractionForm() {
         </div>
 
         {/* FAQ Section */}
-        <div className="mt-8 pt-6 border-t border-gray-200 dark:border-neutral-800">
+        <div className="mt-8 pt-6 border-t border-gray-200 dark:border-slate-700">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="text-lg font-semibold text-gray-900 dark:text-neutral-100">FAQ Section</h2>
@@ -186,7 +186,7 @@ export default function AttractionForm() {
             </button>
           </div>
           {(f.faq_items || []).map((faq, idx) => (
-            <div key={idx} className="mb-4 p-4 border border-gray-200 dark:border-neutral-700 rounded-lg bg-gray-50 dark:bg-neutral-800">
+            <div key={idx} className="mb-4 p-4 border border-gray-200 dark:border-slate-600 rounded-lg bg-gray-50 dark:bg-neutral-800">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-sm font-medium text-gray-700 dark:text-neutral-300">FAQ #{idx + 1}</span>
                 <button
@@ -206,7 +206,7 @@ export default function AttractionForm() {
                   <label className="block text-xs font-medium text-gray-600 dark:text-neutral-400 mb-1">Question</label>
                   <input
                     type="text"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-neutral-900 dark:text-neutral-100 text-sm"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-neutral-100 text-sm"
                     value={faq.question || ''}
                     onChange={(e) => {
                       const items = [...f.faq_items];
@@ -219,7 +219,7 @@ export default function AttractionForm() {
                 <div>
                   <label className="block text-xs font-medium text-gray-600 dark:text-neutral-400 mb-1">Answer</label>
                   <textarea
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-neutral-900 dark:text-neutral-100 text-sm"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-neutral-100 text-sm"
                     rows={3}
                     value={faq.answer || ''}
                     onChange={(e) => {
@@ -239,12 +239,12 @@ export default function AttractionForm() {
         </div>
 
         {/* Schema Markup */}
-        <div className="mt-8 pt-6 border-t border-gray-200 dark:border-neutral-800">
+        <div className="mt-8 pt-6 border-t border-gray-200 dark:border-slate-700">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-neutral-100 mb-2">Custom Schema / Scripts</h2>
           <p className="text-sm text-gray-500 dark:text-neutral-400 mb-4">Paste your schema markup or custom scripts here. It will be added exactly as provided to the attraction page head.</p>
           <div>
             <textarea
-              className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-neutral-900 dark:text-neutral-100 text-sm"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-neutral-100 text-sm"
               rows={10}
               value={f.head_schema || ''}
               onChange={(e) => setState(s => ({ ...s, form: { ...s.form, head_schema: e.target.value } }))}
@@ -253,10 +253,10 @@ export default function AttractionForm() {
           </div>
         </div>
 
-        <div className="mt-4 flex items-center justify-between border-t border-gray-200 dark:border-neutral-800 pt-5">
+        <div className="mt-4 flex items-center justify-between border-t border-gray-200 dark:border-slate-700 pt-5">
           <div className="flex gap-2">
             <button type="submit" disabled={saving} className="rounded-md bg-gray-900 dark:bg-blue-600 text-white px-4 py-2 text-sm disabled:opacity-60 disabled:cursor-not-allowed">{saving ? 'Saving…' : 'Save'}</button>
-            <button type="button" className="rounded-md border border-gray-300 dark:border-neutral-700 px-4 py-2 text-sm text-gray-700 dark:text-neutral-300" onClick={() => navigate(-1)}>Cancel</button>
+            <button type="button" className="rounded-md border border-gray-300 dark:border-slate-600 px-4 py-2 text-sm text-gray-700 dark:text-neutral-300" onClick={() => navigate(-1)}>Cancel</button>
           </div>
           {isEdit && (
             <button type="button" onClick={handleDelete} disabled={saving} className="rounded-md border border-red-200 bg-red-50 text-red-600 px-4 py-2 text-sm hover:bg-red-100 transition-colors disabled:opacity-50">

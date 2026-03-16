@@ -16,10 +16,10 @@ import {
 /* ─── Shared UI ──────────────────────────────────────────── */
 const formatCurrency = (value) => `₹${Number(value || 0).toLocaleString()}`;
 
-const inputClasses = 'w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-700 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all placeholder:text-gray-400';
+const inputClasses = 'w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-700 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all placeholder:text-gray-400';
 const selectClasses = `${inputClasses} appearance-none cursor-pointer`;
 const btnPrimary = 'inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2.5 text-sm font-semibold shadow-sm shadow-blue-500/20 hover:shadow-md hover:shadow-blue-500/30 transition-all';
-const btnSecondary = 'inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800 transition-all';
+const btnSecondary = 'inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200 dark:hover:bg-neutral-800 transition-all';
 
 const normalizeOptionList = (res) => {
   if (!res) return [];
@@ -70,7 +70,7 @@ const ActionMenu = ({ row, onView, onWhatsApp, onEmail, onDownload }) => {
         <MoreVertical size={16} className="text-gray-500" />
       </button>
       {open && (
-        <div className="absolute right-0 top-full mt-1 z-50 w-48 rounded-xl border border-gray-200 bg-white shadow-lg dark:bg-neutral-900 dark:border-neutral-700 py-1 animate-in fade-in slide-in-from-top-1">
+        <div className="absolute right-0 top-full mt-1 z-50 w-48 rounded-xl border border-gray-200 bg-white shadow-lg dark:bg-slate-800 dark:border-slate-600 py-1 animate-in fade-in slide-in-from-top-1">
           <button
             onClick={(e) => { e.stopPropagation(); setOpen(false); onView(row); }}
             className="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-neutral-200 dark:hover:bg-neutral-800 transition-colors"
@@ -91,7 +91,7 @@ const ActionMenu = ({ row, onView, onWhatsApp, onEmail, onDownload }) => {
           >
             <Mail size={15} className={isConfirmed ? 'text-indigo-500' : 'text-gray-400'} /> Send Email
           </button>
-          <div className="border-t border-gray-100 dark:border-neutral-700 my-1" />
+          <div className="border-t border-gray-100 dark:border-slate-600 my-1" />
           <button
             onClick={(e) => { e.stopPropagation(); setOpen(false); onDownload(row); }}
             disabled={!isConfirmed}
@@ -478,7 +478,7 @@ export default function BookingsList() {
             disabled={isFiltering}
             className={`flex items-center gap-1.5 rounded-xl px-3 py-1 text-xs font-semibold border transition-all ${autoSync
               ? 'bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-900/20 dark:border-emerald-700 dark:text-emerald-400'
-              : 'bg-gray-50 border-gray-200 text-gray-500 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-400'} ${isFiltering ? 'opacity-60 cursor-not-allowed' : ''}`}
+              : 'bg-gray-50 border-gray-200 text-gray-500 dark:bg-neutral-800 dark:border-slate-600 dark:text-neutral-400'} ${isFiltering ? 'opacity-60 cursor-not-allowed' : ''}`}
             title={isFiltering ? 'Live sync is disabled while filters are active' : autoSync ? 'Auto-sync ON (every 15s) — click to disable' : 'Auto-sync OFF — click to enable'}
           >
             <span className={`inline-block w-2 h-2 rounded-xl ${autoSync ? 'bg-emerald-500 animate-pulse' : 'bg-gray-400'}`} />
@@ -492,7 +492,7 @@ export default function BookingsList() {
               onClick={() => applyQuickRange(range.key)}
               className={`rounded-xl px-3.5 py-1.5 text-xs font-semibold border transition-all ${activeRange === range.key
                 ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-transparent shadow-sm shadow-blue-500/20'
-                : 'border-gray-200 text-gray-600 hover:border-gray-400 hover:bg-gray-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800'}`}
+                : 'border-gray-200 text-gray-600 hover:border-gray-400 hover:bg-gray-50 dark:border-slate-600 dark:text-neutral-300 dark:hover:bg-neutral-800'}`}
             >
               {range.label}
             </button>
@@ -501,7 +501,7 @@ export default function BookingsList() {
       </div>
 
       {/* ── Filter Bar ── */}
-      <div className="rounded-2xl border border-gray-200/80 bg-white shadow-sm dark:bg-neutral-900 dark:border-neutral-800">
+      <div className="rounded-2xl border border-gray-200/80 bg-white shadow-sm dark:bg-slate-800 dark:border-slate-700">
         {/* Always-visible: search bar + filter toggle */}
         <div className="flex items-center gap-3 px-4 py-3">
           <div className="relative flex-1 max-w-md">
@@ -517,7 +517,7 @@ export default function BookingsList() {
           <button
             className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-sm font-medium transition-all ${showFilters
               ? 'bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-900/20 dark:border-blue-700 dark:text-blue-400'
-              : 'border-gray-200 text-gray-600 hover:bg-gray-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800'}`}
+              : 'border-gray-200 text-gray-600 hover:bg-gray-50 dark:border-slate-600 dark:text-neutral-300 dark:hover:bg-neutral-800'}`}
             onClick={() => setShowFilters(!showFilters)}
           >
             <Filter className="h-4 w-4" />
@@ -532,7 +532,7 @@ export default function BookingsList() {
         </div>
 
         {showFilters && (
-          <div className="px-4 pb-4 border-t border-gray-100 dark:border-neutral-800 pt-3 space-y-3">
+          <div className="px-4 pb-4 border-t border-gray-100 dark:border-slate-700 pt-3 space-y-3">
             {isSubadmin && (
               <div className="bg-blue-50 text-blue-900 border border-blue-200 rounded-xl px-3 py-2 text-xs dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800">
                 <strong>Subadmin Access:</strong> Viewing attractions and combos from your assigned bookings only.

@@ -12,9 +12,9 @@ import { fetchActiveAnnouncements } from '../features/announcements/announcement
 
 import HeroCarousel from '../components/hero/HeroCarousel';
 
-import AttractionsCarousel from '../components/carousels/AttractionsCarousel';
-import CombosCarousel from '../components/carousels/CombosCarousel';
-import OffersMarquee from '../components/common/OffersMarquee';
+const AttractionsCarousel = React.lazy(() => import('../components/carousels/AttractionsCarousel'));
+const CombosCarousel = React.lazy(() => import('../components/carousels/CombosCarousel'));
+const OffersMarquee = React.lazy(() => import('../components/common/OffersMarquee'));
 
 const PlanVisitSection = React.lazy(() => import('../components/common/PlanVisitSection'));
 const Testimonials = React.lazy(() => import('../components/common/Testimonials'));
@@ -139,20 +139,24 @@ export default function Home() {
 
       <main className="bg-gradient-to-b from-[#f5f8ff] to-white">
         {/* Offers Marquee */}
-        {marqueeItems.length > 0 && <OffersMarquee items={marqueeItems} />}
+        {marqueeItems.length > 0 && <React.Suspense fallback={null}><OffersMarquee items={marqueeItems} /></React.Suspense>}
 
         {/* Attractions */}
         {attractions.status === 'failed' ? (
           <ErrorState message={attractions.error?.message || 'Failed to load attractions'} />
         ) : attractionItems.length ? (
-          <AttractionsCarousel items={attractionItems} />
+          <React.Suspense fallback={<div className="py-8"><SkeletonCarousel items={3} /></div>}>
+            <AttractionsCarousel items={attractionItems} />
+          </React.Suspense>
         ) : (
           <div className="py-8"><SkeletonCarousel items={3} /></div>
         )}
 
         {/* Combos */}
         {comboItems.length > 0 ? (
-          <CombosCarousel items={comboItems} />
+          <React.Suspense fallback={<div className="py-8"><SkeletonCarousel items={4} /></div>}>
+            <CombosCarousel items={comboItems} />
+          </React.Suspense>
         ) : (
           <div className="py-8"><SkeletonCarousel items={4} /></div>
         )}
@@ -216,8 +220,10 @@ export default function Home() {
           <NearbyAttractionSection />
         </LazyVisible>
 
-        {/* Navigation Group (Accordion) */}
-        <NavigationAccordion />
+        {/* Navigation Group (Accordion) — lazy loaded */}
+        <LazyVisible minHeight={80} placeholder={<div className="py-6" />}>
+          <NavigationAccordion />
+        </LazyVisible>
 
 
 

@@ -95,7 +95,7 @@ const computeBaseSum = (combo) => {
   return 0;
 };
 
-export default function ComboCard({ item, isUltimate = false }) {
+const ComboCardInner = function ComboCard({ item, isUltimate = false }) {
   const title = item?.name || item?.title || 'Combo deal';
   const desc = item?.short_description || item?.subtitle || '';
   const comboId = item?.combo_id || item?.id || item?.slug || null;
@@ -245,3 +245,5 @@ export default function ComboCard({ item, isUltimate = false }) {
     </div>
   );
 }
+
+export default React.memo(ComboCardInner);

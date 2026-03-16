@@ -33,7 +33,7 @@ function ResourceSection({ title, items, sel, setSel, disabled }) {
   };
 
   return (
-    <div className="rounded-2xl border p-4 dark:border-neutral-800 dark:bg-neutral-900/60 bg-white/70">
+    <div className="rounded-2xl border p-4 dark:border-slate-700 dark:bg-slate-800/60 bg-white/70">
       <div className="flex items-center justify-between gap-3 mb-3">
         <div className="font-medium text-gray-900 dark:text-neutral-100">{title}</div>
         <label className={[
@@ -50,7 +50,7 @@ function ResourceSection({ title, items, sel, setSel, disabled }) {
           <label key={it.id} className={[
             'flex items-center gap-2 text-sm rounded-xl border px-3 py-2 cursor-pointer transition-colors',
             disabled || safeSel.includes('*') ? 'opacity-60 cursor-not-allowed' : 'hover:border-blue-400 dark:hover:border-blue-500',
-            safeSel.includes(it.id) ? 'border-blue-400 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-200 dark:border-neutral-700',
+            safeSel.includes(it.id) ? 'border-blue-400 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-200 dark:border-slate-600',
           ].join(' ')}>
             <input
               type="checkbox"
@@ -218,11 +218,11 @@ export default function AdminAccess() {
       {notice && <div className="rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 px-4 py-3 text-sm text-emerald-700 dark:text-emerald-300">{notice}</div>}
 
       {/* Admin selector */}
-      <div className="rounded-2xl border bg-white dark:bg-neutral-900 p-5 space-y-3">
+      <div className="rounded-2xl border bg-white dark:bg-slate-800 p-5 space-y-3">
         <div className="flex flex-col gap-2 md:flex-row md:items-center">
           <label className="text-sm font-medium w-full md:w-48 text-gray-900 dark:text-neutral-200">Select Admin</label>
           <select
-            className="flex-1 rounded-xl border border-gray-300 dark:border-neutral-700 px-3 py-2 bg-white dark:bg-neutral-900 text-sm"
+            className="flex-1 rounded-xl border border-gray-300 dark:border-slate-600 px-3 py-2 bg-white dark:bg-slate-800 text-sm"
             value={selectedAdminId}
             onChange={(e) => setSelectedAdminId(e.target.value)}
             disabled={!!forcedAdminId}
@@ -271,7 +271,7 @@ export default function AdminAccess() {
 
           {/* Module permissions (staff/gm only) */}
           {canSelectModules && (
-            <div className="rounded-2xl border p-5 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+            <div className="rounded-2xl border p-5 dark:border-slate-700 bg-white dark:bg-slate-800">
               <h3 className="font-semibold text-gray-900 dark:text-neutral-100 mb-1">Module Permissions</h3>
               <p className="text-xs text-gray-500 dark:text-neutral-400 mb-4">
                 Choose which modules this user can access.
@@ -284,7 +284,7 @@ export default function AdminAccess() {
                       key={m.key}
                       className={[
                         'flex items-start gap-3 rounded-xl border-2 p-3 cursor-pointer transition-all',
-                        active ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-200 dark:border-neutral-700 hover:border-blue-300',
+                        active ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-200 dark:border-slate-600 hover:border-blue-300',
                       ].join(' ')}
                     >
                       <input
@@ -314,7 +314,7 @@ export default function AdminAccess() {
               {saving ? 'Saving…' : 'Save Access'}
             </button>
             <button
-              className="px-4 py-2.5 rounded-xl border border-gray-300 dark:border-neutral-700 text-sm text-gray-700 dark:text-neutral-300 hover:bg-gray-50 dark:hover:bg-neutral-800"
+              className="px-4 py-2.5 rounded-xl border border-gray-300 dark:border-slate-600 text-sm text-gray-700 dark:text-neutral-300 hover:bg-gray-50 dark:hover:bg-neutral-800"
               onClick={() => forcedAdminId ? nav('/parkpanel/admins') : setSelectedAdminId('')}
             >
               Cancel
@@ -324,7 +324,7 @@ export default function AdminAccess() {
       )}
 
       {!selectedAdminId && (
-        <div className="rounded-2xl border border-dashed bg-white/50 dark:bg-neutral-900/40 p-8 text-center text-sm text-gray-500">
+        <div className="rounded-2xl border border-dashed bg-white/50 dark:bg-slate-800/40 p-8 text-center text-sm text-gray-500">
           Select an admin above to start granting scoped access.
         </div>
       )}

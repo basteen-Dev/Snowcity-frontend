@@ -19,18 +19,18 @@ export default function Views() {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-xl border bg-white dark:bg-neutral-900 border-gray-200 dark:border-neutral-800 p-3">
+      <div className="rounded-xl border bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 p-3">
         <div className="text-sm text-gray-600 dark:text-neutral-300">
           This view reflects access scoping based on your admin role/permissions. Data is filtered server-side.
         </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <input type="datetime-local" className="rounded-md border px-2 py-1 text-sm dark:bg-neutral-900 dark:border-neutral-700" value={dayjs(from).format('YYYY-MM-DDTHH:mm')} onChange={(e) => setFrom(dayjs(e.target.value).toISOString())} />
-        <input type="datetime-local" className="rounded-md border px-2 py-1 text-sm dark:bg-neutral-900 dark:border-neutral-700" value={dayjs(to).format('YYYY-MM-DDTHH:mm')} onChange={(e) => setTo(dayjs(e.target.value).toISOString())} />
+        <input type="datetime-local" className="rounded-md border px-2 py-1 text-sm dark:bg-slate-800 dark:border-slate-600" value={dayjs(from).format('YYYY-MM-DDTHH:mm')} onChange={(e) => setFrom(dayjs(e.target.value).toISOString())} />
+        <input type="datetime-local" className="rounded-md border px-2 py-1 text-sm dark:bg-slate-800 dark:border-slate-600" value={dayjs(to).format('YYYY-MM-DDTHH:mm')} onChange={(e) => setTo(dayjs(e.target.value).toISOString())} />
       </div>
 
-      <div className="rounded-xl border bg-white dark:bg-neutral-900 border-gray-200 dark:border-neutral-800 p-3">
+      <div className="rounded-xl border bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 p-3">
         <div className="text-sm font-medium mb-2">Scoped Daily Bookings</div>
         <div style={{ height: 320 }}>
           <ResponsiveContainer width="100%" height="100%">

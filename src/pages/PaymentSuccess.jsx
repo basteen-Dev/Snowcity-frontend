@@ -96,6 +96,7 @@ export default function PaymentSuccess() {
                 total_tickets: Number(data?.total_tickets || data?.quantity || 1),
                 total_pax: Number(data?.total_tickets || data?.quantity || 1),
                 currency: 'INR',
+                payment_type: data?.payment_mode || data?.gateway || '',
                 payment_gateway: data?.payment_mode || data?.gateway || '',
                 has_addons: Number(data?.addons_value || data?.addon_total || 0) > 0,
                 addons_value: Number(data?.addons_value || data?.addon_total || 0),

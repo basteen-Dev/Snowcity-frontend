@@ -773,3 +773,86 @@
 .ops-wrapper .a7 {
   animation: ops-up .3s .36s ease both;
 }
+
+/* ─── DARK MODE ─── */
+html.dark .ops-wrapper {
+  --bg: #0f172a;
+  --white: #1e293b;
+  --border: #334155;
+  --border2: #475569;
+  --text: #f1f5f9;
+  --sub: #94a3b8;
+  --muted: #64748b;
+  --blue: #60a5fa;
+  --blue-bg: #1e3a5f;
+  --green: #4ade80;
+  --green-bg: #14532d;
+  --amber: #fbbf24;
+  --amber-bg: #78350f;
+  --red: #f87171;
+  --red-bg: #7f1d1d;
+  --purple: #a78bfa;
+  --purple-bg: #2e1065;
+  --pink: #f472b6;
+  --pink-bg: #831843;
+  --slate: #94a3b8;
+  --sh: 0 1px 3px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(0, 0, 0, 0.2);
+  --sh2: 0 4px 18px rgba(0, 0, 0, 0.4);
+}
+
+html.dark .ops-wrapper .c-dark {
+  border-top-color: #94a3b8;
+}
+
+html.dark .ops-wrapper .c-dark .sc-val {
+  color: #f1f5f9;
+}
+
+html.dark .ops-wrapper .tbl tr:not(.tot):hover td {
+  background: #334155;
+}
+
+html.dark .ops-wrapper .at-devil {
+  background: #334155;
+  color: #e2e8f0;
+}
+
+html.dark .ops-wrapper .rev-total {
+  background: #14532d;
+  border-color: #166534;
+}
+
+html.dark .ops-wrapper .s4 .sec-hd-pill {
+  background: #475569;
+}
+
+html.dark .ops-wrapper .pb-slate {
+  background: #334155;
+  color: #94a3b8;
+}
+
+html.dark .ops-wrapper .c-teal {
+  border-top-color: #2dd4bf;
+}
+
+html.dark .ops-wrapper .c-teal .sc-val {
+  color: #2dd4bf;
+}
+
+html.dark .ops-wrapper .tbl tr.tot td {
+  background: #1e293b;
+}
+
+html.dark .ops-wrapper .tbl th {
+  background: #0f172a;
+}
+
+html.dark .ops-wrapper .sec-hd-body {
+  background: var(--white);
+  border-color: var(--border);
+}
+
+html.dark .ops-wrapper .sec-hd-date {
+  background: var(--white);
+  border-color: var(--border);
+}

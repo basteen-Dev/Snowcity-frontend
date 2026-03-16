@@ -87,11 +87,11 @@ export default function HeroCarousel({ banners = [], waveColor = "#0b1a33" }) {
     }, [banners]);
 
     // Sort banners by created_at ascending (first inserted first)
-    const sortedBanners = [...banners].sort((a, b) => {
+    const sortedBanners = React.useMemo(() => [...banners].sort((a, b) => {
         const aDate = new Date(a.created_at || a.inserted_at || 0);
         const bDate = new Date(b.created_at || b.inserted_at || 0);
         return aDate - bDate;
-    });
+    }), [banners]);
 
     return (
         <section id="hero" className="relative w-full overflow-hidden mt-14 md:mt-0">
@@ -137,6 +137,8 @@ export default function HeroCarousel({ banners = [], waveColor = "#0b1a33" }) {
                                             src={desktopImg}
                                             alt={b?.web_image_alt || title || "Banner"}
                                             className="w-full h-full object-cover block"
+                                            width={1400}
+                                            height={700}
                                             loading={idx === 0 ? "eager" : "lazy"}
                                             fetchPriority={idx === 0 ? "high" : "auto"}
                                             decoding={idx === 0 ? "sync" : "async"}

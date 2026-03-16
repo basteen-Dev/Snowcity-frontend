@@ -101,13 +101,13 @@ export default function OffersList() {
 
       <FilterBar onApply={() => load(1)} onReset={() => { setState((s) => ({ ...s, q: '', active: '' })); setTimeout(() => load(1), 0); }} loading={state.status === 'loading'}>
         <input
-          className="w-full rounded-lg border border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 text-sm dark:text-neutral-200 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+          className="w-full rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-neutral-800 px-3 py-2 text-sm dark:text-neutral-200 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
           placeholder="Search by title…"
           value={state.q}
           onChange={(e) => setState((s) => ({ ...s, q: e.target.value }))}
         />
         <select
-          className="w-full rounded-lg border border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 text-sm dark:text-neutral-200 focus:ring-1 focus:ring-blue-500"
+          className="w-full rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-neutral-800 px-3 py-2 text-sm dark:text-neutral-200 focus:ring-1 focus:ring-blue-500"
           value={state.active}
           onChange={(e) => setState((s) => ({ ...s, active: e.target.value }))}
         >
@@ -128,7 +128,7 @@ export default function OffersList() {
                 <img
                   src={imgSrc(row)}
                   alt={row.title || 'Offer'}
-                  className="w-10 h-10 object-cover rounded-lg shadow-sm border border-gray-200 dark:border-neutral-700"
+                  className="w-10 h-10 object-cover rounded-lg shadow-sm border border-gray-200 dark:border-slate-600"
                   onError={(e) => { e.target.src = '/placeholder-image.png'; }}
                 />
               )
@@ -177,7 +177,7 @@ export default function OffersList() {
                     {row.active ? 'Deactivate' : 'Activate'}
                   </button>
                   <button
-                    className="rounded-lg border border-gray-300 dark:border-neutral-700 px-2.5 py-1 text-xs font-medium text-gray-700 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors"
+                    className="rounded-lg border border-gray-300 dark:border-slate-600 px-2.5 py-1 text-xs font-medium text-gray-700 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors"
                     onClick={(e) => viewSlots(row, e)}
                   >
                     Slots
@@ -209,14 +209,14 @@ export default function OffersList() {
       {/* Slot Inspector Modal */}
       {slotInspector.open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-auto border border-gray-200 dark:border-neutral-800">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-800/50 rounded-t-2xl">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-auto border border-gray-200 dark:border-slate-700">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-neutral-800/50 rounded-t-2xl">
               <div>
                 <h2 className="text-lg font-bold text-gray-900 dark:text-neutral-100">Offer Slots – {slotInspector.offer?.title}</h2>
                 <p className="text-xs text-gray-500 dark:text-neutral-400">Showing slots matched by current rules</p>
               </div>
               <button
-                className="rounded-lg border border-gray-300 dark:border-neutral-700 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors"
+                className="rounded-lg border border-gray-300 dark:border-slate-600 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors"
                 onClick={closeSlotInspector}
               >
                 Close
@@ -230,10 +230,10 @@ export default function OffersList() {
               {slotInspector.status === 'succeeded' && (
                 <>
                   <div className="text-sm text-gray-500 mb-3">{slotInspector.slots.length} slots matched</div>
-                  <div className="rounded-2xl border border-gray-200 dark:border-neutral-800 overflow-hidden">
+                  <div className="rounded-2xl border border-gray-200 dark:border-slate-700 overflow-hidden">
                     <table className="min-w-full text-sm">
                       <thead>
-                        <tr className="bg-gray-50/80 dark:bg-neutral-800/60 border-b border-gray-200 dark:border-neutral-700">
+                        <tr className="bg-gray-50/80 dark:bg-neutral-800/60 border-b border-gray-200 dark:border-slate-600">
                           <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Type</th>
                           <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Target</th>
                           <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Date</th>

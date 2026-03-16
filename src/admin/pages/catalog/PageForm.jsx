@@ -158,11 +158,11 @@ export default function PageForm() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-neutral-900 relative">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-800 relative">
       <SaveOverlay visible={saving} label={isEdit ? 'Updating page…' : 'Saving page…'} />
       <div className="max-w-7xl mx-auto px-4 py-6">
         {/* Header */}
-        <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-neutral-700 p-6 mb-6">
+        <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-600 p-6 mb-6">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100">
@@ -211,7 +211,7 @@ export default function PageForm() {
 
         <form id="page-form" onSubmit={save}>
           {/* Basic Info */}
-          <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-neutral-700 p-6">
+          <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-600 p-6">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-neutral-100 mb-4">Basic Information</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
@@ -284,7 +284,7 @@ export default function PageForm() {
           </div>
 
           {/* Navigation & Placement */}
-          <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-neutral-700 p-6">
+          <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-600 p-6">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-neutral-100 mb-4">Navigation & Placement</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
@@ -344,7 +344,7 @@ export default function PageForm() {
                 <div>
                   <label className="block text-sm">{form.section_type === 'attraction' ? 'Select attraction' : 'Select combo'}</label>
                   <select
-                    className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700"
+                    className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600"
                     value={form.section_ref_id || ''}
                     onChange={(e) => onChange({ section_ref_id: e.target.value ? Number(e.target.value) : null })}
                     disabled={targetsStatus === 'loading'}
@@ -360,10 +360,10 @@ export default function PageForm() {
           </div>
 
           {form.placement === 'attraction_details' && (
-            <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-neutral-700 p-6">
+            <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-600 p-6">
               <label className="block text-sm">Attraction (for placement)</label>
               <select
-                className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700"
+                className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600"
                 value={form.placement_ref_id || ''}
                 onChange={(e) => onChange({ placement_ref_id: e.target.value ? Number(e.target.value) : null })}
                 disabled={targetsStatus === 'loading'}
@@ -376,7 +376,7 @@ export default function PageForm() {
             </div>
           )}
 
-          <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-neutral-700 p-6">
+          <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-600 p-6">
             <div className="flex items-center gap-3 text-sm">
               <label className="inline-flex items-center gap-2">
                 <input type="radio" checked={form.editor_mode === 'rich'} onChange={() => onChange({ editor_mode: 'rich' })} />
@@ -399,7 +399,7 @@ export default function PageForm() {
             />
           ) : (
             <>
-              <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-neutral-700 p-6">
+              <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-600 p-6">
                 <label className="block text-sm">Content</label>
                 <RichText
                   value={form.content || ''}
@@ -416,28 +416,28 @@ export default function PageForm() {
             </>
           )}
 
-          <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-neutral-700 p-6">
+          <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-600 p-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div>
                 <label className="block text-sm">Meta title</label>
-                <input className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700"
+                <input className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600"
                   value={form.meta_title || ''} onChange={(e) => onChange({ meta_title: e.target.value })} />
               </div>
               <div>
                 <label className="block text-sm">Meta description</label>
-                <input className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700"
+                <input className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600"
                   value={form.meta_description || ''} onChange={(e) => onChange({ meta_description: e.target.value })} />
               </div>
               <div>
                 <label className="block text-sm">Meta keywords</label>
-                <input className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700"
+                <input className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600"
                   value={form.meta_keywords || ''} onChange={(e) => onChange({ meta_keywords: e.target.value })} />
               </div>
             </div>
           </div>
 
           {/* FAQ Section */}
-          <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-neutral-700 p-6">
+          <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-600 p-6">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-neutral-100">FAQ Section</h2>
@@ -508,7 +508,7 @@ export default function PageForm() {
           </div>
 
           {/* Schema Markup */}
-          <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-neutral-700 p-6">
+          <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-600 p-6">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-neutral-100 mb-2">Custom Schema / Scripts</h2>
             <p className="text-sm text-gray-500 dark:text-neutral-400 mb-4">Paste your schema markup or custom scripts here. It will be added exactly as provided to the page head.</p>
             <div>

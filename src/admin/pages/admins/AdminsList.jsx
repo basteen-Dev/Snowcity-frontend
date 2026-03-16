@@ -75,18 +75,18 @@ export default function AdminsList() {
 
       <FilterBar onApply={load} loading={loading} columns={3}>
         <input
-          className="w-full rounded-xl border border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 text-sm dark:text-neutral-200 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+          className="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-neutral-800 px-3 py-2 text-sm dark:text-neutral-200 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
           placeholder="Search by name, email, or phone…"
           value={q}
           onChange={(e) => setQ(e.target.value)}
         />
       </FilterBar>
 
-      <div className="rounded-2xl border border-gray-200/80 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-sm overflow-hidden">
+      <div className="rounded-2xl border border-gray-200/80 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm">
             <thead>
-              <tr className="bg-gray-50/80 dark:bg-neutral-800/60 border-b border-gray-200 dark:border-neutral-700">
+              <tr className="bg-gray-50/80 dark:bg-neutral-800/60 border-b border-gray-200 dark:border-slate-600">
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-neutral-400">Name</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-neutral-400">Email</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-neutral-400">Phone</th>
@@ -121,7 +121,7 @@ export default function AdminsList() {
                     </td>
                     <td className="px-4 py-3 text-right">
                       <Link
-                        className="inline-flex items-center rounded-xl border border-gray-300 dark:border-neutral-700 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors"
+                        className="inline-flex items-center rounded-xl border border-gray-300 dark:border-slate-600 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors"
                         to={`/parkpanel/admins/${r.user_id}/access`}
                       >
                         Manage Access

@@ -70,7 +70,7 @@ const statusBadge = (status, type = 'booking') => {
 
 /* ── Card wrapper ── */
 const Card = ({ children, className = '' }) => (
-  <div className={`rounded-2xl border border-gray-200 bg-white shadow-sm dark:bg-neutral-900 dark:border-neutral-800 ${className}`}>
+  <div className={`rounded-2xl border border-gray-200 bg-white shadow-sm dark:bg-slate-800 dark:border-slate-700 ${className}`}>
     {children}
   </div>
 );
@@ -145,6 +145,7 @@ export default function BookingDetails() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { current, action } = useSelector((s) => s.adminBookings);
+  const token = useSelector((s) => s.adminAuth?.token);
   const [expandedItems, setExpandedItems] = useState({});
   const [showPayPhi, setShowPayPhi] = useState(false);
   const [refund, setRefund] = useState({ amount: '', newMerchantTxnNo: '' });
@@ -292,7 +293,7 @@ export default function BookingDetails() {
           })()}
           <button
             onClick={() => dispatch(getAdminBooking({ id }))}
-            className="rounded-xl border border-gray-200 px-4 py-2 text-sm hover:bg-gray-50 transition dark:border-neutral-700 dark:hover:bg-neutral-800"
+            className="rounded-xl border border-gray-200 px-4 py-2 text-sm hover:bg-gray-50 transition dark:border-slate-600 dark:hover:bg-neutral-800"
           >
             <RotateCcw size={14} className="inline mr-1" /> Refresh
           </button>
@@ -411,7 +412,7 @@ export default function BookingDetails() {
                     </div>
 
                     {item.addons && item.addons.length > 0 && (
-                      <div className="mt-2 pt-2 border-t border-gray-100 dark:border-neutral-700">
+                      <div className="mt-2 pt-2 border-t border-gray-100 dark:border-slate-600">
                         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Add-ons</p>
                         {item.addons.map((addon) => (
                           <div key={addon.booking_addon_id || addon.addon_id} className="flex justify-between text-sm py-0.5">
@@ -423,7 +424,7 @@ export default function BookingDetails() {
                     )}
 
                     {item.offer_title && (
-                      <div className="mt-2 pt-2 border-t border-gray-100 dark:border-neutral-700">
+                      <div className="mt-2 pt-2 border-t border-gray-100 dark:border-slate-600">
                         <p className="text-xs text-emerald-600 font-medium">
                           🎁 Offer: {item.offer_title}
                         </p>
@@ -480,7 +481,9 @@ export default function BookingDetails() {
                   onClick={() => {
                     const firstBid = items[0]?.booking_id;
                     if (firstBid) {
-                      window.open(`/api/parkpanel/bookings/${firstBid}/ticket`, '_blank');
+                      const base = import.meta.env?.VITE_ADMIN_API_BASE_URL || import.meta.env?.VITE_API_BASE_URL || '';
+                      const url = `${base}/api/parkpanel/bookings/${firstBid}/ticket${token ? `?token=${token}` : ''}`;
+                      window.open(url, '_blank');
                     }
                   }}
                   disabled={!isConfirmed}
@@ -494,7 +497,7 @@ export default function BookingDetails() {
           })()}
           <button
             onClick={() => setShowPayPhi(!showPayPhi)}
-            className="flex items-center gap-2 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
+            className="flex items-center gap-2 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition dark:border-slate-600 dark:text-neutral-300 dark:hover:bg-neutral-800"
           >
             <CreditCard size={16} /> Payment Gateway
           </button>
@@ -502,7 +505,7 @@ export default function BookingDetails() {
 
         {/* PayPhi controls (expandable) */}
         {showPayPhi && (
-          <div className="px-5 pb-5 pt-2 border-t border-gray-100 dark:border-neutral-800">
+          <div className="px-5 pb-5 pt-2 border-t border-gray-100 dark:border-slate-700">
             <div className="flex flex-wrap gap-2 items-center mb-3">
               <button className="rounded-xl border px-4 py-2 text-sm hover:bg-gray-50 transition" onClick={() => dispatch(payphiStatusAdmin({ id }))}>Check Status</button>
               <input className="rounded-xl border px-3 py-2 text-sm" placeholder="Customer email" value={init.email} onChange={(e) => setInit({ ...init, email: e.target.value })} />

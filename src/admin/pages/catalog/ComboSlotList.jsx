@@ -247,7 +247,7 @@ export default function ComboSlotList() {
     <div className="space-y-3">
       <div className="flex items-center gap-2">
         <select
-          className="rounded-md border px-2 py-2 text-sm dark:bg-neutral-900 dark:border-neutral-700"
+          className="rounded-md border px-2 py-2 text-sm dark:bg-slate-800 dark:border-slate-600"
           value={comboId}
           onChange={(e) => setComboId(e.target.value)}
         >
@@ -260,13 +260,13 @@ export default function ComboSlotList() {
         </select>
         <input
           type="date"
-          className="rounded-md border px-2 py-2 text-sm dark:bg-neutral-900 dark:border-neutral-700"
+          className="rounded-md border px-2 py-2 text-sm dark:bg-slate-800 dark:border-slate-600"
           value={startDate}
           onChange={(e) => setStartDate(e.target.value)}
         />
         <input
           type="date"
-          className="rounded-md border px-2 py-2 text-sm dark:bg-neutral-900 dark:border-neutral-700"
+          className="rounded-md border px-2 py-2 text-sm dark:bg-slate-800 dark:border-slate-600"
           value={endDate}
           onChange={(e) => setEndDate(e.target.value)}
         />
@@ -286,7 +286,7 @@ export default function ComboSlotList() {
 
       {err ? <div className="text-sm text-red-600">{err}</div> : null}
 
-      <div className="rounded-lg border bg-white dark:bg-neutral-900 dark:border-neutral-800 overflow-auto">
+      <div className="rounded-lg border bg-white dark:bg-slate-800 dark:border-slate-700 overflow-auto">
         <table className="min-w-full text-sm">
           <thead className="bg-gray-50 dark:bg-neutral-800">
             <tr>
@@ -303,7 +303,7 @@ export default function ComboSlotList() {
             {visibleRows.map((r) => (
               <tr
                 key={r.combo_slot_id}
-                className="border-t dark:border-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-800 cursor-pointer"
+                className="border-t dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-neutral-800 cursor-pointer"
                 onClick={() => onSlotClick(r)}
               >
                 <td className="px-3 py-2">{r.combo_name || comboName(r.combo_id)}</td>
@@ -376,7 +376,7 @@ export default function ComboSlotList() {
       {/* Booking Details Modal */}
       {selectedSlot && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-neutral-900 rounded-lg p-6 max-w-4xl w-full max-h-[80vh] overflow-auto">
+          <div className="bg-white dark:bg-slate-800 rounded-lg p-6 max-w-4xl w-full max-h-[80vh] overflow-auto">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold">Slot Details & Bookings</h2>
               <button
@@ -420,7 +420,7 @@ export default function ComboSlotList() {
                     </thead>
                     <tbody>
                       {bookings.map((booking) => (
-                        <tr key={booking.booking_id} className="border-t dark:border-neutral-800">
+                        <tr key={booking.booking_id} className="border-t dark:border-slate-700">
                           <td className="px-3 py-2">
                             #{booking.booking_id}
                             {booking.parent_booking_id ? (

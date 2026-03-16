@@ -122,7 +122,7 @@ export default function BannersList() {
                   <img
                     src={imgSrc(row)}
                     alt={row.title || 'Banner'}
-                    className="w-16 h-8 object-cover rounded shadow-sm border dark:border-neutral-700"
+                    className="w-16 h-8 object-cover rounded shadow-sm border dark:border-slate-600"
                     onError={(e) => { e.target.src = '/placeholder-image.png'; }}
                   />
                 )
@@ -159,7 +159,7 @@ export default function BannersList() {
           </div>
         </>
       ) : (
-        <div className="overflow-x-auto rounded-lg border bg-white dark:bg-neutral-900">
+        <div className="overflow-x-auto rounded-lg border bg-white dark:bg-slate-800">
           <DndContext collisionDetection={closestCenter} onDragEnd={onDragEnd}>
             <SortableContext items={state.items.map((b) => String(b.banner_id))} strategy={verticalListSortingStrategy}>
               <table className="min-w-full text-sm">
@@ -173,7 +173,7 @@ export default function BannersList() {
                 </thead>
                 <tbody className="text-gray-800 dark:text-neutral-200">
                   {state.items.map((r) => (
-                    <tr key={r.banner_id} id={String(r.banner_id)} className="border-t border-gray-200 dark:border-neutral-800">
+                    <tr key={r.banner_id} id={String(r.banner_id)} className="border-t border-gray-200 dark:border-slate-700">
                       <td className="px-3 py-2 cursor-grab">⋮⋮</td>
                       <td className="px-3 py-2">{r.title || '—'}</td>
                       <td className="px-3 py-2">{r.linked_attraction_id || '—'}</td>

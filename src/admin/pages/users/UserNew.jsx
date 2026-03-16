@@ -35,7 +35,7 @@ export default function UserNew() {
 
     return (
         <div className="max-w-2xl mx-auto">
-            <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-neutral-700 p-6 mb-6">
+            <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-600 p-6 mb-6">
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100">Create Customer</h1>
@@ -51,7 +51,7 @@ export default function UserNew() {
                 </div>
             </div>
 
-            <form onSubmit={submit} className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-neutral-700 p-6 space-y-5">
+            <form onSubmit={submit} className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-600 p-6 space-y-5">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1.5">Name *</label>
@@ -100,7 +100,7 @@ export default function UserNew() {
                     </div>
                 </div>
 
-                <div className="pt-4 border-t border-gray-200 dark:border-neutral-700 flex gap-3">
+                <div className="pt-4 border-t border-gray-200 dark:border-slate-600 flex gap-3">
                     <button
                         type="submit"
                         disabled={saving}

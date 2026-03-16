@@ -466,7 +466,7 @@ export default function AttractionSlotList() {
       {bookingErr ? <div className="text-xs text-amber-600">Context: {bookingErr}</div> : null}
       {bookingLoading ? <div className="text-xs text-gray-500">Loading booking context…</div> : null}
 
-      <div className="overflow-x-auto rounded-lg border bg-white dark:bg-neutral-900 border-gray-200 dark:border-neutral-800">
+      <div className="overflow-x-auto rounded-lg border bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700">
         <table className="min-w-full text-sm">
           <thead className="bg-gray-50 dark:bg-neutral-800 text-gray-600 dark:text-neutral-300">
             <tr>
@@ -488,7 +488,7 @@ export default function AttractionSlotList() {
               return (
                 <tr
                   key={row.key}
-                  className={`border-t border-gray-200 dark:border-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-800 cursor-pointer ${!isSlotRow ? 'bg-gray-50/60 dark:bg-neutral-800/40' : ''}`}
+                  className={`border-t border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-neutral-800 cursor-pointer ${!isSlotRow ? 'bg-gray-50/60 dark:bg-neutral-800/40' : ''}`}
                   onClick={() => onSlotClick(slot)}
                 >
                   <td className="px-3 py-2">{slot.start_date}</td>
@@ -564,7 +564,7 @@ export default function AttractionSlotList() {
       {/* Booking Details Modal */}
       {selectedSlot && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-neutral-900 rounded-lg p-6 max-w-4xl w-full max-h-[80vh] overflow-auto">
+          <div className="bg-white dark:bg-slate-800 rounded-lg p-6 max-w-4xl w-full max-h-[80vh] overflow-auto">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold">Slot Details & Bookings</h2>
               <button
@@ -608,7 +608,7 @@ export default function AttractionSlotList() {
                     </thead>
                     <tbody>
                       {bookings.map((booking) => (
-                        <tr key={booking.booking_id} className="border-t dark:border-neutral-800">
+                        <tr key={booking.booking_id} className="border-t dark:border-slate-700">
                           <td className="px-3 py-2">
                             #{booking.booking_id}
                             {booking.parent_booking_id ? (

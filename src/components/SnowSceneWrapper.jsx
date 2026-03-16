@@ -7,6 +7,7 @@ import React, { useEffect, useRef } from "react";
  */
 export default function SnowSceneWrapper({
   children,
+  className = '',
   waveHeight = 90,
   canvasHeight = 260,
 }) {

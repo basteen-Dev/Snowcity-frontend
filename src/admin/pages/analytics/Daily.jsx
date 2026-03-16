@@ -12,7 +12,7 @@ const quickRanges = [
 ];
 
 const SectionCard = ({ title, subtitle, children }) => (
-  <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:bg-neutral-900 dark:border-neutral-800">
+  <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:bg-slate-800 dark:border-slate-700">
     <div className="mb-4">
       <p className="text-sm font-semibold text-gray-900 dark:text-neutral-100">{title}</p>
       {subtitle ? <p className="text-xs text-gray-500">{subtitle}</p> : null}

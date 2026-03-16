@@ -113,11 +113,11 @@ export default function BlogForm() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-neutral-900 relative">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-800 relative">
       <SaveOverlay visible={saving} label={isEdit ? 'Updating blog…' : 'Saving blog…'} />
       <div className="max-w-7xl mx-auto px-4 py-6">
         {/* Header */}
-        <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-neutral-700 p-6 mb-6">
+        <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-600 p-6 mb-6">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100">
@@ -166,7 +166,7 @@ export default function BlogForm() {
 
         <form id="blog-form" onSubmit={save} className="space-y-6">
           {/* Basic Info */}
-          <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-neutral-700 p-6">
+          <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-600 p-6">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-neutral-100 mb-4">Basic Information</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
@@ -221,7 +221,7 @@ export default function BlogForm() {
                 />
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 pt-6 border-t border-gray-100 dark:border-neutral-700">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 pt-6 border-t border-gray-100 dark:border-slate-600">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">
                   Author Profile Image
@@ -259,7 +259,7 @@ export default function BlogForm() {
           </div>
 
           {/* Content Editor */}
-          <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-neutral-700 p-6">
+          <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-600 p-6">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-neutral-100 mb-4">Content</h2>
             <div className="mb-4">
               <div className="flex items-center gap-4">
@@ -312,7 +312,7 @@ export default function BlogForm() {
           </div>
 
           {/* Bulk Image Upload */}
-          <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-neutral-700 p-6">
+          <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-600 p-6">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-neutral-100 mb-4">Bulk Image Upload</h2>
             <BulkImageUploader
               label="Upload Multiple Images"
@@ -327,7 +327,7 @@ export default function BlogForm() {
           </div>
 
           {/* SEO Settings */}
-          <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-neutral-700 p-6">
+          <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-600 p-6">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-neutral-100 mb-4">SEO Settings</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
@@ -367,7 +367,7 @@ export default function BlogForm() {
           </div>
 
           {/* FAQ Section */}
-          <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-neutral-700 p-6">
+          <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-600 p-6">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-neutral-100">FAQ Section</h2>
@@ -438,7 +438,7 @@ export default function BlogForm() {
           </div>
 
           {/* Schema Markup */}
-          <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-neutral-700 p-6">
+          <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-600 p-6">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-neutral-100 mb-2">Custom Schema / Scripts</h2>
             <p className="text-sm text-gray-500 dark:text-neutral-400 mb-4">Paste your schema markup or custom scripts here. It will be added exactly as provided to the blog post head.</p>
             <div>

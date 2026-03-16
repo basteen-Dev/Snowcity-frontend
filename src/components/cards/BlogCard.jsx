@@ -30,7 +30,7 @@ const formatDate = (dateString) => {
   });
 };
 
-export default function BlogCard({ item }) {
+const BlogCardInner = function BlogCard({ item }) {
   if (!item) return null;
 
   const cover = imgSrc(item);
@@ -51,6 +51,8 @@ export default function BlogCard({ item }) {
               src={cover}
               alt={title}
               className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-110"
+              width={640}
+              height={192}
               loading="lazy"
               decoding="async"
             />
@@ -86,3 +88,5 @@ export default function BlogCard({ item }) {
     </article>
   );
 }
+
+export default React.memo(BlogCardInner);

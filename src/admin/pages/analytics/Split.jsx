@@ -29,15 +29,15 @@ export default function Split() {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
-        <input type="datetime-local" className="rounded-md border px-2 py-1 text-sm dark:bg-neutral-900 dark:border-neutral-700" value={dayjs(from).format('YYYY-MM-DDTHH:mm')} onChange={(e) => setFrom(dayjs(e.target.value).toISOString())} />
-        <input type="datetime-local" className="rounded-md border px-2 py-1 text-sm dark:bg-neutral-900 dark:border-neutral-700" value={dayjs(to).format('YYYY-MM-DDTHH:mm')} onChange={(e) => setTo(dayjs(e.target.value).toISOString())} />
-        <select className="rounded-md border px-2 py-1 text-sm dark:bg-neutral-900 dark:border-neutral-700" value={groupBy} onChange={(e) => setGroupBy(e.target.value)}>
+        <input type="datetime-local" className="rounded-md border px-2 py-1 text-sm dark:bg-slate-800 dark:border-slate-600" value={dayjs(from).format('YYYY-MM-DDTHH:mm')} onChange={(e) => setFrom(dayjs(e.target.value).toISOString())} />
+        <input type="datetime-local" className="rounded-md border px-2 py-1 text-sm dark:bg-slate-800 dark:border-slate-600" value={dayjs(to).format('YYYY-MM-DDTHH:mm')} onChange={(e) => setTo(dayjs(e.target.value).toISOString())} />
+        <select className="rounded-md border px-2 py-1 text-sm dark:bg-slate-800 dark:border-slate-600" value={groupBy} onChange={(e) => setGroupBy(e.target.value)}>
           {GROUPS.map(g => <option key={g.key} value={g.key}>{g.label}</option>)}
         </select>
         <a href={csvUrl} className="ml-auto px-3 py-1 rounded-md border text-sm">Download CSV</a>
       </div>
 
-      <div className="rounded-xl border bg-white dark:bg-neutral-900 border-gray-200 dark:border-neutral-800 p-3">
+      <div className="rounded-xl border bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 p-3">
         <div className="text-sm font-medium mb-2">Split by {GROUPS.find(g => g.key === groupBy)?.label}</div>
         <div style={{ height: 320 }}>
           <ResponsiveContainer width="100%" height="100%">
@@ -55,7 +55,7 @@ export default function Split() {
         </div>
       </div>
 
-      <div className="rounded-xl border bg-white dark:bg-neutral-900 border-gray-200 dark:border-neutral-800 p-3 overflow-auto">
+      <div className="rounded-xl border bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 p-3 overflow-auto">
         <table className="min-w-full text-sm">
           <thead>
             <tr className="bg-gray-50 dark:bg-neutral-800">
@@ -67,7 +67,7 @@ export default function Split() {
           </thead>
           <tbody>
             {rows.map((r, i) => (
-              <tr key={i} className="border-t dark:border-neutral-800">
+              <tr key={i} className="border-t dark:border-slate-700">
                 <td className="px-3 py-2">{r.key}</td>
                 <td className="px-3 py-2 text-right">{r.bookings}</td>
                 <td className="px-3 py-2 text-right">{r.people ?? 0}</td>

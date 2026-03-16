@@ -86,24 +86,24 @@ export default function AddonForm() {
   return (
     <div className="relative">
       <SaveOverlay visible={saving} label={isEdit ? 'Updating addon…' : 'Saving addon…'} />
-      <form onSubmit={save} className="max-w-2xl bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl p-4">
+      <form onSubmit={save} className="max-w-2xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-4">
         <h1 className="text-xl font-semibold mb-4">{isEdit ? 'Edit' : 'New'} Addon</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
             <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Title</label>
-            <input className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" value={f.title} onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, title: e.target.value } }))} />
+            <input className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200" value={f.title} onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, title: e.target.value } }))} />
           </div>
           <div>
             <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Price</label>
-            <input type="number" className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" value={f.price} onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, price: Number(e.target.value || 0) } }))} />
+            <input type="number" className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200" value={f.price} onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, price: Number(e.target.value || 0) } }))} />
           </div>
           <div>
             <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Discount %</label>
-            <input type="number" className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" value={f.discount_percent} onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, discount_percent: Number(e.target.value || 0) } }))} />
+            <input type="number" className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200" value={f.discount_percent} onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, discount_percent: Number(e.target.value || 0) } }))} />
           </div>
           <div className="md:col-span-2">
             <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Description</label>
-            <textarea rows={4} className="w-full rounded-md border px-3 py-2 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200" value={f.description} onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, description: e.target.value } }))} />
+            <textarea rows={4} className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200" value={f.description} onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, description: e.target.value } }))} />
           </div>
           <div className="md:col-span-2">
             <ImageUploader label="Image" value={f.image_url} onChange={(url) => setState((s) => ({ ...s, form: { ...s.form, image_url: url } }))} altText={f.image_alt} onAltChange={(alt) => setState((s) => ({ ...s, form: { ...s.form, image_alt: alt } }))} folder="addons" requiredPerm="uploads:write" />
@@ -114,10 +114,10 @@ export default function AddonForm() {
           </div>
         </div>
 
-        <div className="mt-6 flex items-center justify-between border-t border-gray-200 dark:border-neutral-800 pt-5">
+        <div className="mt-6 flex items-center justify-between border-t border-gray-200 dark:border-slate-700 pt-5">
           <div className="flex gap-2">
             <button type="submit" disabled={saving} className="rounded-md bg-gray-900 dark:bg-blue-600 text-white px-4 py-2 text-sm disabled:opacity-60 disabled:cursor-not-allowed">{saving ? 'Saving…' : 'Save'}</button>
-            <button type="button" className="rounded-md border border-gray-300 dark:border-neutral-700 px-4 py-2 text-sm text-gray-700 dark:text-neutral-300" onClick={() => navigate(-1)}>Cancel</button>
+            <button type="button" className="rounded-md border border-gray-300 dark:border-slate-600 px-4 py-2 text-sm text-gray-700 dark:text-neutral-300" onClick={() => navigate(-1)}>Cancel</button>
           </div>
           {isEdit && (
             <button type="button" onClick={handleDelete} disabled={saving} className="rounded-md border border-red-200 bg-red-50 text-red-600 px-4 py-2 text-sm hover:bg-red-100 transition-colors disabled:opacity-50">

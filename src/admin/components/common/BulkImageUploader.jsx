@@ -67,7 +67,7 @@ export default function BulkImageUploader({
       <div className="text-sm font-medium">{label}</div>
 
       {/* Upload section */}
-      <div className="rounded-lg border border-dashed dark:border-neutral-700 p-4">
+      <div className="rounded-lg border border-dashed dark:border-slate-600 p-4">
         <input
           id={inputId}
           type="file"
