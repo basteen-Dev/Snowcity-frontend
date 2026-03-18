@@ -96,6 +96,7 @@ const SiteSettings = lazy(() => import('../pages/settings/SiteSettings'));
 // Report pages
 const TransactionReport = lazy(() => import('../pages/reports/TransactionReport'));
 const GuestReport = lazy(() => import('../pages/reports/GuestReport'));
+const ConsolidatedReport = lazy(() => import('../pages/reports/Consolidatedreport'));
 
 function RequireAdmin({ children }) {
   const token = useSelector((s) => s.adminAuth?.token);
@@ -254,6 +255,11 @@ export default function AdminRouter() {
           <Route path="reports/guests" element={
             <RequireRole allowed={['superadmin', 'gm', 'staff']} module="reports">
               <GuestReport />
+            </RequireRole>
+          } />
+          <Route path="reports/consolidated" element={
+            <RequireRole allowed={['superadmin', 'gm', 'staff']} module="reports">
+              <ConsolidatedReport />
             </RequireRole>
           } />
 

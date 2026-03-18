@@ -70,6 +70,7 @@ export default function AdminSidebar({ collapsed, mobileOpen, onCloseMobile, onT
       items: [
         { to: '/reports/transactions', label: 'Transaction Report', icon: FileText },
         { to: '/reports/guests', label: 'Guest Report', icon: Users },
+        { to: '/reports/consolidated', label: 'Consolidated Report', icon: FileText },
       ],
     });
   }
