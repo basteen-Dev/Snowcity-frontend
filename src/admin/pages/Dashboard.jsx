@@ -381,12 +381,6 @@ export default function Dashboard() {
         </div>
 
         {/* FOOTER */}
-        <div className="footer a7">
-          FunZone Operations Dashboard &nbsp;·&nbsp;
-          All data based on <strong>Visit Date</strong> (booking_date) &nbsp;·&nbsp;
-          Combo revenue attributed to individual attractions &nbsp;·&nbsp;
-          Real-time updates
-        </div>
       </div>
     </div>
   );

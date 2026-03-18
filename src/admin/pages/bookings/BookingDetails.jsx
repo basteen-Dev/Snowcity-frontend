@@ -555,11 +555,9 @@ export default function BookingDetails() {
                         <div className="flex items-center justify-between gap-3">
                           <p className="text-sm font-semibold text-gray-900 dark:text-neutral-100">
                             {timelineLabel(log.event_type)}
-                            {log.performed_by && (
-                              <span className="ml-2 text-[10px] font-medium text-gray-400 dark:text-neutral-500 uppercase tracking-tight">
-                                by {log.performed_by}
-                              </span>
-                            )}
+                            <span className="ml-2 text-[10px] font-medium text-gray-400 dark:text-neutral-500 uppercase tracking-tight">
+                              by {log.performed_by || 'SYSTEM'}
+                            </span>
                           </p>
                           <time className="text-xs text-gray-400 whitespace-nowrap">{fmtDateTime(log.created_at)}</time>
                         </div>
