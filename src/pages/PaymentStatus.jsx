@@ -77,18 +77,20 @@ export default function PaymentStatus() {
                     const isSingle = productTypes.includes('single');
                     const productType = (isCombo && isSingle) ? 'mixed' : (isCombo ? 'combo' : 'single');
 
+                    const totalTicketsAmount = items.reduce((sum, item) => sum + Number(item.quantity || 1), 0);
+
                     window.dataLayer = window.dataLayer || [];
                     window.dataLayer.push({
                         event: 'purchase',
                         order_id: purchaseOrderId,
                         total_value: Number(data.totalPaid || data.totalValue || data.amount || 0),
-                        total_tickets: Number(data.totalTickets || data.quantity || 1),
-                        total_pax: Number(data.totalTickets || data.quantity || 1),
+                        total_tickets: totalTicketsAmount,
+                        total_pax: totalTicketsAmount,
                         currency: 'INR',
                         payment_type: gateway || '',
                         payment_gateway: gateway,
-                        attraction_name: attractionNames || data.title || '',
-                        product_type: productType,
+                        attraction_name: items[0]?.title || items[0]?.name || attractionNames || data.title || '',
+                        product_type: items[0]?.type || (items[0]?.item_type === 'Combo' ? 'combo' : 'single'),
                         selected_date: items[0]?.date || items[0]?.booking_date || '',
                         time_slot: items[0]?.timeSlot || items[0]?.slot_label || '',
                         has_addons: Number(data.addonsValue || 0) > 0,
@@ -101,11 +103,11 @@ export default function PaymentStatus() {
                             return {
                                 item_id: item.id || item.attraction_id || item.combo_id || '',
                                 item_name: item.title || item.name || '',
-                                product_type: item.type || (item.item_type === 'Combo' ? 'combo' : 'single'),
+                                item_category: item.type || (item.item_type === 'Combo' ? 'combo' : 'single'),
                                 quantity: qty,
                                 price: unitPrice,
                                 item_total: unitPrice * qty,
-                                time_slot: item.timeSlot || item.slot_label || '',
+                                item_variant: item.timeSlot || item.slot_label || '',
                                 selected_date: item.date || item.booking_date || ''
                             };
                         })
@@ -185,17 +187,19 @@ export default function PaymentStatus() {
             const isSingle = productTypes.includes('single');
             const productType = (isCombo && isSingle) ? 'mixed' : (isCombo ? 'combo' : 'single');
 
+            const totalTicketsAmount = items.reduce((sum, item) => sum + Number(item.quantity || 1), 0);
+
             window.dataLayer = window.dataLayer || [];
             window.dataLayer.push({
                 event: 'payment_failed',
                 order_id: d.orderId || d.orderRef || txnId || '',
                 total_value: totalVal,
-                total_tickets: totalTickets,
-                total_pax: totalTickets,
+                total_tickets: totalTicketsAmount,
+                total_pax: totalTicketsAmount,
                 currency: 'INR',
                 payment_gateway: gateway,
-                attraction_name: attractionNames || d.title || '',
-                product_type: productType,
+                attraction_name: items[0]?.title || items[0]?.name || attractionNames || d.title || '',
+                product_type: items[0]?.type || (items[0]?.item_type === 'Combo' ? 'combo' : 'single'),
                 selected_date: items[0]?.date || items[0]?.booking_date || '',
                 time_slot: items[0]?.timeSlot || items[0]?.slot_label || '',
                 has_addons: addonsVal > 0,
@@ -208,11 +212,11 @@ export default function PaymentStatus() {
                     return {
                         item_id: item.id || item.attraction_id || item.combo_id || '',
                         item_name: item.title || item.name || '',
-                        product_type: item.type || (item.item_type === 'Combo' ? 'combo' : 'single'),
+                        item_category: item.type || (item.item_type === 'Combo' ? 'combo' : 'single'),
                         quantity: qty,
                         price: unitPrice,
                         item_total: unitPrice * qty,
-                        time_slot: item.timeSlot || item.slot_label || '',
+                        item_variant: item.timeSlot || item.slot_label || '',
                         selected_date: item.date || item.booking_date || ''
                     };
                 })

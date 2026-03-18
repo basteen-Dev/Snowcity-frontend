@@ -1245,9 +1245,9 @@ export default function ComboDetails() {
                           <p className="text-xs font-bold text-blue-100">{qty} {qty === 1 ? 'Ticket' : 'Tickets'}</p>
                         </div>
                       </div>
-                      <button 
-                        onClick={() => selectedSlot && onBook(selectedSlot, selectedSlotPricing)} 
-                        disabled={isBookingStopped || !selectedSlot} 
+                      <button
+                        onClick={() => selectedSlot && onBook(selectedSlot, selectedSlotPricing)}
+                        disabled={isBookingStopped || !selectedSlot}
                         className={`w-full py-4 rounded-2xl font-black text-sm uppercase tracking-widest transition-all ${selectedSlot ? 'bg-white text-[#0099FF] hover:bg-white/90 hover:scale-[1.02] active:scale-[0.98]' : 'bg-gray-200 text-gray-500 cursor-not-allowed'}`}
                       >
                         {selectedSlot ? 'Secure My Spot' : 'Select a Slot'}

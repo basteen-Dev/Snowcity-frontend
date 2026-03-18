@@ -1056,7 +1056,7 @@ export default function Booking() {
     if (sel.itemType === 'combo' && selectedCombo) {
       const fallbackPrice = toAmount(getComboDisplayPrice(selectedCombo));
       const fallbackBasePrice = toAmount(getBasePrice(selectedCombo) || fallbackPrice);
-      
+
       const referenceSlot = selectedSlot || (slots.items && slots.items.length > 0 ? slots.items[0] : null);
       const slotPricing = referenceSlot?.pricing || {};
       const slotOffer = referenceSlot?.offer || null;
