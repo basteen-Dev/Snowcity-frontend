@@ -168,7 +168,7 @@ export default function AdminAccess() {
       });
       toast.success('Access saved!');
       setNotice('Access updated successfully.');
-      if (forcedAdminId) nav('/parkpanel/admins');
+      if (forcedAdminId) nav('/admins');
     } catch (e) {
       setErr(e.message || 'Save failed');
     } finally {
@@ -234,7 +234,7 @@ export default function AdminAccess() {
               </option>
             ))}
           </select>
-          <Link to="/parkpanel/admins/new" className="text-sm font-medium text-blue-600 hover:text-blue-500 whitespace-nowrap">
+          <Link to="/admins/new" className="text-sm font-medium text-blue-600 hover:text-blue-500 whitespace-nowrap">
             + Create Admin
           </Link>
         </div>
@@ -315,7 +315,7 @@ export default function AdminAccess() {
             </button>
             <button
               className="px-4 py-2.5 rounded-xl border border-gray-300 dark:border-slate-600 text-sm text-gray-700 dark:text-neutral-300 hover:bg-gray-50 dark:hover:bg-neutral-800"
-              onClick={() => forcedAdminId ? nav('/parkpanel/admins') : setSelectedAdminId('')}
+              onClick={() => forcedAdminId ? nav('/admins') : setSelectedAdminId('')}
             >
               Cancel
             </button>

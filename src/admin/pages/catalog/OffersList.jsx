@@ -93,7 +93,7 @@ export default function OffersList() {
       <PageHeader title="Offers" subtitle="Manage promotions and discounts">
         <button
           className="rounded-lg bg-gray-900 dark:bg-blue-600 text-white px-4 py-2 text-sm font-medium hover:bg-gray-800 dark:hover:bg-blue-700 transition-colors"
-          onClick={() => navigate('/parkpanel/catalog/offers/new')}
+          onClick={() => navigate('/catalog/offers/new')}
         >
           + New Offer
         </button>
@@ -193,7 +193,7 @@ export default function OffersList() {
             }
           ]}
           rows={state.items}
-          onRowClick={(row) => navigate(`/parkpanel/catalog/offers/${row.offer_id || row.id}`)}
+          onRowClick={(row) => navigate(`/catalog/offers/${row.offer_id || row.id}`)}
           empty={state.status === 'loading' ? 'Loading…' : 'No offers found'}
         />
 

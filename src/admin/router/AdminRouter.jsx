@@ -99,7 +99,7 @@ const GuestReport = lazy(() => import('../pages/reports/GuestReport'));
 
 function RequireAdmin({ children }) {
   const token = useSelector((s) => s.adminAuth?.token);
-  if (!token) return <Navigate to="login" replace />;
+  if (!token) return <Navigate to="/login" replace />;
   return children;
 }
 
@@ -217,7 +217,7 @@ export default function AdminRouter() {
               <SuspenseOutlet />
             </RequireRole>
           }>
-            <Route index element={<Navigate to="overview" replace />} />
+            <Route index element={<Navigate to="/analytics/overview" replace />} />
             <Route path="overview" element={<AnalyticsOverview />} />
             <Route path="attractions" element={<AnalyticsAttractions />} />
             <Route path="daily" element={<AnalyticsDaily />} />
@@ -564,7 +564,7 @@ export default function AdminRouter() {
           } />
 
           {/* Fallback */}
-          <Route path="*" element={<Navigate to="." replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Route>
 

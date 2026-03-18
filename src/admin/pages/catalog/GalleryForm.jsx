@@ -77,7 +77,7 @@ export default function GalleryForm() {
       };
       if (isEdit) await adminApi.put(A.galleryById(id), payload);
       else await adminApi.post(A.gallery(), payload);
-      navigate('/parkpanel/catalog/gallery');
+      navigate('/catalog/gallery');
     } catch (err) {
       setState((s) => ({ ...s, error: err }));
     }
@@ -132,7 +132,7 @@ export default function GalleryForm() {
       }
       // success: navigate to gallery list
       setBulkStatus((s) => ({ ...s, uploading: false, progress: 100 }));
-      navigate('/parkpanel/catalog/gallery');
+      navigate('/catalog/gallery');
     } catch (err) {
       setBulkStatus({ uploading: false, progress: Math.round((done / total) * 100), error: err });
     }

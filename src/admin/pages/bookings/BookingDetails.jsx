@@ -134,6 +134,7 @@ const timelineLabel = (eventType) => {
     whatsapp_sent: 'WhatsApp Sent',
     email_sent: 'Email Sent',
     ticket_generated: 'Ticket Generated',
+    ticket_resent: 'Ticket Resent',
   };
   return labels[eventType] || eventType.replace(/_/g, ' ').replace(/(^\w|\s\w)/g, m => m.toUpperCase());
 };
@@ -170,10 +171,18 @@ export default function BookingDetails() {
     if (!activity.length) return [];
     const result = [];
     for (const log of activity) {
-      const lastSame = result.findLast(r => r.event_type === log.event_type);
-      if (lastSame) {
+      // Find index of last entry with same type
+      const lastSameIdx = result.findLastIndex(r => r.event_type === log.event_type);
+      if (lastSameIdx !== -1) {
+        const lastSame = result[lastSameIdx];
         const diff = Math.abs(new Date(log.created_at) - new Date(lastSame.created_at));
-        if (diff < 2000) continue;
+        if (diff < 2000) {
+          // If the new one has performed_by and the old one doesn't, override it
+          if (log.performed_by && !lastSame.performed_by) {
+            result[lastSameIdx] = log;
+          }
+          continue;
+        }
       }
       result.push(log);
     }
@@ -246,7 +255,7 @@ export default function BookingDetails() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <button
-            onClick={() => navigate('/parkpanel/bookings')}
+            onClick={() => navigate('/bookings')}
             className="p-2 rounded-xl hover:bg-gray-100 transition dark:hover:bg-neutral-800"
           >
             <ArrowLeft size={20} />
@@ -546,6 +555,11 @@ export default function BookingDetails() {
                         <div className="flex items-center justify-between gap-3">
                           <p className="text-sm font-semibold text-gray-900 dark:text-neutral-100">
                             {timelineLabel(log.event_type)}
+                            {log.performed_by && (
+                              <span className="ml-2 text-[10px] font-medium text-gray-400 dark:text-neutral-500 uppercase tracking-tight">
+                                by {log.performed_by}
+                              </span>
+                            )}
                           </p>
                           <time className="text-xs text-gray-400 whitespace-nowrap">{fmtDateTime(log.created_at)}</time>
                         </div>

@@ -32,7 +32,7 @@ export default function RoleForm() {
     try {
       if (isEdit) await adminApi.put(A.roleById(id), state.form);
       else await adminApi.post(A.roles(), state.form);
-      navigate('/parkpanel/roles');
+      navigate('/roles');
     } catch (err) {
       setState((s) => ({ ...s, error: err }));
     }
@@ -51,7 +51,7 @@ export default function RoleForm() {
       <textarea className="w-full rounded-md border px-3 py-2 mb-3" rows={4} value={f.description} onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, description: e.target.value } }))} />
       <div className="flex gap-2">
         <button type="submit" className="rounded-md bg-gray-900 text-white px-4 py-2 text-sm">Save</button>
-        {isEdit ? <Link to={`/parkpanel/roles/${id}/permissions`} className="rounded-md border px-4 py-2 text-sm">Edit Permissions</Link> : null}
+        {isEdit ? <Link to={`/roles/${id}/permissions`} className="rounded-md border px-4 py-2 text-sm">Edit Permissions</Link> : null}
         <button type="button" className="rounded-md border px-4 py-2 text-sm" onClick={() => navigate(-1)}>Cancel</button>
       </div>
     </form>

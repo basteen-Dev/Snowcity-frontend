@@ -75,7 +75,7 @@ export default function BlogForm() {
         await adminApi.post('/api/parkpanel/blogs', payload);
       }
       toast.success(isEdit ? 'Blog updated successfully' : 'Blog created successfully', { id: loadingToast });
-      nav('/parkpanel/catalog/blogs');
+      nav('/catalog/blogs');
     } catch (e) {
       toast.error(e.message || 'Save failed', { id: loadingToast });
       setErr(e.message || 'Save failed');
@@ -147,7 +147,7 @@ export default function BlogForm() {
               )}
               <button
                 type="button"
-                onClick={() => nav('/parkpanel/catalog/blogs')}
+                onClick={() => nav('/catalog/blogs')}
                 className="px-4 py-2 border border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-neutral-300 rounded-lg hover:bg-gray-50 dark:hover:bg-neutral-700 transition-colors"
               >
                 Cancel

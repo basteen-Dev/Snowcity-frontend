@@ -85,9 +85,22 @@ export default function PaymentSuccess() {
             const orderId = data?.order_id || (data?.items && data.items[0]?.order_id);
             const totalAmount = Number(data?.total_amount || data?.final_amount || 0);
 
-            // 🔹 GTM PURCHASE EVENT — with duplicate prevention
+            // 🔹 GTM PURCHASE EVENT — with enriched data
             const purchaseFiredKey = `purchase_fired_${orderId}`;
             if (!localStorage.getItem(purchaseFiredKey)) {
+              const items = Array.isArray(data?.items) ? data.items : [];
+              const attractionNames = items.length > 0
+                ? items.map(it => it.title || it.name || it.attraction_name || '').filter(Boolean).join(' + ')
+                : (data?.title || data?.attraction_name || '');
+
+              const productTypes = items.map(it => it.item_type === 'Combo' ? 'combo' : 'single');
+              const isCombo = productTypes.includes('combo') || data?.item_type === 'Combo';
+              const isSingle = productTypes.includes('single') || (data?.item_type !== 'Combo' && !items.length);
+              const productType = (isCombo && isSingle) ? 'mixed' : (isCombo ? 'combo' : 'single');
+
+              const selectedDate = items[0]?.booking_date || data?.booking_date || '';
+              const timeSlot = items[0]?.slot_label || items[0]?.time_slot || data?.slot_label || '';
+
               window.dataLayer = window.dataLayer || [];
               window.dataLayer.push({
                 event: 'purchase',
@@ -98,22 +111,34 @@ export default function PaymentSuccess() {
                 currency: 'INR',
                 payment_type: data?.payment_mode || data?.gateway || '',
                 payment_gateway: data?.payment_mode || data?.gateway || '',
+                attraction_name: attractionNames,
+                product_type: productType,
+                selected_date: selectedDate,
+                time_slot: timeSlot,
                 has_addons: Number(data?.addons_value || data?.addon_total || 0) > 0,
                 addons_value: Number(data?.addons_value || data?.addon_total || 0),
                 promo_code: data?.promo_code || data?.coupon_code || '',
                 discount_value: Number(data?.discount_value || data?.discount_amount || 0),
-                items: Array.isArray(data?.items) ? data.items.map(item => ({
-                  item_name: item.title || item.name || item.attraction_name || '',
-                  product_type: item.item_type === 'Combo' ? 'combo' : 'single',
-                  quantity: Number(item.quantity || 1),
-                  price: Number(item.unit_price || item.price || 0),
-                  time_slot: item.slot_label || item.time_slot || '',
-                  selected_date: item.booking_date || ''
-                })) : [{
+                items: items.length > 0 ? items.map(item => {
+                  const unitPrice = Number(item.unit_price || item.price || 0);
+                  const qty = Number(item.quantity || 1);
+                  return {
+                    item_id: item.id || item.attraction_id || item.combo_id || '',
+                    item_name: item.title || item.name || item.attraction_name || '',
+                    product_type: item.item_type === 'Combo' ? 'combo' : 'single',
+                    quantity: qty,
+                    price: unitPrice,
+                    item_total: unitPrice * qty,
+                    time_slot: item.slot_label || item.time_slot || '',
+                    selected_date: item.booking_date || ''
+                  };
+                }) : [{
+                  item_id: data?.id || data?.attraction_id || data?.combo_id || '',
                   item_name: data?.title || data?.attraction_name || '',
                   product_type: data?.item_type === 'Combo' ? 'combo' : 'single',
                   quantity: Number(data?.quantity || 1),
                   price: totalAmount,
+                  item_total: totalAmount,
                   time_slot: data?.slot_label || '',
                   selected_date: data?.booking_date || ''
                 }]

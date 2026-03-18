@@ -65,7 +65,7 @@ export default function AdminsList() {
       <PageHeader title="Admin Team" subtitle="Manage administrators and their access levels">
         {canManageAdmins && (
           <Link
-            to="/parkpanel/admins/new"
+            to="/admins/new"
             className="rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 text-sm font-medium hover:from-blue-700 hover:to-indigo-700 transition-all inline-flex items-center shadow-lg shadow-blue-500/25"
           >
             + Create Admin
@@ -119,13 +119,29 @@ export default function AdminsList() {
                         )}
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-right">
+                    <td className="px-4 py-3 text-right space-x-2">
                       <Link
                         className="inline-flex items-center rounded-xl border border-gray-300 dark:border-slate-600 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors"
-                        to={`/parkpanel/admins/${r.user_id}/access`}
+                        to={`/admins/${r.user_id}/access`}
                       >
                         Manage Access
                       </Link>
+                      {canManageAdmins && (
+                        <button
+                          onClick={async () => {
+                            if (!window.confirm(`Are you sure you want to delete admin "${r.name}"?`)) return;
+                            try {
+                              await adminApi.delete(`/api/parkpanel/admins/${r.user_id}`);
+                              load();
+                            } catch (err) {
+                              alert(err.message || 'Delete failed');
+                            }
+                          }}
+                          className="inline-flex items-center rounded-xl border border-red-200 dark:border-red-900/50 px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                        >
+                          Delete
+                        </button>
+                      )}
                     </td>
                   </tr>
                 );

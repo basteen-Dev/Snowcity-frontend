@@ -115,7 +115,7 @@ export default function SectionForm() {
         await adminApi.post('/api/parkpanel/pages', payload);
       }
       toast.success(isEdit ? 'Section updated' : 'Section created', { id: loadingToast });
-      nav('/parkpanel/catalog/sections');
+      nav('/catalog/sections');
     } catch (e) {
       toast.error(e.message || 'Save failed', { id: loadingToast });
       setErr(e.message || 'Save failed');
@@ -142,7 +142,7 @@ export default function SectionForm() {
             <div className="flex gap-3">
               <button
                 type="button"
-                onClick={() => nav('/parkpanel/catalog/sections')}
+                onClick={() => nav('/catalog/sections')}
                 className="px-4 py-2 border border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-neutral-300 rounded-lg hover:bg-gray-50 dark:hover:bg-neutral-700 transition-colors"
               >
                 Cancel
@@ -382,7 +382,7 @@ export default function SectionForm() {
             <button type="submit" className="px-6 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50" disabled={saving}>
               {saving ? 'Saving…' : 'Save Section'}
             </button>
-            <button className="px-4 py-2 rounded-lg border border-gray-300 dark:border-neutral-600" type="button" onClick={() => nav('/parkpanel/catalog/sections')}>
+            <button className="px-4 py-2 rounded-lg border border-gray-300 dark:border-neutral-600" type="button" onClick={() => nav('/catalog/sections')}>
               Cancel
             </button>
           </div>

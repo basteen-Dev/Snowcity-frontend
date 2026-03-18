@@ -455,7 +455,7 @@ export default function AttractionSlotList() {
         <div className="mb-3">
           <button
             className="rounded-md bg-blue-600 text-white px-3 py-2 text-sm"
-            onClick={() => navigate(`/parkpanel/catalog/attractions/${attractionId}`)}
+            onClick={() => navigate(`/catalog/attractions/${attractionId}`)}
           >
             Edit Attraction
           </button>

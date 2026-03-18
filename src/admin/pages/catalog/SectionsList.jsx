@@ -74,7 +74,7 @@ export default function SectionsList() {
           </button>
         </form>
         <div className="ml-auto flex items-center gap-2">
-          <Link to="/parkpanel/catalog/sections/new" className="px-5 py-2 rounded-md bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700">
+          <Link to="/catalog/sections/new" className="px-5 py-2 rounded-md bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700">
             New Section
           </Link>
         </div>
@@ -109,7 +109,7 @@ export default function SectionsList() {
                   <span className="ml-1">{r.active ? 'Yes' : 'No'}</span>
                 </td>
                 <td className="px-3 py-2 text-right space-x-2">
-                  <Link className="px-2 py-1 rounded-md border text-xs hover:bg-gray-50" to={`/parkpanel/catalog/sections/${r.page_id}`}>
+                  <Link className="px-2 py-1 rounded-md border text-xs hover:bg-gray-50" to={`/catalog/sections/${r.page_id}`}>
                     Edit
                   </Link>
                   <button className="px-2 py-1 rounded-md border text-xs text-red-600 hover:bg-red-50" onClick={() => onDelete(r.page_id)}>

@@ -385,7 +385,7 @@ export default function OfferForm() {
       else await adminApi.post(A.offers(), payload);
 
       toast.success(isEdit ? 'Offer updated successfully' : 'Offer created successfully', { id: loadingToast });
-      navigate('/parkpanel/catalog/offers');
+      navigate('/catalog/offers');
     } catch (err) {
       toast.error(err.message || 'Save failed', { id: loadingToast });
       setState((s) => ({ ...s, error: err }));

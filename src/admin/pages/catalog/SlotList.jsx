@@ -121,7 +121,7 @@ export default function SlotsList() {
     <div>
       <div className="flex items-center justify-between mb-3">
         <h1 className="text-xl font-semibold">Slots</h1>
-        <button className="rounded-md border px-3 py-2 text-sm" onClick={() => navigate('/parkpanel/catalog/combo-slots')}>
+        <button className="rounded-md border px-3 py-2 text-sm" onClick={() => navigate('/catalog/combo-slots')}>
           Combo Slots Module
         </button>
       </div>
@@ -167,7 +167,7 @@ export default function SlotsList() {
                 <button className="rounded-md border px-2 py-1 text-xs text-red-600" onClick={(e) => remove(row, e)}>
                   Delete
                 </button>
-                <button className="rounded-md border px-2 py-1 text-xs" onClick={(e) => { e.stopPropagation(); navigate(`/parkpanel/catalog/slots/${row.slot_id || row.id}`); }}>
+                <button className="rounded-md border px-2 py-1 text-xs" onClick={(e) => { e.stopPropagation(); navigate(`/catalog/slots/${row.slot_id || row.id}`); }}>
                   Edit
                 </button>
               </div>

@@ -146,7 +146,7 @@ export default function ComboForm() {
       else await adminApi.post(A.combos(), payload);
 
       toast.success(isEdit ? 'Combo updated successfully' : 'Combo created successfully (slots generating in background)', { id: loadingToast });
-      navigate('/parkpanel/catalog/combos');
+      navigate('/catalog/combos');
     } catch (err) {
       toast.error(err.message || 'Save failed', { id: loadingToast });
       console.error('Combo save error:', err);
@@ -163,7 +163,7 @@ export default function ComboForm() {
     try {
       await adminApi.delete(A.comboById(id));
       toast.success('Combo deleted successfully', { id: loadingToast });
-      navigate('/parkpanel/catalog/combos');
+      navigate('/catalog/combos');
     } catch (err) {
       toast.error(err.message || 'Delete failed', { id: loadingToast });
       setSaving(false);
@@ -625,7 +625,7 @@ export default function ComboForm() {
               <button
                 type="button"
                 className="rounded-md bg-gray-100 dark:bg-neutral-800 text-gray-700 dark:text-neutral-300 px-4 py-2 text-sm hover:bg-gray-200"
-                onClick={() => navigate(`/parkpanel/catalog/combo-slots?combo_id=${id}`)}
+                onClick={() => navigate(`/catalog/combo-slots?combo_id=${id}`)}
               >
                 View Slots
               </button>

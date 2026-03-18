@@ -110,7 +110,7 @@ export default function PageForm() {
         await adminApi.post('/api/parkpanel/pages', payload);
       }
       toast.success(isEdit ? 'Page updated successfully' : 'Page created successfully', { id: loadingToast });
-      nav('/parkpanel/catalog/pages');
+      nav('/catalog/pages');
     } catch (e) {
       toast.error(e.message || 'Save failed', { id: loadingToast });
       setErr(e.message || 'Save failed');
@@ -192,7 +192,7 @@ export default function PageForm() {
               )}
               <button
                 type="button"
-                onClick={() => nav('/parkpanel/catalog/pages')}
+                onClick={() => nav('/catalog/pages')}
                 className="px-4 py-2 border border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-neutral-300 rounded-lg hover:bg-gray-50 dark:hover:bg-neutral-700 transition-colors"
               >
                 Cancel
@@ -526,7 +526,7 @@ export default function PageForm() {
             <button type="submit" className="px-3 py-2 rounded-md bg-gray-900 text-white" disabled={saving}>
               {saving ? 'Saving…' : 'Save'}
             </button>
-            <button className="px-3 py-2 rounded-md border" type="button" onClick={() => nav('/parkpanel/catalog/pages')}>
+            <button className="px-3 py-2 rounded-md border" type="button" onClick={() => nav('/catalog/pages')}>
               Cancel
             </button>
           </div>

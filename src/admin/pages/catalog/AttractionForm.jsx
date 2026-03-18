@@ -59,7 +59,7 @@ export default function AttractionForm() {
       else await adminApi.post(A.attractions(), state.form);
 
       toast.success(isEdit ? 'Attraction updated successfully' : 'Attraction created successfully (slots generating in background)', { id: loadingToast });
-      navigate('/parkpanel/catalog/attractions');
+      navigate('/catalog/attractions');
     } catch (err) {
       toast.error(err.message || 'Save failed', { id: loadingToast });
       setState((s) => ({ ...s, error: err }));
@@ -76,7 +76,7 @@ export default function AttractionForm() {
     try {
       await adminApi.delete(A.attractionById(id));
       toast.success('Attraction deleted successfully', { id: loadingToast });
-      navigate('/parkpanel/catalog/attractions');
+      navigate('/catalog/attractions');
     } catch (err) {
       toast.error(err.message || 'Delete failed', { id: loadingToast });
       setSaving(false);

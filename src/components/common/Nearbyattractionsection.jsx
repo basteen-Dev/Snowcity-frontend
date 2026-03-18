@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import funworldHero from '../../assets/images/fun.png';
+import funworldHero from '../../assets/images/fun.webp';
 
 
 const stats = [

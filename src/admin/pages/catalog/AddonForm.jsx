@@ -54,7 +54,7 @@ export default function AddonForm() {
       else await adminApi.post(A.addons(), payload);
 
       toast.success(isEdit ? 'Addon updated successfully' : 'Addon created successfully', { id: loadingToast });
-      navigate('/parkpanel/catalog/addons');
+      navigate('/catalog/addons');
     } catch (err) {
       toast.error(err.message || 'Save failed', { id: loadingToast });
       setState((s) => ({ ...s, error: err }));
@@ -71,7 +71,7 @@ export default function AddonForm() {
     try {
       await adminApi.delete(`${A.addons()}/${id}`);
       toast.success('Addon deleted successfully', { id: loadingToast });
-      navigate('/parkpanel/catalog/addons');
+      navigate('/catalog/addons');
     } catch (err) {
       toast.error(err.message || 'Delete failed', { id: loadingToast });
       setSaving(false);

@@ -18,7 +18,7 @@ export default function ResetPassword() {
 
   // Redirect if no token
   if (!token) {
-    return <Navigate to="/parkpanel/login" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   const submit = async (e) => {
@@ -75,7 +75,7 @@ export default function ResetPassword() {
             </p>
 
             <Link
-              to="/parkpanel/login"
+              to="/login"
               className="flex items-center justify-center w-full py-4 bg-slate-900 hover:bg-black text-white font-bold rounded-xl transition-all active:scale-[0.98]"
             >
               Sign In to Dashboard
@@ -181,7 +181,7 @@ export default function ResetPassword() {
 
         <div className="mt-10 text-center">
           <Link
-            to="/parkpanel/login"
+            to="/login"
             className="text-slate-400 hover:text-slate-800 transition-colors text-sm font-semibold"
           >
             Cancel and Return to Login

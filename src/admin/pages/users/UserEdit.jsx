@@ -48,7 +48,7 @@ export default function UserEdit() {
     try {
       // Backend should accept { role_ids: [] } on PUT /users/:id
       await adminApi.put(A.userById(id), { role_ids: state.selectedRoleIds });
-      navigate('/parkpanel/users');
+      navigate('/users');
     } catch (err) {
       setState((s) => ({ ...s, error: err }));
     }

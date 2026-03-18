@@ -18,8 +18,8 @@ const formatCurrency = (value) => `₹${Number(value || 0).toLocaleString()}`;
 
 const inputClasses = 'w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-700 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all placeholder:text-gray-400';
 const selectClasses = `${inputClasses} appearance-none cursor-pointer`;
-const btnPrimary = 'inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2.5 text-sm font-semibold shadow-sm shadow-blue-500/20 hover:shadow-md hover:shadow-blue-500/30 transition-all';
-const btnSecondary = 'inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200 dark:hover:bg-neutral-800 transition-all';
+const btnPrimary = 'inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-1.5 py-2 text-sm font-semibold shadow-sm shadow-blue-500/20 hover:shadow-md hover:shadow-blue-500/30 transition-all';
+const btnSecondary = 'inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-1.5 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200 dark:hover:bg-neutral-800 transition-all';
 
 const normalizeOptionList = (res) => {
   if (!res) return [];
@@ -766,7 +766,7 @@ export default function BookingsList() {
             key: '_actions', title: '', tdClass: 'w-10', render: (r) => (
               <ActionMenu
                 row={r}
-                onView={(r) => navigate(`/parkpanel/bookings/${r.booking_id || r.id}`)}
+                onView={(r) => navigate(`/bookings/${r.booking_id || r.id}`)}
                 onWhatsApp={handleResendWhatsApp}
                 onEmail={handleResendEmail}
                 onDownload={handleDownloadTicket}
@@ -775,7 +775,7 @@ export default function BookingsList() {
           },
         ]}
         rows={rows}
-        onRowClick={(r) => navigate(`/parkpanel/bookings/${r.booking_id || r.id}`)}
+        onRowClick={(r) => navigate(`/bookings/${r.booking_id || r.id}`)}
         empty={list.status === 'loading' ? 'Loading…' : 'No bookings found'}
       />
 

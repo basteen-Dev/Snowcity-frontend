@@ -321,7 +321,7 @@ export default function ComboSlotList() {
                     className="px-2 py-1 rounded-md border text-xs"
                     onClick={(e) => {
                       e.stopPropagation();
-                      nav(`/parkpanel/catalog/combo-slots/${r.combo_slot_id}`);
+                      nav(`/catalog/combo-slots/${r.combo_slot_id}`);
                     }}
                   >
                     Edit

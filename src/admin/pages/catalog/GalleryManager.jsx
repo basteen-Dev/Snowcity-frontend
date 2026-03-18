@@ -176,10 +176,10 @@ export default function GalleryManager() {
           <p className="text-sm text-gray-600">Manage homepage and gallery media assets.</p>
         </div>
         <div className="flex gap-2">
-          <button className="rounded-md border px-3 py-2 text-sm" onClick={() => navigate('/parkpanel/catalog/banners')}>
+          <button className="rounded-md border px-3 py-2 text-sm" onClick={() => navigate('/catalog/banners')}>
             Manage Banners
           </button>
-          <button className="rounded-md bg-gray-900 text-white px-3 py-2 text-sm" onClick={() => navigate('/parkpanel/catalog/gallery/new')}>
+          <button className="rounded-md bg-gray-900 text-white px-3 py-2 text-sm" onClick={() => navigate('/catalog/gallery/new')}>
             Add Media
           </button>
           {selectedItems.length > 0 && (
@@ -297,7 +297,7 @@ export default function GalleryManager() {
         onRowClick={(row) => {
           const galleryId = row?.gallery_item_id ?? row?.gallery_id ?? row?.id;
           if (galleryId == null) return;
-          navigate(`/parkpanel/catalog/gallery/${galleryId}`);
+          navigate(`/catalog/gallery/${galleryId}`);
         }}
         empty={state.status === 'loading' ? 'Loading…' : 'No media found'}
       />

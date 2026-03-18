@@ -25,7 +25,7 @@ export default function UserNew() {
                 password: form.password || undefined,
             });
             toast.success('Customer created successfully', { id: loadingToast });
-            nav('/parkpanel/users');
+            nav('/users');
         } catch (e) {
             toast.error(e.message || 'Create failed', { id: loadingToast });
         } finally {
@@ -43,7 +43,7 @@ export default function UserNew() {
                     </div>
                     <button
                         type="button"
-                        onClick={() => nav('/parkpanel/users')}
+                        onClick={() => nav('/users')}
                         className="px-4 py-2 border border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-neutral-300 rounded-lg hover:bg-gray-50 dark:hover:bg-neutral-700 transition-colors text-sm"
                     >
                         Cancel
@@ -110,7 +110,7 @@ export default function UserNew() {
                     </button>
                     <button
                         type="button"
-                        onClick={() => nav('/parkpanel/users')}
+                        onClick={() => nav('/users')}
                         className="px-4 py-2.5 border border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-neutral-300 rounded-lg hover:bg-gray-50 dark:hover:bg-neutral-700 transition-colors text-sm"
                     >
                         Cancel

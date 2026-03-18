@@ -27,7 +27,7 @@ export default function AdminNew() {
   React.useEffect(() => {
     if (!isSuperAdmin) {
       toast.error('Only Super Admins can create admin accounts');
-      nav('/parkpanel/admins');
+      nav('/admins');
     }
   }, [isSuperAdmin, nav]);
 
@@ -54,9 +54,9 @@ export default function AdminNew() {
       toast.success('Admin created successfully', { id: loadingToast });
       // For staff and gm, redirect to access grant page so scopes/modules can be assigned
       if (['staff', 'gm'].includes(form.role) && res?.user_id) {
-        nav(`/parkpanel/admins/${res.user_id}/access`);
+        nav(`/admins/${res.user_id}/access`);
       } else {
-        nav('/parkpanel/admins');
+        nav('/admins');
       }
     } catch (e) {
       toast.error(e.message || 'Create failed', { id: loadingToast });
@@ -78,7 +78,7 @@ export default function AdminNew() {
           </div>
           <button
             type="button"
-            onClick={() => nav('/parkpanel/admins')}
+            onClick={() => nav('/admins')}
             className="px-4 py-2 border border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-neutral-300 rounded-xl hover:bg-gray-50 dark:hover:bg-neutral-700 transition-colors text-sm"
           >
             ← Back
@@ -187,7 +187,7 @@ export default function AdminNew() {
           </button>
           <button
             type="button"
-            onClick={() => nav('/parkpanel/admins')}
+            onClick={() => nav('/admins')}
             className="px-4 py-2.5 border border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-neutral-300 rounded-xl hover:bg-gray-50 dark:hover:bg-neutral-700 transition-colors text-sm"
           >
             Cancel

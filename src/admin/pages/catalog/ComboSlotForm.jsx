@@ -96,7 +96,7 @@ export default function ComboSlotForm() {
       } else {
         await adminApi.post('/api/parkpanel/combo-slots', payload);
       }
-      nav('/parkpanel/catalog/combo-slots');
+      nav('/catalog/combo-slots');
     } catch (e) {
       setErr(e.message || 'Save failed');
     }
@@ -207,7 +207,7 @@ export default function ComboSlotForm() {
         <button className="px-3 py-2 rounded-md bg-gray-900 text-white" type="submit">
           {isEdit ? 'Update' : 'Create'}
         </button>
-        <button className="px-3 py-2 rounded-md border" type="button" onClick={() => nav('/parkpanel/catalog/combo-slots')}>
+        <button className="px-3 py-2 rounded-md border" type="button" onClick={() => nav('/catalog/combo-slots')}>
           Cancel
         </button>
       </div>

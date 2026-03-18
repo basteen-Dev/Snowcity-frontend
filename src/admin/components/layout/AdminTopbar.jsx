@@ -13,7 +13,8 @@ const quickLinks = [
 // Simple breadcrumb from path
 function useBreadcrumbs() {
   const { pathname } = useLocation();
-  const parts = pathname.replace(/^\/admin\/?/, '').split('/').filter(Boolean);
+  // Strip /parkpanel if it exists at the start (to avoid double-prefixing with basename)
+  const parts = pathname.replace(/^\/parkpanel\/?/, '').split('/').filter(Boolean);
   return parts.map((p, i) => ({
     label: p.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
     to: '/' + parts.slice(0, i + 1).join('/'),

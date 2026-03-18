@@ -25,8 +25,8 @@ export default function RolesList() {
       <div className="flex items-center justify-between mb-3">
         <h1 className="text-xl font-semibold">Roles</h1>
         <div className="flex gap-2">
-          <button className="rounded-md border px-3 py-2 text-sm" onClick={() => navigate('/parkpanel/rbac/matrix')}>RBAC Matrix</button>
-          <button className="rounded-md bg-gray-900 text-white px-3 py-2 text-sm" onClick={() => navigate('/parkpanel/roles/new')}>New Role</button>
+          <button className="rounded-md border px-3 py-2 text-sm" onClick={() => navigate('/rbac/matrix')}>RBAC Matrix</button>
+          <button className="rounded-md bg-gray-900 text-white px-3 py-2 text-sm" onClick={() => navigate('/roles/new')}>New Role</button>
         </div>
       </div>
 
@@ -37,7 +37,7 @@ export default function RolesList() {
           { key: 'description', title: 'Description' }
         ]}
         rows={state.items}
-        onRowClick={(r) => navigate(`/parkpanel/roles/${r.role_id}`)}
+        onRowClick={(r) => navigate(`/roles/${r.role_id}`)}
         empty={state.status === 'loading' ? 'Loading…' : 'No roles'}
       />
     </div>

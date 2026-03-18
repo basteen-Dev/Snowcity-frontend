@@ -68,7 +68,7 @@ export default function PagesList() {
           </button>
         </form>
         <div className="ml-auto flex items-center gap-2">
-          <Link to="/parkpanel/catalog/pages/new" className="px-5 py-2 rounded-md bg-gray-900 text-white text-sm font-semibold">
+          <Link to="/catalog/pages/new" className="px-5 py-2 rounded-md bg-gray-900 text-white text-sm font-semibold">
             New Page
           </Link>
         </div>
@@ -113,7 +113,7 @@ export default function PagesList() {
                 </td>
                 <td className="px-3 py-2">{r.active ? 'Yes' : 'No'}</td>
                 <td className="px-3 py-2 text-right">
-                  <Link className="px-2 py-1 rounded-md border text-xs" to={`/parkpanel/catalog/pages/${r.page_id}`}>
+                  <Link className="px-2 py-1 rounded-md border text-xs" to={`/catalog/pages/${r.page_id}`}>
                     Edit
                   </Link>
                 </td>
