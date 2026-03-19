@@ -379,7 +379,7 @@ export default function ConsolidatedReport() {
             <div className="rpt-topbar a1">
                 <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
                     <div className="rpt-brand">
-                        <div className="rpt-b-name">Consolidated Report</div><p style={{ color: 'red', fontSize: '12px', marginLeft: '10px' }}>(Under the Development)</p>
+                        <div className="rpt-b-name">Consolidated Report</div><p style={{ color: 'red', fontSize: '12px', marginLeft: '10px', marginTop: '5px' }}>(Under Development)</p>
                     </div>
                 </div>
                 <div className="rpt-chip">🕐 {dayjs().format('ddd, DD MMM YYYY · HH:mm')}</div>

@@ -122,7 +122,6 @@ export default function PaymentSuccess() {
                 product_type: items[0]?.product_type || '',
                 total_tickets: items.reduce((sum, item) => sum + item.quantity, 0),
                 order_id: orderId || '',
-                ticket_price: Number(data?.ticketsValue || 0) || (totalAmount - Number(data?.addonsValue || data?.addons_value || data?.addon_total || 0)),
                 cart_value: Number(data?.cartValue || 0) || totalAmount,
                 total_value: totalAmount,
                 total_pax: items.reduce((sum, item) => sum + item.quantity, 0),

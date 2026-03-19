@@ -201,7 +201,6 @@ export default function PaymentStatus() {
                 product_type: items[0]?.product_type || '',
                 total_tickets: items.reduce((sum, item) => sum + item.quantity, 0),
                 order_id: d.orderId || d.orderRef || txnId || '',
-                ticket_price: Number(d.ticketsValue || 0),
                 cart_value: Number(d.cartValue || 0),
                 total_value: totalVal,
                 total_pax: items.reduce((sum, item) => sum + item.quantity, 0),

@@ -1294,6 +1294,7 @@ export default function Booking() {
           product_type: items[0]?.product_type || '',
           total_tickets: items.reduce((sum, item) => sum + item.quantity, 0),
           total_value: finalTotal || grossTotal || 0,
+          cart_value: grossTotal || 0,
           total_pax: totalTickets,
           currency: 'INR',
           time_slot: cartItems[0]?.slotLabel || '',
