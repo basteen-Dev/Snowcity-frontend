@@ -1435,7 +1435,27 @@ export default function Booking() {
     if (step === 1) {
       // If there's a pending selection that's ready, add it first
       if (selectionReady) {
-        addSelectionToCart({ buttonType: 'add_to_cart' });
+        // Check if this exact selection already exists in the cart
+        // (e.g. when arriving from AttractionDetails/ComboDetails which already added it)
+        const currentId = sel.itemType === 'combo'
+          ? sel.comboId
+          : sel.attractionId;
+        const currentDate = toYMD(sel.date);
+        const currentSlotKey = sel.slotKey || '';
+        const alreadyInCart = cartItems.some(item => {
+          const itemId = item.item_type === 'Combo'
+            ? String(item.combo_id || '')
+            : String(item.attraction_id || '');
+          const itemDate = item.booking_date || '';
+          const itemSlot = item.slot_id || item.combo_slot_id || item.slotLabel || '';
+          return String(itemId) === String(currentId)
+            && itemDate === currentDate
+            && (currentSlotKey === '' || String(itemSlot) === String(currentSlotKey) || item.slotLabel === (selectedSlot ? getSlotLabel(selectedSlot) : ''));
+        });
+
+        if (!alreadyInCart) {
+          addSelectionToCart({ buttonType: 'add_to_cart' });
+        }
         dispatch(setStep(2));
         return;
       }
