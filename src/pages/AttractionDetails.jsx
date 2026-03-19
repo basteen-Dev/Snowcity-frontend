@@ -789,12 +789,22 @@ export default function AttractionDetails() {
     const aId = getAttrId(a);
     const sanitizedQty = qtyNumber;
 
-    // 🔹 GTM ADD_TO_CART EVENT
     window.dataLayer = window.dataLayer || [];
+    const items = [
+      {
+        item_name: a?.title || a?.name || `Attraction #${aId}`,
+        product_type: 'single',
+        quantity: sanitizedQty,
+        price: Number(effectiveUnitPrice ?? selectedSlot?.price ?? baseUnitPrice),
+        time_slot: isTimeSlotDisabled ? '' : getSlotLabel(selectedSlot),
+        selected_date: toYMD(date)
+      }
+    ];
     window.dataLayer.push({
       event: 'add_to_cart',
-      attraction_name: a?.title || a?.name || `Attraction #${aId}`,
-      product_type: 'single',
+      attraction_name: items[0]?.item_name || '',
+      product_type: items[0]?.product_type || '',
+      total_tickets: items.reduce((sum, item) => sum + item.quantity, 0),
       ticket_price: Number(effectiveUnitPrice ?? selectedSlot?.price ?? baseUnitPrice),
       ticket_quantity: sanitizedQty,
       total_price: Number(effectiveUnitPrice ?? selectedSlot?.price ?? baseUnitPrice) * sanitizedQty,
@@ -803,16 +813,7 @@ export default function AttractionDetails() {
       selected_date: toYMD(date),
       currency: 'INR',
       button_type: 'buy_now',
-      items: [
-        {
-          item_name: a?.title || a?.name || `Attraction #${aId}`,
-          product_type: 'single',
-          quantity: sanitizedQty,
-          price: Number(effectiveUnitPrice ?? selectedSlot?.price ?? baseUnitPrice),
-          time_slot: isTimeSlotDisabled ? '' : getSlotLabel(selectedSlot),
-          selected_date: toYMD(date)
-        }
-      ]
+      items: items
     });
 
     dispatch(

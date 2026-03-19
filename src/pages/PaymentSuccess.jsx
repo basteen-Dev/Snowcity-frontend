@@ -88,50 +88,15 @@ export default function PaymentSuccess() {
             // 🔹 GTM PURCHASE EVENT — with enriched data
             const purchaseFiredKey = `purchase_fired_${orderId}`;
             if (!localStorage.getItem(purchaseFiredKey)) {
-              const items = Array.isArray(data?.items) ? data.items : [];
-              const attractionNames = items.length > 0
-                ? items.map(it => it.title || it.name || it.attraction_name || '').filter(Boolean).join(' + ')
-                : (data?.title || data?.attraction_name || '');
-
-              const productTypes = items.map(it => it.item_type === 'Combo' ? 'combo' : 'single');
-              const isCombo = productTypes.includes('combo') || data?.item_type === 'Combo';
-              const isSingle = productTypes.includes('single') || (data?.item_type !== 'Combo' && !items.length);
-              const productType = (isCombo && isSingle) ? 'mixed' : (isCombo ? 'combo' : 'single');
-
-              const selectedDate = items[0]?.booking_date || data?.booking_date || '';
-              const timeSlot = items[0]?.slot_label || items[0]?.time_slot || data?.slot_label || '';
-
-              const totalTicketsAmount = items.length > 0
-                ? items.reduce((sum, item) => sum + Number(item.quantity || 1), 0)
-                : Number(data?.total_tickets || data?.quantity || 1);
-
-              window.dataLayer = window.dataLayer || [];
-              window.dataLayer.push({
-                event: 'purchase',
-                order_id: orderId || '',
-                total_value: totalAmount,
-                total_tickets: totalTicketsAmount,
-                total_pax: totalTicketsAmount,
-                currency: 'INR',
-                payment_type: data?.payment_mode || data?.gateway || '',
-                payment_gateway: data?.payment_mode || data?.gateway || '',
-                attraction_name: items[0]?.title || items[0]?.name || items[0]?.attraction_name || attractionNames || '',
-                product_type: items.length > 0
-                  ? (items[0]?.item_type === 'Combo' ? 'combo' : 'single')
-                  : (data?.item_type === 'Combo' ? 'combo' : 'single'),
-                selected_date: selectedDate,
-                time_slot: timeSlot,
-                has_addons: Number(data?.addons_value || data?.addon_total || 0) > 0,
-                addons_value: Number(data?.addons_value || data?.addon_total || 0),
-                promo_code: data?.promo_code || data?.coupon_code || '',
-                discount_value: Number(data?.discount_value || data?.discount_amount || 0),
-                items: items.length > 0 ? items.map(item => {
+              const rawItems = Array.isArray(data?.items) ? data.items : [];
+              const items = rawItems.length > 0 ? rawItems.map(item => {
                   const unitPrice = Number(item.unit_price || item.price || 0);
                   const qty = Number(item.quantity || 1);
                   return {
                     item_id: item.id || item.attraction_id || item.combo_id || '',
                     item_name: item.title || item.name || item.attraction_name || '',
                     item_category: item.item_type === 'Combo' ? 'combo' : 'single',
+                    product_type: item.item_type === 'Combo' ? 'combo' : 'single',
                     quantity: qty,
                     price: unitPrice,
                     item_total: unitPrice * qty,
@@ -142,12 +107,33 @@ export default function PaymentSuccess() {
                   item_id: data?.id || data?.attraction_id || data?.combo_id || '',
                   item_name: data?.title || data?.attraction_name || '',
                   item_category: data?.item_type === 'Combo' ? 'combo' : 'single',
+                  product_type: data?.item_type === 'Combo' ? 'combo' : 'single',
                   quantity: Number(data?.quantity || 1),
                   price: totalAmount,
                   item_total: totalAmount,
                   item_variant: data?.slot_label || '',
                   selected_date: data?.booking_date || ''
-                }]
+                }];
+
+              window.dataLayer = window.dataLayer || [];
+              window.dataLayer.push({
+                event: 'purchase',
+                attraction_name: items[0]?.item_name || '',
+                product_type: items[0]?.product_type || '',
+                total_tickets: items.reduce((sum, item) => sum + item.quantity, 0),
+                order_id: orderId || '',
+                total_value: totalAmount,
+                total_pax: items.reduce((sum, item) => sum + item.quantity, 0),
+                currency: 'INR',
+                payment_type: data?.payment_mode || data?.gateway || '',
+                payment_gateway: data?.payment_mode || data?.gateway || '',
+                selected_date: items[0]?.selected_date || '',
+                time_slot: items[0]?.item_variant || '',
+                has_addons: Number(data?.addons_value || data?.addon_total || 0) > 0,
+                addons_value: Number(data?.addons_value || data?.addon_total || 0),
+                promo_code: data?.promo_code || data?.coupon_code || '',
+                discount_value: Number(data?.discount_value || data?.discount_amount || 0),
+                items: items
               });
               localStorage.setItem(purchaseFiredKey, 'true');
             }

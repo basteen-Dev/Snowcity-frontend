@@ -113,23 +113,49 @@ export default function BookingsList() {
   const { list } = useSelector((s) => s.adminBookings);
   const { user } = useSelector((s) => s.adminAuth);
 
-  const [filters, setFilters] = React.useState({
-    search: '',
-    payment_status: '',
-    booking_status: '',
-    attraction_id: '',
-    combo_id: '',
-    offer_id: '',
-    user_email: '',
-    user_phone: '',
-    item_type: '',
-    date_from: dayjs().startOf('day').format('YYYY-MM-DD'),
-    date_to: dayjs().endOf('day').format('YYYY-MM-DD')
+  const [filters, setFilters] = React.useState(() => {
+    try {
+      const saved = sessionStorage.getItem('admin_bookings_filters');
+      if (saved) return JSON.parse(saved);
+    } catch(e) {}
+    return {
+      search: '',
+      payment_status: '',
+      payment_mode: '',
+      booking_status: '',
+      attraction_id: '',
+      combo_id: '',
+      offer_id: '',
+      user_email: '',
+      user_phone: '',
+      item_type: '',
+      date_from: dayjs().startOf('day').format('YYYY-MM-DD'),
+      date_to: dayjs().endOf('day').format('YYYY-MM-DD')
+    };
   });
   const [options, setOptions] = React.useState({ status: 'idle', attractions: [], combos: [], offers: [] });
-  const [activeRange, setActiveRange] = React.useState('today');
-  const [rowsPerPage, setRowsPerPage] = React.useState(100);
-  const [showFilters, setShowFilters] = React.useState(false); // Default: collapsed
+  const [activeRange, setActiveRange] = React.useState(() => sessionStorage.getItem('admin_bookings_activeRange') || 'today');
+  const [rowsPerPage, setRowsPerPage] = React.useState(() => {
+    const saved = sessionStorage.getItem('admin_bookings_rowsPerPage');
+    return saved ? parseInt(saved, 10) : 100;
+  });
+  const [showFilters, setShowFilters] = React.useState(() => sessionStorage.getItem('admin_bookings_showFilters') === 'true'); // Default: collapsed
+
+  React.useEffect(() => {
+    sessionStorage.setItem('admin_bookings_filters', JSON.stringify(filters));
+  }, [filters]);
+
+  React.useEffect(() => {
+    sessionStorage.setItem('admin_bookings_activeRange', activeRange);
+  }, [activeRange]);
+
+  React.useEffect(() => {
+    sessionStorage.setItem('admin_bookings_rowsPerPage', rowsPerPage);
+  }, [rowsPerPage]);
+
+  React.useEffect(() => {
+    sessionStorage.setItem('admin_bookings_showFilters', showFilters);
+  }, [showFilters]);
   const searchTimerRef = React.useRef(null);
   const [statusUpdating, setStatusUpdating] = React.useState(null);
   const [autoSync, setAutoSync] = React.useState(true);
@@ -263,7 +289,7 @@ export default function BookingsList() {
   }, [buildQuery, dispatch, rowsPerPage]);
 
   const resetFilters = React.useCallback(() => {
-    setFilters({ search: '', payment_status: '', booking_status: '', attraction_id: '', combo_id: '', offer_id: '', user_email: '', user_phone: '', item_type: '', date_from: '', date_to: '' });
+    setFilters({ search: '', payment_status: '', payment_mode: '', booking_status: '', attraction_id: '', combo_id: '', offer_id: '', user_email: '', user_phone: '', item_type: '', date_from: '', date_to: '' });
     dispatch(listAdminBookings({ page: 1, limit: rowsPerPage }));
     setActiveRange('all');
   }, [dispatch, rowsPerPage]);
@@ -397,6 +423,7 @@ export default function BookingsList() {
     return Boolean(
       filters.search ||
       filters.payment_status ||
+      filters.payment_mode ||
       filters.booking_status ||
       filters.attraction_id ||
       filters.combo_id ||
@@ -416,6 +443,7 @@ export default function BookingsList() {
   const activeFilterCount = React.useMemo(() => {
     let count = 0;
     if (filters.payment_status) count++;
+    if (filters.payment_mode) count++;
     if (filters.booking_status) count++;
     if (filters.attraction_id) count++;
     if (filters.combo_id) count++;
@@ -540,16 +568,26 @@ export default function BookingsList() {
             )}
 
             {/* Row 1: Payment + Booking Status + Item Type */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               <div className="relative">
                 <select className={selectClasses} value={filters.payment_status} onChange={(e) => handleSelectChange('payment_status', e.target.value)}>
-                  <option value="">Payment: All</option>
+                  <option value="">Payment Status: All</option>
                   <option value="INITIATED">Initiated</option>
                   <option value="Pending">Pending</option>
                   <option value="Completed">Success</option>
                   <option value="Failed">Failed</option>
                   <option value="TIMED_OUT">Timed Out</option>
                   <option value="Cancelled">Cancelled</option>
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+              </div>
+              <div className="relative">
+                <select className={selectClasses} value={filters.payment_mode} onChange={(e) => handleSelectChange('payment_mode', e.target.value)}>
+                  <option value="">Payment Mode: All</option>
+                  <option value="PhonePe">PhonePe</option>
+                  <option value="PayPhi">Payphi</option>
+                  <option value="Online">Online</option>
+                  <option value="Offline">Offline</option>
                 </select>
                 <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
               </div>

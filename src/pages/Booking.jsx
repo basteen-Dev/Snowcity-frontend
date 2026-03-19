@@ -1278,27 +1278,30 @@ export default function Booking() {
 
         const totalTickets = cartItems.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
 
+        const items = cartItems.map(item => ({
+          item_name: item.title || '',
+          product_type: item.item_type === 'Combo' ? 'combo' : 'single',
+          quantity: Number(item.quantity || 0),
+          price: Number(item.unitPrice || 0),
+          time_slot: item.slotLabel || '',
+          selected_date: item.booking_date || ''
+        }));
+
         window.dataLayer = window.dataLayer || [];
         window.dataLayer.push({
           event: 'begin_checkout',
+          attraction_name: items[0]?.item_name || '',
+          product_type: items[0]?.product_type || '',
+          total_tickets: items.reduce((sum, item) => sum + item.quantity, 0),
           total_value: finalTotal || grossTotal || 0,
-          total_tickets: totalTickets,
           total_pax: totalTickets,
           currency: 'INR',
-          product_type: cartItems[0]?.item_type === 'Combo' ? 'combo' : 'single',
           time_slot: cartItems[0]?.slotLabel || '',
           selected_date: cartItems[0]?.booking_date || '',
           has_addons: totalAddonsCost > 0,
           addons_value: totalAddonsCost || 0,
           promo_code: coupon?.code || promoInput || '',
-          items: cartItems.map(item => ({
-            item_name: item.title || '',
-            product_type: item.item_type === 'Combo' ? 'combo' : 'single',
-            quantity: Number(item.quantity || 0),
-            price: Number(item.unitPrice || 0),
-            time_slot: item.slotLabel || '',
-            selected_date: item.booking_date || ''
-          }))
+          items: items
         });
       }, 100);
 
@@ -1329,10 +1332,21 @@ export default function Booking() {
     // 🔹 GTM ADD_TO_CART EVENT
     if (!skipGTM) {
       window.dataLayer = window.dataLayer || [];
+      const items = [
+        {
+          item_name: selectedMeta.title,
+          product_type: sel.itemType === 'combo' ? 'combo' : 'single',
+          quantity: qty,
+          price: Number(selectedMeta.price || 0),
+          time_slot: selectedSlot ? getSlotLabel(selectedSlot) : '',
+          selected_date: toYMD(sel.date)
+        }
+      ];
       window.dataLayer.push({
         event: 'add_to_cart',
-        attraction_name: selectedMeta.title,
-        product_type: sel.itemType === 'combo' ? 'combo' : 'single',
+        attraction_name: items[0]?.item_name || '',
+        product_type: items[0]?.product_type || '',
+        total_tickets: items.reduce((sum, item) => sum + item.quantity, 0),
         ticket_price: Number(selectedMeta.price || 0),
         ticket_quantity: qty,
         total_price: Number(selectedMeta.price || 0) * qty,
@@ -1341,16 +1355,7 @@ export default function Booking() {
         selected_date: toYMD(sel.date),
         currency: 'INR',
         button_type: buttonType,
-        items: [
-          {
-            item_name: selectedMeta.title,
-            product_type: sel.itemType === 'combo' ? 'combo' : 'single',
-            quantity: qty,
-            price: Number(selectedMeta.price || 0),
-            time_slot: selectedSlot ? getSlotLabel(selectedSlot) : '',
-            selected_date: toYMD(sel.date)
-          }
-        ]
+        items: items
       });
     }
 

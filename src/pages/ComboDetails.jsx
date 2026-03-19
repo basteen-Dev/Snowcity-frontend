@@ -915,12 +915,22 @@ export default function ComboDetails() {
     const comboSlotId = slot?.combo_slot_id ?? slot?.id ?? slot?._id ?? null;
     if (!comboSlotId) return;
 
-    // 🔹 GTM ADD_TO_CART EVENT
     window.dataLayer = window.dataLayer || [];
+    const items = [
+      {
+        item_name: combo?.title || combo?.name || combo?.combo_name || `Combo #${comboId}`,
+        product_type: 'combo',
+        quantity: q,
+        price: unitPrice,
+        time_slot: labelTime(slot),
+        selected_date: toYMD(date)
+      }
+    ];
     window.dataLayer.push({
       event: 'add_to_cart',
-      attraction_name: combo?.title || combo?.name || combo?.combo_name || `Combo #${comboId}`,
-      product_type: 'combo',
+      attraction_name: items[0]?.item_name || '',
+      product_type: items[0]?.product_type || '',
+      total_tickets: items.reduce((sum, item) => sum + item.quantity, 0),
       ticket_price: unitPrice,
       ticket_quantity: q,
       total_price: unitPrice * q,
@@ -929,16 +939,7 @@ export default function ComboDetails() {
       selected_date: toYMD(date),
       currency: 'INR',
       button_type: 'buy_now',
-      items: [
-        {
-          item_name: combo?.title || combo?.name || combo?.combo_name || `Combo #${comboId}`,
-          product_type: 'combo',
-          quantity: q,
-          price: unitPrice,
-          time_slot: labelTime(slot),
-          selected_date: toYMD(date)
-        }
-      ]
+      items: items
     });
 
     dispatch(
