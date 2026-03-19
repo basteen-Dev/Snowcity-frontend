@@ -202,7 +202,7 @@ export default function PaymentStatus() {
                 total_value: totalVal,
                 total_pax: items.reduce((sum, item) => sum + item.quantity, 0),
                 currency: 'INR',
-                payment_gateway: gateway,
+                payment_gateway: d.paymentMode || d.payment_mode || gateway || '',
                 selected_date: items[0]?.selected_date || '',
                 time_slot: items[0]?.item_variant || '',
                 has_addons: addonsVal > 0,
