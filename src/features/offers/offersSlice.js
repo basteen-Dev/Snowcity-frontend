@@ -12,12 +12,18 @@ export const fetchOffers = createAsyncThunk(
   'offers/fetchOffers',
   async (params = { active: true, page: 1, limit: 12 }, { signal, rejectWithValue, getState }) => {
     const { offers } = getState();
-    if (isFresh(offers.lastFetched) && offers.items.length) {
-      return offers.items;
-    }
+    // if (isFresh(offers.lastFetched) && offers.items.length) {
+    //   return offers.items;
+    // }
     try {
       const res = await api.get(endpoints.offers.list(), { params, signal });
-      const list = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
+      const list = Array.isArray(res?.data?.data)
+        ? res.data.data
+        : Array.isArray(res?.data)
+          ? res.data
+          : Array.isArray(res)
+            ? res
+            : [];
       saveSliceCache('offers', list);
       return list;
     } catch (err) {

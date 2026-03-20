@@ -23,7 +23,7 @@ export default function Offers() {
         {status === 'failed' ? <ErrorState message={error?.message || 'Failed to load offers'} /> : null}
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {items.map((item) => <OfferCard key={item.id} item={item} />)}
+          {items.map((item) => <OfferCard key={item.offer_id} item={item} />)}
         </div>
       </div>
     </div>

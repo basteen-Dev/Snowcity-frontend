@@ -33,18 +33,29 @@ export default function OffersCarousel({ offers = [], combos = [] }) {
 
   const [index, setIndex] = React.useState(0);
 
+  const highlightedOrder = ["Exclusive Summer Combo"];
+  
+  const highlightedItem = React.useMemo(() => {
+    return items.find(card => 
+      card.type === "combo" && 
+      highlightedOrder.some(name => (card.data?.name || card.data?.title)?.toLowerCase() === name.toLowerCase())
+    );
+  }, [items]);
+
+  const otherItems = React.useMemo(() => items.filter(card => card !== highlightedItem), [items, highlightedItem]);
+
   React.useEffect(() => {
-    if (!items.length) return;
+    if (!otherItems.length) return;
     const timer = setInterval(() => {
-      setIndex((p) => (p + 1) % items.length);
+      setIndex((p) => (p + 1) % otherItems.length);
     }, 3000);
     return () => clearInterval(timer);
-  }, [items.length]);
+  }, [otherItems.length]);
 
   if (!items.length) return null;
 
-  const current = items[index];
-  const desktopCards = items.slice(0, 6);
+  const current = otherItems.length > 0 ? otherItems[index % otherItems.length] : null;
+  const desktopCards = otherItems.slice(0, 3);
 
   return (
     <section className="relative w-full overflow-hidden py-16 px-4 bg-gradient-to-b from-[#e0f2fe] via-[#bae6fd] to-white">
@@ -107,6 +118,11 @@ export default function OffersCarousel({ offers = [], combos = [] }) {
 
       {/* DESKTOP GRID */}
       <div className="hidden md:block relative z-10 max-w-6xl mx-auto px-4 mt-8">
+        {highlightedItem && (
+          <div className="mb-6 w-full">
+            <ComboCard item={highlightedItem.data} isUltimate={true} />
+          </div>
+        )}
         <div className="grid md:grid-cols-3 gap-6">
           {desktopCards.map((card) => (
             <div
@@ -119,19 +135,25 @@ export default function OffersCarousel({ offers = [], combos = [] }) {
         </div>
       </div>
 
-      {/* MOBILE SLIDER */}
-      <div className="md:hidden relative z-10 max-w-md mx-auto px-4 mt-6">
-        <div
-          key={current.__key + "-" + index}
-          className="w-full rounded-2xl overflow-hidden shadow-2xl 
-          bg-white/80 backdrop-blur-xl border border-white/40 animate-slideUpCard"
-        >
-          {current.type === "combo" ? (
-            <ComboCard item={current.data} />
-          ) : (
-            <OfferCard item={current.data} />
-          )}
-        </div>
+      {/* MOBILE LIST / SLIDER */}
+      <div className="md:hidden relative z-10 max-w-md mx-auto px-4 mt-6 flex flex-col gap-6">
+        {highlightedItem && (
+          <div className="w-full animate-slideUpCard">
+            <ComboCard item={highlightedItem.data} isUltimate={true} />
+          </div>
+        )}
+        {current && (
+          <div
+            key={current.__key + "-" + index}
+            className="w-full rounded-2xl overflow-hidden shadow-2xl bg-white/80 backdrop-blur-xl border border-white/40 animate-slideUpCard"
+          >
+            {current.type === "combo" ? (
+              <ComboCard item={current.data} />
+            ) : (
+              <OfferCard item={current.data} />
+            )}
+          </div>
+        )}
       </div>
 
       {/* ANIMATIONS */}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import dayjs from 'dayjs';
 import { X, ChevronDown, Check, Calendar, Plus, Minus } from 'lucide-react';
@@ -101,12 +101,7 @@ const toBoolean = (value) => {
 
 const ruleMatchesSlotConstraints = (rule = {}, slot = null) => {
   if (!slot) {
-    if (
-      rule.slot_id != null ||
-      (Array.isArray(rule.slot_ids) && rule.slot_ids.length)
-    )
-      return false;
-    if (rule.specific_time || (rule.time_from && rule.time_to)) return false;
+    // If no slot is selected (open entry), allow rule regardless of time constraints
     return true;
   }
 
@@ -155,10 +150,13 @@ const ruleMatchesSlotConstraints = (rule = {}, slot = null) => {
 const ruleMatchesContext = (rule, { targetType, targetId, date, slot }) => {
   if (!rule || !targetType || !targetId) return false;
   const bookingDate = dayjs(date).format('YYYY-MM-DD');
+  const isToday = bookingDate === todayYMD();
 
   const ruleType = normalizeTargetType(rule.target_type);
   const currentType = normalizeTargetType(targetType);
-  if (ruleType && currentType && ruleType !== currentType) return false;
+  if (ruleType && currentType && ruleType !== currentType) {
+    return false;
+  }
 
   const appliesToAll = toBoolean(rule.applies_to_all);
   if (!appliesToAll) {
@@ -178,12 +176,17 @@ const ruleMatchesContext = (rule, { targetType, targetId, date, slot }) => {
     )
       return false;
   }
-  if (rule.date_from && bookingDate < rule.date_from) return false;
-  if (rule.date_to && bookingDate > rule.date_to) return false;
-  if (!matchesDayType(rule, bookingDate)) return false;
-  if (!ruleMatchesSlotConstraints(rule, slot)) return false;
-
-  return true;
+  if (rule.date_from && bookingDate < rule.date_from.slice(0, 10)) {
+    return false;
+  }
+  if (rule.date_to && bookingDate > rule.date_to.slice(0, 10)) {
+    return false;
+  }
+  if (!matchesDayType(rule, bookingDate)) {
+    return false;
+  }
+  const slotRes = ruleMatchesSlotConstraints(rule, slot);
+  return slotRes;
 };
 
 const computeDiscountFromRule = (offer = {}, rule = null, basePrice = 0) => {
@@ -204,8 +207,9 @@ const computeDiscountFromRule = (offer = {}, rule = null, basePrice = 0) => {
     discountType === 'amount'
       ? Number(discountValue)
       : (Number(discountValue) / 100) * unit;
-  if (Number.isFinite(Number(offer.max_discount))) {
-    discount = Math.min(discount, Number(offer.max_discount));
+  const maxD = Number(offer.max_discount);
+  if (offer.max_discount != null && Number.isFinite(maxD) && maxD > 0) {
+    discount = Math.min(discount, maxD);
   }
   discount = Math.min(discount, unit);
   return Math.max(0, discount);
@@ -283,6 +287,7 @@ export default function AttractionDetails() {
   const { slug: slugParam } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [searchParams] = useSearchParams();
 
   const slug = React.useMemo(() => {
     if (!slugParam || slugParam === 'undefined' || slugParam === 'null') return null;
@@ -295,7 +300,7 @@ export default function AttractionDetails() {
     error: null,
   });
 
-  const [date, setDate] = React.useState(todayYMD());
+  const [date, setDate] = React.useState(searchParams.get('date') || todayYMD());
   const [slots, setSlots] = React.useState({
     status: 'idle',
     items: [],
@@ -354,6 +359,8 @@ export default function AttractionDetails() {
     error: null,
   });
 
+  const bookingSectionRef = React.useRef(null);
+
   React.useEffect(() => {
     if (!slug) {
       setDetails({
@@ -363,6 +370,23 @@ export default function AttractionDetails() {
       });
     }
   }, [slug]);
+
+  // Handle auto-open and date from search parameters
+  React.useEffect(() => {
+    const pDate = searchParams.get('date');
+    const openDrawer = searchParams.get('openDrawer');
+
+    if (pDate) {
+      setDate(pDate);
+    }
+
+    if (openDrawer === 'true') {
+      // Small delay to ensure render is complete
+      setTimeout(() => {
+        bookingSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 500);
+    }
+  }, [searchParams]);
 
   const numericAttrId = React.useMemo(() => {
     return details.data?.attraction_id || null;
@@ -574,14 +598,17 @@ export default function AttractionDetails() {
             active: true,
             target_type: 'attraction',
             target_id: numericAttrId,
+            limit: 100,
           },
         });
         if (cancelled) return;
-        const list = Array.isArray(res?.data)
-          ? res.data
-          : Array.isArray(res)
-            ? res
-            : [];
+        const list = Array.isArray(res?.data?.data)
+          ? res.data.data
+          : Array.isArray(res?.data)
+            ? res.data
+            : Array.isArray(res)
+              ? res
+              : [];
         setOffers({ status: 'succeeded', items: list, error: null });
       } catch (err) {
         if (cancelled) return;
@@ -694,6 +721,13 @@ export default function AttractionDetails() {
     return null;
   }, [slots.items, slotKey]);
 
+  const selectedSlotForBar = React.useMemo(() => {
+    if (isTimeSlotDisabled) {
+      return { id: 'open', label: 'Open entry', pricing: {} };
+    }
+    return selectedSlot;
+  }, [isTimeSlotDisabled, selectedSlot]);
+
   const fallbackUnitPrice = Number(getPrice(a) || 0);
   const fallbackBasePrice = Number(getBasePrice(a) || fallbackUnitPrice);
   const slotPricing = selectedSlot?.pricing || {};
@@ -724,14 +758,17 @@ export default function AttractionDetails() {
   const qtyNumber = Math.max(1, Number(qty) || 1);
 
   const bestOffer = React.useMemo(() => {
-    if (!selectedSlot || !a || !offers.items.length || hasBackendOffer)
+    const isSlotRequired = a?.time_slot_enabled !== false;
+    const isSameOrPast = date && date <= todayYMD();
+    if ((isSlotRequired && !selectedSlot) || !a || !offers.items.length || hasBackendOffer || isSameOrPast)
       return null;
     // When dynamic pricing is active for this date, skip all offers
-    if (selectedSlot?.dynamic_pricing_active || selectedSlot?.pricing?.dynamic_pricing_active)
+    if (selectedSlot && (selectedSlot.dynamic_pricing_active || selectedSlot.pricing?.dynamic_pricing_active))
       return null;
     const basePrice = unitBeforeOffer || baseUnitPrice || 0;
     if (!basePrice) return null;
     const attractionId = getAttrId(a);
+
     return findBestOfferForSelection(offers.items, {
       targetType: 'attraction',
       targetId: attractionId,
@@ -910,8 +947,6 @@ export default function AttractionDetails() {
   }
 
   const shortDescription = a?.short_description || a?.subtitle || '';
-
-  const selectedSlotForBar = selectedSlot;
   const barPrice =
     selectedSlotForBar && effectiveUnitPrice
       ? effectiveUnitPrice * qtyNumber

@@ -13,7 +13,7 @@ export default function CombosCarousel({ items = [] }) {
         return [...items].sort((a, b) => {
             const idA = a?.combo_id ?? a?.id ?? 0;
             const idB = b?.combo_id ?? b?.id ?? 0;
-            return idA - idB;
+            return idB - idA;
         });
     }, [items]);
 
@@ -47,11 +47,8 @@ export default function CombosCarousel({ items = [] }) {
                 {isDesktop ? (
                     <div className="mb-16">
                         {(() => {
-                            const ultimateOrder = ["Snowcity + Madlabs + Eyelusion", "Snow City + Madlabs + Eyelusion"];
-                            const ultimateItem = sortedItems.find(item =>
-                                ultimateOrder.some(name => (item?.name || item?.title)?.toLowerCase() === name.toLowerCase())
-                            );
-                            const otherItems = sortedItems.filter(item => item !== ultimateItem);
+                            const ultimateItem = sortedItems[0];
+                            const otherItems = sortedItems.slice(1);
 
                             return (
                                 <div className="space-y-12">
@@ -62,7 +59,7 @@ export default function CombosCarousel({ items = [] }) {
                                     )}
 
                                     {otherItems.length > 0 && (
-                                        <div className="grid grid-cols-2 gap-8">
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                                             {otherItems.map((item, idx) => (
                                                 <div key={`${item?.id ?? item?.combo_id}-desktop-${idx}`}>
                                                     <ComboCard item={item} />
@@ -77,11 +74,8 @@ export default function CombosCarousel({ items = [] }) {
                 ) : (
                     <div className="relative z-10 premium-carousel mb-8">
                         {(() => {
-                            const ultimateOrder = ["Snowcity + Madlabs + Eyelusion", "Snow City + Madlabs + Eyelusion"];
-                            const ultimateItem = sortedItems.find(item =>
-                                ultimateOrder.some(name => (item?.name || item?.title)?.toLowerCase() === name.toLowerCase())
-                            );
-                            const otherItems = sortedItems.filter(item => item !== ultimateItem);
+                            const ultimateItem = sortedItems[0];
+                            const otherItems = sortedItems.slice(1);
                             const sliderItems = otherItems.length > 0 ? [...otherItems, ...otherItems, ...otherItems] : [];
 
                             return (

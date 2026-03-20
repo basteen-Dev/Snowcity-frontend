@@ -1,5 +1,5 @@
 import React from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import Loader from '../components/common/Loader';
 import ErrorState from '../components/common/ErrorState';
@@ -352,6 +352,7 @@ export default function ComboDetails() {
   const slugParam = params?.slug ?? params?.id ?? params?.comboId ?? params?.combo_id ?? null;
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [searchParams] = useSearchParams();
 
   const slug = React.useMemo(() => {
     if (!slugParam || slugParam === 'undefined' || slugParam === 'null') return null;
@@ -359,6 +360,8 @@ export default function ComboDetails() {
     if (String(s).startsWith('combo-')) s = String(s).substring(6);
     return s;
   }, [slugParam]);
+  
+  const bookingSectionRef = React.useRef(null);
 
   const { items: comboItems = [], status: combosStatus } = useSelector(
     (s) => s.combos || { items: [], status: 'idle' },
@@ -366,6 +369,21 @@ export default function ComboDetails() {
   const { items: attractionItems = [], status: attractionsStatus } = useSelector(
     (s) => s.attractions || { items: [], status: 'idle' },
   );
+
+  React.useEffect(() => {
+    const pDate = searchParams.get('date');
+    const openDrawer = searchParams.get('openDrawer');
+
+    if (pDate) {
+      setDate(pDate);
+    }
+
+    if (openDrawer === 'true') {
+      setTimeout(() => {
+        bookingSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 500);
+    }
+  }, [searchParams]);
 
   React.useEffect(() => {
     if (combosStatus === 'idle') {
@@ -1409,7 +1427,7 @@ export default function ComboDetails() {
               </div>
 
               {/* Booking Controls */}
-              <div className="space-y-6">
+              <div className="space-y-6" ref={bookingSectionRef}>
 
                 {/* Date Picker */}
                 {!isBookingStopped && (

@@ -360,8 +360,7 @@ const matchesDayType = (rule = {}, dateYMD) => {
 
 const ruleMatchesSlotConstraints = (rule = {}, slot = null) => {
   if (!slot) {
-    if (rule.slot_id != null || (Array.isArray(rule.slot_ids) && rule.slot_ids.length)) return false;
-    if (rule.specific_time || (rule.time_from && rule.time_to)) return false;
+    // If no slot is selected (open entry), allow rule regardless of time constraints
     return true;
   }
 
@@ -407,10 +406,17 @@ const ruleMatchesSlotConstraints = (rule = {}, slot = null) => {
 const doesRuleMatchContext = ({ rule, selectedDate, selectedSlot, itemType, itemId }) => {
   if (!rule || !selectedDate) return false;
   const bookingDate = dayjs(selectedDate).format('YYYY-MM-DD');
+  const isTarget = idsMatch(itemId, 21);
+  const isFri = dayjs(bookingDate).day() === 5;
+
+  if (isTarget && isFri) console.log('DEBUG 21-FRI:', { ruleId: rule.rule_id, bookingDate });
 
   const ruleType = normalizeTargetType(rule.target_type);
   const currentType = normalizeTargetType(itemType);
-  if (ruleType && currentType && ruleType !== currentType) return false;
+  if (ruleType && currentType && ruleType !== currentType) {
+    if (isTarget && isFri) console.log('DEBUG 21-FRI: type mismatch', ruleType, currentType);
+    return false;
+  }
   const appliesToAll = toBoolean(rule.applies_to_all);
   if (!appliesToAll) {
     const ruleTargetIds = [];
@@ -418,7 +424,10 @@ const doesRuleMatchContext = ({ rule, selectedDate, selectedSlot, itemType, item
     if (Array.isArray(rule.target_ids)) ruleTargetIds.push(...rule.target_ids);
     if (!ruleTargetIds.length) return false;
     const hasTargetMatch = ruleTargetIds.some((id) => idsMatch(id, itemId));
-    if (!hasTargetMatch) return false;
+    if (!hasTargetMatch) {
+      if (isTarget && isFri) console.log('DEBUG 21-FRI: guest ID mismatch', ruleTargetIds);
+      return false;
+    }
   }
 
   if (rule.specific_date && bookingDate !== rule.specific_date) return false;
@@ -426,8 +435,8 @@ const doesRuleMatchContext = ({ rule, selectedDate, selectedSlot, itemType, item
     if (!rule.specific_dates.some((d) => dayjs(d).format('YYYY-MM-DD') === bookingDate))
       return false;
   }
-  if (rule.date_from && bookingDate < rule.date_from) return false;
-  if (rule.date_to && bookingDate > rule.date_to) return false;
+  if (rule.date_from && bookingDate < rule.date_from.slice(0, 10)) return false;
+  if (rule.date_to && bookingDate > rule.date_to.slice(0, 10)) return false;
   if (!matchesDayType(rule, bookingDate)) return false;
   if (!ruleMatchesSlotConstraints(rule, selectedSlot)) return false;
 
@@ -435,7 +444,7 @@ const doesRuleMatchContext = ({ rule, selectedDate, selectedSlot, itemType, item
 };
 
 const isHappyHourApplicable = (offer, selectedDate, selectedSlot, itemType, itemId) => {
-  if (!offer || !selectedDate || !selectedSlot) return false;
+  if (!offer || !selectedDate) return false;
   const rules = Array.isArray(offer.rules) ? offer.rules : [];
   const applicableRules = rules.filter((rule) =>
     doesRuleMatchContext({ rule, selectedDate, selectedSlot, itemType, itemId }),
@@ -467,6 +476,8 @@ export default function Booking() {
   const combosState = useSelector((s) => s.combos);
   const addonsState = useSelector((s) => s.addons);
   const { step, contact, otp, coupon, creating, cart } = useSelector((s) => s.bookings);
+  const offersFromRedux = useSelector((s) => s.offers.items) || [];
+  const promosLoading = useSelector((s) => s.coupons.loading) || false;
   const cartItems = cart?.items || [];
   const hasCartItems = cartItems.length > 0;
   const activeKey = cart?.activeKey;
@@ -526,7 +537,7 @@ export default function Booking() {
   const [selectedOfferId, setSelectedOfferId] = useState('');
   const [cartAddons, setCartAddons] = useState(new Map());
   const [availablePromos, setAvailablePromos] = useState([]);
-  const [promosLoading, setPromosLoading] = useState(false);
+  const [localPromosLoading, setLocalPromosLoading] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [paymentStartTime, setPaymentStartTime] = useState(null);
   const [dynamicPricingDates, setDynamicPricingDates] = useState({});
@@ -548,7 +559,14 @@ export default function Booking() {
     [attractions]
   );
 
-  const combos = combosState.items || [];
+  const combos = useMemo(() => {
+    const items = combosState.items || [];
+    return [...items].sort((a, b) => {
+      const idA = Number(a.combo_id || a.id || 0);
+      const idB = Number(b.combo_id || b.id || 0);
+      return idB - idA;
+    });
+  }, [combosState.items]);
 
   const handlePhoneChange = (e) => {
     const val = e.target.value.replace(/\D/g, '');
@@ -582,9 +600,10 @@ export default function Booking() {
     const isSameOrPast = selectedDate && selectedDate <= todayStr;
 
     for (const offer of state.offers) {
-      if (isSameOrPast && offer.rule_type !== 'dynamic_pricing') {
-        continue;
-      }
+      // Allow today bookings for non-dynamic pricing offers as well
+      // if (isSameOrPast && offer.rule_type !== 'dynamic_pricing') {
+      //   continue;
+      // }
       const rules = Array.isArray(offer.rules) ? offer.rules : [];
       for (const rule of rules) {
         if (
@@ -782,9 +801,15 @@ export default function Booking() {
     const loadOffers = async () => {
       setState((s) => ({ ...s, status: 'loading', loadingOffers: true }));
       try {
-        const res = await api.get(endpoints.offers.list(), { params: { active: true, limit: 20 } });
+        const res = await api.get(endpoints.offers.list(), { params: { active: true, limit: 100 } });
         if (cancelled) return;
-        const list = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
+        const list = Array.isArray(res?.data?.data)
+          ? res.data.data
+          : Array.isArray(res?.data)
+            ? res.data
+            : Array.isArray(res)
+              ? res
+              : [];
         setState((s) => ({
           ...s,
           status: 'succeeded',
@@ -802,20 +827,26 @@ export default function Booking() {
   }, [state.status]);
 
   useEffect(() => {
-    if (promosLoading || availablePromos.length > 0) return;
+    if (localPromosLoading || availablePromos.length > 0) return;
     let cancelled = false;
     const loadPromos = async () => {
-      setPromosLoading(true);
+      setLocalPromosLoading(true);
       try {
         const res = await api.get(endpoints.coupons.list(), { params: { active: true, limit: 50 } });
         if (cancelled) return;
-        const list = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
+        const list = Array.isArray(res?.data?.data)
+          ? res.data.data
+          : Array.isArray(res?.data)
+            ? res.data
+            : Array.isArray(res)
+              ? res
+              : [];
         setAvailablePromos(list);
       } catch (error) {
         console.error('Failed to fetch promos:', error);
         setAvailablePromos([]);
       } finally {
-        setPromosLoading(false);
+        setLocalPromosLoading(false);
       }
     };
     loadPromos();
@@ -1082,12 +1113,11 @@ export default function Booking() {
       const isSameOrPast = selectedDate && selectedDate <= todayStr;
       const dpKey = `combo:${itemId}:${selectedDate}`;
       const hasDynamicPricing = selectedDate && dynamicPricingDates[dpKey];
-      if (!appliedOffer && !isSameOrPast && !hasDynamicPricing) {
-        appliedOffer = state.offers.find(
+      // if (!appliedOffer && !hasDynamicPricing && !isSameOrPast) {
+      // if (!appliedOffer && !hasDynamicPricing && !isSameOrPast) {
+      if (!appliedOffer && !hasDynamicPricing && !isSameOrPast) {
+        appliedOffer = offersFromRedux.find(
           (offer) =>
-            (offer.rule_type === 'happy_hour' ||
-              offer.rule_type === 'holiday' ||
-              offer.rule_type === 'special') &&
             isHappyHourApplicable(offer, selectedDate, selectedSlot, 'combo', itemId),
         );
         if (appliedOffer) {
@@ -1140,13 +1170,11 @@ export default function Booking() {
       const isSameOrPast = selectedDate && selectedDate <= todayStr;
       const dpKey = `attraction:${itemId}:${selectedDate}`;
       const hasDynamicPricing = selectedDate && dynamicPricingDates[dpKey];
-      if (!appliedOffer && !isSameOrPast && !hasDynamicPricing) {
-        appliedOffer = state.offers.find(
+      
+      if (!appliedOffer && !hasDynamicPricing && !isSameOrPast) {
+        appliedOffer = offersFromRedux.find(
           (offer) =>
-            (offer.rule_type === 'happy_hour' ||
-              offer.rule_type === 'holiday' ||
-              offer.rule_type === 'special') &&
-            isHappyHourApplicable(offer, selectedDate, selectedSlot, 'attraction', itemId),
+            isHappyHourApplicable(offer, selectedDate, selectedSlot, 'attraction', itemId)
         );
         if (appliedOffer) {
           const discount = computeOfferDiscount(appliedOffer, originalPrice || finalPrice);
@@ -1175,6 +1203,7 @@ export default function Booking() {
     selectedSlot || null,
     sel.date || '',
     state.offers || [],
+    offersFromRedux,
     dynamicPricingDates,
   ]);
 
@@ -1240,8 +1269,8 @@ export default function Booking() {
 
   const selectedOffer = useMemo(() => {
     if (!selectedOfferId) return null;
-    return state.offers.find((o) => String(getOfferId(o)) === String(selectedOfferId));
-  }, [state.offers, selectedOfferId]);
+    return offersFromRedux.find((o) => String(getOfferId(o)) === String(selectedOfferId));
+  }, [offersFromRedux, selectedOfferId]);
 
   const selectedOfferDiscount = useMemo(() => {
     if (!selectedOffer) return 0;
@@ -1618,7 +1647,9 @@ export default function Booking() {
   const ProductList = () => {
     const activeTab = sel.itemType;
     const data = useMemo(() => {
-      if (activeTab !== 'attraction') return combos;
+      if (activeTab !== 'attraction') {
+        return [...combos].sort((a, b) => (b.combo_id || b.id || 0) - (a.combo_id || a.id || 0));
+      }
       return prioritizedAttractions;
     }, [activeTab, prioritizedAttractions, combos]);
 
@@ -2523,6 +2554,25 @@ export default function Booking() {
                                   <Plus size={16} />
                                 </button>
                               </div>
+
+                              {selectedMeta.happyHourOffer && (
+                                <div className="mt-3 p-3 bg-emerald-50 border border-emerald-100 rounded-xl animate-in fade-in slide-in-from-top-1 duration-300">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <Ticket size={14} className="text-emerald-600" />
+                                    <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-widest">
+                                      Exclusive Offer Applied
+                                    </span>
+                                  </div>
+                                  <div className="text-sm font-bold text-gray-900">
+                                    {selectedMeta.happyHourOffer.title}
+                                  </div>
+                                  {selectedMeta.offerDescription && (
+                                    <div className="text-[11px] text-emerald-700/80 mt-1 leading-relaxed">
+                                      {selectedMeta.offerDescription.replace(/<[^>]*>/g, '')}
+                                    </div>
+                                  )}
+                                </div>
+                              )}
                             </div>
                           )}
                         </>

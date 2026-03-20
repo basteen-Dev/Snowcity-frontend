@@ -131,7 +131,7 @@ const ComboCardInner = function ComboCard({ item, isUltimate = false }) {
       >
         <div className="relative flex flex-col lg:flex-row h-full w-full overflow-hidden rounded-xl bg-[#0b1a33]/40 backdrop-blur-xl">
           {/* Combo Hero Image */}
-          <div className="relative w-full lg:w-2/3 overflow-hidden m:h-[150px] flex items-center bg-[#040e21] min-h-[150px] sm:min-h-[300px] lg:min-h-0">
+          <div className="relative w-full lg:w-2/4 md:w-2/6 overflow-hidden m:h-[150px] flex items-center bg-[#040e21] min-h-[150px] sm:min-h-[300px] lg:min-h-0">
             {heroImage ? (
               <img
                 src={heroImage}
@@ -147,7 +147,7 @@ const ComboCardInner = function ComboCard({ item, isUltimate = false }) {
           <div className="flex flex-1 flex-col justify-center p-6 lg:p-10">
             <div className="mb-2 lg:mb-3 inline-flex items-center gap-2">
               <span className="rounded-full bg-sky-500/20 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-sky-400 border border-sky-500/30">
-                Ultimate Experience
+                Exclusive Summer Combo
               </span>
             </div>
 
@@ -176,7 +176,7 @@ const ComboCardInner = function ComboCard({ item, isUltimate = false }) {
                   }}
                   className="rounded-2xl bg-white px-8 lg:px-12 py-4 text-sm lg:text-base font-black uppercase tracking-widest text-[#0099ff] transition-all hover:bg-sky-50 hover:scale-105 active:scale-95 shadow-xl shadow-white/10"
                 >
-                  Book Ultimate Pass
+                  Book Exclusive Pass
                 </button>
               </div>
             </div>
@@ -236,7 +236,7 @@ const ComboCardInner = function ComboCard({ item, isUltimate = false }) {
               sessionStorage.removeItem('snowcity_booking_state');
               navigate(bookHref);
             }}
-            className={`btn-book-exp !py-2.5 !px-6 !text-xs cursor-pointer ${(title.toLowerCase().includes('snowcity + madlabs + eyelusion') || title.toLowerCase().includes('snow city + madlabs + eyelusion')) ? '!bg-white !text-[#0099ff]' : ''}`}
+            className={`btn-book-exp !py-2.5 !px-6 !text-xs cursor-pointer ${(title.toLowerCase().includes('exclusive summer combo')) ? '!bg-white !text-[#0099ff]' : ''}`}
           >
             Book Now
           </div>
