@@ -103,7 +103,6 @@ export default function CombosCarousel({ items = [] }) {
                                                 slidesPerView={1.3}
                                                 centeredSlides={true}
                                                 loop={true}
-                                                loopedSlides={otherItems.length}
                                                 loopPreventsSliding={false}
                                                 grabCursor={true}
                                                 watchSlidesProgress={true}
