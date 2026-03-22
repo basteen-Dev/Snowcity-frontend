@@ -41,6 +41,30 @@ const getSlotLabel = (s) => {
   return `Slot #${s?.id ?? s?._id ?? s?.slot_id ?? '?'}`;
 };
 
+const decodeHtml = (value) => {
+  if (!value || typeof value !== 'string') return '';
+  if (typeof document === 'undefined') return value;
+  let current = value;
+  for (let i = 0; i < 3; i += 1) {
+    if (!current.includes('&lt;') && !current.includes('&gt;') && !current.includes('&amp;')) {
+      break;
+    }
+    const el = document.createElement('textarea');
+    el.innerHTML = current;
+    const next = el.value;
+    if (next === current) break;
+    current = next;
+  }
+  return current;
+};
+
+const normalizeHtml = (value) => {
+  const decoded = decodeHtml(value);
+  if (!decoded || typeof document === 'undefined' || typeof DOMParser === 'undefined') return decoded;
+  const doc = new DOMParser().parseFromString(decoded, 'text/html');
+  return doc.body?.innerHTML || decoded;
+};
+
 const parseMinutes = (time) => {
   if (!time || typeof time !== 'string') return null;
   const [h = '0', m = '0'] = time.split(':');
@@ -493,7 +517,7 @@ export default function AttractionDetails() {
               {a?.description ? (
                 <div className="mt-8">
                   <h2 className="text-xl font-semibold mb-3">About</h2>
-                  <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: a.description }} />
+                  <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: normalizeHtml(a.description) }} />
                 </div>
               ) : null}
 

@@ -34,6 +34,8 @@ import SelectTickets from './booking/SelectTickets';
 import Addons from './booking/Addons';
 import YourDetails from './booking/YourDetails';
 import Payment from './booking/Payment';
+import OfferDrawer from './booking/OfferDrawer';
+import FirstNTicketsDrawer from './booking/FirstNTicketsDrawer';
 
 /* ================= Helpers ================= */
 const toYMD = (d) => dayjs(d).format('YYYY-MM-DD');
@@ -105,6 +107,7 @@ const createDefaultSelection = () => ({
   itemType: 'combo',
   attractionId: '',
   comboId: '',
+  offerId: '',
   date: todayYMD(),
   slotKey: '',
   qty: 1,
@@ -509,6 +512,7 @@ export default function Booking() {
 
   const [sel, setSel] = useState(() => createDefaultSelection());
   const [editingKey, setEditingKey] = useState(null);
+  const [itemToRemove, setItemToRemove] = useState(null);
   const [showTokenExpiredModal, setShowTokenExpiredModal] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerMode, setDrawerMode] = useState('booking');
@@ -562,9 +566,26 @@ export default function Booking() {
   const combos = useMemo(() => {
     const items = combosState.items || [];
     return [...items].sort((a, b) => {
-      const idA = Number(a.combo_id || a.id || 0);
-      const idB = Number(b.combo_id || b.id || 0);
-      return idB - idA;
+      const idA = String(a.combo_id || a.id || '');
+      const idB = String(b.combo_id || b.id || '');
+      
+      // User specific order requirements:
+      // 1. All-Access Pass (ID 25) first
+      // 2. Snowcity + Madlabs + Eyelusion (ID 21) second
+      // 3. Buy Snow park Ticket Get Eyelusion Free only on Thursday (ID 26) last
+      
+      if (idA === '25') return -1;
+      if (idB === '25') return 1;
+      
+      if (idA === '21') return -1;
+      if (idB === '21') return 1;
+      
+      if (idA === '26') return 1;
+      if (idB === '26') return -1;
+      
+      const numA = Number(idA);
+      const numB = Number(idB);
+      return numB - numA;
     });
   }, [combosState.items]);
 
@@ -1618,8 +1639,13 @@ export default function Booking() {
 
   /* Product list with images */
   const onRemoveCartItem = (key) => {
-    if (window.confirm('Are you sure you want to remove this item?')) {
-      dispatch(removeCartItem(key));
+    setItemToRemove(key);
+  };
+
+  const confirmRemoveItem = () => {
+    if (itemToRemove) {
+      dispatch(removeCartItem(itemToRemove));
+      setItemToRemove(null);
     }
   };
 
@@ -1888,7 +1914,9 @@ export default function Booking() {
                       ) : null}
                     </div>
                     <span className="text-xs font-semibold text-sky-700 bg-sky-50 px-2 py-1 rounded-xl">
-                      {preview ? `Save ₹${preview.totalDiscount.toFixed(0)} ` : 'No discount'}
+                      {preview && preview.totalDiscount > 0 
+                        ? `Save ₹${preview.totalDiscount.toFixed(0)}` 
+                        : (offer.rules?.[0]?.get_target_id == null && offer.rule_type === 'buy_x_get_y') ? 'Claim at Counter' : 'No discount'}
                     </span>
                   </div>
                   {preview && preview.totalDiscount > 0 && (
@@ -1915,6 +1943,27 @@ export default function Booking() {
       slotKey: '',
     }));
   };
+
+  // Check if a date is blocked by the selected item's day rule
+  const isDayBlockedByRule = (dateStr) => {
+    let selectedItem = null;
+    if (sel.itemType === 'attraction' && sel.attractionId) {
+      selectedItem = prioritizedAttractions.find(a => String(getAttrId(a)) === String(sel.attractionId));
+    } else if (sel.itemType === 'combo' && sel.comboId) {
+      selectedItem = combos.find(c => String(getComboId(c)) === String(sel.comboId));
+    }
+    if (!selectedItem) return false;
+    const dayRuleType = selectedItem.day_rule_type || 'all_days';
+    if (dayRuleType === 'all_days') return false;
+    const customDays = selectedItem.custom_days || [];
+    const dayOfWeek = dayjs(dateStr).day();
+    if (dayRuleType === 'weekends') return dayOfWeek !== 0 && dayOfWeek !== 6;
+    if (dayRuleType === 'weekdays') return dayOfWeek === 0 || dayOfWeek === 6;
+    if (dayRuleType === 'custom_days' && customDays.length > 0) return !customDays.includes(dayOfWeek);
+    return false;
+  };
+  const todayBlocked = isDayBlockedByRule(todayYMD());
+  const tomorrowBlocked = isDayBlockedByRule(dayjs().add(1, 'day').format('YYYY-MM-DD'));
 
   const [showCalendar, setShowCalendar] = useState(false);
   const [calendarAnchor, setCalendarAnchor] = useState(null);
@@ -2117,6 +2166,7 @@ export default function Booking() {
             <div className="mt-0">
               {/* STEP 1: product list + order summary */}
               {step === 1 && (
+                <>
                 <SelectTickets
                   sel={sel}
                   setSel={setSel}
@@ -2128,6 +2178,8 @@ export default function Booking() {
                   todayYMD={todayYMD}
                   handleToday={handleToday}
                   handleTomorrow={handleTomorrow}
+                  todayBlocked={todayBlocked}
+                  tomorrowBlocked={tomorrowBlocked}
                   onCalendarButtonClick={onCalendarButtonClick}
                   setCalendarAnchor={setCalendarAnchor}
                   formatDateDisplay={formatDateDisplay}
@@ -2149,7 +2201,40 @@ export default function Booking() {
                   paymentLoading={paymentLoading}
                   cartAddons={cartAddons}
                   setEditingKey={setEditingKey}
+                  offers={state.offers.length ? state.offers : offersFromRedux}
                 />
+                
+                {sel.itemType === 'offer' && sel.offerId && (() => {
+                  const allOffers = state.offers.length ? state.offers : offersFromRedux;
+                  const selectedOffer = allOffers.find(
+                    (o) => String(o.offer_id || o.id) === String(sel.offerId)
+                  );
+                  const ruleType = String(selectedOffer?.rule_type || '').toLowerCase();
+                  const isFirstNTickets = ruleType === 'first_n_tickets';
+
+                  if (isFirstNTickets) {
+                    return (
+                      <FirstNTicketsDrawer
+                        isOpen={drawerOpen}
+                        onClose={() => { setDrawerOpen(false); setSel(createDefaultSelection()); }}
+                        offer={selectedOffer}
+                        attractions={prioritizedAttractions}
+                        initialDate={sel.date}
+                      />
+                    );
+                  }
+
+                  return (
+                    <OfferDrawer
+                      isOpen={drawerOpen}
+                      onClose={() => { setDrawerOpen(false); setSel(createDefaultSelection()); }}
+                      offer={selectedOffer}
+                      combos={combos}
+                      initialDate={sel.date}
+                    />
+                  );
+                })()}
+                </>
               )}
 
               {/* STEP 2: Add-ons */}
@@ -2416,7 +2501,10 @@ export default function Booking() {
                               <button
                                 type="button"
                                 onClick={handleToday}
-                                className={`px-4 py-2 rounded-xl text-xs font-medium border transition-colors ${sel.date === todayYMD()
+                                disabled={todayBlocked}
+                                className={`px-4 py-2 rounded-xl text-xs font-medium border transition-colors ${todayBlocked
+                                  ? 'text-gray-300 border-gray-100 cursor-not-allowed bg-gray-50'
+                                  : sel.date === todayYMD()
                                   ? 'bg-sky-600 text-white border-sky-600 shadow-sm'
                                   : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300 hover:text-sky-600'
                                   }`}
@@ -2426,7 +2514,10 @@ export default function Booking() {
                               <button
                                 type="button"
                                 onClick={handleTomorrow}
-                                className={`px-4 py-2 rounded-xl text-xs font-medium border transition-colors ${sel.date === dayjs().add(1, 'day').format('YYYY-MM-DD')
+                                disabled={tomorrowBlocked}
+                                className={`px-4 py-2 rounded-xl text-xs font-medium border transition-colors ${tomorrowBlocked
+                                  ? 'text-gray-300 border-gray-100 cursor-not-allowed bg-gray-50'
+                                  : sel.date === dayjs().add(1, 'day').format('YYYY-MM-DD')
                                   ? 'bg-sky-600 text-white border-sky-600 shadow-sm'
                                   : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300 hover:text-sky-600'
                                   }`}
@@ -2694,16 +2785,36 @@ export default function Booking() {
                                 const isSelected = sel.date === dateStr;
                                 const isToday = date.isSame(today, 'day');
 
+                                // Day rule filtering
+                                const dayOfWeek = date.day(); // 0=Sun … 6=Sat
+                                let selectedItem = null;
+                                if (sel.itemType === 'attraction' && sel.attractionId) {
+                                  selectedItem = prioritizedAttractions.find(a => String(getAttrId(a)) === String(sel.attractionId));
+                                } else if (sel.itemType === 'combo' && sel.comboId) {
+                                  selectedItem = combos.find(c => String(getComboId(c)) === String(sel.comboId));
+                                }
+                                const dayRuleType = selectedItem?.day_rule_type || 'all_days';
+                                const customDays = selectedItem?.custom_days || [];
+                                let isDisabledByDayRule = false;
+                                if (dayRuleType === 'weekends') {
+                                  isDisabledByDayRule = dayOfWeek !== 0 && dayOfWeek !== 6;
+                                } else if (dayRuleType === 'weekdays') {
+                                  isDisabledByDayRule = dayOfWeek === 0 || dayOfWeek === 6;
+                                } else if (dayRuleType === 'custom_days' && customDays.length > 0) {
+                                  isDisabledByDayRule = !customDays.includes(dayOfWeek);
+                                }
+                                const isDisabled = isPast || isDisabledByDayRule;
+
                                 return (
                                   <button
                                     key={i}
                                     onClick={() => handleDateSelect(dateStr)}
-                                    disabled={isPast}
+                                    disabled={isDisabled}
                                     className={`
                                       p-2.5 rounded-xl text-sm font-semibold transition-all duration-200
-                                      ${isPast ? 'text-gray-300 cursor-not-allowed' : ''}
+                                      ${isDisabled ? 'text-gray-300 cursor-not-allowed' : ''}
                                       ${isSelected ? 'bg-sky-600 text-white shadow-lg scale-110 z-10' : ''}
-                                      ${!isPast && !isSelected ? 'hover:bg-sky-50 text-gray-700 hover:text-sky-700 hover:scale-105' : ''}
+                                      ${!isDisabled && !isSelected ? 'hover:bg-sky-50 text-gray-700 hover:text-sky-700 hover:scale-105' : ''}
                                       ${isToday && !isSelected ? 'ring-2 ring-sky-100 text-sky-600' : ''}
                                     `}
                                   >
@@ -2723,6 +2834,38 @@ export default function Booking() {
           </div>
         </div >
       </div >
+
+      {itemToRemove && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/40 backdrop-blur-[2px]">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="p-6">
+              <div className="flex items-center gap-3 text-red-600 mb-4">
+                <AlertCircle size={24} />
+                <h3 className="text-lg font-bold text-gray-900">Remove Item</h3>
+              </div>
+              <p className="text-gray-600 mb-6">
+                Are you sure you want to remove this item from your cart?
+              </p>
+              <div className="flex gap-3 justify-end">
+                <button
+                  type="button"
+                  onClick={() => setItemToRemove(null)}
+                  className="px-4 py-2 text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmRemoveItem}
+                  className="px-4 py-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-xl shadow-sm transition-colors"
+                >
+                  Remove
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

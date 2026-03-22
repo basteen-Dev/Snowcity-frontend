@@ -4,6 +4,7 @@ import adminApi from '../../services/adminApi';
 import A from '../../services/adminEndpoints';
 import ImageUploader from '../../components/common/ImageUploader';
 import SaveOverlay from '../../components/common/SaveOverlay';
+import RichText from '../../components/common/RichText';
 import toast from 'react-hot-toast';
 
 export default function AttractionForm() {
@@ -14,7 +15,7 @@ export default function AttractionForm() {
   const [state, setState] = React.useState({
     status: isEdit ? 'loading' : 'idle',
     error: null,
-    form: { title: '', slug: '', image_url: '', image_alt: '', desktop_image_url: '', desktop_image_alt: '', base_price: 0, active: true, time_slot_enabled: true, stop_booking: false, description: '', meta_title: '', short_description: '', faq_items: [], head_schema: '' }
+    form: { title: '', slug: '', image_url: '', image_alt: '', desktop_image_url: '', desktop_image_alt: '', base_price: 0, active: true, time_slot_enabled: true, stop_booking: false, description: '', meta_title: '', short_description: '', faq_items: [], head_schema: '', day_rule_type: 'all_days', custom_days: [] }
   });
   const [saving, setSaving] = React.useState(false);
 
@@ -43,6 +44,8 @@ export default function AttractionForm() {
             short_description: a.short_description || '',
             faq_items: Array.isArray(a.faq_items) ? a.faq_items : [],
             head_schema: a.head_schema || '',
+            day_rule_type: a.day_rule_type || 'all_days',
+            custom_days: Array.isArray(a.custom_days) ? a.custom_days : [],
           }
         }));
       } catch (err) { setState((s) => ({ ...s, status: 'failed', error: err })); }
@@ -164,6 +167,57 @@ export default function AttractionForm() {
                 🛑 Booking is stopped — this attraction will show as "Unavailable" on the public booking page.
               </p>
             )}
+
+            {/* Day Rules */}
+            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-slate-600">
+              <label className="block text-sm font-semibold text-gray-700 dark:text-neutral-200 mb-2">Bookable Days</label>
+              <select
+                className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200 mb-2"
+                value={f.day_rule_type}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  let days = [];
+                  if (val === 'weekends') days = [0, 6];
+                  else if (val === 'weekdays') days = [1, 2, 3, 4, 5];
+                  setState(s => ({ ...s, form: { ...s.form, day_rule_type: val, custom_days: days } }));
+                }}
+              >
+                <option value="all_days">All Days (Default)</option>
+                <option value="weekends">Weekends Only (Sat & Sun)</option>
+                <option value="weekdays">Weekdays Only (Mon–Fri)</option>
+                <option value="custom_days">Custom Days</option>
+              </select>
+              {f.day_rule_type === 'custom_days' && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((dayLabel, dayNum) => {
+                    const selected = (f.custom_days || []).includes(dayNum);
+                    return (
+                      <button
+                        key={dayNum}
+                        type="button"
+                        onClick={() => {
+                          const current = f.custom_days || [];
+                          const next = selected ? current.filter(d => d !== dayNum) : [...current, dayNum].sort();
+                          setState(s => ({ ...s, form: { ...s.form, custom_days: next } }));
+                        }}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
+                          selected
+                            ? 'bg-blue-600 text-white border-blue-600'
+                            : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-neutral-200 border-gray-300 dark:border-slate-500 hover:border-blue-400'
+                        }`}
+                      >
+                        {dayLabel}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+              {f.day_rule_type !== 'all_days' && (
+                <p className="mt-2 text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded">
+                  📅 This attraction will only be bookable on {f.day_rule_type === 'weekends' ? 'weekends (Sat & Sun)' : f.day_rule_type === 'weekdays' ? 'weekdays (Mon–Fri)' : `selected days: ${(f.custom_days || []).map(d => ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d]).join(', ') || 'none'}`}
+                </p>
+              )}
+            </div>
           </div>
         </div>
 

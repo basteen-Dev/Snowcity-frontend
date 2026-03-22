@@ -62,6 +62,16 @@ const hhmm = (time) => {
   return String(time).slice(0, 5);
 };
 
+const normalizeHtml = (value) => {
+  if (!value || typeof value !== 'string') return '';
+  // Use a more robust decoding method
+  const doc = new DOMParser().parseFromString(value, 'text/html');
+  const decoded = doc.documentElement.textContent || value;
+  // If the result still contains HTML tags, it was double encoded or intended as raw HTML
+  // We want to return the version that contains the tags for dangerouslySetInnerHTML
+  return value.includes('<') && value.includes('>') ? value : decoded;
+};
+
 const labelTime = (slot) => {
   const start = formatTime12Hour(slot?.start_time);
   const end = formatTime12Hour(slot?.end_time);
@@ -525,6 +535,20 @@ export default function ComboDetails() {
   const handleTomorrow = React.useCallback(() => {
     updateDate(dayjs().add(1, 'day').format('YYYY-MM-DD'));
   }, [updateDate]);
+
+  // Day rule blocking for Today/Tomorrow buttons
+  const isDayBlockedByComboRule = (dateStr) => {
+    const dayRuleType = matchedCombo?.day_rule_type || 'all_days';
+    if (dayRuleType === 'all_days') return false;
+    const customDays = matchedCombo?.custom_days || [];
+    const dayOfWeek = dayjs(dateStr).day();
+    if (dayRuleType === 'weekends') return dayOfWeek !== 0 && dayOfWeek !== 6;
+    if (dayRuleType === 'weekdays') return dayOfWeek === 0 || dayOfWeek === 6;
+    if (dayRuleType === 'custom_days' && customDays.length > 0) return !customDays.includes(dayOfWeek);
+    return false;
+  };
+  const todayBlocked = isDayBlockedByComboRule(dayjs().format('YYYY-MM-DD'));
+  const tomorrowBlocked = isDayBlockedByComboRule(dayjs().add(1, 'day').format('YYYY-MM-DD'));
   const handleAllDays = React.useCallback(() => {
     updateDate('');
   }, [updateDate]);
@@ -1285,21 +1309,7 @@ export default function ComboDetails() {
                   Experience Highlights
                 </h2>
                 <div className="prose prose-blue max-w-none text-gray-700">
-                  <ul className="space-y-4 list-none p-0">
-                    {description
-                      .replace(/<[^>]*>/g, '')
-                      .split('.')
-                      .map(s => s.trim())
-                      .filter(s => s.length > 0)
-                      .map((sentence, i) => (
-                        <li key={i} className="flex items-start gap-4">
-                          <div className="mt-1 p-1 bg-blue-50 text-[#0099FF] rounded-lg">
-                            <Check className="w-4 h-4" />
-                          </div>
-                          <span className="text-xs md:text-sm leading-relaxed">{sentence}.</span>
-                        </li>
-                      ))}
-                  </ul>
+                  <div dangerouslySetInnerHTML={{ __html: normalizeHtml(description) }} />
                 </div>
               </div>
             )}
@@ -1598,17 +1608,31 @@ export default function ComboDetails() {
                         const isSelected = date === dateStr;
                         const isToday = current.isSame(today, 'day');
 
+                        // Day rule filtering
+                        const dayOfWeek = current.day();
+                        const dayRuleType = matchedCombo?.day_rule_type || 'all_days';
+                        const customDays = matchedCombo?.custom_days || [];
+                        let isDisabledByDayRule = false;
+                        if (dayRuleType === 'weekends') {
+                          isDisabledByDayRule = dayOfWeek !== 0 && dayOfWeek !== 6;
+                        } else if (dayRuleType === 'weekdays') {
+                          isDisabledByDayRule = dayOfWeek === 0 || dayOfWeek === 6;
+                        } else if (dayRuleType === 'custom_days' && customDays.length > 0) {
+                          isDisabledByDayRule = !customDays.includes(dayOfWeek);
+                        }
+                        const isDisabled = isPast || isDisabledByDayRule;
+
                         return (
                           <button
                             key={i}
                             type="button"
                             onClick={() => handleDateSelect(dateStr)}
-                            disabled={isPast}
+                            disabled={isDisabled}
                             className={`
                               p-2.5 rounded-xl text-sm font-semibold transition-all duration-200
-                              ${isPast ? 'text-gray-300 cursor-not-allowed' : ''}
+                              ${isDisabled ? 'text-gray-300 cursor-not-allowed' : ''}
                               ${isSelected ? 'bg-sky-600 text-white shadow-lg scale-110 z-10' : ''}
-                              ${!isPast && !isSelected ? 'hover:bg-sky-50 text-gray-700 hover:text-sky-700 hover:scale-105' : ''}
+                              ${!isDisabled && !isSelected ? 'hover:bg-sky-50 text-gray-700 hover:text-sky-700 hover:scale-105' : ''}
                               ${isToday && !isSelected ? 'ring-2 ring-sky-100 text-sky-600' : ''}
                             `}
                           >

@@ -345,39 +345,58 @@ export default function MyBookings() {
                               )}
 
                               {/* Display offer details if present */}
-                              {item.offer && (
+                              {(() => {
+                                const offer = item.offer || (item.offer_title ? {
+                                  title: item.offer_title,
+                                  description: item.offer_description,
+                                  rule_type: item.offer_rule_type,
+                                  discount_type: item.offer_discount_type,
+                                  discount_percent: item.offer_discount_percent,
+                                  discount_value: item.offer_discount_value,
+                                  buy_qty: item.offer_buy_qty,
+                                  get_qty: item.offer_get_qty,
+                                  get_discount_type: item.offer_get_discount_type,
+                                  get_discount_value: item.offer_get_discount_value,
+                                } : null);
+                                if (!offer) return null;
+                                return (
                                 <div className="mt-2 p-2 bg-green-50 rounded text-xs">
                                   <div className="font-semibold text-green-700 mb-1">Offer Applied:</div>
                                   <div className="text-green-600">
-                                    {item.offer.title}
-                                    {item.offer.description && (
-                                      <div className="text-green-500 mt-1">{item.offer.description}</div>
+                                    {offer.title}
+                                    {offer.description && (
+                                      <div className="text-green-500 mt-1">{offer.description}</div>
                                     )}
-                                    {item.offer.rule_type === 'buy_x_get_y' && item.offer.buy_qty && item.offer.get_qty && (
+                                    {offer.rule_type === 'buy_x_get_y' && (
                                       <div className="text-green-500 mt-1">
-                                        Buy {item.offer.buy_qty} Get {item.offer.get_qty}
-                                        {item.offer.get_discount_type === 'percent' && item.offer.get_discount_value && (
-                                          <span> ({item.offer.get_discount_value}% off)</span>
+                                        {offer.buy_qty && offer.get_qty ? (
+                                          <>Buy {offer.buy_qty} Get {offer.get_qty}</>
+                                        ) : (
+                                          <>Buy X Get Y (claim at counter)</>
                                         )}
-                                        {item.offer.get_discount_type === 'amount' && item.offer.get_discount_value && (
-                                          <span> ({formatCurrency(item.offer.get_discount_value)} off)</span>
+                                        {offer.get_discount_type === 'percent' && offer.get_discount_value && (
+                                          <span> ({offer.get_discount_value}% off)</span>
                                         )}
-                                        {!item.offer.get_discount_value && <span> Free</span>}
+                                        {offer.get_discount_type === 'amount' && offer.get_discount_value && (
+                                          <span> ({formatCurrency(offer.get_discount_value)} off)</span>
+                                        )}
+                                        {!offer.get_discount_value && <span> Free</span>}
                                       </div>
                                     )}
-                                    {item.offer.rule_type !== 'buy_x_get_y' && item.offer.discount_type === 'percent' && (
+                                    {offer.rule_type !== 'buy_x_get_y' && offer.discount_type === 'percent' && (
                                       <div className="text-green-500">
-                                        {item.offer.discount_percent}% discount
+                                        {offer.discount_percent}% discount
                                       </div>
                                     )}
-                                    {item.offer.rule_type !== 'buy_x_get_y' && item.offer.discount_type === 'amount' && (
+                                    {offer.rule_type !== 'buy_x_get_y' && offer.discount_type === 'amount' && (
                                       <div className="text-green-500">
-                                        {formatCurrency(item.offer.discount_value)} off
+                                        {formatCurrency(offer.discount_value)} off
                                       </div>
                                     )}
                                   </div>
                                 </div>
-                              )}
+                                );
+                              })()}
                             </div>
                             <div className="font-bold text-gray-900 rupee text-sm sm:text-base shrink-0">
                               {formatCurrency(itemTotal)}

@@ -7,7 +7,7 @@ import useCatalogTargets from '../../hooks/useCatalogTargets';
 import SaveOverlay from '../../components/common/SaveOverlay';
 import toast from 'react-hot-toast';
 
-const RULES = ['holiday', 'happy_hour', 'weekday_special', 'dynamic_pricing', 'date_slot_pricing', 'buy_x_get_y'];
+const RULES = ['holiday', 'happy_hour', 'weekday_special', 'dynamic_pricing', 'date_slot_pricing', 'buy_x_get_y', 'first_n_tickets'];
 const DISCOUNT_TYPES = [
   { value: 'percent', label: 'Percentage (%)' },
   { value: 'amount', label: 'Flat Amount' }
@@ -45,6 +45,8 @@ const BASE_RULE = {
   specific_dates: [],
   next_specific_date: '',
   combo_child_adjustments: {},
+  ticket_limit: '',
+  offer_price: '',
 };
 
 const RULE_TEMPLATES = [
@@ -230,6 +232,14 @@ export default function OfferForm() {
                   specific_time: r.specific_time || '',
                   next_specific_date: '',
                   combo_child_adjustments: r.combo_child_adjustments || {},
+                  buy_qty: r.buy_qty ?? 1,
+                  get_qty: r.get_qty ?? 1,
+                  get_target_type: r.get_target_type || 'attraction',
+                  get_target_id: r.get_target_id ?? '',
+                  get_discount_type: r.get_discount_type || '',
+                  get_discount_value: r.get_discount_value ?? '',
+                  ticket_limit: r.ticket_limit ?? '',
+                  offer_price: r.offer_price ?? '',
                 })
               )
               : [],
@@ -379,6 +389,14 @@ export default function OfferForm() {
           combo_child_adjustments: rule.combo_child_adjustments && Object.keys(rule.combo_child_adjustments).length > 0 ? rule.combo_child_adjustments : null,
           specific_dates: undefined,
           next_specific_date: undefined,
+          buy_qty: rule.buy_qty !== '' && rule.buy_qty != null ? Number(rule.buy_qty) : null,
+          get_qty: rule.get_qty !== '' && rule.get_qty != null ? Number(rule.get_qty) : null,
+          get_target_type: normalizeString(rule.get_target_type),
+          get_target_id: rule.get_target_id === '' || rule.get_target_id == null ? null : Number(rule.get_target_id),
+          get_discount_type: normalizeString(rule.get_discount_type),
+          get_discount_value: rule.get_discount_value === '' || rule.get_discount_value == null ? null : Number(rule.get_discount_value),
+          ticket_limit: rule.ticket_limit === '' || rule.ticket_limit == null ? null : Number(rule.ticket_limit),
+          offer_price: rule.offer_price === '' || rule.offer_price == null ? null : Number(rule.offer_price),
         })),
       };
       if (isEdit) await adminApi.put(`${A.offers()}/${id}`, payload);
@@ -418,7 +436,14 @@ export default function OfferForm() {
           </div>
           <div>
             <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Rule Type</label>
-            <select className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200" value={f.rule_type} onChange={(e) => updateForm({ rule_type: e.target.value })}>
+            <select className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200" value={f.rule_type} onChange={(e) => {
+              const rule_type = e.target.value;
+              let nextRules = f.rules || [];
+              if ((rule_type === 'buy_x_get_y' || rule_type === 'first_n_tickets') && nextRules.length === 0) {
+                nextRules = [createRule()];
+              }
+              updateForm({ rule_type, rules: nextRules });
+            }}>
               <option key="__default-rule-type__" value="">—</option>
               {RULES.map((r) => <option key={r} value={r}>{r}</option>)}
             </select>
@@ -454,7 +479,275 @@ export default function OfferForm() {
         </div>
 
         <div className="mt-6">
-          <div className="flex items-center justify-between mb-2">
+          {f.rule_type === 'first_n_tickets' && f.rules?.[0] ? (
+            <div className="bg-gradient-to-br from-amber-50 to-orange-50/30 p-5 rounded-xl border border-amber-200 shadow-sm space-y-6">
+              <div className="flex items-center gap-2 border-b border-amber-100 pb-3">
+                <div className="bg-amber-600 text-white rounded-lg p-1.5 shadow-sm">
+                  <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-amber-900">First N Tickets Configuration</h2>
+                  <p className="text-xs text-amber-700/70">Limited quantity offers — first come, first served with a cap.</p>
+                </div>
+              </div>
+
+              {/* Target Section */}
+              <div className="bg-white rounded-lg p-4 border border-amber-100 shadow-sm">
+                <h3 className="text-sm font-bold text-gray-800 mb-3 border-b pb-2">1. Target Product</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Target Type</label>
+                    <select className="w-full rounded-md border px-3 py-2 bg-gray-50 focus:bg-white" value={f.rules[0].target_type || 'attraction'} onChange={(e) => updateRule(0, { target_type: e.target.value, target_id: '' })}>
+                      {TARGET_TYPES.map((opt) => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Target Item</label>
+                    <select
+                      className="w-full rounded-md border px-3 py-2 bg-gray-50 focus:bg-white"
+                      value={f.rules[0].target_id ?? ''}
+                      disabled={f.rules[0].applies_to_all || targetsStatus === 'loading'}
+                      onChange={(e) => updateRule(0, { target_id: e.target.value })}
+                    >
+                      <option value="">Select Item</option>
+                      {(f.rules[0].target_type === 'attraction' ? attractions : combos).map((item) => (
+                        <option key={`fnt-${item.id}`} value={item.id}>
+                          {item.title || item.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="flex items-end">
+                    <label className="flex items-center gap-2 text-sm text-gray-700 font-medium cursor-pointer bg-slate-50 border p-2 rounded-md hover:bg-slate-100 transition-colors w-max">
+                      <input type="checkbox" className="w-4 h-4 text-amber-600 rounded border-gray-300 focus:ring-amber-500" checked={!!f.rules[0].applies_to_all} onChange={(e) => updateRule(0, { applies_to_all: e.target.checked })} />
+                      Any {f.rules[0].target_type === 'combo' ? 'Combo' : 'Attraction'}
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              {/* Pricing & Limits Section */}
+              <div className="bg-white rounded-lg p-4 border border-amber-100 shadow-sm">
+                <h3 className="text-sm font-bold text-gray-800 mb-3 border-b pb-2">2. Pricing & Ticket Limit</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Offer Price (₹)</label>
+                    <input type="number" min={0} className="w-full rounded-md border px-3 py-2 bg-gray-50 focus:bg-white font-mono" value={f.rules[0].offer_price ?? ''} onChange={(e) => updateRule(0, { offer_price: e.target.value })} placeholder="e.g. 199" />
+                    <div className="text-[11px] text-gray-500 mt-1">The fixed price customers pay per ticket under this offer.</div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Ticket Limit (per day)</label>
+                    <input type="number" min={1} className="w-full rounded-md border px-3 py-2 bg-gray-50 focus:bg-white font-mono" value={f.rules[0].ticket_limit ?? ''} onChange={(e) => updateRule(0, { ticket_limit: e.target.value })} placeholder="e.g. 100" />
+                    <div className="text-[11px] text-gray-500 mt-1">Maximum tickets available per day. Shows "Sold Out" when reached.</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Eligibility Section */}
+              <div className="bg-white rounded-lg p-4 border border-amber-100 shadow-sm">
+                <h3 className="text-sm font-bold text-gray-800 mb-3 border-b pb-2">3. Eligibility Window</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Day Condition</label>
+                    <select
+                      className="w-full rounded-md border px-3 py-2 bg-gray-50 focus:bg-white"
+                      value={f.rules[0].day_type || ''}
+                      onChange={(e) => updateRule(0, {
+                        day_type: e.target.value,
+                        specific_days: e.target.value === 'custom' ? [] : [],
+                      })}
+                    >
+                      <option value="">All Days</option>
+                      <option value="weekday">Weekdays (Mon-Fri)</option>
+                      <option value="weekend">Weekends (Sat-Sun)</option>
+                      <option value="custom">Custom Days (e.g. Tuesdays)</option>
+                    </select>
+                  </div>
+                  {f.rules[0].day_type === 'custom' && (
+                    <div className="md:col-span-2">
+                      <label className="block text-xs font-semibold text-gray-600 mb-1.5">Valid on Days</label>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, dayIdx) => (
+                          <label key={day} className="flex items-center gap-1.5 text-xs bg-slate-50 border border-slate-200 px-2 py-1.5 rounded cursor-pointer hover:bg-slate-100">
+                            <input
+                              type="checkbox"
+                              className="text-amber-600 rounded focus:ring-amber-500"
+                              checked={(f.rules[0].specific_days || []).includes(dayIdx)}
+                              onChange={(e) => {
+                                const days = f.rules[0].specific_days || [];
+                                if (e.target.checked) updateRule(0, { specific_days: [...days, dayIdx] });
+                                else updateRule(0, { specific_days: days.filter(d => d !== dayIdx) });
+                              }}
+                            />
+                            <span className="font-medium text-gray-700">{day}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <div className="mt-4 text-xs font-medium text-amber-700 bg-amber-50 px-3 py-2 rounded-md border border-amber-200">
+                  ⚠️ Prior-date booking only — same-day bookings are not allowed for this offer type.
+                </div>
+              </div>
+            </div>
+          ) : f.rule_type === 'buy_x_get_y' && f.rules?.[0] ? (
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50/30 p-5/9 rounded-xl border border-blue-200 shadow-sm space-y-6 p-5">
+              <div className="flex items-center gap-2 border-b border-blue-100 pb-3">
+                <div className="bg-blue-600 text-white rounded-lg p-1.5 shadow-sm">
+                  <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/></svg>
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-blue-900">Buy X Get Y Configuration</h2>
+                  <p className="text-xs text-blue-700/70">Define the purchase requirements and free/discounted rewards.</p>
+                </div>
+              </div>
+
+              {/* Requirement Section */}
+              <div className="bg-white rounded-lg p-4 border border-blue-100 shadow-sm">
+                <h3 className="text-sm font-bold text-gray-800 mb-3 border-b pb-2">1. Buy Requirement</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Target Type</label>
+                    <select className="w-full rounded-md border px-3 py-2 bg-gray-50 focus:bg-white" value={f.rules[0].target_type || 'attraction'} onChange={(e) => updateRule(0, { target_type: e.target.value, target_id: '' })}>
+                      {TARGET_TYPES.map((opt) => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Target Item</label>
+                    <select
+                      className="w-full rounded-md border px-3 py-2 bg-gray-50 focus:bg-white"
+                      value={f.rules[0].target_id ?? ''}
+                      disabled={f.rules[0].applies_to_all || targetsStatus === 'loading'}
+                      onChange={(e) => updateRule(0, { target_id: e.target.value })}
+                    >
+                      <option value="">Select Details</option>
+                      {(f.rules[0].target_type === 'attraction' ? attractions : combos).map((item) => (
+                        <option key={`req-${item.id}`} value={item.id}>
+                          {item.title || item.name}
+                        </option>
+                      ))}
+                    </select>
+                    {(!f.rules[0].applies_to_all && (!f.rules[0].target_id || f.rules[0].target_id === '')) ? (
+                      <div className="mt-1.5 text-[11px] font-semibold text-red-600">Please select an item or enable "Any"</div>
+                    ) : null}
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Buy Quantity</label>
+                    <input type="number" min={1} className="w-full rounded-md border px-3 py-2 bg-gray-50 focus:bg-white font-mono" value={f.rules[0].buy_qty ?? 1} onChange={(e) => updateRule(0, { buy_qty: Number(e.target.value || 1) })} />
+                  </div>
+                  <div className="md:col-span-3">
+                    <label className="flex items-center gap-2 text-sm text-gray-700 font-medium cursor-pointer bg-slate-50 border p-2 rounded-md hover:bg-slate-100 transition-colors w-max">
+                      <input id="applies-to-all-main" type="checkbox" className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked={!!f.rules[0].applies_to_all} onChange={(e) => updateRule(0, { applies_to_all: e.target.checked })} />
+                      Valid for <span className="text-blue-700 font-bold underline decoration-blue-300">ANY</span> {f.rules[0].target_type === 'combo' ? 'Combo' : 'Attraction'} in our catalog
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              {/* Reward Section */}
+              <div className="bg-white rounded-lg p-4 border border-blue-100 shadow-sm">
+                <h3 className="text-sm font-bold text-gray-800 mb-3 border-b pb-2">2. Get Reward</h3>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Reward Type</label>
+                    <select className="w-full rounded-md border px-3 py-2 bg-gray-50 focus:bg-white" value={f.rules[0].get_target_type || 'attraction'} onChange={(e) => updateRule(0, { get_target_type: e.target.value, get_target_id: '' })}>
+                      {TARGET_TYPES.map((opt) => (
+                         <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Reward Item <span className="font-normal text-gray-400">(Leave blank for claim at counter)</span></label>
+                    <select className="w-full rounded-md border px-3 py-2 bg-gray-50 focus:bg-white" value={f.rules[0].get_target_id ?? ''} disabled={targetsStatus === 'loading'} onChange={(e) => updateRule(0, { get_target_id: e.target.value })}>
+                      <option value="">(Claim at counter / Equal or lesser)</option>
+                      {(f.rules[0].get_target_type === 'attraction' ? attractions : combos).map((item) => (
+                        <option key={`rew-${item.id}`} value={item.id}>{item.title || item.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Get Quantity</label>
+                    <input type="number" min={1} className="w-full rounded-md border px-3 py-2 bg-gray-50 focus:bg-white font-mono" value={f.rules[0].get_qty ?? 1} onChange={(e) => updateRule(0, { get_qty: Number(e.target.value || 1) })} />
+                  </div>
+                  <div>
+                     <label className="block text-xs font-semibold text-gray-600 mb-1.5">Discount Type</label>
+                     <select className="w-full rounded-md border px-3 py-2 bg-gray-50 focus:bg-white" value={f.rules[0].get_discount_type || 'Free'} onChange={(e) => updateRule(0, { get_discount_type: e.target.value })}>
+                       <option value="Free">100% Free</option>
+                       <option value="percent">Percentage (%)</option>
+                       <option value="amount">Flat Amount</option>
+                     </select>
+                  </div>
+                  {f.rules[0].get_discount_type && f.rules[0].get_discount_type !== 'Free' ? (
+                     <div>
+                       <label className="block text-xs font-semibold text-gray-600 mb-1.5">Discount Value</label>
+                       <input type="number" min={0} className="w-full rounded-md border px-3 py-2 bg-gray-50 focus:bg-white font-mono" value={f.rules[0].get_discount_value ?? ''} onChange={(e) => updateRule(0, { get_discount_value: e.target.value })} />
+                     </div>
+                  ) : null}
+                </div>
+              </div>
+
+              {/* Eligibility Section */}
+              <div className="bg-white rounded-lg p-4 border border-blue-100 shadow-sm">
+                <h3 className="text-sm font-bold text-gray-800 mb-3 border-b pb-2">3. Eligibility Window</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Day Condition</label>
+                    <select
+                      className="w-full rounded-md border px-3 py-2 bg-gray-50 focus:bg-white"
+                      value={f.rules[0].day_type || ''}
+                      onChange={(e) => updateRule(0, {
+                        day_type: e.target.value,
+                        specific_days: e.target.value === 'custom' ? [] : [],
+                        specific_dates: e.target.value === 'holiday' ? [] : (f.rules[0].specific_dates || []),
+                      })}
+                    >
+                      <option value="">All Days</option>
+                      <option value="weekday">Weekdays (Mon-Fri)</option>
+                      <option value="weekend">Weekends (Sat-Sun)</option>
+                      <option value="holiday">Holidays Only</option>
+                      <option value="custom">Custom Days (e.g. Mondays)</option>
+                    </select>
+                  </div>
+                  {f.rules[0].day_type === 'custom' && (
+                    <div className="md:col-span-2">
+                      <label className="block text-xs font-semibold text-gray-600 mb-1.5">Valid on Days</label>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, dayIdx) => (
+                          <label key={day} className="flex items-center gap-1.5 text-xs bg-slate-50 border border-slate-200 px-2 py-1.5 rounded cursor-pointer hover:bg-slate-100">
+                            <input
+                              type="checkbox"
+                              className="text-blue-600 rounded focus:ring-blue-500"
+                              checked={(f.rules[0].specific_days || []).includes(dayIdx)}
+                              onChange={(e) => {
+                                const days = f.rules[0].specific_days || [];
+                                if (e.target.checked) updateRule(0, { specific_days: [...days, dayIdx] });
+                                else updateRule(0, { specific_days: days.filter(d => d !== dayIdx) });
+                              }}
+                            />
+                            <span className="font-medium text-gray-700">{day}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {f.rules[0].day_type === 'holiday' && (
+                    <div className="md:col-span-2 flex items-center">
+                      <div className="text-xs font-medium text-amber-700 bg-amber-50 px-3 py-2 rounded-md border border-amber-200">
+                        This offer will exclusively trigger on declared system holidays.
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center justify-between mb-2">
             <h2 className="text-lg font-semibold">Rules</h2>
             <div className="flex items-center gap-2">
               <button type="button" onClick={addRule} className="text-sm rounded-md border px-3 py-1">
@@ -532,50 +825,7 @@ export default function OfferForm() {
                     <label htmlFor={`applies-${idx}`} className="text-xs text-gray-600">Applies to all of this type</label>
                   </div>
                 </div>
-                {/* Buy X Get Y specific UI */}
-                {f.rule_type === 'buy_x_get_y' ? (
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <div>
-                      <label className="block text-xs text-gray-500 mb-1">Buy Quantity (X)</label>
-                      <input type="number" min={1} className="w-full rounded-md border px-3 py-2" value={rule.buy_qty ?? 1} onChange={(e) => updateRule(idx, { buy_qty: Number(e.target.value || 1) })} />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-gray-500 mb-1">Get Quantity (Y)</label>
-                      <input type="number" min={1} className="w-full rounded-md border px-3 py-2" value={rule.get_qty ?? 1} onChange={(e) => updateRule(idx, { get_qty: Number(e.target.value || 1) })} />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-gray-500 mb-1">Get Target Type</label>
-                      <select className="w-full rounded-md border px-3 py-2" value={rule.get_target_type || 'attraction'} onChange={(e) => updateRule(idx, { get_target_type: e.target.value, get_target_id: '' })}>
-                        {TARGET_TYPES.map((opt) => (
-                          <option key={opt.value} value={opt.value}>{opt.label}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-xs text-gray-500 mb-1">Get Target</label>
-                      <select className="w-full rounded-md border px-3 py-2" value={rule.get_target_id ?? ''} disabled={rule.applies_to_all || targetsStatus === 'loading'} onChange={(e) => updateRule(idx, { get_target_id: e.target.value })}>
-                        <option value="">Select {rule.get_target_type === 'combo' ? 'Combo' : 'Attraction'}</option>
-                        {(rule.get_target_type === 'attraction' ? attractions : combos).map((item) => (
-                          <option key={`get-${item.id}`} value={item.id}>{item.title || item.name}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-xs text-gray-500 mb-1">Get Discount Type</label>
-                      <select className="w-full rounded-md border px-3 py-2" value={rule.get_discount_type || ''} onChange={(e) => updateRule(idx, { get_discount_type: e.target.value })}>
-                        <option value="">None / Free</option>
-                        <option value="percent">Percentage (%)</option>
-                        <option value="amount">Flat Amount</option>
-                      </select>
-                    </div>
-                    {rule.get_discount_type ? (
-                      <div>
-                        <label className="block text-xs text-gray-500 mb-1">Get Discount Value</label>
-                        <input type="number" min={0} className="w-full rounded-md border px-3 py-2" value={rule.get_discount_value ?? ''} onChange={(e) => updateRule(idx, { get_discount_value: e.target.value })} />
-                      </div>
-                    ) : null}
-                  </div>
-                ) : null}
+
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                   <div>
                     <label className="block text-xs text-gray-500 mb-1">Date From</label>
@@ -809,6 +1059,8 @@ export default function OfferForm() {
               </div>
             ))}
           </div>
+            </>
+          )}
         </div>
 
         <div className="mt-4 flex gap-2">

@@ -450,8 +450,15 @@ export const listMyBookings = createAsyncThunk(
   async ({ page = 1, limit = 10 } = {}, { rejectWithValue }) => {
     try {
       const res = await api.get(endpoints.bookings.list(), { params: { page, limit } });
-      const items = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
-      const meta = res?.meta || null;
+      const body = res?.data ?? res;
+      const items = Array.isArray(body)
+        ? body
+        : Array.isArray(body?.data)
+          ? body.data
+          : Array.isArray(body?.items)
+            ? body.items
+            : [];
+      const meta = body?.meta || res?.meta || null;
       return { items, meta, page, limit };
     } catch (err) { return rejectWithValue(err); }
   }

@@ -56,6 +56,13 @@ const getSlotLabel = (s) => {
   return `Slot #${s?.id ?? s?._id ?? s?.slot_id ?? '?'}`;
 };
 
+const normalizeHtml = (value) => {
+  if (!value || typeof value !== 'string') return '';
+  const doc = new DOMParser().parseFromString(value, 'text/html');
+  const decoded = doc.documentElement.textContent || value;
+  return value.includes('<') && value.includes('>') ? value : decoded;
+};
+
 const parseMinutes = (time) => {
   if (!time || typeof time !== 'string') return null;
   const [h = '0', m = '0'] = time.split(':');
@@ -330,6 +337,20 @@ export default function AttractionDetails() {
     updateDate(dayjs().add(1, 'day').format('YYYY-MM-DD'));
   }, [updateDate]);
 
+  // Day rule blocking for Today/Tomorrow buttons
+  const isDayBlockedByAttrRule = (dateStr) => {
+    const dayRuleType = details.data?.day_rule_type || 'all_days';
+    if (dayRuleType === 'all_days') return false;
+    const customDays = details.data?.custom_days || [];
+    const dayOfWeek = dayjs(dateStr).day();
+    if (dayRuleType === 'weekends') return dayOfWeek !== 0 && dayOfWeek !== 6;
+    if (dayRuleType === 'weekdays') return dayOfWeek === 0 || dayOfWeek === 6;
+    if (dayRuleType === 'custom_days' && customDays.length > 0) return !customDays.includes(dayOfWeek);
+    return false;
+  };
+  const todayBlocked = isDayBlockedByAttrRule(todayYMD());
+  const tomorrowBlocked = isDayBlockedByAttrRule(dayjs().add(1, 'day').format('YYYY-MM-DD'));
+
   const onCalendarButtonClick = React.useCallback((event) => {
     event.preventDefault();
     event.stopPropagation();
@@ -588,7 +609,7 @@ export default function AttractionDetails() {
   }, [numericAttrId, date, fetchSlots]);
 
   React.useEffect(() => {
-    if (!numericAttrId || offers.status === 'loading') return;
+    if (!numericAttrId || offers.status !== 'idle') return;
     let cancelled = false;
     setOffers((s) => ({ ...s, status: 'loading', error: null }));
     (async () => {
@@ -622,7 +643,7 @@ export default function AttractionDetails() {
     return () => {
       cancelled = true;
     };
-  }, [numericAttrId, offers.status]);
+  }, [numericAttrId]);
 
 
 
@@ -1143,7 +1164,10 @@ export default function AttractionDetails() {
                   <button
                     type="button"
                     onClick={handleToday}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${date === todayYMD()
+                    disabled={todayBlocked}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${todayBlocked
+                      ? 'text-gray-300 border-gray-100 cursor-not-allowed bg-gray-50'
+                      : date === todayYMD()
                       ? 'bg-[#0099FF] text-white border-[#0099FF]'
                       : 'bg-white text-[#111827] border-gray-200 hover:border-[#007ACC]'
                       }`}
@@ -1153,7 +1177,10 @@ export default function AttractionDetails() {
                   <button
                     type="button"
                     onClick={handleTomorrow}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${date === dayjs().add(1, 'day').format('YYYY-MM-DD')
+                    disabled={tomorrowBlocked}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${tomorrowBlocked
+                      ? 'text-gray-300 border-gray-100 cursor-not-allowed bg-gray-50'
+                      : date === dayjs().add(1, 'day').format('YYYY-MM-DD')
                       ? 'bg-[#0099FF] text-white border-[#0099FF]'
                       : 'bg-white text-[#111827] border-gray-200 hover:border-[#007ACC]'
                       }`}
@@ -1365,49 +1392,18 @@ export default function AttractionDetails() {
                   {/* Short description */}
                   {shortDescription ? (
                     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 md:p-6">
-                      <ul className="space-y-3 list-none">
-                        {shortDescription
-                          .split('.')
-                          .map((sentence) => sentence.trim())
-                          .filter((sentence) => sentence.length > 0)
-                          .map((sentence, idx) => (
-                            <li key={idx} className="flex items-start gap-3 text-gray-700 font-medium">
-                              <span className="flex-shrink-0 mt-1.5">
-                                <Check className="h-4 w-4 text-[#0099FF]" strokeWidth={3} />
-                              </span>
-                              <span className="text-xs md:text-sm leading-relaxed">{sentence}.</span>
-                            </li>
-                          ))}
-                      </ul>
+                      <div className="prose prose-blue max-w-none text-gray-700">
+                        <div dangerouslySetInnerHTML={{ __html: normalizeHtml(shortDescription) }} />
+                      </div>
                     </div>
                   ) : null}
 
                   {/* Full description */}
                   {a?.description ? (
                     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 md:p-6">
-                      <h2
-                        className="text-lg font-semibold text-gray-900 mb-3"
-                        style={{
-                          color: '#111827',
-                        }}
-                      >
-                        About this Experience
-                      </h2>
-                      <ul className="space-y-3 list-none">
-                        {a.description
-                          .replace(/<[^>]*>/g, '') // Strip HTML tags
-                          .split('.')
-                          .map((sentence) => sentence.trim())
-                          .filter((sentence) => sentence.length > 0)
-                          .map((sentence, idx) => (
-                            <li key={idx} className="flex items-start gap-3 text-gray-700">
-                              <span className="flex-shrink-0 mt-1.5">
-                                <Check className="h-4 w-4 text-[#0099FF]" strokeWidth={3} />
-                              </span>
-                              <span className="text-xs md:text-sm leading-relaxed">{sentence}.</span>
-                            </li>
-                          ))}
-                      </ul>
+                      <div className="prose prose-blue max-w-none text-gray-700">
+                        <div dangerouslySetInnerHTML={{ __html: normalizeHtml(a.description) }} />
+                      </div>
                     </div>
                   ) : null}
 
@@ -1537,7 +1533,10 @@ export default function AttractionDetails() {
                         <button
                           type="button"
                           onClick={handleToday}
-                          className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${date === todayYMD()
+                          disabled={todayBlocked}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${todayBlocked
+                            ? 'text-gray-300 border-gray-100 cursor-not-allowed bg-gray-50'
+                            : date === todayYMD()
                             ? 'bg-[#0099FF] text-white border-[#0099FF]'
                             : 'bg-white text-[#111827] border-gray-200 hover:border-[#007ACC]'
                             }`}
@@ -1547,7 +1546,10 @@ export default function AttractionDetails() {
                         <button
                           type="button"
                           onClick={handleTomorrow}
-                          className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${date === dayjs().add(1, 'day').format('YYYY-MM-DD')
+                          disabled={tomorrowBlocked}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${tomorrowBlocked
+                            ? 'text-gray-300 border-gray-100 cursor-not-allowed bg-gray-50'
+                            : date === dayjs().add(1, 'day').format('YYYY-MM-DD')
                             ? 'bg-[#0099FF] text-white border-[#0099FF]'
                             : 'bg-white text-[#111827] border-gray-200 hover:border-[#007ACC]'
                             }`}
@@ -1826,17 +1828,31 @@ export default function AttractionDetails() {
                           const isSelected = date === dateStr;
                           const isToday = current.isSame(today, 'day');
 
+                          // Day rule filtering
+                          const dayOfWeek = current.day();
+                          const dayRuleType = details.data?.day_rule_type || 'all_days';
+                          const customDays = details.data?.custom_days || [];
+                          let isDisabledByDayRule = false;
+                          if (dayRuleType === 'weekends') {
+                            isDisabledByDayRule = dayOfWeek !== 0 && dayOfWeek !== 6;
+                          } else if (dayRuleType === 'weekdays') {
+                            isDisabledByDayRule = dayOfWeek === 0 || dayOfWeek === 6;
+                          } else if (dayRuleType === 'custom_days' && customDays.length > 0) {
+                            isDisabledByDayRule = !customDays.includes(dayOfWeek);
+                          }
+                          const isDisabled = isPast || isDisabledByDayRule;
+
                           return (
                             <button
                               key={i}
                               type="button"
                               onClick={() => handleDateSelect(dateStr)}
-                              disabled={isPast}
+                              disabled={isDisabled}
                               className={`
                                 p-2.5 rounded-xl text-sm font-semibold transition-all duration-200
-                                ${isPast ? 'text-gray-300 cursor-not-allowed' : ''}
+                                ${isDisabled ? 'text-gray-300 cursor-not-allowed' : ''}
                                 ${isSelected ? 'bg-sky-600 text-white shadow-lg scale-110 z-10' : ''}
-                                ${!isPast && !isSelected ? 'hover:bg-sky-50 text-gray-700 hover:text-sky-700 hover:scale-105' : ''}
+                                ${!isDisabled && !isSelected ? 'hover:bg-sky-50 text-gray-700 hover:text-sky-700 hover:scale-105' : ''}
                                 ${isToday && !isSelected ? 'ring-2 ring-sky-100 text-sky-600' : ''}
                               `}
                             >

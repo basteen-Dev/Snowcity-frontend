@@ -29,8 +29,18 @@ export function checkBuyXGetYApplicability(cartItems = [], offer = {}) {
 
   // Count matching items for the buy_qty
   const matchingItems = cartItems.filter(item => {
-    // Any item that has quantity qualifies for "buy"
-    return item.quantity > 0;
+    if ((item.quantity || 0) <= 0) return false;
+    
+    // Match target_type
+    if (item.item_type !== rule.target_type) return false;
+    
+    // Match target_id if applicable
+    if (!rule.applies_to_all && rule.target_id) {
+      const itemId = item.item_type === 'combo' ? item.combo_id : item.attraction_id;
+      if (Number(itemId) !== Number(rule.target_id)) return false;
+    }
+    
+    return true;
   });
 
   const totalQuantity = matchingItems.reduce((sum, item) => sum + (item.quantity || 0), 0);

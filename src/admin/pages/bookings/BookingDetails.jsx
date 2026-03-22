@@ -432,13 +432,48 @@ export default function BookingDetails() {
                       </div>
                     )}
 
-                    {item.offer_title && (
-                      <div className="mt-2 pt-2 border-t border-gray-100 dark:border-slate-600">
-                        <p className="text-xs text-emerald-600 font-medium">
-                          🎁 Offer: {item.offer_title}
-                        </p>
-                      </div>
-                    )}
+                    {(() => {
+                      const offer = item.offer || (item.offer_title ? {
+                        title: item.offer_title,
+                        description: item.offer_description,
+                        rule_type: item.offer_rule_type,
+                        discount_type: item.offer_discount_type,
+                        discount_value: item.offer_discount_value,
+                        max_discount: item.offer_max_discount,
+                        buy_qty: item.offer_buy_qty,
+                        get_qty: item.offer_get_qty,
+                        get_discount_type: item.offer_get_discount_type,
+                        get_discount_value: item.offer_get_discount_value,
+                      } : null);
+                      if (!offer) return null;
+                      return (
+                        <div className="mt-2 pt-2 border-t border-gray-100 dark:border-slate-600">
+                          <p className="text-xs text-emerald-600 font-semibold">🎁 Offer Applied</p>
+                          <div className="text-xs text-emerald-700 mt-1">
+                            <div className="font-medium">{offer.title}</div>
+                            {offer.description ? (
+                              <div className="text-emerald-600">{offer.description}</div>
+                            ) : null}
+                            {offer.rule_type === 'buy_x_get_y' ? (
+                              <div className="text-emerald-600">
+                                {offer.buy_qty && offer.get_qty ? (
+                                  <>Buy {offer.buy_qty} Get {offer.get_qty}</>
+                                ) : (
+                                  <>Buy X Get Y (claim at counter)</>
+                                )}
+                                {offer.get_discount_type === 'percent' && offer.get_discount_value ? (
+                                  <span> ({offer.get_discount_value}% off)</span>
+                                ) : null}
+                                {offer.get_discount_type === 'amount' && offer.get_discount_value ? (
+                                  <span> (₹{Number(offer.get_discount_value).toLocaleString()} off)</span>
+                                ) : null}
+                                {!offer.get_discount_value ? <span> Free</span> : null}
+                              </div>
+                            ) : null}
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
                 )}
               </div>

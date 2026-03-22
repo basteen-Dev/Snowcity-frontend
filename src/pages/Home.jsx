@@ -89,10 +89,29 @@ export default function Home() {
   const attractionItems = React.useMemo(() => {
     return attractions.items || [];
   }, [attractions.items]);
-  const comboItems = combos.items || [];
+  const comboItems = React.useMemo(() => {
+    const items = combos.items || [];
+    return [...items].sort((a, b) => {
+      const idA = String(a.combo_id || a.id || '');
+      const idB = String(b.combo_id || b.id || '');
+      
+      if (idA === '25') return -1;
+      if (idB === '25') return 1;
+      
+      if (idA === '21') return -1;
+      if (idB === '21') return 1;
+      
+      if (idA === '26') return 1;
+      if (idB === '26') return -1;
+      
+      return Number(idB) - Number(idA);
+    });
+  }, [combos.items]);
   const offerItems = offers.items || [];
   const pageItems = pages.items || [];
   const blogItems = blogs.items || [];
+  const blogMarqueeBase = blogItems.slice(0, Math.min(6, blogItems.length));
+  const blogMarqueeItems = blogMarqueeBase.length ? [...blogMarqueeBase, ...blogMarqueeBase] : [];
 
   const marqueeItems = React.useMemo(() => {
     const entries = [];
@@ -185,12 +204,12 @@ export default function Home() {
 
               {blogs.status === 'failed' ? (
                 <ErrorState message={blogs.error?.message || 'Failed to load blogs'} />
-              ) : blogItems.length ? (
+              ) : blogMarqueeItems.length ? (
                 <div className="blog-marquee-wrapper">
                   <div className="blog-marquee grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {[...blogItems.slice(0, 3), ...blogItems.slice(0, 3)].map((blog, idx) => (
+                    {blogMarqueeItems.map((blog, idx) => (
                       <div
-                        className={`blog-card-wrap ${idx >= 3 ? 'md:hidden' : ''}`}
+                        className={`blog-card-wrap ${idx >= blogMarqueeBase.length ? 'md:hidden' : ''}`}
                         key={`${blog.blog_id ?? blog.id ?? blog.slug}-${idx}`}
                       >
                         <BlogCard item={blog} />
@@ -243,14 +262,14 @@ export default function Home() {
               margin: 0;
               padding: 10px 0;
             }
-            .blog-marquee {
-              display: flex !important;
-              flex-direction: row !important;
-              width: max-content;
-              gap: 24px !important;
-              animation: scrollRTL 40s linear infinite;
-              padding: 0 20px;
-            }
+             .blog-marquee {
+               display: flex !important;
+               flex-direction: row !important;
+               width: max-content;
+               gap: 24px !important;
+               animation: none;
+               padding: 0 20px;
+             }
             .blog-card-wrap {
               width: 300px;
               flex-shrink: 0;

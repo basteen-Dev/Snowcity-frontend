@@ -57,7 +57,7 @@ export default function AttractionsCarousel({ items = [] }) {
   const realIndex = activeIndex % sortedItems.length;
 
   return (
-    <section className="relative w-full overflow-hidden pt-20 pb-24 px-4 md:px-4 bg-gradient-to-t from-white via-sky-50 to-white">
+    <section className="relative w-full overflow-hidden pt-10 pb-5 px-4 md:px-4 bg-gradient-to-t from-white via-sky-50 to-white">
       {/* HEADER - MATCHING THE NEW DESIGN */}
       <div className="relative z-10 w-full text-center mb-16">
         <p className="text-xs font-bold tracking-[0.4em] text-[#0099ff] uppercase mb-4">
@@ -108,7 +108,8 @@ export default function AttractionsCarousel({ items = [] }) {
               slidesPerView={1.2}
               centeredSlides={false}
               loop={true}
-              autoplay={{ delay: 3000, disableOnInteraction: false }}
+              autoplay={{ delay: 5000, disableOnInteraction: false }}
+              speed={1000}
               grabCursor={true}
               onSlideChange={(swiper) => setActiveIndex(swiper.realIndex + 1)} // offset by 1 because of the standalone card
               className="pb-12"

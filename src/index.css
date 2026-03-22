@@ -638,9 +638,11 @@ body {
   0% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.5;
   }
+
   100% {
     opacity: 1;
   }
@@ -973,6 +975,7 @@ body {
     grid-template-columns: 1fr;
     min-height: auto;
   }
+
   .exp-feat-right {
     order: -1;
   }
@@ -994,7 +997,7 @@ body {
 
 @media (max-width: 768px) {
   .exp-feat-left {
-    padding: 32px 24px;
+    padding: 12px 24px 24px;
   }
 }
 
@@ -1021,7 +1024,13 @@ body {
   color: white;
   line-height: .98;
   letter-spacing: -1.5px;
-  margin: 20px 0 16px;
+  margin: 16px 0 12px;
+}
+
+@media (max-width: 768px) {
+  .exp-feat-title {
+    margin-top: 10px;
+  }
 }
 
 .exp-feat-desc {
@@ -1121,6 +1130,12 @@ body {
   padding: 24px;
 }
 
+@media (max-width: 768px) {
+  .feat-visual-grid {
+    padding: 12px;
+  }
+}
+
 .feat-vg-cell:nth-child(2) {
   grid-row: span 2;
 }
@@ -1189,7 +1204,7 @@ body {
 }
 
 .exp-card-visual {
-  height: 240px;
+  height: 190px;
   position: relative;
   overflow: hidden;
   background: #f1f5f9;
@@ -1197,7 +1212,7 @@ body {
 
 @media (max-width: 768px) {
   .exp-card-visual {
-    height: 160px;
+    height: 140px;
   }
 }
 

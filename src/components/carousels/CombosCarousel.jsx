@@ -11,9 +11,18 @@ export default function CombosCarousel({ items = [] }) {
     // Sort items to ensure a consistent experience
     const sortedItems = React.useMemo(() => {
         return [...items].sort((a, b) => {
-            const idA = a?.combo_id ?? a?.id ?? 0;
-            const idB = b?.combo_id ?? b?.id ?? 0;
-            return idB - idA;
+            const idA = String(a?.combo_id ?? a?.id ?? '');
+            const idB = String(b?.combo_id ?? b?.id ?? '');
+            
+            // Priority: 25 (All-Access) > 21 (Snowcity+Madlabs+Eyelusion) > Others > 26 (Thursday)
+            if (idA === '25') return -1;
+            if (idB === '25') return 1;
+            if (idA === '21') return -1;
+            if (idB === '21') return 1;
+            if (idA === '26') return 1;
+            if (idB === '26') return -1;
+
+            return Number(idB) - Number(idA);
         });
     }, [items]);
 
@@ -34,10 +43,10 @@ export default function CombosCarousel({ items = [] }) {
     const realIndex = activeIndex % sortedItems.length;
 
     return (
-        <section className="relative w-full overflow-hidden pt-20 pb-24 px-4 md:px-4 bg-gradient-to-t from-white via-sky-50 to-white">
+        <section className="relative w-full overflow-hidden pt-5 pb-5 px-4 md:px-4 bg-gradient-to-t from-white via-sky-50 to-white">
             <div className="w-full relative z-10">
                 <div className="text-center mb-16">
-                    <p className="text-xs font-bold tracking-[0.4em] text-[#0099ff] uppercase mb-4">Exclusive Packs</p>
+                    <p className="text-xs font-bold tracking-[0.4em] text-[#0099ff] uppercase mb-4"></p>
                     <h2 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tight leading-none mb-6">Combo Deals</h2>
                     <div className="w-20 h-1.5 bg-[#0099ff] mx-auto rounded-xl mb-6" />
                     <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto font-medium leading-relaxed">Save more when you bundle your favorite experiences together</p>
@@ -100,9 +109,10 @@ export default function CombosCarousel({ items = [] }) {
                                                 watchSlidesProgress={true}
                                                 onSlideChange={(swiper) => setActiveIndex(swiper.realIndex)}
                                                 autoplay={{
-                                                    delay: 3000,
+                                                    delay: 5000,
                                                     disableOnInteraction: false,
                                                 }}
+                                                speed={1000}
                                                 className="pt-10 pb-10 !overflow-visible"
                                             >
                                                 {sliderItems.map((item, idx) => (
@@ -132,15 +142,6 @@ export default function CombosCarousel({ items = [] }) {
                     </div>
                 )}
 
-                <div className="relative z-10 flex justify-center mt-2">
-                    <Link
-                        to="/combos"
-                        className="inline-flex items-center gap-2 rounded-xl border-2 border-sky-600 px-8 py-3 text-sm font-semibold text-sky-600 transition-all duration-300 hover:bg-sky-600 hover:text-white"
-                    >
-                        View All Combo Packs
-                        <span aria-hidden="true">→</span>
-                    </Link>
-                </div>
             </div>
         </section>
     );

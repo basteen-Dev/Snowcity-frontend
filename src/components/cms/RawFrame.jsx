@@ -3,30 +3,27 @@ import React from 'react';
 import clsx from 'clsx';
 
 export default function RawFrame({ title = 'page', html = '', css = '', js = '', className = '', style }) {
-  const srcDoc = React.useMemo(() => {
-    return `
-<!doctype html>
-<html>
-<head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <style>${css || ''}</style>
-  <title>${title || ''}</title>
-</head>
-<body>
-${html || ''}
-<script>${js || ''}<\/script>
-</body>
-</html>`;
-  }, [html, css, js, title]);
+  const containerRef = React.useRef(null);
+
+  React.useEffect(() => {
+    if (!js || !containerRef.current) return;
+    const script = document.createElement('script');
+    script.text = js;
+    containerRef.current.appendChild(script);
+    return () => {
+      if (containerRef.current && containerRef.current.contains(script)) {
+        containerRef.current.removeChild(script);
+      }
+    };
+  }, [js]);
 
   return (
-    <iframe
-      title={title}
-      className={clsx('w-full min-h-[60vh] border-0', className)}
-      sandbox="allow-scripts allow-same-origin"
-      style={style}
-      srcDoc={srcDoc}
-    />
+    <div className={clsx('w-full', className)} style={style}>
+      {css && <style>{css}</style>}
+      <div 
+        ref={containerRef}
+        dangerouslySetInnerHTML={{ __html: html || '' }} 
+      />
+    </div>
   );
 }

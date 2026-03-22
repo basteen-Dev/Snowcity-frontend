@@ -115,11 +115,11 @@ export default function Contact() {
         <div className="mt-12 pt-8 border-t border-gray-100 grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
             <h3 className="text-xs font-bold uppercase tracking-wider text-[#0099FF] mb-2">Our Location</h3>
-            <p className="text-sm text-gray-700 font-medium">Snowcity Theme Park<br />Bengaluru, Karnataka</p>
+            <p className="text-sm text-gray-700 font-medium">Jayamahal Road, Fun World Complex,<br />JC Nagar, Bengaluru, Karnataka 560006</p>
           </div>
           <div>
             <h3 className="text-xs font-bold uppercase tracking-wider text-[#0099FF] mb-2">Phone</h3>
-            <p className="text-sm text-gray-700 font-medium">+91-78295 50000</p>
+            <a href="tel:+917829550000" className="text-sm text-gray-700 font-medium hover:text-[#0099FF] transition-colors">+91-78295 50000</a>
           </div>
           <div>
             <h3 className="text-xs font-bold uppercase tracking-wider text-[#0099FF] mb-2">Email</h3>

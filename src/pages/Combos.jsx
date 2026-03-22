@@ -41,6 +41,26 @@ export default function Combos() {
   // quantity per combo id (applied to any slot booking for that combo)
   const [qtyByCombo, setQtyByCombo] = React.useState({});
 
+  const sortedItems = React.useMemo(() => {
+    return [...items].sort((a, b) => {
+      const titleA = (a.title || a.name || a.combo_name || '').toLowerCase();
+      const titleB = (b.title || b.name || b.combo_name || '').toLowerCase();
+
+      const isAllAccessA = titleA.includes('all-access pass');
+      const isAllAccessB = titleB.includes('all-access pass');
+      const isSpecificComboA = titleA.includes('snowcity-madlabs-eyelusion') || (titleA.includes('snow city') && titleA.includes('madlabs') && titleA.includes('eyelusion'));
+      const isSpecificComboB = titleB.includes('snowcity-madlabs-eyelusion') || (titleB.includes('snow city') && titleB.includes('madlabs') && titleB.includes('eyelusion'));
+
+      if (isAllAccessA && !isAllAccessB) return -1;
+      if (!isAllAccessA && isAllAccessB) return 1;
+
+      if (isSpecificComboA && !isSpecificComboB) return -1;
+      if (!isSpecificComboA && isSpecificComboB) return 1;
+
+      return 0;
+    });
+  }, [items]);
+
   React.useEffect(() => {
     if (status === 'idle') {
       dispatch(fetchCombos({ active: true, page: 1, limit: 24 }));
@@ -102,21 +122,18 @@ export default function Combos() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#f5f8ff] to-white px-4 pt-24 pb-8">
-      <div className="max-w-6xl mx-auto px-4">
-        <div className="flex items-center justify-between mb-4 gap-3">
-          <div>
-            <h1 className="text-2xl font-semibold">Combo Deals</h1>
-            <p className="text-gray-600">Best value combinations for your Snowcity adventure.</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <label className="text-sm text-gray-600">Date</label>
-            <input
-              type="date"
-              className="rounded-md border px-3 py-2 text-sm dark:bg-neutral-900 dark:border-neutral-700"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-            />
+    <div className="min-h-screen bg-gradient-to-b from-[#f5f8ff] to-white pt-20 pb-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Hero Section */}
+        <div className="text-center py-12 mb-8">
+          <div className="flex flex-col items-center gap-4">
+            <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight uppercase leading-none mb-4">
+              Combo Deals
+            </h1>
+            <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto font-medium leading-relaxed">
+              Best value combinations for your Snowcity adventure.
+            </p>
+            <div className="w-20 h-1.5 bg-[#003de6] rounded-xl mx-auto mb-2" />
           </div>
         </div>
 
@@ -125,8 +142,8 @@ export default function Combos() {
           <ErrorState message={error?.message || 'Failed to load combos'} />
         ) : null}
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {items.map((combo) => {
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {sortedItems.map((combo) => {
             const comboId = combo.combo_id || combo.id; // handle both shapes
             const isOpen = openComboId === comboId;
             const slots = slotsByCombo[comboId] || [];

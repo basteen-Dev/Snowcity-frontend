@@ -58,43 +58,46 @@ export default function Attractions() {
       return idA - idB;
     });
   }, [attractions, q]);
+  
+  const sortedCombos = React.useMemo(() => {
+    return [...combos].sort((a, b) => {
+      const titleA = (a.title || a.name || a.combo_name || '').toLowerCase();
+      const titleB = (b.title || b.name || b.combo_name || '').toLowerCase();
+      
+      const isAllAccessA = titleA.includes('all-access pass');
+      const isAllAccessB = titleB.includes('all-access pass');
+      const isSpecificComboA = titleA.includes('snowcity-madlabs-eyelusion') || (titleA.includes('snow city') && titleA.includes('madlabs') && titleA.includes('eyelusion'));
+      const isSpecificComboB = titleB.includes('snowcity-madlabs-eyelusion') || (titleB.includes('snow city') && titleB.includes('madlabs') && titleB.includes('eyelusion'));
+
+      if (isAllAccessA && !isAllAccessB) return -1;
+      if (!isAllAccessA && isAllAccessB) return 1;
+
+      if (isSpecificComboA && !isSpecificComboB) return -1;
+      if (!isSpecificComboA && isSpecificComboB) return 1;
+
+      return 0;
+    });
+  }, [combos]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#f5f8ff] to-white pt-24 pb-16">
+    <div className="min-h-screen bg-gradient-to-b from-[#f5f8ff] to-white pt-10 pb-5">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Hero Section */}
         <div className="text-center py-12 mb-8">
-          <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight uppercase leading-none mb-4">
+          <h1 className="text-4xl md:text-4xl font-black text-slate-900 tracking-tight  leading-none mb-4">
             All Attractions
           </h1>
           <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto font-medium leading-relaxed">
             Discover our complete collection of thrilling winter experiences and unforgettable adventures.
           </p>
-          <div className="w-20 h-1.5 bg-[#003de6] mx-auto mt-6 mb-8 rounded-xl" />
-        </div>
-
-        {/* Search and Stats */}
-        <div className="mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-            <div className="text-sm text-gray-600">
-              Showing {list.length} attraction{list.length !== 1 ? 's' : ''}
-            </div>
-            <div className="w-full sm:w-96">
-              <input
-                className="w-full rounded-xl border border-gray-300 px-6 py-3 text-gray-700 placeholder-gray-400 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all"
-                placeholder="Search attractions..."
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-              />
-            </div>
-          </div>
+          <div className="w-20 h-1.5 bg-[#003de6] mx-auto mt-3 mb-2 rounded-xl" />
         </div>
 
         {aStatus === 'loading' && !attractions.length ? <Loader /> : null}
         {aStatus === 'failed' ? <ErrorState message={aError?.message || 'Failed to load attractions'} /> : null}
 
         {/* Attractions Grid */}
-        <div className="flex flex-col gap-8 mb-16">
+        <div className="flex flex-col gap-8  mb-10">
           {list.length > 0 && (
             <div className="w-full">
               <AttractionCard
@@ -112,7 +115,7 @@ export default function Attractions() {
         </div>
 
         {/* Combo Deals Section */}
-        <div className="mt-16">
+        <div className="mt-8">
           <div className="text-center mb-8">
             <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight uppercase leading-none mb-4">
               Combo Deals
@@ -125,7 +128,7 @@ export default function Attractions() {
 
           {cStatus === 'loading' && !combos.length ? <Loader /> : null}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {combos.map((c, idx) => (
+            {sortedCombos.map((c, idx) => (
               <ComboCard key={safeKey('combo', c, idx)} item={c} />
             ))}
           </div>

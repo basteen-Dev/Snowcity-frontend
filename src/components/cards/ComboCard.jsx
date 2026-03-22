@@ -147,7 +147,7 @@ const ComboCardInner = function ComboCard({ item, isUltimate = false }) {
           <div className="flex flex-1 flex-col justify-center p-6 lg:p-10">
             <div className="mb-2 lg:mb-3 inline-flex items-center gap-2">
               <span className="rounded-full bg-sky-500/20 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-sky-400 border border-sky-500/30">
-                Exclusive Summer Combo
+                Summer Combo
               </span>
             </div>
 
@@ -191,6 +191,7 @@ const ComboCardInner = function ComboCard({ item, isUltimate = false }) {
   }
 
   return (
+    
     <div
       onClick={() => navigate(comboHref)}
       className="exp-card-new block no-underline cursor-pointer rounded-xl group"

@@ -711,6 +711,10 @@ export default function BookingsList() {
               }, {});
 
               const groupEntries = Object.entries(groupedItems);
+              const offerTitles = Array.from(
+                new Set(items.map((it) => it.offer_title).filter(Boolean))
+              );
+              const hasBuyXGetY = items.some((it) => String(it?.offer?.rule_type || '').toLowerCase() === 'buy_x_get_y');
 
               return (
                 <div className="flex flex-col min-w-[150px] gap-1">
@@ -728,6 +732,20 @@ export default function BookingsList() {
                   ))}
                   {groupEntries.length === 0 && (
                     <span className="text-gray-400 italic text-xs">No items</span>
+                  )}
+                  {(offerTitles.length > 0 || hasBuyXGetY) && (
+                    <div className="mt-1 flex flex-wrap gap-1.5">
+                      {offerTitles.map((title) => (
+                        <span key={title} className="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-semibold border border-emerald-100">
+                          🎁 {title}
+                        </span>
+                      ))}
+                      {offerTitles.length === 0 && hasBuyXGetY && (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-semibold border border-emerald-100">
+                          🎁 Buy X Get Y Offer
+                        </span>
+                      )}
+                    </div>
                   )}
                 </div>
               );
