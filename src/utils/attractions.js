@@ -1,4 +1,32 @@
+import dayjs from 'dayjs';
+
 const SORT_KEY_CANDIDATES = ['key', 'sort_key', 'order', 'order_key', 'priority', 'sequence', 'display_order'];
+
+export const getNextAvailableDate = (item) => {
+  if (!item) return dayjs().format('YYYY-MM-DD');
+  const dayRuleType = item.day_rule_type || 'all_days';
+  const customDays = item.custom_days || [];
+  
+  let current = dayjs();
+  // Check up to 30 days in the future to find a valid day
+  for (let i = 0; i < 30; i++) {
+    const dateStr = current.format('YYYY-MM-DD');
+    const dayOfWeek = current.day(); // 0 (Sun) to 6 (Sat)
+    let isBlocked = false;
+    
+    if (dayRuleType === 'weekends') {
+      isBlocked = (dayOfWeek !== 0 && dayOfWeek !== 6);
+    } else if (dayRuleType === 'weekdays') {
+      isBlocked = (dayOfWeek === 0 || dayOfWeek === 6);
+    } else if (dayRuleType === 'custom_days' && customDays.length > 0) {
+      isBlocked = !customDays.includes(dayOfWeek);
+    }
+    
+    if (!isBlocked) return dateStr;
+    current = current.add(1, 'day');
+  }
+  return dayjs().format('YYYY-MM-DD'); // fallback
+};
 
 export const isSnowcityAttraction = (item) => {
   if (!item) return false;

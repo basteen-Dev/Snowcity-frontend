@@ -5,7 +5,7 @@ import dayjs from 'dayjs';
 import api from '../services/apiClient';
 import endpoints from '../services/endpoints';
 import { imgSrc } from '../utils/media';
-import { prioritizeSnowcityFirst } from '../utils/attractions';
+import { prioritizeSnowcityFirst, getNextAvailableDate } from '../utils/attractions';
 
 import { getPrice, getBasePrice, getSlotUnitPrice, getSlotBasePrice } from '../utils/pricing';
 import { formatCurrency } from '../utils/formatters';
@@ -568,21 +568,21 @@ export default function Booking() {
     return [...items].sort((a, b) => {
       const idA = String(a.combo_id || a.id || '');
       const idB = String(b.combo_id || b.id || '');
-      
+
       // User specific order requirements:
       // 1. All-Access Pass (ID 25) first
       // 2. Snowcity + Madlabs + Eyelusion (ID 21) second
       // 3. Buy Snow park Ticket Get Eyelusion Free only on Thursday (ID 26) last
-      
+
       if (idA === '25') return -1;
       if (idB === '25') return 1;
-      
+
       if (idA === '21') return -1;
       if (idB === '21') return 1;
-      
+
       if (idA === '26') return 1;
       if (idB === '26') return -1;
-      
+
       const numA = Number(idA);
       const numB = Number(idB);
       return numB - numA;
@@ -1191,7 +1191,7 @@ export default function Booking() {
       const isSameOrPast = selectedDate && selectedDate <= todayStr;
       const dpKey = `attraction:${itemId}:${selectedDate}`;
       const hasDynamicPricing = selectedDate && dynamicPricingDates[dpKey];
-      
+
       if (!appliedOffer && !hasDynamicPricing && !isSameOrPast) {
         appliedOffer = offersFromRedux.find(
           (offer) =>
@@ -1820,8 +1820,7 @@ export default function Booking() {
                           comboId: sel.itemType === 'combo' ? String(id) : '',
                           slotKey: '',
                         }));
-                        setDetailsMainImage(image || null);
-                        setDrawerMode('details');
+                        setDrawerMode('booking');
                         setDrawerOpen(true);
                       }}
                       className="inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-sky-700 hover:text-sky-900 mt-2"
@@ -1888,11 +1887,11 @@ export default function Booking() {
             const preview = previewOfferForSelection(offer, selectedMeta.price || 0, qty);
             return (
               <label
-                key={`offer - ${id} `}
-                className={`flex items - start gap - 3 rounded - 2xl border px - 3 py - 3 cursor - pointer transition - all duration - 200 ${String(selectedOfferId) === id
+                key={`offer-${id}`}
+                className={`flex items-start gap-3 rounded-2xl border px-3 py-3 cursor-pointer transition-all duration-200 ${String(selectedOfferId) === id
                   ? 'border-sky-500 bg-sky-50 shadow-sm'
                   : 'hover:border-gray-300'
-                  } `}
+                  }`}
               >
                 <input
                   type="radio"
@@ -1903,19 +1902,19 @@ export default function Booking() {
                 />
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900">
+                    <div className="min-w-0 pr-2">
+                      <p className="text-sm font-bold text-gray-900 leading-tight">
                         {getOfferTitle(offer)}
                       </p>
                       {getOfferSummary(offer) ? (
-                        <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">
+                        <p className="text-[11px] text-gray-500 mt-1 line-clamp-2 leading-relaxed">
                           {getOfferSummary(offer)}
                         </p>
                       ) : null}
                     </div>
                     <span className="text-xs font-semibold text-sky-700 bg-sky-50 px-2 py-1 rounded-xl">
-                      {preview && preview.totalDiscount > 0 
-                        ? `Save ₹${preview.totalDiscount.toFixed(0)}` 
+                      {preview && preview.totalDiscount > 0
+                        ? `Save ₹${preview.totalDiscount.toFixed(0)}`
                         : (offer.rules?.[0]?.get_target_id == null && offer.rule_type === 'buy_x_get_y') ? 'Claim at Counter' : 'No discount'}
                     </span>
                   </div>
@@ -2136,7 +2135,7 @@ export default function Booking() {
 
 
           {/* Progress Bar */}
-          <div className="mb-12">
+          <div className="mb-8">
             <div className="flex justify-between text-sm font-medium text-gray-500 mb-3">
               {[
                 { s: 1, label: 'Experience' },
@@ -2146,8 +2145,8 @@ export default function Booking() {
               ].map((item) => (
                 <span
                   key={item.s}
-                  className={`transition - colors duration - 300 ${step >= item.s ? 'text-sky-600 font-semibold' : ''
-                    } `}
+                  className={`transition-colors duration-300 ${step >= item.s ? 'text-sky-600 font-semibold' : ''
+                    }`}
                 >
                   {item.label}
                 </span>
@@ -2167,73 +2166,73 @@ export default function Booking() {
               {/* STEP 1: product list + order summary */}
               {step === 1 && (
                 <>
-                <SelectTickets
-                  sel={sel}
-                  setSel={setSel}
-                  combos={combos}
-                  prioritizedAttractions={prioritizedAttractions}
-                  cartItems={cartItems}
-                  hasCartItems={hasCartItems}
-                  finalTotal={finalTotal}
-                  todayYMD={todayYMD}
-                  handleToday={handleToday}
-                  handleTomorrow={handleTomorrow}
-                  todayBlocked={todayBlocked}
-                  tomorrowBlocked={tomorrowBlocked}
-                  onCalendarButtonClick={onCalendarButtonClick}
-                  setCalendarAnchor={setCalendarAnchor}
-                  formatDateDisplay={formatDateDisplay}
-                  getAttrId={getAttrId}
-                  getComboId={getComboId}
-                  getComboDisplayPrice={getComboDisplayPrice}
-                  getPrice={getPrice}
-                  getComboLabel={getComboLabel}
-                  getComboPrimaryImage={getComboPrimaryImage}
-                  getAttractionImage={getAttractionImage}
-                  idsMatch={idsMatch}
-                  onEditCartItem={onEditCartItem}
-                  setDetailsMainImage={setDetailsMainImage}
-                  setDrawerMode={setDrawerMode}
-                  setDrawerOpen={setDrawerOpen}
-                  onRemoveCartItem={onRemoveCartItem}
-                  handleNext={handleNext}
-                  step={step}
-                  paymentLoading={paymentLoading}
-                  cartAddons={cartAddons}
-                  setEditingKey={setEditingKey}
-                  offers={state.offers.length ? state.offers : offersFromRedux}
-                />
-                
-                {sel.itemType === 'offer' && sel.offerId && (() => {
-                  const allOffers = state.offers.length ? state.offers : offersFromRedux;
-                  const selectedOffer = allOffers.find(
-                    (o) => String(o.offer_id || o.id) === String(sel.offerId)
-                  );
-                  const ruleType = String(selectedOffer?.rule_type || '').toLowerCase();
-                  const isFirstNTickets = ruleType === 'first_n_tickets';
+                  <SelectTickets
+                    sel={sel}
+                    setSel={setSel}
+                    combos={combos}
+                    prioritizedAttractions={prioritizedAttractions}
+                    cartItems={cartItems}
+                    hasCartItems={hasCartItems}
+                    finalTotal={finalTotal}
+                    todayYMD={todayYMD}
+                    handleToday={handleToday}
+                    handleTomorrow={handleTomorrow}
+                    todayBlocked={todayBlocked}
+                    tomorrowBlocked={tomorrowBlocked}
+                    onCalendarButtonClick={onCalendarButtonClick}
+                    setCalendarAnchor={setCalendarAnchor}
+                    formatDateDisplay={formatDateDisplay}
+                    getAttrId={getAttrId}
+                    getComboId={getComboId}
+                    getComboDisplayPrice={getComboDisplayPrice}
+                    getPrice={getPrice}
+                    getComboLabel={getComboLabel}
+                    getComboPrimaryImage={getComboPrimaryImage}
+                    getAttractionImage={getAttractionImage}
+                    idsMatch={idsMatch}
+                    onEditCartItem={onEditCartItem}
+                    setDetailsMainImage={setDetailsMainImage}
+                    setDrawerMode={setDrawerMode}
+                    setDrawerOpen={setDrawerOpen}
+                    onRemoveCartItem={onRemoveCartItem}
+                    handleNext={handleNext}
+                    step={step}
+                    paymentLoading={paymentLoading}
+                    cartAddons={cartAddons}
+                    setEditingKey={setEditingKey}
+                    offers={state.offers.length ? state.offers : offersFromRedux}
+                  />
 
-                  if (isFirstNTickets) {
+                  {sel.itemType === 'offer' && sel.offerId && (() => {
+                    const allOffers = state.offers.length ? state.offers : offersFromRedux;
+                    const selectedOffer = allOffers.find(
+                      (o) => String(o.offer_id || o.id) === String(sel.offerId)
+                    );
+                    const ruleType = String(selectedOffer?.rule_type || '').toLowerCase();
+                    const isFirstNTickets = ruleType === 'first_n_tickets';
+
+                    if (isFirstNTickets) {
+                      return (
+                        <FirstNTicketsDrawer
+                          isOpen={drawerOpen}
+                          onClose={() => { setDrawerOpen(false); setSel(createDefaultSelection()); }}
+                          offer={selectedOffer}
+                          attractions={prioritizedAttractions}
+                          initialDate={sel.date}
+                        />
+                      );
+                    }
+
                     return (
-                      <FirstNTicketsDrawer
+                      <OfferDrawer
                         isOpen={drawerOpen}
                         onClose={() => { setDrawerOpen(false); setSel(createDefaultSelection()); }}
                         offer={selectedOffer}
-                        attractions={prioritizedAttractions}
+                        combos={combos}
                         initialDate={sel.date}
                       />
                     );
-                  }
-
-                  return (
-                    <OfferDrawer
-                      isOpen={drawerOpen}
-                      onClose={() => { setDrawerOpen(false); setSel(createDefaultSelection()); }}
-                      offer={selectedOffer}
-                      combos={combos}
-                      initialDate={sel.date}
-                    />
-                  );
-                })()}
+                  })()}
                 </>
               )}
 
@@ -2505,8 +2504,8 @@ export default function Booking() {
                                 className={`px-4 py-2 rounded-xl text-xs font-medium border transition-colors ${todayBlocked
                                   ? 'text-gray-300 border-gray-100 cursor-not-allowed bg-gray-50'
                                   : sel.date === todayYMD()
-                                  ? 'bg-sky-600 text-white border-sky-600 shadow-sm'
-                                  : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300 hover:text-sky-600'
+                                    ? 'bg-sky-600 text-white border-sky-600 shadow-sm'
+                                    : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300 hover:text-sky-600'
                                   }`}
                               >
                                 Today
@@ -2518,8 +2517,8 @@ export default function Booking() {
                                 className={`px-4 py-2 rounded-xl text-xs font-medium border transition-colors ${tomorrowBlocked
                                   ? 'text-gray-300 border-gray-100 cursor-not-allowed bg-gray-50'
                                   : sel.date === dayjs().add(1, 'day').format('YYYY-MM-DD')
-                                  ? 'bg-sky-600 text-white border-sky-600 shadow-sm'
-                                  : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300 hover:text-sky-600'
+                                    ? 'bg-sky-600 text-white border-sky-600 shadow-sm'
+                                    : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300 hover:text-sky-600'
                                   }`}
                               >
                                 Tomorrow

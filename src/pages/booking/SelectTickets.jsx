@@ -2,6 +2,7 @@ import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { ShoppingBag, ChevronRight, ArrowRight, Calendar, AlertTriangle } from 'lucide-react';
 import dayjs from 'dayjs';
 import OrderDetailsBox from './OrderDetailsBox';
+import { prioritizeSnowcityFirst, getNextAvailableDate } from '../../utils/attractions';
 import api from '../../services/apiClient';
 
 
@@ -229,6 +230,7 @@ export default function SelectTickets({
                 itemType: sel.itemType,
                 attractionId: sel.itemType === 'attraction' ? String(id) : '',
                 comboId: sel.itemType === 'combo' ? String(id) : '',
+                date: getNextAvailableDate(item),
                 slotKey: '',
               }));
               setDrawerMode('booking');
@@ -283,7 +285,7 @@ export default function SelectTickets({
                   </div>
 
                   <div className="mt-4 flex flex-row items-end justify-between gap-4">
-                    <div>
+                    <div className="flex-1 min-w-0">
                       {!isOffer && (
                         <>
                         <div className="text-left text-xs text-gray-500 uppercase tracking-wide">From</div>
@@ -306,8 +308,8 @@ export default function SelectTickets({
                             if (isFirstNTickets && avail?.is_sold_out) {
                               return (
                                 <div className="space-y-1">
-                                  <span className="text-xs font-bold bg-red-100 text-red-700 px-2 py-1 rounded inline-flex items-center gap-1">
-                                    <AlertTriangle size={12} /> SOLD OUT
+                                  <span className="text-[10px] font-bold bg-red-100 text-red-700 px-1.5 py-0.5 rounded inline-flex items-center gap-1">
+                                    <AlertTriangle size={10} /> SOLD OUT
                                   </span>
                                 </div>
                               );
@@ -316,11 +318,11 @@ export default function SelectTickets({
                               return (
                                 <div className="space-y-1">
                                   <div className="flex items-center gap-2">
-                                    <span className="text-lg font-bold text-emerald-700">₹{avail.offer_price}</span>
-                                    <span className="text-xs font-bold bg-amber-100 text-amber-700 px-2 py-1 rounded">LIMITED</span>
+                                    <span className="text-base sm:text-lg font-bold text-emerald-700">₹{avail.offer_price}</span>
+                                    <span className="text-[10px] sm:text-xs font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded">LIMITED</span>
                                   </div>
-                                  <div className="text-[11px] text-gray-500">
-                                    {avail.tickets_remaining} of {avail.ticket_limit} tickets remaining
+                                  <div className="text-[10px] text-gray-500">
+                                    {avail.tickets_remaining} left
                                   </div>
                                 </div>
                               );
@@ -328,12 +330,12 @@ export default function SelectTickets({
                             if (isFirstNTickets && firstRule?.offer_price) {
                               return (
                                 <div className="flex items-center gap-2">
-                                  <span className="text-lg font-bold text-emerald-700">₹{firstRule.offer_price}</span>
-                                  <span className="text-xs font-bold bg-amber-100 text-amber-700 px-2 py-1 rounded">LIMITED</span>
+                                  <span className="text-base sm:text-lg font-bold text-emerald-700">₹{firstRule.offer_price}</span>
+                                  <span className="text-[10px] sm:text-xs font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded">LIMITED</span>
                                 </div>
                               );
                             }
-                            return <span className="text-xs font-bold bg-emerald-100 text-emerald-700 px-2 py-1 rounded">PROMO</span>;
+                            return <span className="text-[10px] font-bold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded">PROMO</span>;
                           })()}
                         </div>
                       )}
@@ -342,7 +344,7 @@ export default function SelectTickets({
                       type="button"
                       onClick={onSelect}
                       disabled={isOffer && String(item?.rule_type || '').toLowerCase() === 'first_n_tickets' && offerAvailability[String(id)]?.is_sold_out}
-                      className={`px-6 py-2 rounded-xl text-sm font-semibold shadow-sm active:scale-[0.98] transition-all border shrink-0 ${
+                      className={`px-3 sm:px-6 py-2 rounded-xl text-xs sm:text-sm font-semibold shadow-sm active:scale-[0.98] transition-all border shrink-0 ${
                         isOffer && String(item?.rule_type || '').toLowerCase() === 'first_n_tickets' && offerAvailability[String(id)]?.is_sold_out
                           ? 'bg-gray-200 border-gray-300 text-gray-400 cursor-not-allowed'
                           : isSelected
@@ -352,7 +354,7 @@ export default function SelectTickets({
                     >
                       {isOffer && String(item?.rule_type || '').toLowerCase() === 'first_n_tickets' && offerAvailability[String(id)]?.is_sold_out
                         ? 'Sold Out'
-                        : isSelected ? 'Selected' : isOffer ? 'Claim Offer' : 'Select'}
+                        : isSelected ? 'Selected' : isOffer ? 'Claim' : 'Select'}
                     </button>
                   </div>
                 </div>
@@ -369,13 +371,13 @@ export default function SelectTickets({
       {/* left: product list */}
       <div className="space-y-4">
         {/* quick date row */}
-        <div className="flex flex-wrap gap-2 items-center mb-1">
-          <span className="text-sm font-semibold text-gray-700 mr-1">Date</span>
+        <div className="flex items-center gap-1.5 mb-2 overflow-x-auto pb-2 scrollbar-hide whitespace-nowrap">
+          <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mr-1 shrink-0">Date</span>
           <button
             type="button"
             onClick={handleToday}
             disabled={todayBlocked}
-            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-medium border transition-colors ${todayBlocked
+            className={`px-3 py-2 rounded-xl text-xs font-bold border transition-colors shrink-0 ${todayBlocked
               ? 'text-gray-300 border-gray-100 cursor-not-allowed bg-gray-50'
               : sel.date === todayYMD()
               ? 'bg-sky-600 text-white border-sky-600'
@@ -388,7 +390,7 @@ export default function SelectTickets({
             type="button"
             onClick={handleTomorrow}
             disabled={tomorrowBlocked}
-            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-medium border transition-colors ${tomorrowBlocked
+            className={`px-3 py-2 rounded-xl text-xs font-bold border transition-colors shrink-0 ${tomorrowBlocked
               ? 'text-gray-300 border-gray-100 cursor-not-allowed bg-gray-50'
               : sel.date === dayjs().add(1, 'day').format('YYYY-MM-DD')
               ? 'bg-sky-600 text-white border-sky-600'
@@ -397,32 +399,23 @@ export default function SelectTickets({
           >
             Tomorrow
           </button>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={onCalendarButtonClick}
-              ref={setCalendarAnchor}
-              className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-medium border transition-colors ${sel.date &&
-                sel.date !== '' &&
-                sel.date !== todayYMD() &&
-                sel.date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
-                ? 'bg-sky-600 text-white border-sky-600'
-                : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300 hover:text-sky-600'
-                }`}
-            >
-              {sel.date && sel.date !== todayYMD() && sel.date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
-                ? formatDateDisplay(sel.date)
-                : 'More Dates'}
-            </button>
-            <button
-              type="button"
-              onClick={onCalendarButtonClick}
-              className="p-2 rounded-xl border border-gray-200 text-gray-600 hover:border-sky-300 hover:text-sky-600 transition-colors bg-white shadow-sm"
-              title="Open Calendar"
-            >
-              <Calendar size={18} />
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={onCalendarButtonClick}
+            ref={setCalendarAnchor}
+            className={`px-3 py-2 rounded-xl text-xs font-bold border transition-colors flex items-center gap-2 shrink-0 ${sel.date &&
+              sel.date !== '' &&
+              sel.date !== todayYMD() &&
+              sel.date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
+              ? 'bg-sky-600 text-white border-sky-600'
+              : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300 hover:text-sky-600'
+              }`}
+          >
+            <Calendar size={14} />
+            {sel.date && sel.date !== todayYMD() && sel.date !== dayjs().add(1, 'day').format('YYYY-MM-DD')
+              ? formatDateDisplay(sel.date)
+              : 'More Dates'}
+          </button>
         </div>
 
         <ProductList />

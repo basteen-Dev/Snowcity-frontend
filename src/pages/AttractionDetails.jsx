@@ -11,6 +11,7 @@ import GalleryViewer from '../components/gallery/GalleryViewer';
 import { addCartItem, setStep } from '../features/bookings/bookingsSlice';
 import toast from 'react-hot-toast';
 import { getAttrId } from '../utils/ids';
+import { prioritizeSnowcityFirst, getNextAvailableDate } from '../utils/attractions';
 import { imgSrc } from '../utils/media';
 import usePageSeo from '../hooks/usePageSeo';
 import {
@@ -307,7 +308,9 @@ export default function AttractionDetails() {
     error: null,
   });
 
-  const [date, setDate] = React.useState(searchParams.get('date') || todayYMD());
+  const [date, setDate] = React.useState(
+    searchParams.get('date') || getNextAvailableDate(details.data)
+  );
   const [slots, setSlots] = React.useState({
     status: 'idle',
     items: [],
@@ -399,6 +402,9 @@ export default function AttractionDetails() {
 
     if (pDate) {
       setDate(pDate);
+    } else if (details.data) {
+      // If no URL date, use next available day based on rules
+      setDate(getNextAvailableDate(details.data));
     }
 
     if (openDrawer === 'true') {
@@ -407,7 +413,7 @@ export default function AttractionDetails() {
         bookingSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }, 500);
     }
-  }, [searchParams]);
+  }, [searchParams, details.data]);
 
   const numericAttrId = React.useMemo(() => {
     return details.data?.attraction_id || null;

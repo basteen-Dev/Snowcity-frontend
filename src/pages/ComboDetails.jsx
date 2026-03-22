@@ -12,6 +12,7 @@ import { fetchAttractions } from '../features/attractions/attractionsSlice';
 import { addCartItem, setStep } from '../features/bookings/bookingsSlice';
 import toast from 'react-hot-toast';
 import { formatCurrency } from '../utils/formatters';
+import { prioritizeSnowcityFirst, getNextAvailableDate } from '../utils/attractions';
 import {
   getPrice,
   getBasePrice,
@@ -512,7 +513,15 @@ export default function ComboDetails() {
 
   /* ===== Availability / slots state ===== */
 
-  const [date, setDate] = React.useState(dayjs().format('YYYY-MM-DD'));
+  const [date, setDate] = React.useState(searchParams.get('date') || '');
+  React.useEffect(() => {
+    const pDate = searchParams.get('date');
+    if (pDate) {
+      setDate(pDate);
+    } else if (state.data) {
+      setDate(getNextAvailableDate(state.data));
+    }
+  }, [searchParams, state.data]);
   const [qty, setQty] = React.useState(1);
   const [slots, setSlots] = React.useState([]);
   const [showCalendar, setShowCalendar] = React.useState(false);
