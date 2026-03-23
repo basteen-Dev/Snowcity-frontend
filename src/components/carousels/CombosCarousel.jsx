@@ -26,6 +26,9 @@ export default function CombosCarousel({ items = [] }) {
         });
     }, [items]);
 
+    const maxOtherItems = 3;
+    const ultimateItem = sortedItems[0];
+    const otherItems = React.useMemo(() => sortedItems.slice(1, 1 + maxOtherItems), [sortedItems]);
     const isDesktop = useMediaQuery('(min-width: 768px)');
     const [activeIndex, setActiveIndex] = React.useState(0);
 
@@ -40,7 +43,7 @@ export default function CombosCarousel({ items = [] }) {
 
     if (!sortedItems.length) return null;
 
-    const realIndex = activeIndex % sortedItems.length;
+    const realIndex = activeIndex % (otherItems.length || 1);
 
     return (
         <section className="relative w-full overflow-hidden pt-5 pb-5 px-4 md:px-4 bg-gradient-to-t from-white via-sky-50 to-white">
@@ -55,89 +58,72 @@ export default function CombosCarousel({ items = [] }) {
                 {/* CONDITIONAL RENDER FOR DESKTOP OR MOBILE */}
                 {isDesktop ? (
                     <div className="mb-16">
-                        {(() => {
-                            const ultimateItem = sortedItems[0];
-                            const otherItems = sortedItems.slice(1);
-
-                            return (
-                                <div className="space-y-12">
-                                    {ultimateItem && (
-                                        <div className="w-full">
-                                            <ComboCard item={ultimateItem} isUltimate={true} />
-                                        </div>
-                                    )}
-
-                                    {otherItems.length > 0 && (
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                                            {otherItems.map((item, idx) => (
-                                                <div key={`${item?.id ?? item?.combo_id}-desktop-${idx}`}>
-                                                    <ComboCard item={item} />
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
+                        <div className="space-y-12">
+                            {ultimateItem && (
+                                <div className="w-full">
+                                    <ComboCard item={ultimateItem} isUltimate={true} />
                                 </div>
-                            );
-                        })()}
+                            )}
+
+                            {otherItems.length > 0 && (
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                    {otherItems.map((item, idx) => (
+                                        <div key={`${item?.id ?? item?.combo_id}-desktop-${idx}`}>
+                                            <ComboCard item={item} />
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
                     </div>
                 ) : (
                     <div className="relative z-10 premium-carousel mb-8">
-                        {(() => {
-                            const ultimateItem = sortedItems[0];
-                            const otherItems = sortedItems.slice(1);
-                            const sliderItems = otherItems.length > 0 ? [...otherItems, ...otherItems, ...otherItems] : [];
+                        {ultimateItem && (
+                            <div className="mb-6 px-4">
+                                <ComboCard item={ultimateItem} isUltimate={true} />
+                            </div>
+                        )}
 
-                            return (
-                                <>
-                                    {ultimateItem && (
-                                        <div className="mb-6 px-4">
-                                            <ComboCard item={ultimateItem} isUltimate={true} />
-                                        </div>
-                                    )}
+                        {otherItems.length > 0 && (
+                            <>
+                                <Swiper
+                                    modules={[Autoplay]}
+                                    spaceBetween={16}
+                                    slidesPerView={1.3}
+                                    centeredSlides={true}
+                                    loop={true}
+                                    loopPreventsSliding={false}
+                                    grabCursor={true}
+                                    watchSlidesProgress={true}
+                                    onSlideChange={(swiper) => setActiveIndex(swiper.realIndex)}
+                                    autoplay={{
+                                        delay: 5000,
+                                        disableOnInteraction: false,
+                                    }}
+                                    speed={1000}
+                                    className="pt-10 pb-10 !overflow-visible"
+                                >
+                                    {[...otherItems, ...otherItems, ...otherItems].map((item, idx) => (
+                                        <SwiperSlide key={`${item?.id ?? idx}-${idx}`} className="h-auto">
+                                            <ComboCard item={item} />
+                                        </SwiperSlide>
+                                    ))}
+                                </Swiper>
 
-                                    {otherItems.length > 0 && (
-                                        <>
-                                            <Swiper
-                                                modules={[Autoplay]}
-                                                spaceBetween={16}
-                                                slidesPerView={1.3}
-                                                centeredSlides={true}
-                                                loop={true}
-                                                loopPreventsSliding={false}
-                                                grabCursor={true}
-                                                watchSlidesProgress={true}
-                                                onSlideChange={(swiper) => setActiveIndex(swiper.realIndex)}
-                                                autoplay={{
-                                                    delay: 5000,
-                                                    disableOnInteraction: false,
-                                                }}
-                                                speed={1000}
-                                                className="pt-10 pb-10 !overflow-visible"
-                                            >
-                                                {sliderItems.map((item, idx) => (
-                                                    <SwiperSlide key={`${item?.id ?? idx}-${idx}`} className="h-auto">
-                                                        <ComboCard item={item} />
-                                                    </SwiperSlide>
-                                                ))}
-                                            </Swiper>
-
-                                            {/* CUSTOM PAGINATION DOTS */}
-                                            <div className="flex justify-center items-center gap-2 mt-8">
-                                                {otherItems.map((_, idx) => (
-                                                    <div
-                                                        key={idx}
-                                                        className={`h-2 transition-all duration-300 rounded-xl ${realIndex === idx
-                                                            ? "w-8 bg-blue-600"
-                                                            : "w-2 bg-gray-300"
-                                                            }`}
-                                                    />
-                                                ))}
-                                            </div>
-                                        </>
-                                    )}
-                                </>
-                            );
-                        })()}
+                                {/* CUSTOM PAGINATION DOTS */}
+                                <div className="flex justify-center items-center gap-2 mt-8">
+                                    {otherItems.map((_, idx) => (
+                                        <div
+                                            key={idx}
+                                            className={`h-2 transition-all duration-300 rounded-xl ${realIndex === idx
+                                                ? "w-8 bg-blue-600"
+                                                : "w-2 bg-gray-300"
+                                                }`}
+                                        />
+                                    ))}
+                                </div>
+                            </>
+                        )}
                     </div>
                 )}
 

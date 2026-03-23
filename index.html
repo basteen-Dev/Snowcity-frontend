@@ -24,45 +24,58 @@
   <noscript><link rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"></noscript>
   <!-- Native Banner Fetch & Preload for LCP Optimization -->
-  <script>
-    if (!window.location.pathname.startsWith('/parkpanel')) {
-      (async function preloadHero() {
-        try {
-          const rawUrl = '%VITE_API_BASE_URL%';
-          const baseUrl = (rawUrl.startsWith('%') || !rawUrl || rawUrl === 'http://localhost:4000') 
-            ? 'https://app.snowcityblr.com' 
-            : rawUrl;
-          const res = await fetch(url, { priority: 'high' });
-          if (!res.ok) return;
-          const data = await res.json();
-          const banners = data.data || data;
-          const bDate = (b) => new Date(b.created_at || b.inserted_at || 0);
-          banners.sort((a,b) => bDate(a) - bDate(b));
-          
-          if (banners && banners.length > 0) {
-            const b = banners[0];
-            const deskImg = b.web_image || b.image_web || b.desktop_image || b.image_url || b.image;
-            const mobImg = b.mobile_image || b.image_mobile || b.mobile || b.image_url_mobile || deskImg;
-            
-            if (deskImg) {
-              const lD = document.createElement('link');
-              lD.rel = 'preload'; lD.as = 'image'; lD.href = deskImg; lD.media = '(min-width: 768px)';
-              lD.fetchPriority = 'high';
-              document.head.appendChild(lD);
-            }
-            if (mobImg && mobImg !== deskImg) {
-              const lM = document.createElement('link');
-              lM.rel = 'preload'; lM.as = 'image'; lM.href = mobImg; lM.media = '(max-width: 767px)';
-              lM.fetchPriority = 'high';
-              document.head.appendChild(lM);
-            }
-            // Cache for Redux to pick up immediately without waiting for hydration
-            window.__INITIAL_BANNERS__ = banners;
-          }
-        } catch (e) {}
-      })();
-    }
-  </script>
+ <script>
+  (function() {
+    const BANNER_PAGES = ['/'];
+    const path = window.location.pathname.replace(/\/$/, '') || '/';
+    if (!BANNER_PAGES.includes(path)) return;
+
+    (async function preloadHero() {
+      try {
+        const rawUrl = '%VITE_API_BASE_URL%';
+        const baseUrl = (rawUrl.startsWith('%') || !rawUrl)
+          ? 'https://app.snowcityblr.com'
+          : rawUrl;
+
+        const controller = new AbortController();
+        setTimeout(() => controller.abort(), 3000);
+
+        const res = await fetch(`${baseUrl}/api/banners?active=true&page=1&limit=12`, {
+          priority: 'high',
+          signal: controller.signal
+        });
+        if (!res.ok) return;
+
+        const data = await res.json();
+        const banners = (data.data || data).sort(
+          (a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0)
+        );
+
+        if (!banners.length) return;
+        const b = banners[0];
+        const deskImg = b.web_image || b.image_web || b.desktop_image || b.image_url || b.image;
+        const mobImg = b.mobile_image || b.image_mobile || b.mobile || b.image_url_mobile || deskImg;
+
+        if (deskImg) {
+          const l = document.createElement('link');
+          l.rel = 'preload'; l.as = 'image'; l.href = deskImg;
+          l.media = '(min-width: 768px)'; l.fetchPriority = 'high';
+          document.head.appendChild(l);
+        }
+        if (mobImg && mobImg !== deskImg) {
+          const l = document.createElement('link');
+          l.rel = 'preload'; l.as = 'image'; l.href = mobImg;
+          l.media = '(max-width: 767px)'; l.fetchPriority = 'high';
+          document.head.appendChild(l);
+        }
+
+        window.__INITIAL_BANNERS__ = banners;
+      } catch (e) {
+        // Abort or network error — silent fail is correct here
+      }
+    })();
+  })();
+</script>
 
 
 

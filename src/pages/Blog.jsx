@@ -53,6 +53,7 @@ export default function Blog() {
 
   const b = st.data || {};
   const cover = imgSrc(b);
+  const authorImage = imgSrc(b.author_image_url);
   const mode = (b.editor_mode || '').toLowerCase();
   const isRaw = mode === 'raw';
   const readTime = getReadTime(b.content);
@@ -150,9 +151,9 @@ export default function Blog() {
         {/* Author Section */}
         {b.author && (
           <div className="author-card">
-            {b.author_image_url ? (
+            {authorImage ? (
               <img
-                src={b.author_image_url}
+                src={authorImage}
                 alt={b.author}
                 className="author-image"
               />
