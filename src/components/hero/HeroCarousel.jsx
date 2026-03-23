@@ -29,6 +29,8 @@ const getMobileImage = (b, fallback) =>
         fallback
     );
 
+const PLACEHOLDER_IMAGE = '/logo.png';
+
 function deriveHref(b) {
     const link = b?.link_url || b?.url || b?.href;
     if (link && link !== "#") return link;
@@ -55,6 +57,9 @@ function deriveHref(b) {
 
 export default function HeroCarousel({ banners = [], waveColor = "#0b1a33" }) {
     if (!banners.length) return null;
+
+    const [loadedKeys, setLoadedKeys] = React.useState({});
+    const [failedKeys, setFailedKeys] = React.useState({});
 
     // Preload logic for the first banner (LCP optimization)
     React.useEffect(() => {
@@ -113,12 +118,17 @@ export default function HeroCarousel({ banners = [], waveColor = "#0b1a33" }) {
                 {sortedBanners.map((b, idx) => {
                     const desktopImg = getWebImage(b, ``);
                     const mobileImg = getMobileImage(b, ``);
+                    const hasImage = Boolean(desktopImg || mobileImg);
                     const title = b?.title || b?.name || "";
                     const subtitle = b?.subtitle || b?.description || b?.caption || "";
                     const href = deriveHref(b);
                     const highlight = b?.tagline || b?.label || b?.category || "";
                     const ctaText = b?.cta_text || "Book Your Snow Day";
                     const uniqueKey = b?.banner_id ?? b?.id ?? b?.uuid ?? b?.slug ?? idx;
+                    const bannerKey = String(uniqueKey);
+                    const isLoaded = Boolean(loadedKeys[bannerKey]);
+                    const isFailed = Boolean(failedKeys[bannerKey]);
+                    const fallbackImg = desktopImg || mobileImg || '';
                     const ticketButton = {
                         label: ctaText,
                         sub: b?.cta_subtitle || "Skip the queue & reserve",
@@ -130,20 +140,32 @@ export default function HeroCarousel({ banners = [], waveColor = "#0b1a33" }) {
                     return (
                         <SwiperSlide key={uniqueKey}>
                             <div className="relative w-full">
-                                <div className="w-full aspect-[800/1000] sm:aspect-[2.5/1] overflow-hidden bg-[#0b1a33]">
-                                    <picture>
-                                        <source media="(max-width: 767px)" srcSet={mobileImg} />
-                                        <img
-                                            src={desktopImg}
-                                            alt={b?.web_image_alt || title || "Banner"}
-                                            className="w-full h-full object-cover block"
-                                            width={1400}
-                                            height={700}
-                                            loading={idx === 0 ? "eager" : "lazy"}
-                                            fetchPriority={idx === 0 ? "high" : "auto"}
-                                            decoding={idx === 0 ? "sync" : "async"}
-                                        />
-                                    </picture>
+                                <div
+                                    className="w-full aspect-[800/1000] sm:aspect-[2.5/1] overflow-hidden bg-[#0b1a33]"
+                                    style={{
+                                        backgroundImage: `url("${PLACEHOLDER_IMAGE}")`,
+                                        backgroundPosition: 'center',
+                                        backgroundRepeat: 'no-repeat',
+                                        backgroundSize: '220px auto'
+                                    }}
+                                >
+                                    {hasImage && !isFailed ? (
+                                        <picture>
+                                            {mobileImg ? <source media="(max-width: 767px)" srcSet={mobileImg} /> : null}
+                                            <img
+                                                src={fallbackImg}
+                                                alt={b?.web_image_alt || title || "Banner"}
+                                                className={`w-full h-full object-cover block transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+                                                width={1400}
+                                                height={700}
+                                                loading={idx === 0 ? "eager" : "lazy"}
+                                                fetchPriority={idx === 0 ? "high" : "auto"}
+                                                decoding={idx === 0 ? "sync" : "async"}
+                                                onLoad={() => setLoadedKeys((s) => ({ ...s, [bannerKey]: true }))}
+                                                onError={() => setFailedKeys((s) => ({ ...s, [bannerKey]: true }))}
+                                            />
+                                        </picture>
+                                    ) : null}
                                 </div>
 
                                 {/* Removed darkening overlays to show original image brightness */}

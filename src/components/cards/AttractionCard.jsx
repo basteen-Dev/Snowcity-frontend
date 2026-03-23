@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAttrId } from '../../utils/ids';
 import { imgSrc } from '../../utils/media';
+import ImageWithPlaceholder from '../common/ImageWithPlaceholder';
 import { getPrice, getBasePrice } from '../../utils/pricing';
 import api from '../../services/apiClient';
 import endpoints from '../../services/endpoints';
@@ -180,7 +181,15 @@ const AttractionCardInner = function AttractionCard({ item, featured = false }) 
                       className="w-full h-full object-cover"
                     />
                     ) : (
-                      <img src={img} alt="Snow Park" className="w-full h-full object-cover" />
+                      <ImageWithPlaceholder
+                        src={img}
+                        alt="Snow Park"
+                        wrapperClassName="w-full h-full"
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                        decoding="async"
+                        placeholderClassName="bg-[#0b1a33]"
+                      />
                     )}
                   </div>
                 );
@@ -202,22 +211,25 @@ const AttractionCardInner = function AttractionCard({ item, featured = false }) 
                 displayImg = galleryImg ;
               }
 
-              return (
-                <div key={idx} className="feat-vg-cell">
-                  <img
-                    src={displayImg}
-                    alt={`${title} view ${idx + 1}`}
-                    loading={idx === 0 ? "eager" : "lazy"}
-                    fetchPriority={idx === 0 ? "high" : "auto"}
-                  />
-                </div>
-              );
-            })}
-          </div>
+                return (
+                  <div key={idx} className="feat-vg-cell">
+                    <ImageWithPlaceholder
+                      src={displayImg}
+                      alt={`${title} view ${idx + 1}`}
+                      wrapperClassName="w-full h-full"
+                      className="w-full h-full object-cover"
+                      loading={idx === 0 ? "eager" : "lazy"}
+                      fetchPriority={idx === 0 ? "high" : "auto"}
+                      placeholderClassName="bg-[#0b1a33]"
+                    />
+                  </div>
+                );
+              })}
+            </div>
 
           <div className="feat-temp-badge">
             <div className="feat-temp-num">-7°C</div>
-            <div className="feat-temp-label">FREEZING ZONE</div>
+            <div className="feat-temp-label">SNOW ZONE</div>
           </div>
         </div>
       </div>
@@ -292,14 +304,16 @@ const AttractionCardInner = function AttractionCard({ item, featured = false }) 
               </div>
             </>
           )}
-          <img
+          <ImageWithPlaceholder
             src={img}
             alt={item?.image_alt || title}
+            wrapperClassName="w-full h-full"
+            className="w-full h-full object-cover"
             width={640}
             height={400}
             loading={featured ? "eager" : "lazy"}
             fetchPriority={featured ? "high" : "auto"}
-            className="w-full h-full object-cover"
+            placeholderClassName="bg-slate-100"
           />
       </div>
 

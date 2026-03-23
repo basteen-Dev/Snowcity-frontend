@@ -4,6 +4,7 @@ import dayjs from 'dayjs';
 import { formatCurrency } from '../../utils/formatters';
 import { getPrice, getBasePrice, getUnitLabel, getDiscountPercent } from '../../utils/pricing';
 import { imgSrc } from '../../utils/media';
+import ImageWithPlaceholder from '../common/ImageWithPlaceholder';
 
 export default function OfferCard({ item }) {
   const title = item?.name || item?.title || 'Offer';
@@ -75,17 +76,16 @@ export default function OfferCard({ item }) {
       "
     >
       {/* Image */}
-      <img
+      <ImageWithPlaceholder
         src={img}
         alt={item?.image_alt || title}
+        wrapperClassName="absolute inset-0"
+        className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
         width={640}
         height={400}
-        className="
-          absolute inset-0 h-full w-full object-cover
-          transition-transform duration-700 group-hover:scale-110
-        "
         loading="lazy"
         decoding="async"
+        placeholderClassName="bg-white"
       />
 
       {/* Offer tag */}

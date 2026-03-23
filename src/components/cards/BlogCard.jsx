@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { imgSrc } from '../../utils/media';
+import ImageWithPlaceholder from '../common/ImageWithPlaceholder';
 
 // Helper to resolve URL
 const toBlogUrl = (blog) => {
@@ -46,21 +47,15 @@ const BlogCardInner = function BlogCard({ item }) {
     <article className="group bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-2 h-full flex flex-col">
       <Link to={url} className="block flex-1 flex flex-col">
         <div className="relative overflow-hidden shrink-0">
-          {cover ? (
-            <img
-              src={cover}
-              alt={title}
-              className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-110"
-              width={640}
-              height={192}
-              loading="lazy"
-              decoding="async"
-            />
-          ) : (
-            <div className="w-full h-48 bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center">
-              <div className="text-blue-500 text-4xl">📝</div>
-            </div>
-          )}
+          <ImageWithPlaceholder
+            src={cover}
+            alt={title}
+            wrapperClassName="w-full h-48"
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            loading="lazy"
+            decoding="async"
+            placeholderClassName="bg-slate-50"
+          />
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         </div>
 

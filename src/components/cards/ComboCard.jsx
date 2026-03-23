@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { formatCurrency } from '../../utils/formatters';
 import { getPrice } from '../../utils/pricing';
 import { imgSrc } from '../../utils/media';
+import ImageWithPlaceholder from '../common/ImageWithPlaceholder';
 import { Info } from 'lucide-react';
 
 const IMAGE_PLACEHOLDER = (seed = 'combo') => ``;
@@ -132,15 +133,15 @@ const ComboCardInner = function ComboCard({ item, isUltimate = false }) {
         <div className="relative flex flex-col lg:flex-row h-full w-full overflow-hidden rounded-xl bg-[#0b1a33]/40 backdrop-blur-xl">
           {/* Combo Hero Image */}
           <div className="relative w-full lg:w-2/4 md:w-2/6 overflow-hidden m:h-[150px] flex items-center bg-[#040e21] min-h-[150px] sm:min-h-[300px] lg:min-h-0">
-            {heroImage ? (
-              <img
-                src={heroImage}
-                alt={title}
-                className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-              />
-            ) : (
-              <div className="w-full h-full min-h-[220px] bg-slate-800" />
-            )}
+            <ImageWithPlaceholder
+              src={heroImage}
+              alt={title}
+              wrapperClassName="absolute inset-0"
+              className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+              loading="lazy"
+              decoding="async"
+              placeholderClassName="bg-[#040e21]"
+            />
           </div>
 
           {/* Content Area */}
@@ -205,17 +206,17 @@ const ComboCardInner = function ComboCard({ item, isUltimate = false }) {
       }}
     >
       <div className="exp-card-visual overflow-hidden">
-        {heroImage && (
-          <img
-            src={heroImage}
-            alt={item?.image_alt || title}
-            className="absolute inset-0 h-full w-full object-cover  transition-transform duration-500 group-hover:scale-110"
-            width={640}
-            height={400}
-            loading="lazy"
-            decoding="async"
-          />
-        )}
+        <ImageWithPlaceholder
+          src={heroImage}
+          alt={item?.image_alt || title}
+          wrapperClassName="absolute inset-0"
+          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+          width={640}
+          height={400}
+          loading="lazy"
+          decoding="async"
+          placeholderClassName="bg-slate-100"
+        />
       </div>
       <div className="exp-card-body">
         <div className="exp-type">Saver Combo</div>
