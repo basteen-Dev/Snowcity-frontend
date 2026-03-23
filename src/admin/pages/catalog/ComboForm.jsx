@@ -29,6 +29,7 @@ export default function ComboForm() {
       discount_percent: 0,
       active: true,
       meta_title: '',
+      meta_description: '',
       short_description: '',
       description: '',
       faq_items: [],
@@ -73,6 +74,7 @@ export default function ComboForm() {
           discount_percent: c.discount_percent || 0,
           active: !!c.active,
           meta_title: c.meta_title || '',
+          meta_description: c.meta_description || '',
           short_description: c.short_description || '',
           description: c.description || '',
           faq_items: Array.isArray(c.faq_items) ? c.faq_items : [],
@@ -140,6 +142,7 @@ export default function ComboForm() {
         discount_percent: Number(f.discount_percent || 0),
         active: !!f.active,
         meta_title: f.meta_title?.trim() || null,
+        meta_description: f.meta_description?.trim() || null,
         short_description: f.short_description?.trim() || null,
         description: f.description?.trim() || null,
         faq_items: f.faq_items || [],
@@ -376,6 +379,21 @@ export default function ComboForm() {
           />
           <div className="text-xs text-gray-500 dark:text-neutral-400 mt-1">
             Optional custom title for search engines and browser tabs
+          </div>
+        </div>
+
+        {/* Meta Description */}
+        <div className="mb-4">
+          <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Meta Description (SEO description)</label>
+          <textarea
+            className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200"
+            rows={3}
+            value={f.meta_description}
+            onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, meta_description: e.target.value } }))}
+            placeholder="Custom page description for search engines (recommended 150-160 characters)"
+          />
+          <div className="text-xs text-gray-500 dark:text-neutral-400 mt-1">
+            Optional custom description for search engine results
           </div>
         </div>
 

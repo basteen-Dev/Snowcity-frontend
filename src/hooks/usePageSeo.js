@@ -34,6 +34,7 @@ export default function usePageSeo({
     footer_schema = null,
 } = {}) {
     const createdElements = useRef([]);
+    const originalValues = useRef({});
 
     useEffect(() => {
         // Clean up previous elements
@@ -41,6 +42,13 @@ export default function usePageSeo({
             try { el.parentNode?.removeChild(el); } catch { /* ignore */ }
         });
         createdElements.current = [];
+
+        // Restore any original meta tag values
+        for (const [selector, origContent] of Object.entries(originalValues.current)) {
+            const el = document.querySelector(selector);
+            if (el) el.setAttribute('content', origContent);
+        }
+        originalValues.current = {};
 
         if (!title) return;
 
@@ -52,14 +60,21 @@ export default function usePageSeo({
         function setMeta(name, content, isProperty = false) {
             if (!content) return;
             const attr = isProperty ? 'property' : 'name';
-            let el = document.querySelector(`meta[${attr}="${name}"]`);
-            if (!el) {
+            const selector = `meta[${attr}="${name}"]`;
+            let el = document.querySelector(selector);
+            if (el) {
+                // Track the original value so we can restore it on cleanup
+                if (!(selector in originalValues.current)) {
+                    originalValues.current[selector] = el.getAttribute('content') || '';
+                }
+                el.setAttribute('content', content);
+            } else {
                 el = document.createElement('meta');
                 el.setAttribute(attr, name);
+                el.setAttribute('content', content);
                 document.head.appendChild(el);
                 createdElements.current.push(el);
             }
-            el.setAttribute('content', content);
         }
 
         // Standard meta
@@ -174,6 +189,12 @@ export default function usePageSeo({
                 try { el.parentNode?.removeChild(el); } catch { /* ignore */ }
             });
             createdElements.current = [];
+            // Restore original meta tag values
+            for (const [selector, origContent] of Object.entries(originalValues.current)) {
+                const el = document.querySelector(selector);
+                if (el) el.setAttribute('content', origContent);
+            }
+            originalValues.current = {};
         };
     }, [title, description, keywords, image, imageAlt, canonical, type, author, faq_items, head_schema, body_schema, footer_schema]);
 }

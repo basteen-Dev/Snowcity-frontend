@@ -42,6 +42,9 @@ const CouponForm = lazy(() => import('../pages/catalog/CouponForm'));
 const BannersList = lazy(() => import('../pages/catalog/BannersList'));
 const BannerForm = lazy(() => import('../pages/catalog/BannerForm'));
 
+const PromoCardsList = lazy(() => import('../pages/catalog/PromoCardsList'));
+const PromoCardForm = lazy(() => import('../pages/catalog/PromoCardForm'));
+
 const PagesList = lazy(() => import('../pages/catalog/PagesList'));
 const PageForm = lazy(() => import('../pages/catalog/PageForm'));
 
@@ -421,6 +424,22 @@ export default function AdminRouter() {
           <Route path="catalog/banners/:id" element={
             <RequireRole allowed={['superadmin', 'gm', 'editor']}>
               <BannerForm />
+            </RequireRole>
+          } />
+
+          <Route path="catalog/promo-cards" element={
+            <RequireRole allowed={['superadmin', 'gm', 'editor']}>
+              <PromoCardsList />
+            </RequireRole>
+          } />
+          <Route path="catalog/promo-cards/new" element={
+            <RequireRole allowed={['superadmin', 'gm', 'editor']}>
+              <PromoCardForm />
+            </RequireRole>
+          } />
+          <Route path="catalog/promo-cards/:id" element={
+            <RequireRole allowed={['superadmin', 'gm', 'editor']}>
+              <PromoCardForm />
             </RequireRole>
           } />
 

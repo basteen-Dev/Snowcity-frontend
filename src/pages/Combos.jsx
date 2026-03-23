@@ -3,6 +3,7 @@ import dayjs from 'dayjs';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchCombos } from '../features/combos/combosSlice';
 import ComboCard from '../components/cards/ComboCard';
+import PromoCardsContent from '../components/PromoCardsContent';
 import Loader from '../components/common/Loader';
 import ErrorState from '../components/common/ErrorState';
 import { useNavigate } from 'react-router-dom';
@@ -247,6 +248,9 @@ export default function Combos() {
             );
           })}
         </div>
+
+        {/* Promo Cards Section */}
+        <PromoCardsContent />
       </div>
     </div>
   );

@@ -63,6 +63,9 @@ const A = {
   bannerById: (id) => `/api/parkpanel/banners/${encodeSeg(id)}`,
   bannersReorder: () => '/api/parkpanel/banners/reorder',
 
+  promoCards: () => '/api/parkpanel/promo-cards',
+  promoCardById: (id) => `/api/parkpanel/promo-cards/${encodeSeg(id)}`,
+
   users: () => '/api/parkpanel/users',
   userById: (id) => `/api/parkpanel/users/${encodeSeg(id)}`,
 

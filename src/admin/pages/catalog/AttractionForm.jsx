@@ -15,7 +15,7 @@ export default function AttractionForm() {
   const [state, setState] = React.useState({
     status: isEdit ? 'loading' : 'idle',
     error: null,
-    form: { title: '', slug: '', image_url: '', image_alt: '', desktop_image_url: '', desktop_image_alt: '', base_price: 0, active: true, time_slot_enabled: true, stop_booking: false, description: '', meta_title: '', short_description: '', faq_items: [], head_schema: '', day_rule_type: 'all_days', custom_days: [] }
+    form: { title: '', slug: '', image_url: '', image_alt: '', desktop_image_url: '', desktop_image_alt: '', base_price: 0, active: true, time_slot_enabled: true, stop_booking: false, description: '', meta_title: '', meta_description: '', short_description: '', faq_items: [], head_schema: '', day_rule_type: 'all_days', custom_days: [] }
   });
   const [saving, setSaving] = React.useState(false);
 
@@ -41,6 +41,7 @@ export default function AttractionForm() {
             stop_booking: !!a.stop_booking,
             description: a.description || '',
             meta_title: a.meta_title || '',
+            meta_description: a.meta_description || '',
             short_description: a.short_description || '',
             faq_items: Array.isArray(a.faq_items) ? a.faq_items : [],
             head_schema: a.head_schema || '',
@@ -112,6 +113,10 @@ export default function AttractionForm() {
           <div>
             <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Meta Title (SEO title)</label>
             <input className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200" value={f.meta_title} onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, meta_title: e.target.value } }))} placeholder="Custom page title for SEO" />
+          </div>
+          <div className="md:col-span-2">
+            <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Meta Description (SEO description)</label>
+            <textarea className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200" rows={3} value={f.meta_description} onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, meta_description: e.target.value } }))} placeholder="Custom page description for search engines (recommended 150-160 characters)" />
           </div>
           <div>
             <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Base Price</label>

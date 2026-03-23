@@ -14,32 +14,18 @@ export default function BannerForm() {
   const [state, setState] = React.useState({
     status: isEdit ? 'loading' : 'idle',
     error: null,
-    attractions: [],
-    offers: [],
     form: {
       title: '',
       description: '',
+      cta_text: '',
+      link_url: '',
       web_image: '',
       web_image_alt: '',
       mobile_image: '',
       mobile_image_alt: '',
-      linked_attraction_id: '',
-      linked_offer_id: '',
       active: true
     }
   });
-
-  // Load pickers
-  React.useEffect(() => {
-    (async () => {
-      try {
-        const [ar, of] = await Promise.all([adminApi.get(A.attractions()), adminApi.get(A.offers())]);
-        const attractions = Array.isArray(ar?.data) ? ar.data : Array.isArray(ar) ? ar : [];
-        const offers = Array.isArray(of?.data) ? of.data : Array.isArray(of) ? of : [];
-        setState((s) => ({ ...s, attractions, offers }));
-      } catch { }
-    })();
-  }, []);
 
   // Load banner if edit
   React.useEffect(() => {
@@ -52,12 +38,12 @@ export default function BannerForm() {
           ...s, status: 'idle', form: {
             title: b.title || '',
             description: b.description || '',
+            cta_text: b.cta_text || '',
+            link_url: b.link_url || '',
             web_image: b.web_image || '',
             web_image_alt: b.web_image_alt || '',
             mobile_image: b.mobile_image || '',
             mobile_image_alt: b.mobile_image_alt || '',
-            linked_attraction_id: b.linked_attraction_id || '',
-            linked_offer_id: b.linked_offer_id || '',
             active: !!b.active
           }
         }));
@@ -75,9 +61,11 @@ export default function BannerForm() {
     setState((s) => ({ ...s, error: null }));
     const loadingToast = toast.loading(isEdit ? 'Updating banner...' : 'Creating banner...');
     try {
-      const payload = { ...state.form };
-      if (!payload.linked_attraction_id) delete payload.linked_attraction_id;
-      if (!payload.linked_offer_id) delete payload.linked_offer_id;
+        const payload = {
+          ...state.form,
+          linked_attraction_id: null,
+          linked_offer_id: null
+        };
       if (isEdit) await adminApi.put(`${A.banners()}/${id}`, payload);
       else await adminApi.post(A.banners(), payload);
 
@@ -113,6 +101,25 @@ export default function BannerForm() {
             <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Description</label>
             <textarea rows={3} className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200" value={f.description} onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, description: e.target.value } }))} />
           </div>
+          <div>
+            <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">CTA Text</label>
+            <input className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200" value={f.cta_text} onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, cta_text: e.target.value } }))} placeholder="Book Your Snow Day" />
+          </div>
+          <div>
+            <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">CTA Link</label>
+            <input
+              className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200"
+              value={f.link_url}
+              onChange={(e) => setState((s) => ({
+                ...s,
+                form: {
+                  ...s.form,
+                  link_url: e.target.value,
+                }
+              }))}
+              placeholder="/tickets-offers or https://..."
+            />
+          </div>
 
           <div className="md:col-span-2">
             <ImageUploader label="Web Image" value={f.web_image} onChange={(url) => setState((s) => ({ ...s, form: { ...s.form, web_image: url } }))} altText={f.web_image_alt} onAltChange={(alt) => setState((s) => ({ ...s, form: { ...s.form, web_image_alt: alt } }))} folder="banners" requiredPerm="uploads:write" />
@@ -121,24 +128,6 @@ export default function BannerForm() {
             <ImageUploader label="Mobile Image" value={f.mobile_image} onChange={(url) => setState((s) => ({ ...s, form: { ...s.form, mobile_image: url } }))} altText={f.mobile_image_alt} onAltChange={(alt) => setState((s) => ({ ...s, form: { ...s.form, mobile_image_alt: alt } }))} folder="banners" requiredPerm="uploads:write" />
           </div>
 
-          <div>
-            <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Link Attraction</label>
-            <select className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200" value={f.linked_attraction_id || ''} onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, linked_attraction_id: e.target.value, linked_offer_id: '' } }))}>
-              <option value="">—</option>
-              {(state.attractions || []).map((a) => (
-                <option key={a.attraction_id} value={a.attraction_id}>{a.title}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Link Offer</label>
-            <select className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200" value={f.linked_offer_id || ''} onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, linked_offer_id: e.target.value, linked_attraction_id: '' } }))}>
-              <option value="">—</option>
-              {(state.offers || []).map((o) => (
-                <option key={o.offer_id} value={o.offer_id}>{o.title}</option>
-              ))}
-            </select>
-          </div>
 
           <div className="flex items-center gap-2 md:col-span-2">
             <input id="active" type="checkbox" checked={!!f.active} onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, active: e.target.checked } }))} />

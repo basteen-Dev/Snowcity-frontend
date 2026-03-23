@@ -14,6 +14,7 @@ import HeroCarousel from '../components/hero/HeroCarousel';
 
 const AttractionsCarousel = React.lazy(() => import('../components/carousels/AttractionsCarousel'));
 const CombosCarousel = React.lazy(() => import('../components/carousels/CombosCarousel'));
+const PromoCardsContent = React.lazy(() => import('../components/PromoCardsContent'));
 const OffersMarquee = React.lazy(() => import('../components/common/OffersMarquee'));
 
 const PlanVisitSection = React.lazy(() => import('../components/common/PlanVisitSection'));
@@ -36,6 +37,11 @@ import {
 } from '../components/common/SkeletonLoader';
 import { imgSrc } from '../utils/media';
 import usePageSeo from '../hooks/usePageSeo';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Pagination } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/pagination';
+import { useMediaQuery } from '../hooks/useMediaQuery';
 
 // idle helper
 const onIdle = (cb) => {
@@ -48,6 +54,7 @@ const onIdle = (cb) => {
 
 export default function Home() {
   const dispatch = useDispatch();
+  const isMobile = useMediaQuery('(max-width: 767px)');
 
   const banners = useSelector((s) => s.banners);
   const attractions = useSelector((s) => s.attractions);
@@ -189,6 +196,11 @@ export default function Home() {
           <div className="py-8"><SkeletonCarousel items={4} /></div>
         )}
 
+        {/* Promo Cards */}
+        <React.Suspense fallback={<div className="py-8" />}>
+          <PromoCardsContent />
+        </React.Suspense>
+
         {/* Testimonials */}
         <LazyVisible minHeight={320} placeholder={<div className="py-6"><SkeletonTestimonial /></div>}>
           <Testimonials />
@@ -214,18 +226,32 @@ export default function Home() {
               {blogs.status === 'failed' ? (
                 <ErrorState message={blogs.error?.message || 'Failed to load blogs'} />
               ) : blogTopUpdated.length ? (
-                <div className="blog-marquee-wrapper">
-                  <div className="blog-marquee grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                isMobile ? (
+                  <div className="premium-carousel">
+                    <Swiper
+                      modules={[Pagination]}
+                      spaceBetween={24}
+                      slidesPerView={1.1}
+                      centeredSlides={true}
+                      pagination={{ clickable: true }}
+                      className="pb-12"
+                    >
+                      {blogTopUpdated.map((blog, idx) => (
+                        <SwiperSlide key={`${blog.blog_id ?? blog.id ?? blog.slug}-${idx}`}>
+                          <BlogCard item={blog} />
+                        </SwiperSlide>
+                      ))}
+                    </Swiper>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {blogTopUpdated.map((blog, idx) => (
-                      <div
-                        className="blog-card-wrap"
-                        key={`${blog.blog_id ?? blog.id ?? blog.slug}-${idx}`}
-                      >
+                      <div key={`${blog.blog_id ?? blog.id ?? blog.slug}-${idx}`}>
                         <BlogCard item={blog} />
                       </div>
                     ))}
                   </div>
-                </div>
+                )
               ) : (
                 <SkeletonCarousel items={3} />
               )}

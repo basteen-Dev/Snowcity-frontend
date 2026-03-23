@@ -111,6 +111,7 @@ export default function AdminSidebar({ collapsed, mobileOpen, onCloseMobile, onT
       catalogItems.push(
         { to: '/catalog/coupons', label: 'Coupons', icon: Ticket },
         { to: '/catalog/banners', label: 'Banners', icon: ImageIcon },
+        { to: '/catalog/promo-cards', label: 'Promo Cards', icon: ImageIcon },
         { to: '/catalog/gallery', label: 'Gallery', icon: ImageIcon },
         { to: '/catalog/pages', label: 'Pages', icon: FileText },
         { to: '/catalog/sections', label: 'Sections', icon: Layers },
@@ -140,6 +141,7 @@ export default function AdminSidebar({ collapsed, mobileOpen, onCloseMobile, onT
           { to: '/catalog/addons', label: 'Add-ons', icon: Gift },
           { to: '/catalog/announcements', label: 'Announcements', icon: Megaphone },
           { to: '/catalog/banners', label: 'Banners', icon: ImageIcon },
+          { to: '/catalog/promo-cards', label: 'Promo Cards', icon: ImageIcon },
           { to: '/catalog/gallery', label: 'Gallery', icon: ImageIcon },
           { to: '/catalog/pages', label: 'Pages', icon: FileText },
           { to: '/catalog/sections', label: 'Sections', icon: Layers },

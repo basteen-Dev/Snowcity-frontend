@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination, EffectFade } from "swiper/modules";
 import "swiper/css";
@@ -52,6 +53,16 @@ function deriveHref(b) {
 
     return null;
 }
+
+/** Helper to detect internal paths for react-router-dom */
+const isInternal = (url) => {
+    if (!url) return false;
+    if (url.startsWith('http')) return false;
+    if (url.startsWith('//')) return false;
+    if (url.startsWith('mailto:')) return false;
+    if (url.startsWith('tel:')) return false;
+    return true;
+};
 
 /* ---------------- COMPONENT ---------------- */
 
@@ -129,12 +140,20 @@ export default function HeroCarousel({ banners = [], waveColor = "#0b1a33" }) {
                     const isLoaded = Boolean(loadedKeys[bannerKey]);
                     const isFailed = Boolean(failedKeys[bannerKey]);
                     const fallbackImg = desktopImg || mobileImg || '';
-                    const ticketButton = {
-                        label: ctaText,
-                        sub: b?.cta_subtitle || "Skip the queue & reserve",
-                        href: href || "/tickets-offers",
-                        accent: "from-amber-200 via-yellow-300 to-white",
-                        textClass: "text-slate-900",
+
+                    const DynamicLink = ({ to, className, children, ...props }) => {
+                        if (isInternal(to)) {
+                            return (
+                                <Link to={to} className={className} {...props}>
+                                    {children}
+                                </Link>
+                            );
+                        }
+                        return (
+                            <a href={to} className={className} {...props}>
+                                {children}
+                            </a>
+                        );
                     };
 
                     return (
@@ -191,21 +210,21 @@ export default function HeroCarousel({ banners = [], waveColor = "#0b1a33" }) {
                                     </div>
                                     {href && (
                                         <div className="flex justify-start">
-                                            <a
-                                                href={href}
+                                            <DynamicLink
+                                                to={href}
                                                 className="group relative inline-flex items-center justify-center rounded-xl px-7 py-3 sm:px-10 sm:py-3.5 text-[10px] sm:text-[12px] font-bold tracking-[0.2em] uppercase text-white bg-transparent border border-white/40 shadow-xl transition-all duration-300 hover:border-white/80 hover:bg-white/5"
                                             >
-                                                <span>EXPLORE NOW</span>
+                                                <span>{ctaText}</span>
                                                 <svg className="ml-2 w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                                 </svg>
-                                            </a>
+                                            </DynamicLink>
                                         </div>
                                     )}
                                 </div>
 
                                 {href ? (
-                                    <a href={href} className="absolute inset-0 z-0" aria-label={title || "Banner"} />
+                                    <DynamicLink to={href} className="absolute inset-0 z-0" aria-label={title || "Banner"} />
                                 ) : null}
                             </div>
                         </SwiperSlide>

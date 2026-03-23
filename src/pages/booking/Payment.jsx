@@ -285,41 +285,7 @@ export default function Payment({
                     </div>
 
                     <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {/* PayPhi Option */}
-                        <label
-                            className={`relative flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${paymentGateway === 'payphi'
-                                ? 'border-sky-500 bg-sky-50/60 shadow-md ring-1 ring-sky-200'
-                                : 'border-gray-150 bg-white hover:border-sky-200 hover:shadow-sm'
-                                }`}
-                        >
-                            <input
-                                type="radio"
-                                name="paymentGateway"
-                                value="payphi"
-                                checked={paymentGateway === 'payphi'}
-                                onChange={() => setPaymentGateway('payphi')}
-                                className="sr-only"
-                            />
-                            <div
-                                className={`w-5 h-5 rounded-xl border-2 flex items-center justify-center shrink-0 transition-all ${paymentGateway === 'payphi' ? 'border-sky-500 bg-sky-500' : 'border-gray-300'
-                                    }`}
-                            >
-                                {paymentGateway === 'payphi' && (
-                                    <Check size={11} className="text-white" strokeWidth={3} />
-                                )}
-                            </div>
-                            <img
-                                src={eazyLogo}
-                                alt="PayPhi"
-                                className="h-14 w-auto object-contain shrink-0"
-                            />
-                            <div className="min-w-0">
-
-                                <p className="text-[11px] text-gray-500">Cards · UPI · Netbanking</p>
-                            </div>
-                        </label>
-
-                    
+                        {/* PhonePe Option (Primary) */}
                         <label
                             className={`relative flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${paymentGateway === 'phonepe'
                                 ? 'border-purple-500 bg-purple-50/60 shadow-md ring-1 ring-purple-200'
@@ -335,7 +301,7 @@ export default function Payment({
                                 className="sr-only"
                             />
                             <div
-                                className={`w-3 h-3 rounded-xl border-2 flex items-center justify-center shrink-0 transition-all ${paymentGateway === 'phonepe' ? 'border-purple-500 bg-purple-500' : 'border-gray-300'
+                                className={`w-5 h-5 rounded-xl border-2 flex items-center justify-center shrink-0 transition-all ${paymentGateway === 'phonepe' ? 'border-purple-500 bg-purple-500' : 'border-gray-300'
                                     }`}
                             >
                                 {paymentGateway === 'phonepe' && (
@@ -348,10 +314,41 @@ export default function Payment({
                                 className="h-14 w-auto object-contain shrink-0"
                             />
                             <div className="min-w-0">
-
                                 <p className="text-[11px] text-gray-500">UPI · Wallet · Cards</p>
                             </div>
-                            
+                        </label>
+
+                        {/* PayPhi Option (Secondary) */}
+                        <label
+                            className={`relative flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${paymentGateway === 'payphi'
+                                ? 'border-slate-400 bg-slate-50 shadow-md ring-1 ring-slate-200'
+                                : 'border-gray-150 bg-white hover:border-slate-200 hover:shadow-sm'
+                                }`}
+                        >
+                            <input
+                                type="radio"
+                                name="paymentGateway"
+                                value="payphi"
+                                checked={paymentGateway === 'payphi'}
+                                onChange={() => setPaymentGateway('payphi')}
+                                className="sr-only"
+                            />
+                            <div
+                                className={`w-4 h-4 rounded-xl border-2 flex items-center justify-center shrink-0 transition-all ${paymentGateway === 'payphi' ? 'border-slate-500 bg-slate-500' : 'border-gray-300'
+                                    }`}
+                            >
+                                {paymentGateway === 'payphi' && (
+                                    <Check size={10} className="text-white" strokeWidth={3} />
+                                )}
+                            </div>
+                            <img
+                                src={eazyLogo}
+                                alt="PayPhi"
+                                className="h-14 w-auto object-contain shrink-0"
+                            />
+                            <div className="min-w-0">
+                                <p className="text-[11px] text-gray-500">Cards · UPI · Netbanking</p>
+                            </div>
                         </label>
                     </div>
                     

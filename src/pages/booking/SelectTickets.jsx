@@ -44,6 +44,8 @@ export default function SelectTickets({
   cartAddons,
   setEditingKey,
   offers = [],
+  activeTab,
+  setActiveTab,
 }) {
   // expandedCardId state removed as description is now fully visible
 
@@ -77,7 +79,6 @@ export default function SelectTickets({
   };
 
   const ProductList = () => {
-    const activeTab = sel.itemType;
     const [offerAvailability, setOfferAvailability] = useState({});
     const data = useMemo(() => {
       if (activeTab === 'offer') {
@@ -120,6 +121,7 @@ export default function SelectTickets({
               <button
                 key={t}
                 onClick={() => {
+                  setActiveTab(t);
                   setSel((prev) => ({
                     ...prev,
                     itemType: t,
@@ -129,7 +131,7 @@ export default function SelectTickets({
                     offerId: '',
                   }));
                 }}
-                className={`px-6 py-2 text-sm font-semibold rounded-lg capitalize transition-all duration-200 ${sel.itemType === t
+                className={`px-6 py-2 text-sm font-semibold rounded-lg capitalize transition-all duration-200 ${activeTab === t
                   ? 'bg-white text-sky-700 shadow-sm ring-1 ring-black/5'
                   : 'text-gray-600 hover:text-gray-900'
                   }`}
@@ -142,24 +144,24 @@ export default function SelectTickets({
 
         {data.length === 0 ? (
           <div className="bg-white rounded-3xl shadow-sm border border-dashed border-gray-200 px-4 py-6 text-center text-sm text-gray-500">
-            {sel.itemType === 'combo' ? 'No combos available' : sel.itemType === 'offer' ? 'No active offers available' : 'No attractions available'}
+            {activeTab === 'combo' ? 'No combos available' : activeTab === 'offer' ? 'No active offers available' : 'No attractions available'}
           </div>
         ) : (
           data.map((item) => {
-            const isOffer = sel.itemType === 'offer';
-            const id = isOffer ? (item.offer_id || item.id) : sel.itemType === 'attraction' ? getAttrId(item) : getComboId(item);
+            const isOffer = activeTab === 'offer';
+            const id = isOffer ? (item.offer_id || item.id) : activeTab === 'attraction' ? getAttrId(item) : getComboId(item);
             const isSelected =
-              String(isOffer ? sel.offerId : sel.itemType === 'attraction' ? sel.attractionId : sel.comboId) === String(id);
+              String(isOffer ? sel.offerId : activeTab === 'attraction' ? sel.attractionId : sel.comboId) === String(id);
 
             const basePrice = isOffer ? null :
-              sel.itemType === 'combo'
+              activeTab === 'combo'
                 ? Number(getComboDisplayPrice(item) || 0)
                 : Number(getPrice(item) || item.price || item.base_price || item.amount || 0);
 
-            const title = isOffer ? (item.title || item.name) : sel.itemType === 'attraction' ? item.title || item.name : getComboLabel(item);
+            const title = isOffer ? (item.title || item.name) : activeTab === 'attraction' ? item.title || item.name : getComboLabel(item);
 
             const image = isOffer ? (item.image_url || null) :
-              sel.itemType === 'combo' ? getComboPrimaryImage(item) : getAttractionImage(item);
+              activeTab === 'combo' ? getComboPrimaryImage(item) : getAttractionImage(item);
 
             const onSelect = () => {
               if (typeof setEditingKey === 'function') setEditingKey(null);
@@ -261,15 +263,15 @@ export default function SelectTickets({
                     <div className="text-xs text-gray-500 mt-1 break-words">
                       {(item.short_description || item.subtitle || 'Instant confirmation • Best experience').replace(/<[^>]*>/g, '')}
                     </div>
-                    {sel.itemType !== 'offer' && (
+                    {activeTab !== 'offer' && (
                       <button
                         type="button"
                         onClick={() => {
                           setSel((prev) => ({
                             ...prev,
-                            itemType: sel.itemType,
-                            attractionId: sel.itemType === 'attraction' ? String(id) : '',
-                            comboId: sel.itemType === 'combo' ? String(id) : '',
+                            itemType: activeTab,
+                            attractionId: activeTab === 'attraction' ? String(id) : '',
+                            comboId: activeTab === 'combo' ? String(id) : '',
                             slotKey: '',
                           }));
                           setDetailsMainImage(image || null);
@@ -418,7 +420,7 @@ export default function SelectTickets({
           </button>
         </div>
 
-        <ProductList />
+        <ProductList activeTab={activeTab} />
       </div>
 
       {/* right: order details */}

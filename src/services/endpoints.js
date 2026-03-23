@@ -114,6 +114,9 @@ const endpoints = {
     bySlug: (slug) => `/api/combos/slug/${encodeSeg(slug)}`,
     slots: (id) => `/api/combos/${encodeSeg(id)}/slots`
   },
+  promoCards: {
+    list: () => '/api/promo-cards'
+  },
   coupons: {
     list: () => '/api/coupons',
     byCode: (code) => `/api/coupons/${encodeSeg(code)}`, // GET

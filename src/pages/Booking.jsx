@@ -103,8 +103,8 @@ function useMediaQuery(query) {
   return matches;
 }
 
-const createDefaultSelection = () => ({
-  itemType: 'combo',
+const createDefaultSelection = (defaultType = 'combo') => ({
+  itemType: defaultType,
   attractionId: '',
   comboId: '',
   offerId: '',
@@ -510,14 +510,44 @@ export default function Booking() {
   const dateInputRef = useRef(null);
   const drawerOpenedRef = useRef(false);
 
-  const [sel, setSel] = useState(() => createDefaultSelection());
+  const [searchParams] = useSearchParams();
+
+  // Determine initial tab from query params
+  const initialTab = useMemo(() => {
+    if (searchParams.get('offers-selector') === 'true') return 'offer';
+    if (searchParams.get('attraction-selector') === 'true') return 'attraction';
+    if (searchParams.get('combos-selector') === 'true') return 'combo';
+    return 'combo'; // default
+  }, [searchParams]);
+
+  const [sel, setSel] = useState(() => createDefaultSelection(initialTab));
+  const [activeTab, setActiveTab] = useState(initialTab);
+
+  // Sync tab with URL params if they change
+  useEffect(() => {
+    const tabFromParams = searchParams.get('offers-selector') === 'true' ? 'offer' :
+      searchParams.get('attraction-selector') === 'true' ? 'attraction' :
+        searchParams.get('combos-selector') === 'true' ? 'combo' : null;
+
+    if (tabFromParams && tabFromParams !== activeTab) {
+      setActiveTab(tabFromParams);
+      setSel(prev => ({
+        ...prev,
+        itemType: tabFromParams,
+        attractionId: '',
+        comboId: '',
+        slotKey: '',
+        offerId: '',
+      }));
+    }
+  }, [searchParams, activeTab]);
   const [editingKey, setEditingKey] = useState(null);
   const [itemToRemove, setItemToRemove] = useState(null);
   const [showTokenExpiredModal, setShowTokenExpiredModal] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerMode, setDrawerMode] = useState('booking');
   const [detailsMainImage, setDetailsMainImage] = useState(null);
-  const [paymentGateway, setPaymentGateway] = useState('payphi'); // 'payphi' or 'phonepe'
+  const [paymentGateway, setPaymentGateway] = useState('phonepe'); // 'phonepe' or 'payphi'
 
   const [state, setState] = useState({
     status: 'idle',
@@ -2201,6 +2231,8 @@ export default function Booking() {
                     cartAddons={cartAddons}
                     setEditingKey={setEditingKey}
                     offers={state.offers.length ? state.offers : offersFromRedux}
+                    activeTab={activeTab}
+                    setActiveTab={setActiveTab}
                   />
 
                   {sel.itemType === 'offer' && sel.offerId && (() => {
@@ -2215,7 +2247,7 @@ export default function Booking() {
                       return (
                         <FirstNTicketsDrawer
                           isOpen={drawerOpen}
-                          onClose={() => { setDrawerOpen(false); setSel(createDefaultSelection()); }}
+                          onClose={() => { setDrawerOpen(false); setSel(createDefaultSelection(activeTab)); }}
                           offer={selectedOffer}
                           attractions={prioritizedAttractions}
                           initialDate={sel.date}
@@ -2226,7 +2258,7 @@ export default function Booking() {
                     return (
                       <OfferDrawer
                         isOpen={drawerOpen}
-                        onClose={() => { setDrawerOpen(false); setSel(createDefaultSelection()); }}
+                        onClose={() => { setDrawerOpen(false); setSel(createDefaultSelection(activeTab)); }}
                         offer={selectedOffer}
                         combos={combos}
                         initialDate={sel.date}
@@ -2409,7 +2441,7 @@ export default function Booking() {
                 <div className="fixed inset-0 z-[160] flex justify-end items-end md:items-stretch bg-black/40 backdrop-blur-[2px] md:bg-black/20">
                   <div className="flex-1 hidden md:block" onClick={() => {
                     setEditingKey(null);
-                    setSel(createDefaultSelection());
+                    setSel(createDefaultSelection(activeTab));
                     setDrawerOpen(false);
                   }} />
                   <div className="w-full md:w-1/3 bg-white rounded-2xl  md:rounded-l-3xl shadow-2xl flex flex-col transform translate-y-0 transition-all h-[66vh] md:h-screen max-h-[66vh] md:max-h-screen md:mt-0">
@@ -2424,7 +2456,7 @@ export default function Booking() {
                         type="button"
                         onClick={() => {
                           setEditingKey(null);
-                          setSel(createDefaultSelection());
+                          setSel(createDefaultSelection(activeTab));
                           setDrawerOpen(false);
                         }}
                         className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 flex-shrink-0"
