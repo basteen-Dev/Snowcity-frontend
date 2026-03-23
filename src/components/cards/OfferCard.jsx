@@ -8,7 +8,7 @@ import { imgSrc } from '../../utils/media';
 export default function OfferCard({ item }) {
   const title = item?.name || item?.title || 'Offer';
   const desc = item?.short_description || item?.subtitle || '';
-  const img = imgSrc(item, 'https://picsum.photos/seed/offer/640/400');
+  const img = imgSrc(item);
 
   const price = getPrice(item);
   const basePrice = getBasePrice(item);

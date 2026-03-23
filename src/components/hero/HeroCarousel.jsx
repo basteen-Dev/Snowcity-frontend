@@ -111,8 +111,8 @@ export default function HeroCarousel({ banners = [], waveColor = "#0b1a33" }) {
                 className="w-full"
             >
                 {sortedBanners.map((b, idx) => {
-                    const desktopImg = getWebImage(b, `https://picsum.photos/seed/banner${idx}/1400/700`);
-                    const mobileImg = getMobileImage(b, `https://picsum.photos/seed/banner${idx}-m/600/800`);
+                    const desktopImg = getWebImage(b, ``);
+                    const mobileImg = getMobileImage(b, ``);
                     const title = b?.title || b?.name || "";
                     const subtitle = b?.subtitle || b?.description || b?.caption || "";
                     const href = deriveHref(b);

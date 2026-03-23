@@ -29,15 +29,15 @@ import usePageSeo from '../hooks/usePageSeo';
 /* ========= Small helpers / utilities ========= */
 
 const HERO_PLACEHOLDER_DESKTOP =
-  'https://picsum.photos/seed/combo-hero/1920/800';
+  '';
 const HERO_PLACEHOLDER_MOBILE =
-  'https://picsum.photos/seed/combo-hero/800/600';
+  '';
 const HERO_PLACEHOLDER = HERO_PLACEHOLDER_DESKTOP;
 
 const IMAGE_PLACEHOLDER = (seed, desktop = false) =>
   desktop
-    ? `https://picsum.photos/seed/${seed}/1920/800`
-    : `https://picsum.photos/seed/${seed}/640/400`;
+    ? ``
+    : ``;
 
 const pickImage = (src, seed, desktop = false) =>
   imgSrc(src, IMAGE_PLACEHOLDER(seed || 'combo', desktop));

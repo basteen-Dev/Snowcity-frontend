@@ -11,7 +11,7 @@ const AttractionCardInner = function AttractionCard({ item, featured = false }) 
   const navigate = useNavigate();
   const title = item?.name || item?.title || 'Attraction';
   const desc = item?.short_description || item?.subtitle || '';
-  const img = imgSrc(item, 'https://picsum.photos/seed/attr/800/600');
+  const img = imgSrc(item);
   const attrId = getAttrId(item);
   const detailHref = item?.slug ? `/${item.slug}` : (attrId ? `/attractions/${attrId}` : '/attractions');
 
@@ -195,11 +195,11 @@ const AttractionCardInner = function AttractionCard({ item, featured = false }) 
                 else {
                   // idx 2
                   const gImg = gallery[0] ? imgSrc(gallery[0].url || gallery[0].image_url) : null;
-                  displayImg = gImg || `https://picsum.photos/seed/snow${idx}/400/300`;
+                  displayImg = gImg ;
                 }
               } else {
                 const galleryImg = gallery[idx] ? imgSrc(gallery[idx].url || gallery[idx].image_url) : null;
-                displayImg = galleryImg || (idx === 0 ? img : `https://picsum.photos/seed/snow${idx}/400/300`);
+                displayImg = galleryImg ;
               }
 
               return (

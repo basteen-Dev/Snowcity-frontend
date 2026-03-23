@@ -5,7 +5,7 @@ import { getPrice } from '../../utils/pricing';
 import { imgSrc } from '../../utils/media';
 import { Info } from 'lucide-react';
 
-const IMAGE_PLACEHOLDER = (seed = 'combo') => `https://picsum.photos/seed/${seed}/640/400`;
+const IMAGE_PLACEHOLDER = (seed = 'combo') => ``;
 
 const pickImage = (src, seed = 'combo') =>
   imgSrc(typeof src === 'string' && src ? src : IMAGE_PLACEHOLDER(seed));

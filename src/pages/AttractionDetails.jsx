@@ -654,8 +654,8 @@ export default function AttractionDetails() {
 
 
   // hero image placeholders
-  const placeholderDesktop = `https://picsum.photos/seed/attr${numericAttrId}/1920/800`;
-  const placeholderMobile = `https://picsum.photos/seed/attr${numericAttrId}/800/600`;
+  const placeholderDesktop = ``;
+  const placeholderMobile = ``;
 
   const [isDesktop, setIsDesktop] = React.useState(
     typeof window !== 'undefined' ? window.innerWidth >= 1024 : false,

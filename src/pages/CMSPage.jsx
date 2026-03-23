@@ -26,7 +26,7 @@ export default function CMSPage() {
 
   const featuredGalleryImage = React.useMemo(() => {
     const item = galleryPhotoItems[0];
-    return item ? imgSrc(item.image_url || item.url) : 'https://picsum.photos/seed/snow-gallery/1280/720';
+    return item ? imgSrc(item.image_url || item.url) : '';
   }, [galleryPhotoItems]);
 
   const previewGalleryItems = React.useMemo(() => galleryPhotoItems.slice(0, 4), [galleryPhotoItems]);
