@@ -32,10 +32,22 @@
 
     (async function preloadHero() {
       try {
-        const rawUrl = '%VITE_API_BASE_URL%';
-        const baseUrl = (rawUrl.startsWith('%') || !rawUrl)
-          ? 'https://app.snowcityblr.com'
-          : rawUrl;
+        const rawCdn = '%VITE_CDN_DOMAIN%';
+        const cdnValue = (rawCdn.startsWith('%') || !rawCdn)
+          ? 'https://dq6d6p5mcz15u.cloudfront.net'
+          : rawCdn;
+        const cdnBase = cdnValue.startsWith('http') ? cdnValue : `https://${cdnValue}`;
+        const baseUrl = cdnBase.replace(/\/+$/, '');
+        const cdnHost = cdnBase.replace(/^https?:\/\//, '').replace(/\/+$/, '');
+
+        const toCdn = (url) => {
+          if (!url || typeof url !== 'string') return url;
+          if (url.startsWith('/')) return `${baseUrl}${url}`;
+          if (url.includes('snowparkblr.s3.ap-south-1.amazonaws.com')) {
+            return url.replace('snowparkblr.s3.ap-south-1.amazonaws.com', cdnHost);
+          }
+          return url;
+        };
 
         const controller = new AbortController();
         setTimeout(() => controller.abort(), 3000);
@@ -53,8 +65,8 @@
 
         if (!banners.length) return;
         const b = banners[0];
-        const deskImg = b.web_image || b.image_web || b.desktop_image || b.image_url || b.image;
-        const mobImg = b.mobile_image || b.image_mobile || b.mobile || b.image_url_mobile || deskImg;
+        const deskImg = toCdn(b.web_image || b.image_web || b.desktop_image || b.image_url || b.image);
+        const mobImg = toCdn(b.mobile_image || b.image_mobile || b.mobile || b.image_url_mobile || deskImg);
 
         if (deskImg) {
           const l = document.createElement('link');

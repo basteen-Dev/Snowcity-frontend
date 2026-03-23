@@ -159,7 +159,7 @@ export default function HeroCarousel({ banners = [], waveColor = "#0b1a33" }) {
                                                 width={1400}
                                                 height={700}
                                                 loading={idx === 0 ? "eager" : "lazy"}
-                                                fetchPriority={idx === 0 ? "high" : "auto"}
+                                                fetchPriority="high"
                                                 decoding={idx === 0 ? "sync" : "async"}
                                                 onLoad={() => setLoadedKeys((s) => ({ ...s, [bannerKey]: true }))}
                                                 onError={() => setFailedKeys((s) => ({ ...s, [bannerKey]: true }))}
