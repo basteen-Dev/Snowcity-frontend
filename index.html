@@ -26,67 +26,87 @@
   <!-- Native Banner Fetch & Preload for LCP Optimization -->
  <script>
   (function() {
-    const BANNER_PAGES = ['/'];
-    const path = window.location.pathname.replace(/\/$/, '') || '/';
-    if (!BANNER_PAGES.includes(path)) return;
-
-    (async function preloadHero() {
-      try {
-        const rawCdn = '%VITE_CDN_DOMAIN%';
-        const cdnValue = (rawCdn.startsWith('%') || !rawCdn)
-          ? 'https://dq6d6p5mcz15u.cloudfront.net'
-          : rawCdn;
-        const cdnBase = cdnValue.startsWith('http') ? cdnValue : `https://${cdnValue}`;
-        const baseUrl = cdnBase.replace(/\/+$/, '');
-        const cdnHost = cdnBase.replace(/^https?:\/\//, '').replace(/\/+$/, '');
-
-        const toCdn = (url) => {
-          if (!url || typeof url !== 'string') return url;
-          if (url.startsWith('/')) return `${baseUrl}${url}`;
-          if (url.includes('snowparkblr.s3.ap-south-1.amazonaws.com')) {
-            return url.replace('snowparkblr.s3.ap-south-1.amazonaws.com', cdnHost);
-          }
-          return url;
-        };
-
-        const controller = new AbortController();
-        setTimeout(() => controller.abort(), 3000);
-
-        const res = await fetch(`${baseUrl}/api/banners?active=true&page=1&limit=12`, {
-          priority: 'high',
-          signal: controller.signal
-        });
-        if (!res.ok) return;
-
-        const data = await res.json();
-        const banners = (data.data || data).sort(
-          (a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0)
-        );
-
-        if (!banners.length) return;
-        const b = banners[0];
-        const deskImg = toCdn(b.web_image || b.image_web || b.desktop_image || b.image_url || b.image);
-        const mobImg = toCdn(b.mobile_image || b.image_mobile || b.mobile || b.image_url_mobile || deskImg);
-
-        if (deskImg) {
-          const l = document.createElement('link');
-          l.rel = 'preload'; l.as = 'image'; l.href = deskImg;
-          l.media = '(min-width: 768px)'; l.fetchPriority = 'high';
-          document.head.appendChild(l);
+  const BANNER_PAGES = ['/'];
+  const path = window.location.pathname.replace(/\/$/, '') || '/';
+  if (!BANNER_PAGES.includes(path)) return;
+ 
+  (async function preloadHero() {
+    try {
+      // CDN for images — separate from API base
+      const rawCdn = '%VITE_CDN_DOMAIN%';
+      const cdnValue = (rawCdn.startsWith('%') || !rawCdn)
+        ? 'https://dq6d6p5mcz15u.cloudfront.net'
+        : rawCdn;
+      const cdnBase = cdnValue.startsWith('http') ? cdnValue : `https://${cdnValue}`;
+      const cdnBaseClean = cdnBase.replace(/\/+$/, '');
+      const cdnHost = cdnBaseClean.replace(/^https?:\/\//, '');
+ 
+      // API base — always app.snowcityblr.com, never CloudFront
+      const rawApi = '%VITE_API_BASE_URL%';
+      const apiBase = (rawApi.startsWith('%') || !rawApi || rawApi === 'http://localhost:4000')
+        ? 'https://app.snowcityblr.com'
+        : rawApi;
+ 
+      const toCdn = (url) => {
+        if (!url || typeof url !== 'string') return url;
+        if (url.startsWith('/')) return `${cdnBaseClean}${url}`;
+        if (url.includes('snowparkblr.s3.ap-south-1.amazonaws.com')) {
+          return url.replace('snowparkblr.s3.ap-south-1.amazonaws.com', cdnHost);
         }
-        if (mobImg && mobImg !== deskImg) {
-          const l = document.createElement('link');
-          l.rel = 'preload'; l.as = 'image'; l.href = mobImg;
-          l.media = '(max-width: 767px)'; l.fetchPriority = 'high';
-          document.head.appendChild(l);
-        }
-
-        window.__INITIAL_BANNERS__ = banners;
-      } catch (e) {
-        // Abort or network error — silent fail is correct here
+        return url;
+      };
+ 
+      const controller = new AbortController();
+      setTimeout(() => controller.abort(), 3000);
+ 
+      // Fetch from API, not CDN
+      const res = await fetch(`${apiBase}/api/banners?active=true&page=1&limit=12`, {
+        priority: 'high',
+        signal: controller.signal
+      });
+      if (!res.ok) return;
+ 
+      const data = await res.json();
+      const banners = (data.data || data).sort(
+        (a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0)
+      );
+ 
+      if (!banners.length) return;
+ 
+      const transformedBanners = banners.map(banner => ({
+        ...banner,
+        web_image: toCdn(banner.web_image),
+        image_web: toCdn(banner.image_web),
+        desktop_image: toCdn(banner.desktop_image),
+        image_url: toCdn(banner.image_url),
+        image: toCdn(banner.image),
+        mobile_image: toCdn(banner.mobile_image),
+        image_mobile: toCdn(banner.image_mobile),
+        mobile: toCdn(banner.mobile),
+        image_url_mobile: toCdn(banner.image_url_mobile),
+      }));
+ 
+      const b = transformedBanners[0];
+      const deskImg = b.web_image || b.image_web || b.desktop_image || b.image_url || b.image;
+      const mobImg = b.mobile_image || b.image_mobile || b.mobile || b.image_url_mobile || deskImg;
+ 
+      if (deskImg) {
+        const l = document.createElement('link');
+        l.rel = 'preload'; l.as = 'image'; l.href = deskImg;
+        l.media = '(min-width: 768px)'; l.fetchPriority = 'high';
+        document.head.appendChild(l);
       }
-    })();
+      if (mobImg && mobImg !== deskImg) {
+        const l = document.createElement('link');
+        l.rel = 'preload'; l.as = 'image'; l.href = mobImg;
+        l.media = '(max-width: 767px)'; l.fetchPriority = 'high';
+        document.head.appendChild(l);
+      }
+ 
+      window.__INITIAL_BANNERS__ = transformedBanners;
+    } catch (e) {}
   })();
+})();
 </script>
 
 
