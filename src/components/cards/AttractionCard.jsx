@@ -287,7 +287,7 @@ const AttractionCardInner = function AttractionCard({ item, featured = false }) 
                   🏚️ Immersive
                 </span>
                 <span className="bg-red-900/40 backdrop-blur-md text-white text-[10px] font-bold tracking-wide px-2.5 py-1 rounded-md border border-red-500/50 shadow-sm">
-                  🔞 12+ Years
+                  🔞 5+ Years
                 </span>
               </div>
             </>

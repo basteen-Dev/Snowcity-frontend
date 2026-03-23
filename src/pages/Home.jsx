@@ -110,8 +110,17 @@ export default function Home() {
   const offerItems = offers.items || [];
   const pageItems = pages.items || [];
   const blogItems = blogs.items || [];
-  const blogMarqueeBase = blogItems.slice(0, Math.min(6, blogItems.length));
-  const blogMarqueeItems = blogMarqueeBase.length ? [...blogMarqueeBase, ...blogMarqueeBase] : [];
+  const blogTopUpdated = React.useMemo(() => {
+    if (!blogItems.length) return [];
+    const toTime = (blog) => {
+      const raw = blog?.updated_at || blog?.published_at || blog?.created_at || blog?.date;
+      const time = raw ? new Date(raw).getTime() : 0;
+      return Number.isFinite(time) ? time : 0;
+    };
+    return [...blogItems]
+      .sort((a, b) => toTime(b) - toTime(a))
+      .slice(0, 3);
+  }, [blogItems]);
 
   const marqueeItems = React.useMemo(() => {
     const entries = [];
@@ -204,12 +213,12 @@ export default function Home() {
 
               {blogs.status === 'failed' ? (
                 <ErrorState message={blogs.error?.message || 'Failed to load blogs'} />
-              ) : blogMarqueeItems.length ? (
+              ) : blogTopUpdated.length ? (
                 <div className="blog-marquee-wrapper">
                   <div className="blog-marquee grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {blogMarqueeItems.map((blog, idx) => (
+                    {blogTopUpdated.map((blog, idx) => (
                       <div
-                        className={`blog-card-wrap ${idx >= blogMarqueeBase.length ? 'md:hidden' : ''}`}
+                        className="blog-card-wrap"
                         key={`${blog.blog_id ?? blog.id ?? blog.slug}-${idx}`}
                       >
                         <BlogCard item={blog} />
@@ -258,9 +267,12 @@ export default function Home() {
 
           @media (max-width: 767px) {
             .blog-marquee-wrapper {
-              overflow: hidden;
+              overflow-x: auto;
+              overflow-y: hidden;
               margin: 0;
               padding: 10px 0;
+              scroll-snap-type: x mandatory;
+              -webkit-overflow-scrolling: touch;
             }
              .blog-marquee {
                display: flex !important;
@@ -268,11 +280,12 @@ export default function Home() {
                width: max-content;
                gap: 24px !important;
                animation: none;
-               padding: 0 20px;
-             }
+               padding: 0 20px 8px 20px;
+              }
             .blog-card-wrap {
               width: 300px;
               flex-shrink: 0;
+              scroll-snap-align: start;
             }
           }
 

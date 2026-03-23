@@ -176,7 +176,7 @@ const ComboCardInner = function ComboCard({ item, isUltimate = false }) {
                   }}
                   className="rounded-2xl bg-white px-8 lg:px-12 py-4 text-sm lg:text-base font-black uppercase tracking-widest text-[#0099ff] transition-all hover:bg-sky-50 hover:scale-105 active:scale-95 shadow-xl shadow-white/10"
                 >
-                  Book Exclusive Pass
+                  Book Your Pass
                 </button>
               </div>
             </div>
@@ -218,7 +218,7 @@ const ComboCardInner = function ComboCard({ item, isUltimate = false }) {
         )}
       </div>
       <div className="exp-card-body">
-        <div className="exp-type">Exclusive Combo</div>
+        <div className="exp-type">Saver Combo</div>
         <div className="exp-name">{title}</div>
 
 
