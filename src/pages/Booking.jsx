@@ -36,6 +36,7 @@ import YourDetails from './booking/YourDetails';
 import Payment from './booking/Payment';
 import OfferDrawer from './booking/OfferDrawer';
 import FirstNTicketsDrawer from './booking/FirstNTicketsDrawer';
+import usePageSeo from '../hooks/usePageSeo';
 
 /* ================= Helpers ================= */
 const toYMD = (d) => dayjs(d).format('YYYY-MM-DD');
@@ -471,6 +472,10 @@ const previewOfferForSelection = (offer, unitPrice, qty) => {
 export default function Booking() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  // Dynamic SEO based on /tickets-offers slug in admin
+  usePageSeo({ slug: 'tickets-offers' });
+
   const isDesktop = useMediaQuery('(min-width: 768px)');
   const auth = useSelector((s) => s.auth);
   const hasToken = !!auth?.token;
@@ -510,7 +515,7 @@ export default function Booking() {
   const dateInputRef = useRef(null);
   const drawerOpenedRef = useRef(false);
 
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   // Determine initial tab from query params
   const initialTab = useMemo(() => {
@@ -540,7 +545,8 @@ export default function Booking() {
         offerId: '',
       }));
     }
-  }, [searchParams, activeTab]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
   const [editingKey, setEditingKey] = useState(null);
   const [itemToRemove, setItemToRemove] = useState(null);
   const [showTokenExpiredModal, setShowTokenExpiredModal] = useState(false);
@@ -932,14 +938,13 @@ export default function Booking() {
     });
   };
 
-  const [search] = useSearchParams();
-  const preselectType = search.get('type');
-  const preselectAttrId = search.get('attraction_id');
-  const preselectComboId = search.get('combo_id');
-  const preselectDate = search.get('date');
-  const preselectSlot = search.get('slot');
-  const preselectQty = search.get('qty');
-  const preselectOpenDrawer = search.get('openDrawer');
+  const preselectType = searchParams.get('type');
+  const preselectAttrId = searchParams.get('attraction_id');
+  const preselectComboId = searchParams.get('combo_id');
+  const preselectDate = searchParams.get('date');
+  const preselectSlot = searchParams.get('slot');
+  const preselectQty = searchParams.get('qty');
+  const preselectOpenDrawer = searchParams.get('openDrawer');
 
   useEffect(() => {
     if (attractionsState.status === 'idle')
@@ -1573,8 +1578,11 @@ export default function Booking() {
 
   const handleBack = () => {
     if (step === 1) return;
-    // Use browser history back to keep history stack consistent
-    window.history.back();
+    if (step === 4 && hasToken) {
+      dispatch(setStep(2));
+    } else {
+      dispatch(setStep(step - 1));
+    }
   };
 
   const sendOTP = async () => {
@@ -2232,7 +2240,17 @@ export default function Booking() {
                     setEditingKey={setEditingKey}
                     offers={state.offers.length ? state.offers : offersFromRedux}
                     activeTab={activeTab}
-                    setActiveTab={setActiveTab}
+                    setActiveTab={(t) => {
+                      setActiveTab(t);
+                      const params = new URLSearchParams(searchParams);
+                      params.delete('offers-selector');
+                      params.delete('attraction-selector');
+                      params.delete('combos-selector');
+                      if (t === 'offer') params.set('offers-selector', 'true');
+                      else if (t === 'combo') params.set('combos-selector', 'true');
+                      else if (t === 'attraction') params.set('attraction-selector', 'true');
+                      setSearchParams(params, { replace: true });
+                    }}
                   />
 
                   {sel.itemType === 'offer' && sel.offerId && (() => {

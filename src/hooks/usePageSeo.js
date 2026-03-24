@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useSelector } from 'react-redux';
 
 /**
  * usePageSeo — React hook for client-side SEO meta tag injection.
@@ -11,6 +12,7 @@ import { useEffect, useRef } from 'react';
  * @param {string} opts.keywords
  * @param {string} opts.image
  * @param {string} opts.imageAlt
+ * @param {string} opts.slug — Slug to lookup in Redux seo store
  * @param {string} opts.canonical
  * @param {string} opts.type — 'blog' | 'page' | 'website'
  * @param {string} opts.author
@@ -25,6 +27,7 @@ export default function usePageSeo({
     keywords = '',
     image = '',
     imageAlt = '',
+    slug = '',
     canonical = '',
     type = 'website',
     author = '',
@@ -35,6 +38,19 @@ export default function usePageSeo({
 } = {}) {
     const createdElements = useRef([]);
     const originalValues = useRef({});
+
+    // Dynamic SEO from Redux (slug-based)
+    const seoItems = useSelector((state) => state.seo?.items || []);
+    const defaultSeo = seoItems.find(i => i.slug === 'default' || i.slug === 'home' || i.slug === '/');
+    const matchedSeo = slug ? seoItems.find(i => i.slug === slug) : null;
+
+    // Priority Hierarchy: 
+    // 1. Matched Slug from DB 
+    // 2. Props from Component 
+    // 3. Default Slug from DB
+    const finalTitle = matchedSeo?.meta_title || title || defaultSeo?.meta_title || '';
+    const finalDescription = matchedSeo?.meta_description || description || defaultSeo?.meta_description || '';
+    const finalKeywords = matchedSeo?.meta_keywords || keywords || defaultSeo?.meta_keywords || '';
 
     useEffect(() => {
         // Clean up previous elements
@@ -50,11 +66,11 @@ export default function usePageSeo({
         }
         originalValues.current = {};
 
-        if (!title) return;
+        if (!finalTitle) return;
 
         // Set document title
         const prevTitle = document.title;
-        document.title = title;
+        document.title = finalTitle;
 
         // Helper: create or update a meta tag
         function setMeta(name, content, isProperty = false) {
@@ -78,21 +94,21 @@ export default function usePageSeo({
         }
 
         // Standard meta
-        setMeta('description', description);
-        if (keywords) setMeta('keywords', keywords);
+        setMeta('description', finalDescription);
+        if (finalKeywords) setMeta('keywords', finalKeywords);
         if (author) setMeta('author', author);
 
         // Open Graph
         setMeta('og:type', type === 'blog' ? 'article' : 'website', true);
-        setMeta('og:title', title, true);
-        setMeta('og:description', description, true);
+        setMeta('og:title', finalTitle, true);
+        setMeta('og:description', finalDescription, true);
         if (image) setMeta('og:image', image, true);
         if (canonical) setMeta('og:url', canonical, true);
 
         // Twitter Card
         setMeta('twitter:card', 'summary_large_image');
-        setMeta('twitter:title', title);
-        setMeta('twitter:description', description);
+        setMeta('twitter:title', finalTitle);
+        setMeta('twitter:description', finalDescription);
         if (image) setMeta('twitter:image', image);
         if (imageAlt) setMeta('twitter:image:alt', imageAlt);
 
@@ -196,5 +212,5 @@ export default function usePageSeo({
             }
             originalValues.current = {};
         };
-    }, [title, description, keywords, image, imageAlt, canonical, type, author, faq_items, head_schema, body_schema, footer_schema]);
+    }, [finalTitle, finalDescription, finalKeywords, image, imageAlt, canonical, type, author, faq_items, head_schema, body_schema, footer_schema]);
 }

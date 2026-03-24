@@ -60,8 +60,9 @@ export default function Blog() {
 
   // Inject SEO meta tags on the client-side (must be called before any early returns)
   usePageSeo({
-    title: b.meta_title || b.title || 'Blog',
-    description: b.meta_description || '',
+    slug: slug,
+    title: b.seo_title || b.title || 'Blog',
+    description: b.seo_description || '',
     keywords: b.meta_keywords || '',
     image: cover || '',
     imageAlt: b.image_alt || b.title || '',
@@ -71,6 +72,7 @@ export default function Blog() {
     faq_items: b.faq_items,
     head_schema: b.head_schema,
   });
+
 
   if (st.status === 'loading') return <Loader />;
   if (st.status === 'failed') return <ErrorState message={st.error} />;

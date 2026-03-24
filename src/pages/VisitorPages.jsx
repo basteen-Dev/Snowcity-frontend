@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { fetchPages } from '../features/pages/pagesSlice';
 import Loader from '../components/common/Loader';
 import ErrorState from '../components/common/ErrorState';
+import usePageSeo from '../hooks/usePageSeo';
 
 const toSlugUrl = (page) => {
   if (!page) return '#';
@@ -28,6 +29,13 @@ export default function VisitorPages() {
   }, [dispatch, pages.status]);
 
   const items = pages.items || [];
+
+  usePageSeo({
+    slug: 'visitor-guide',
+    title: 'Plan your SnowCity adventure | Visitor Information',
+    description: 'Browse our visitor information pages to discover what to bring, how to book, safety tips, and everything else you need for a smooth experience.',
+    canonical: window.location.href,
+  });
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#f5f8ff] to-white pt-10 pb-10">

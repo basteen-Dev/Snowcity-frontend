@@ -131,7 +131,7 @@ export default function SelectTickets({
                     offerId: '',
                   }));
                 }}
-                className={`px-6 py-2 text-sm font-semibold rounded-lg capitalize transition-all duration-200 ${activeTab === t
+                className={`px-4 py-2 text-sm font-semibold rounded-lg capitalize transition-all duration-200 ${activeTab === t
                   ? 'bg-white text-sky-700 shadow-sm ring-1 ring-black/5'
                   : 'text-gray-600 hover:text-gray-900'
                   }`}
@@ -260,8 +260,8 @@ export default function SelectTickets({
                     <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1">
                       {title}
                     </h3>
-                    <div className="text-xs text-gray-500 mt-1 break-words">
-                      {(item.short_description || item.subtitle || 'Instant confirmation • Best experience').replace(/<[^>]*>/g, '')}
+                    <div className="text-xs text-gray-500 mt-1 break-words line-clamp-2">
+                      {(item.short_description || item.subtitle || item.description || 'Instant confirmation • Best experience').replace(/<[^>]*>/g, '')}
                     </div>
                     {activeTab !== 'offer' && (
                       <button

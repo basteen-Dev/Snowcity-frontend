@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import adminApi from '../../services/adminApi';
 import dayjs from 'dayjs';
+import { exportToCSV, exportToExcel, exportToPDF } from '../../utils/reportExportUtils';
 import './reports.css';
 
 const moneyFmt = (v) => '₹' + Number(v || 0).toLocaleString('en-IN');
@@ -77,27 +78,37 @@ export default function GuestReport() {
 
     const maxOf = (key) => Math.max(...rows.map(r => r[key] || 0), 1);
 
-    const exportCSV = () => {
-        const cols = ['S.No', 'Visit Date', 'Day', 'Snow Park', 'Madlabs', 'Eyelusion', "Devil's Darkhouse", 'F&B Add-ons', 'Total Guests', 'Total Amount'];
-        const csvRows = rows.map(r => [r.sno, dayjs(r.date).format('DD MMM YYYY'), DAYS[new Date(r.date).getDay()], r.snow, r.mad, r.eye, r.devil, r.fb, r.total, r.amt]);
-        const t = summary;
-        csvRows.push(['TOTAL', '', '', t.snow, t.mad, t.eye, t.devil, t.fb, t.total, t.amt]);
-        const csv = [cols, ...csvRows].map(r => r.join(',')).join('\n');
-        const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
-        a.download = `guest_report_${activeDateLabel.replace(/ /g, '_')}.csv`; a.click();
+    const COLS = ['S.No', 'Visit Date', 'Day', 'Snow Park', 'Madlabs', 'Eyelusion', "Devil's Darkhouse", 'F&B Add-ons', 'Total Guests', 'Total Amount (₹)'];
+    const buildRows = (includeTotals = false) => {
+        const dataRows = rows.map(r => [
+            r.sno,
+            dayjs(r.date).format('DD MMM YYYY'),
+            DAYS[new Date(r.date).getDay()],
+            r.snow, r.mad, r.eye, r.devil, r.fb, r.total, r.amt,
+        ]);
+        if (includeTotals) {
+            const t = summary;
+            dataRows.push(['TOTAL', '', '', t.snow, t.mad, t.eye, t.devil, t.fb, t.total, t.amt]);
+        }
+        return dataRows;
     };
+    const fileLabel = activeDateLabel.replace(/ /g, '_');
 
-    const exportExcel = () => {
-        const cols = ['S.No', 'Visit Date', 'Day', 'Snow Park', 'Madlabs', 'Eyelusion', "Devil's Darkhouse", 'F&B Add-ons', 'Total Guests', 'Total Amount'];
-        let tbl = '<table><thead><tr>' + cols.map(c => `<th>${c}</th>`).join('') + '</tr></thead><tbody>';
-        rows.forEach(r => {
-            tbl += `<tr><td>${r.sno}</td><td>${dayjs(r.date).format('DD MMM YYYY')}</td><td>${DAYS[new Date(r.date).getDay()]}</td><td>${r.snow}</td><td>${r.mad}</td><td>${r.eye}</td><td>${r.devil}</td><td>${r.fb}</td><td>${r.total}</td><td>${r.amt}</td></tr>`;
-        });
-        const t = summary;
-        tbl += `<tr><td>TOTAL</td><td></td><td></td><td>${t.snow}</td><td>${t.mad}</td><td>${t.eye}</td><td>${t.devil}</td><td>${t.fb}</td><td>${t.total}</td><td>${t.amt}</td></tr>`;
-        tbl += '</tbody></table>';
-        const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([tbl], { type: 'application/vnd.ms-excel' }));
-        a.download = `guest_report_${activeDateLabel.replace(/ /g, '_')}.xls`; a.click();
+    const handleExportCSV = () => exportToCSV(COLS, buildRows(true), `guest_report_${fileLabel}`);
+
+    const handleExportExcel = () => exportToExcel(COLS, buildRows(true), `guest_report_${fileLabel}`, 'Guest Report');
+
+    const handleExportPDF = () => {
+        const summaryItems = [
+            { label: 'Total Guests', value: numFmt(summary.total) },
+            { label: '❄️ Snow Park', value: numFmt(summary.snow) },
+            { label: '🧪 Madlabs', value: numFmt(summary.mad) },
+            { label: '👁 Eyelusion', value: numFmt(summary.eye) },
+            { label: '👹 Devil\'s', value: numFmt(summary.devil) },
+            { label: '🍔 Add-ons', value: numFmt(summary.fb) },
+            { label: '💰 Total Amount', value: moneyFmt(summary.amt) },
+        ];
+        exportToPDF(COLS, buildRows(true), `guest_report_${fileLabel}`, `Guest Report — ${activeDateLabel}`, summaryItems);
     };
 
     const isToday = (d) => dayjs(d).format('YYYY-MM-DD') === dayjs().format('YYYY-MM-DD');
@@ -139,9 +150,9 @@ export default function GuestReport() {
                     <div className="fs-sep" />
                     <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--slate)' }}>Visit Date: {activeDateLabel}</div>
                     <div className="export-btns">
-                        <button className="exp-btn exp-excel" onClick={exportExcel}>⬇ Excel</button>
-                        <button className="exp-btn exp-csv" onClick={exportCSV}>⬇ CSV</button>
-                        <button className="exp-btn exp-pdf" onClick={() => window.print()}>⬇ PDF</button>
+                        <button className="exp-btn exp-excel" onClick={handleExportExcel}>⬇ Excel</button>
+                        <button className="exp-btn exp-csv" onClick={handleExportCSV}>⬇ CSV</button>
+                        <button className="exp-btn exp-pdf" onClick={handleExportPDF}>⬇ PDF</button>
                     </div>
                 </div>
 

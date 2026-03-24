@@ -687,6 +687,7 @@ export default function AttractionDetails() {
 
   // SEO Injection
   usePageSeo({
+    slug: slug,
     title: a?.meta_title || title || 'Attraction Details',
     description: a?.meta_description || a?.short_description || '',
     keywords: a?.meta_keywords || '',

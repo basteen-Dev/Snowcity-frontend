@@ -7,6 +7,7 @@ import ComboCard from '../components/cards/ComboCard';
 import Loader from '../components/common/Loader';
 import ErrorState from '../components/common/ErrorState';
 import { safeKey } from '../utils/keys';
+import usePageSeo from '../hooks/usePageSeo';
 
 export default function Attractions() {
   const dispatch = useDispatch();
@@ -78,6 +79,13 @@ export default function Attractions() {
       return 0;
     });
   }, [combos]);
+
+  usePageSeo({
+    slug: 'attractions',
+    title: 'All Attractions | Snow City Bangalore',
+    description: 'Discover the coolest attractions at Snow City Bangalore. From indoor snow parks to thrilling games and family fun.',
+    canonical: window.location.href,
+  });
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#f5f8ff] to-white pt-10 pb-5">

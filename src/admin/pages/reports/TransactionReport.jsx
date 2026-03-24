@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import adminApi from '../../services/adminApi';
 import dayjs from 'dayjs';
+import { exportToCSV, exportToExcel, exportToPDF } from '../../utils/reportExportUtils';
 import './reports.css';
 
 const moneyFmt = (v) => '₹' + Number(v || 0).toLocaleString('en-IN');
@@ -90,25 +91,34 @@ export default function TransactionReport() {
         return 'at-retail';
     };
 
-    const exportCSV = () => {
-        const cols = ['S.No', 'Booking ID', 'Booking Date', 'Visit Date', 'Description', 'Price', 'Discount', 'Qty', 'Nett Amount'];
-        const csvRows = rows.map(r => [r.sno, r.bookingId, dayjs(r.bookingDate).format('DD MMM YYYY HH:mm'), dayjs(r.visitDate).format('DD MMM YYYY'), r.description, r.unitPrice, r.discount, r.quantity, r.nett]);
-        const csv = [cols, ...csvRows].map(r => r.join(',')).join('\n');
-        const blob = new Blob([csv], { type: 'text/csv' });
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-        a.download = `transactions_${activeDateLabel.replace(/ /g, '_')}.csv`; a.click();
-    };
+    const COLS = ['S.No', 'Booking ID', 'Booking Date', 'Visit Date', 'Description', 'Price (₹)', 'Discount (₹)', 'Qty', 'Nett Amount (₹)'];
+    const buildRows = () => rows.map(r => [
+        r.sno,
+        r.bookingId,
+        dayjs(r.bookingDate).format('DD MMM YYYY HH:mm'),
+        dayjs(r.visitDate).format('DD MMM YYYY'),
+        r.description,
+        r.unitPrice,
+        r.discount,
+        r.quantity,
+        r.nett,
+    ]);
+    const fileLabel = activeDateLabel.replace(/ /g, '_');
 
-    const exportExcel = () => {
-        const cols = ['S.No', 'Booking ID', 'Booking Date', 'Visit Date', 'Description', 'Price (₹)', 'Discount (₹)', 'Qty', 'Nett Amount (₹)'];
-        let tbl = '<table><thead><tr>' + cols.map(c => `<th>${c}</th>`).join('') + '</tr></thead><tbody>';
-        rows.forEach(r => {
-            tbl += `<tr><td>${r.sno}</td><td>${r.bookingId}</td><td>${dayjs(r.bookingDate).format('DD MMM YYYY HH:mm')}</td><td>${dayjs(r.visitDate).format('DD MMM YYYY')}</td><td>${r.description}</td><td>${r.unitPrice}</td><td>${r.discount}</td><td>${r.quantity}</td><td>${r.nett}</td></tr>`;
-        });
-        tbl += '</tbody></table>';
-        const blob = new Blob([tbl], { type: 'application/vnd.ms-excel' });
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-        a.download = `transactions_${activeDateLabel.replace(/ /g, '_')}.xls`; a.click();
+    const handleExportCSV = () => exportToCSV(COLS, buildRows(), `transactions_${fileLabel}`);
+
+    const handleExportExcel = () => exportToExcel(COLS, buildRows(), `transactions_${fileLabel}`, 'Transactions');
+
+    const handleExportPDF = () => {
+        const summaryItems = [
+            { label: 'Total Records', value: String(summary.totalRecords ?? 0) },
+            { label: 'Total Qty', value: String(summary.totalQty ?? 0) },
+            { label: 'Gross Amount', value: moneyFmt(summary.totalGross) },
+            { label: 'Total Discount', value: summary.totalDiscount > 0 ? `− ${moneyFmt(summary.totalDiscount)}` : '—' },
+            { label: 'Nett Amount', value: moneyFmt(summary.totalNett) },
+            { label: 'Avg per Ticket', value: moneyFmt(summary.avgPerTicket) },
+        ];
+        exportToPDF(COLS, buildRows(), `transactions_${fileLabel}`, `Transaction Report — ${activeDateLabel}`, summaryItems);
     };
 
     return (
@@ -158,9 +168,9 @@ export default function TransactionReport() {
                         </div>
                     </div>
                     <div className="export-btns">
-                        <button className="exp-btn exp-excel" onClick={exportExcel}>⬇ Excel</button>
-                        <button className="exp-btn exp-csv" onClick={exportCSV}>⬇ CSV</button>
-                        <button className="exp-btn exp-pdf" onClick={() => window.print()}>⬇ PDF</button>
+                        <button className="exp-btn exp-excel" onClick={handleExportExcel}>⬇ Excel</button>
+                        <button className="exp-btn exp-csv" onClick={handleExportCSV}>⬇ CSV</button>
+                        <button className="exp-btn exp-pdf" onClick={handleExportPDF}>⬇ PDF</button>
                     </div>
                 </div>
 

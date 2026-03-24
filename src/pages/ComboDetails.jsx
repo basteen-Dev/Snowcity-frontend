@@ -791,6 +791,7 @@ export default function ComboDetails() {
 
   // SEO Injection
   usePageSeo({
+    slug: slug,
     title: combo?.meta_title || title || 'Combo Details',
     description: combo?.meta_description || combo?.short_description || '',
     keywords: combo?.meta_keywords || '',

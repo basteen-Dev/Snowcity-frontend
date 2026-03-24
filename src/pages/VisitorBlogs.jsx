@@ -5,6 +5,7 @@ import Loader from '../components/common/Loader';
 import ErrorState from '../components/common/ErrorState';
 import Pagination from '../components/common/Pagination';
 import BlogCard from '../components/cards/BlogCard';
+import usePageSeo from '../hooks/usePageSeo';
 
 export default function VisitorBlogs() {
   const dispatch = useDispatch();
@@ -32,6 +33,13 @@ export default function VisitorBlogs() {
 
   const items = blogs.items || [];
   const isLoading = blogs.status === 'loading';
+
+  usePageSeo({
+    slug: 'blog',
+    title: 'Visitor Stories | Snow City Blog',
+    description: 'Discover tips, behind-the-scenes stories, and guest experiences to make your SnowCity adventure unforgettable.',
+    canonical: window.location.href,
+  });
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#f5f8ff] to-white pt-10 pb-10">

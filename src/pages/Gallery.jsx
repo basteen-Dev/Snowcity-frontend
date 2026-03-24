@@ -5,6 +5,7 @@ import { fetchGallery } from '../features/gallery/gallerySlice';
 import Loader from '../components/common/Loader';
 import ErrorState from '../components/common/ErrorState';
 import { imgSrc } from '../utils/media';
+import usePageSeo from '../hooks/usePageSeo';
 
 export default function Gallery() {
   const dispatch = useDispatch();
@@ -56,6 +57,13 @@ export default function Gallery() {
     }
     return 'Peek into the SnowCity experience with photos and short clips from our visitors.';
   };
+
+  usePageSeo({
+    slug: 'gallery',
+    title: getPageTitle(),
+    description: getPageDescription(),
+    canonical: window.location.href,
+  });
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#f5f8ff] to-white pt-24 pb-12">

@@ -61,6 +61,7 @@ export default function CMSPage() {
 
   // Inject SEO meta tags on the client-side (must be called before any early returns)
   usePageSeo({
+    slug: slug,
     title: p.meta_title || title,
     description: p.meta_description || '',
     keywords: p.meta_keywords || '',

@@ -1,10 +1,10 @@
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
-import { useSelector, Provider } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { Toaster } from 'react-hot-toast';
-import store from '../app/store';
 import { ChatbotProvider } from '../context/ChatbotContext';
 import { useSiteSettings } from '../hooks/useSiteSettings';
+import { fetchPageSeo } from '../features/seo/seoSlice';
 import Loader from '../components/common/Loader';
 
 function safeLazy(factory, FallbackComp) {
@@ -80,14 +80,18 @@ function AppLayout() {
 }
 
 function WebsiteLayout({ children }) {
+  const dispatch = useDispatch();
   useSiteSettings();
+
+  useEffect(() => {
+    dispatch(fetchPageSeo());
+  }, [dispatch]);
+
   return (
-    <Provider store={store}>
-      <ChatbotProvider>
-        {children}
-        <Toaster position="top-right" />
-      </ChatbotProvider>
-    </Provider>
+    <ChatbotProvider>
+      {children}
+      <Toaster position="top-right" />
+    </ChatbotProvider>
   );
 }
 

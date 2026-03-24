@@ -28,9 +28,9 @@ export default function PromoCardsContent() {
   if (!cards.length) return null;
 
   return (
-    <div className="max-w-9xl mx-auto px-2 sm:px-2 lg:px-2 py-2">
-      <div className="px-2 md:px-4 mb-4 mt-8 md:mt-12 text-left md:text-center">
-        <h2 className="text-2xl md:text-4xl font-bold text-slate-900 text-center tracking-tight">Weekly Promotional Offers</h2>
+    <div className="max-w-9xl mx-auto px-2 sm:px-2 lg:px-2 py-2 mb-[36px]">
+      <div className="px-2 md:px-4 mb-6 md:mt-8 text-left md:text-center">
+        <h2 className="text-2xl md:text-4xl font-bold text-slate-900 text-center tracking-tight">Everyday Specials</h2>
       </div>
       {isMobile ? (
         <div className="premium-carousel">

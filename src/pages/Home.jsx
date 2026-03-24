@@ -64,8 +64,9 @@ export default function Home() {
   const blogs = useSelector((s) => s.blogs);
   const announcements = useSelector((s) => s.announcements);
 
-  // explicitly manage SEO for the home page
+  // Dynamic SEO for the home page (managed via 'default' slug in admin)
   usePageSeo({
+    slug: 'default',
     title: 'SnowCity - Experience Excellence',
     description: 'Visit SnowCity for the ultimate snow experience. Book your tickets now!',
     keywords: 'snowcity, snow park, amusement park, snow',

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import api from '../services/apiClient';
 import endpoints from '../services/endpoints';
 import toast from 'react-hot-toast';
+import usePageSeo from '../hooks/usePageSeo';
 
 export default function Contact() {
   const [form, setForm] = useState({ name: '', email: '', phone: '', message: '' });
@@ -37,6 +38,13 @@ export default function Contact() {
       setLoading(false);
     }
   };
+
+  usePageSeo({
+    slug: 'contact-us',
+    title: 'Contact Us | Snow City Bangalore',
+    description: 'Get in touch with Snow City Bangalore. Have questions about our attractions, bookings, or location? We are here to help.',
+    canonical: window.location.href,
+  });
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#f5f8ff] to-white px-4 pt-24 pb-12">

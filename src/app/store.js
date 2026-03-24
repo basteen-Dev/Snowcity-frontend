@@ -12,6 +12,7 @@ import bookingsReducer from '../features/bookings/bookingsSlice';
 import addonsReducer from '../features/addons/addonsSlice';
 import galleryReducer from '../features/gallery/gallerySlice';
 import announcementsReducer from '../features/announcements/announcementsSlice';
+import seoReducer from '../features/seo/seoSlice';
 
 import { setAuthHandlers, setAuthToken } from '../services/apiClient';
 
@@ -98,7 +99,8 @@ export const store = configureStore({
     bookings: bookingsReducer,
     addons: addonsReducer,
     gallery: galleryReducer,
-    announcements: announcementsReducer
+    announcements: announcementsReducer,
+    seo: seoReducer
   },
   preloadedState,
   middleware: (getDefault) =>
