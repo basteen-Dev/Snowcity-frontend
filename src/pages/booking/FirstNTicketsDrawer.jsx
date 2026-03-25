@@ -66,6 +66,7 @@ export default function FirstNTicketsDrawer({
   offer,
   attractions = [],
   initialDate,
+  dynamicPricingDates = {},
 }) {
   const dispatch = useDispatch();
   const [date, setDate] = useState('');
@@ -179,10 +180,93 @@ export default function FirstNTicketsDrawer({
     ? Math.min(10, availability.tickets_remaining)
     : 10;
 
-  const isReady = date && attractionId && quantity > 0 && !isSoldOut
-    && (hasTimeSlots ? !!slotKey : true);
-
   const totalPrice = offerPrice * quantity;
+
+  // Batch-check dynamic pricing for ALL candidate dates when drawer is open
+  const [dpCache, setDpCache] = useState({});
+  const candidateDates = useMemo(() => {
+    const dates = [];
+    for (let i = 1; i <= 60 && dates.length < 8; i++) {
+      const candidate = dayjs().add(i, 'day').format('YYYY-MM-DD');
+      if (isDateAllowed(candidate, offer, rule)) dates.push(candidate);
+    }
+    return dates;
+  }, [offer, rule]);
+
+  // Fetch DP status for each candidate date for ALL eligible attractions
+  useEffect(() => {
+    if (!candidateDates.length || !eligibleAttractions.length) return;
+    candidateDates.forEach((d) => {
+      eligibleAttractions.forEach((attr) => {
+        const aId = getAttrId(attr);
+        const dpKey = `attraction:${aId}:${d}`;
+        if (dynamicPricingDates[dpKey] !== undefined || dpCache[dpKey] !== undefined) return;
+        api.get(endpoints.dynamicPricing.check(), {
+          params: { target_type: 'attraction', target_id: aId, date: d },
+        })
+          .then((res) => {
+            const hasDp = !!(res?.hasDynamicPricing || res?.data?.hasDynamicPricing);
+            setDpCache((prev) => ({ ...prev, [dpKey]: hasDp }));
+          })
+          .catch(() => {});
+      });
+    });
+  }, [eligibleAttractions, candidateDates, dynamicPricingDates]);
+
+  // Helper: is a given date blocked by dynamic pricing for ANY eligible attraction?
+  const isDateDpBlocked = (d) => {
+    return eligibleAttractions.some((attr) => {
+      const aId = getAttrId(attr);
+      const dpKey = `attraction:${aId}:${d}`;
+      return !!(dynamicPricingDates[dpKey] || dpCache[dpKey]);
+    });
+  };
+
+  // Batch-fetch availability for all candidate dates
+  const [availByDate, setAvailByDate] = useState({});
+  useEffect(() => {
+    if (!offer || !candidateDates.length) return;
+    const offerId = offer.offer_id ?? offer.id;
+    candidateDates.forEach((d) => {
+      if (availByDate[d] !== undefined) return;
+      api.get(`/api/offers/${offerId}/availability`, { params: { date: d } })
+        .then((res) => {
+          const avail = res?.data || res || {};
+          setAvailByDate((prev) => ({ ...prev, [d]: avail }));
+        })
+        .catch(() => {
+          setAvailByDate((prev) => ({ ...prev, [d]: null }));
+        });
+    });
+  }, [offer, candidateDates]);
+
+  // Helper: is a date sold out?
+  const isDateSoldOut = (d) => {
+    const avail = availByDate[d];
+    return avail?.is_sold_out === true;
+  };
+
+  // Remaining tickets for a date
+  const getDateRemaining = (d) => {
+    const avail = availByDate[d];
+    if (!avail || avail.tickets_remaining == null) return null;
+    return avail.tickets_remaining;
+  };
+
+  // If current date gets blocked by DP or sold out, auto-clear it
+  useEffect(() => {
+    if (date && (isDateDpBlocked(date) || isDateSoldOut(date))) setDate('');
+  }, [date, dpCache, dynamicPricingDates, availByDate]);
+
+  // Auto-select initial date: skip DP-blocked and sold-out dates
+  useEffect(() => {
+    if (!isOpen || !offer || date) return;
+    const firstGood = candidateDates.find((d) => !isDateDpBlocked(d) && !isDateSoldOut(d));
+    if (firstGood) setDate(firstGood);
+  }, [isOpen, offer, candidateDates, dpCache, dynamicPricingDates, availByDate]);
+
+  const isReady = date && !isDateDpBlocked(date) && !isDateSoldOut(date) && attractionId && quantity > 0 && !isSoldOut
+    && (hasTimeSlots ? !!slotKey : true);
 
   const handleCheckout = (isDirectBuy) => {
     if (!isReady || !offer || !selectedAttraction) return;
@@ -258,47 +342,50 @@ export default function FirstNTicketsDrawer({
             </p>
           </div>
 
-          {/* Sold Out Banner */}
-          {isSoldOut && (
-            <div className="bg-red-50 border border-red-200 p-4 rounded-2xl flex items-center gap-3">
-              <AlertTriangle size={20} className="text-red-600 shrink-0" />
-              <div>
-                <div className="font-bold text-red-700">Sold Out</div>
-                <div className="text-sm text-red-600">All {ticketLimit} tickets have been sold for this date.</div>
-              </div>
-            </div>
-          )}
-
           {/* Date Selection */}
           <div className="space-y-2">
             <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Date of Visit</p>
             <div className="flex flex-wrap gap-2">
               {(() => {
-                // Generate next 4 valid dates
-                const validDates = [];
-                for (let i = 1; i <= 60 && validDates.length < 4; i++) {
-                  const candidate = dayjs().add(i, 'day').format('YYYY-MM-DD');
-                  if (isDateAllowed(candidate, offer, rule)) validDates.push(candidate);
+                // Filter out dates that have dynamic pricing — they don't show at all
+                const visibleDates = candidateDates.filter((d) => !isDateDpBlocked(d)).slice(0, 6);
+                if (visibleDates.length === 0) {
+                  return (
+                    <div className="text-sm text-amber-600 font-medium">
+                      No eligible dates available — all upcoming dates have special pricing.
+                    </div>
+                  );
                 }
-                return validDates.map((d) => (
-                  <button
-                    key={d}
-                    type="button"
-                    onClick={() => setDate(d)}
-                    className={`px-4 py-2 rounded-xl text-xs font-medium border transition-colors ${date === d
-                      ? 'bg-sky-600 text-white border-sky-600'
-                      : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'}`}
-                  >
-                    {dayjs(d).format('ddd, DD MMM')}
-                  </button>
-                ));
+                return visibleDates.map((d) => {
+                  const soldOut = isDateSoldOut(d);
+                  const remaining = getDateRemaining(d);
+                  const isSelected = date === d;
+                  return (
+                    <button
+                      key={d}
+                      type="button"
+                      onClick={() => !soldOut && setDate(d)}
+                      disabled={soldOut}
+                      className={`px-4 py-2 rounded-xl text-xs font-medium border transition-colors flex flex-col items-center gap-0.5 min-w-[90px] ${
+                        soldOut
+                          ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed line-through'
+                          : isSelected
+                            ? 'bg-sky-600 text-white border-sky-600'
+                            : 'bg-white text-gray-800 border-gray-200 hover:border-sky-300'
+                      }`}
+                    >
+                      <span>{dayjs(d).format('ddd, DD MMM')}</span>
+                      {soldOut && <span className="text-[10px] text-red-500 font-bold no-underline" style={{ textDecoration: 'none' }}>Sold Out</span>}
+                      {!soldOut && remaining != null && (
+                        <span className={`text-[10px] font-medium ${isSelected ? 'text-sky-100' : 'text-emerald-600'}`}>
+                          🎫 {remaining} left
+                        </span>
+                      )}
+                    </button>
+                  );
+                });
               })()}
             </div>
-            {availability && !isSoldOut && (
-              <div className="text-xs text-emerald-700 font-medium mt-1">
-                🎫 {availability.tickets_remaining} of {availability.ticket_limit} tickets remaining
-              </div>
-            )}
           </div>
 
           {/* Attraction Selection */}

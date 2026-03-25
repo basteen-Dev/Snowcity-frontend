@@ -1169,8 +1169,11 @@ export default function Booking() {
       const isSameOrPast = selectedDate && selectedDate <= todayStr;
       const dpKey = `combo:${itemId}:${selectedDate}`;
       const hasDynamicPricing = selectedDate && dynamicPricingDates[dpKey];
-      // if (!appliedOffer && !hasDynamicPricing && !isSameOrPast) {
-      // if (!appliedOffer && !hasDynamicPricing && !isSameOrPast) {
+      // If dynamic pricing is active, clear slot-level offers too
+      if (hasDynamicPricing && appliedOffer) {
+        appliedOffer = null;
+        finalPrice = originalPrice || finalPrice;
+      }
       if (!appliedOffer && !hasDynamicPricing && !isSameOrPast) {
         appliedOffer = offersFromRedux.find(
           (offer) =>
@@ -1226,6 +1229,11 @@ export default function Booking() {
       const isSameOrPast = selectedDate && selectedDate <= todayStr;
       const dpKey = `attraction:${itemId}:${selectedDate}`;
       const hasDynamicPricing = selectedDate && dynamicPricingDates[dpKey];
+      // If dynamic pricing is active, clear slot-level offers too
+      if (hasDynamicPricing && appliedOffer) {
+        appliedOffer = null;
+        finalPrice = originalPrice || finalPrice;
+      }
 
       if (!appliedOffer && !hasDynamicPricing && !isSameOrPast) {
         appliedOffer = offersFromRedux.find(
@@ -1293,9 +1301,28 @@ export default function Booking() {
     return false;
   }, [sel.itemType, selectedAttraction, selectedCombo]);
 
+  // Check if a date is blocked by the selected item's day rule
+  const isDayBlockedByRule = useCallback((dateStr) => {
+    let selectedItem = null;
+    if (sel.itemType === 'attraction' && sel.attractionId) {
+      selectedItem = prioritizedAttractions.find(a => String(getAttrId(a)) === String(sel.attractionId));
+    } else if (sel.itemType === 'combo' && sel.comboId) {
+      selectedItem = combos.find(c => String(getComboId(c)) === String(sel.comboId));
+    }
+    if (!selectedItem) return false;
+    const dayRuleType = selectedItem.day_rule_type || 'all_days';
+    if (dayRuleType === 'all_days') return false;
+    const customDays = selectedItem.custom_days || [];
+    const dayOfWeek = dayjs(dateStr).day();
+    if (dayRuleType === 'weekends') return dayOfWeek !== 0 && dayOfWeek !== 6;
+    if (dayRuleType === 'weekdays') return dayOfWeek === 0 || dayOfWeek === 6;
+    if (dayRuleType === 'custom_days' && customDays.length > 0) return !customDays.includes(dayOfWeek);
+    return false;
+  }, [sel.itemType, sel.attractionId, sel.comboId, prioritizedAttractions, combos]);
+
   // Selection is ready when we have title, date, qty AND either a slot key or time slots are disabled
   const selectionReady = Boolean(
-    selectedMeta.title && sel.date && (sel.slotKey || isTimeSlotsDisabled) && qty && !isBookingStopped
+    selectedMeta.title && sel.date && !isDayBlockedByRule(sel.date) && (sel.slotKey || isTimeSlotsDisabled) && qty && !isBookingStopped
   );
 
   const cartTicketsTotal = useMemo(
@@ -1981,24 +2008,7 @@ export default function Booking() {
     }));
   };
 
-  // Check if a date is blocked by the selected item's day rule
-  const isDayBlockedByRule = (dateStr) => {
-    let selectedItem = null;
-    if (sel.itemType === 'attraction' && sel.attractionId) {
-      selectedItem = prioritizedAttractions.find(a => String(getAttrId(a)) === String(sel.attractionId));
-    } else if (sel.itemType === 'combo' && sel.comboId) {
-      selectedItem = combos.find(c => String(getComboId(c)) === String(sel.comboId));
-    }
-    if (!selectedItem) return false;
-    const dayRuleType = selectedItem.day_rule_type || 'all_days';
-    if (dayRuleType === 'all_days') return false;
-    const customDays = selectedItem.custom_days || [];
-    const dayOfWeek = dayjs(dateStr).day();
-    if (dayRuleType === 'weekends') return dayOfWeek !== 0 && dayOfWeek !== 6;
-    if (dayRuleType === 'weekdays') return dayOfWeek === 0 || dayOfWeek === 6;
-    if (dayRuleType === 'custom_days' && customDays.length > 0) return !customDays.includes(dayOfWeek);
-    return false;
-  };
+
   const todayBlocked = isDayBlockedByRule(todayYMD());
   const tomorrowBlocked = isDayBlockedByRule(dayjs().add(1, 'day').format('YYYY-MM-DD'));
 
@@ -2269,6 +2279,7 @@ export default function Booking() {
                           offer={selectedOffer}
                           attractions={prioritizedAttractions}
                           initialDate={sel.date}
+                          dynamicPricingDates={dynamicPricingDates}
                         />
                       );
                     }
@@ -2280,6 +2291,7 @@ export default function Booking() {
                         offer={selectedOffer}
                         combos={combos}
                         initialDate={sel.date}
+                        dynamicPricingDates={dynamicPricingDates}
                       />
                     );
                   })()}
@@ -2510,22 +2522,27 @@ export default function Booking() {
 
                           <div className="text-sm text-gray-700">
                             {(() => {
-                              const desc =
-                                sel.itemType === 'combo'
-                                  ? selectedCombo?.description ||
-                                  selectedCombo?.short_description ||
-                                  selectedCombo?.summary ||
-                                  ''
-                                  : selectedAttraction?.description ||
-                                  selectedAttraction?.short_description ||
-                                  selectedAttraction?.summary ||
-                                  selectedAttraction?.about ||
-                                  '';
+                              const itemData = sel.itemType === 'combo' ? selectedCombo : selectedAttraction;
+                              if (!itemData) return null;
+                              
+                              const shortDesc = itemData.short_description || itemData.summary || '';
+                              const mainDesc = itemData.description || itemData.about || '';
+                              
                               return (
-                                <div
-                                  className="prose prose-sm max-w-none prose-sky prose-p:my-1 prose-li:my-0.5"
-                                  dangerouslySetInnerHTML={{ __html: desc || '' }}
-                                />
+                                <>
+                                  {shortDesc && (
+                                    <div
+                                      className="prose prose-sm max-w-none prose-sky prose-p:my-1 prose-li:my-0.5 mb-3 font-medium text-gray-800"
+                                      dangerouslySetInnerHTML={{ __html: shortDesc }}
+                                    />
+                                  )}
+                                  {mainDesc && (
+                                    <div
+                                      className="prose prose-sm max-w-none border-t pt-3 border-gray-100 prose-sky prose-p:my-1 prose-li:my-0.5"
+                                      dangerouslySetInnerHTML={{ __html: mainDesc }}
+                                    />
+                                  )}
+                                </>
                               );
                             })()}
                           </div>

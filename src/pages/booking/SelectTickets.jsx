@@ -272,6 +272,7 @@ export default function SelectTickets({
                             itemType: activeTab,
                             attractionId: activeTab === 'attraction' ? String(id) : '',
                             comboId: activeTab === 'combo' ? String(id) : '',
+                            date: getNextAvailableDate(item),
                             slotKey: '',
                           }));
                           setDetailsMainImage(image || null);

@@ -30,7 +30,7 @@ export default function PromoCardsContent() {
   return (
     <div className="max-w-9xl mx-auto px-2 sm:px-2 lg:px-2 py-2 mb-[36px]">
       <div className="px-2 md:px-4 mb-6 md:mt-8 text-left md:text-center">
-        <h2 className="text-2xl md:text-4xl font-bold text-slate-900 text-center tracking-tight">Everyday Specials</h2>
+        <h2 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tight leading-none mb-6">Everyday Specials</h2>
       </div>
       {isMobile ? (
         <div className="premium-carousel">

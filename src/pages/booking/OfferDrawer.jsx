@@ -67,6 +67,7 @@ export default function OfferDrawer({
   offer,
   combos,
   initialDate,
+  dynamicPricingDates = {},
 }) {
   const dispatch = useDispatch();
   const [date, setDate] = useState('');
@@ -91,14 +92,35 @@ export default function OfferDrawer({
 
   useEffect(() => {
     if (!offer || !isOpen) return;
-    const preferred = initialDate && isDateAllowed(initialDate, offer, rule) ? initialDate : null;
-    if (preferred) {
-      setDate(preferred);
-      return;
-    }
-    const nextValid = getNextValidDate(offer, rule);
-    if (nextValid) setDate(nextValid);
-  }, [initialDate, offer, rule, isOpen]);
+    // Find first valid date that also doesn't have dynamic pricing
+    const findValidDate = (startDate) => {
+      if (startDate && isDateAllowed(startDate, offer, rule)) {
+        // Check DP for all combos on this date
+        const dateStr = toYMD(startDate);
+        const hasDP = combos.some((c) => {
+          const cId = getComboId(c);
+          const dpKey = `combo:${cId}:${dateStr}`;
+          return !!dynamicPricingDates[dpKey];
+        });
+        if (!hasDP) return startDate;
+      }
+      // Fall back to next valid non-DP date
+      const start = dayjs();
+      for (let i = 0; i <= 60; i++) {
+        const candidate = start.add(i, 'day').format('YYYY-MM-DD');
+        if (!isDateAllowed(candidate, offer, rule)) continue;
+        const hasDP2 = combos.some((c) => {
+          const cId = getComboId(c);
+          const dpKey = `combo:${cId}:${candidate}`;
+          return !!dynamicPricingDates[dpKey];
+        });
+        if (!hasDP2) return candidate;
+      }
+      return '';
+    };
+    const preferred = initialDate ? findValidDate(initialDate) : findValidDate(null);
+    setDate(preferred || '');
+  }, [initialDate, offer, rule, isOpen, dynamicPricingDates, combos]);
 
   useEffect(() => {
     if (!date) {
@@ -146,7 +168,49 @@ export default function OfferDrawer({
     });
   }, [items, date, slotsByIndex]);
 
-  const isReady = date && items.length === buyQty && items.every((item) => item.comboId && item.slotKey);
+  // Local dynamic pricing cache for combos checked within this drawer
+  const [dpCache, setDpCache] = useState({});
+
+  // Fetch dynamic pricing status for selected combos
+  useEffect(() => {
+    if (!date) return;
+    const dateStr = toYMD(date);
+    items.forEach((item) => {
+      if (!item.comboId) return;
+      const dpKey = `combo:${item.comboId}:${dateStr}`;
+      // Skip if already checked in parent or local cache
+      if (dynamicPricingDates[dpKey] !== undefined || dpCache[dpKey] !== undefined) return;
+      api.get(endpoints.dynamicPricing.check(), {
+        params: { target_type: 'combo', target_id: item.comboId, date: dateStr },
+      })
+        .then((res) => {
+          const hasDp = !!(res?.hasDynamicPricing || res?.data?.hasDynamicPricing);
+          setDpCache((prev) => ({ ...prev, [dpKey]: hasDp }));
+        })
+        .catch(() => {});
+    });
+  }, [date, items, dynamicPricingDates, dpCache]);
+
+  // Check if any selected combo has dynamic pricing on the chosen date
+  const hasDynamicPricing = useMemo(() => {
+    if (!date) return false;
+    const dateStr = toYMD(date);
+    return items.some((item) => {
+      if (!item.comboId) return false;
+      const dpKey = `combo:${item.comboId}:${dateStr}`;
+      return !!(dynamicPricingDates[dpKey] || dpCache[dpKey]);
+    });
+  }, [date, items, dynamicPricingDates, dpCache]);
+
+  // If DP is detected on the current date, auto-clear it
+  useEffect(() => {
+    if (hasDynamicPricing && date) {
+      toast.error('This date has special pricing. Offer is not applicable.');
+      setDate('');
+    }
+  }, [hasDynamicPricing]);
+
+  const isReady = date && !hasDynamicPricing && items.length === buyQty && items.every((item) => item.comboId && item.slotKey);
 
   const totalPrice = useMemo(() => {
     return items.reduce((sum, item, idx) => {
@@ -238,14 +302,44 @@ export default function OfferDrawer({
             <div className="flex flex-wrap gap-2">
               <button
                 type="button"
-                onClick={() => setDateFromPreset('today', offer, rule, setDate)}
+                onClick={() => {
+                  const d = dayjs().format('YYYY-MM-DD');
+                  if (!isDateAllowed(d, offer, rule)) {
+                    toast.error('This offer is restricted to specific days.');
+                    return;
+                  }
+                  const hasDP = combos.some((c) => {
+                    const dpKey = `combo:${getComboId(c)}:${d}`;
+                    return !!(dynamicPricingDates[dpKey] || dpCache[dpKey]);
+                  });
+                  if (hasDP) {
+                    toast.error('This date has special pricing. Offer is not applicable.');
+                    return;
+                  }
+                  setDate(d);
+                }}
                 className={`px-4 py-2 rounded-xl text-xs font-medium border transition-colors ${date === dayjs().format('YYYY-MM-DD') ? 'bg-sky-600 text-white border-sky-600' : 'bg-white text-gray-800 border-gray-200'}`}
               >
                 Today
               </button>
               <button
                 type="button"
-                onClick={() => setDateFromPreset('tomorrow', offer, rule, setDate)}
+                onClick={() => {
+                  const d = dayjs().add(1, 'day').format('YYYY-MM-DD');
+                  if (!isDateAllowed(d, offer, rule)) {
+                    toast.error('This offer is restricted to specific days.');
+                    return;
+                  }
+                  const hasDP = combos.some((c) => {
+                    const dpKey = `combo:${getComboId(c)}:${d}`;
+                    return !!(dynamicPricingDates[dpKey] || dpCache[dpKey]);
+                  });
+                  if (hasDP) {
+                    toast.error('This date has special pricing. Offer is not applicable.');
+                    return;
+                  }
+                  setDate(d);
+                }}
                 className={`px-4 py-2 rounded-xl text-xs font-medium border transition-colors ${date === dayjs().add(1, 'day').format('YYYY-MM-DD') ? 'bg-sky-600 text-white border-sky-600' : 'bg-white text-gray-800 border-gray-200'}`}
               >
                 Tomorrow
@@ -254,11 +348,22 @@ export default function OfferDrawer({
                 type="date"
                 value={date}
                 onChange={(e) => {
-                  if (isDateAllowed(e.target.value, offer, rule)) setDate(e.target.value);
-                  else {
+                  const d = e.target.value;
+                  if (!isDateAllowed(d, offer, rule)) {
                     toast.error('This offer is restricted to specific days. Please select a valid date.');
                     setDate('');
+                    return;
                   }
+                  const hasDP = combos.some((c) => {
+                    const dpKey = `combo:${getComboId(c)}:${d}`;
+                    return !!(dynamicPricingDates[dpKey] || dpCache[dpKey]);
+                  });
+                  if (hasDP) {
+                    toast.error('This date has special pricing. Offer is not applicable.');
+                    setDate('');
+                    return;
+                  }
+                  setDate(d);
                 }}
                 min={offer?.valid_from ? String(offer.valid_from).slice(0, 10) : undefined}
                 max={offer?.valid_to ? String(offer.valid_to).slice(0, 10) : undefined}
@@ -266,6 +371,8 @@ export default function OfferDrawer({
               />
             </div>
           </div>
+
+
 
           <div className="space-y-5 pt-1">
             {items.map((item, idx) => {

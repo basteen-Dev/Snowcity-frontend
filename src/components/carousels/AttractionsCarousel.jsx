@@ -64,7 +64,7 @@ export default function AttractionsCarousel({ items = [] }) {
           Unforgettable Experiences
         </p>
         <h2 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tight leading-none mb-6" style={{ fontFamily: 'Red Hat Display, sans-serif' }}>
-          Every Visit is a Different Adventure
+          Every Visit is a <span style={{ color: '#ea580c', fontStyle: 'italic' }}>Different</span> Adventure
         </h2>
         <div className="w-20 h-1.5 bg-[#0099ff] mx-auto rounded-xl mb-6" />
         <p className="text-gray-600 text-lg md:text-xl max-w-2xl mx-auto font-medium leading-relaxed">
