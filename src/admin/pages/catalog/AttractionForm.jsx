@@ -15,7 +15,7 @@ export default function AttractionForm() {
   const [state, setState] = React.useState({
     status: isEdit ? 'loading' : 'idle',
     error: null,
-    form: { title: '', slug: '', image_url: '', image_alt: '', desktop_image_url: '', desktop_image_alt: '', base_price: 0, active: true, time_slot_enabled: true, stop_booking: false, description: '', meta_title: '', meta_description: '', short_description: '', faq_items: [], head_schema: '', day_rule_type: 'all_days', custom_days: [] }
+    form: { title: '', slug: '', image_url: '', image_alt: '', desktop_image_url: '', desktop_image_alt: '', base_price: 0, sort_order: 0, active: true, time_slot_enabled: true, stop_booking: false, description: '', meta_title: '', meta_description: '', short_description: '', faq_items: [], head_schema: '', day_rule_type: 'all_days', custom_days: [] }
   });
   const [saving, setSaving] = React.useState(false);
 
@@ -36,6 +36,7 @@ export default function AttractionForm() {
             desktop_image_url: a.desktop_image_url || '',
             desktop_image_alt: a.desktop_image_alt || '',
             base_price: a.base_price || 0,
+            sort_order: a.sort_order || 0,
             active: !!a.active,
             time_slot_enabled: a.time_slot_enabled !== false,
             stop_booking: !!a.stop_booking,
@@ -121,6 +122,10 @@ export default function AttractionForm() {
           <div>
             <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Base Price</label>
             <input type="number" className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200" value={f.base_price} onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, base_price: Number(e.target.value || 0) } }))} />
+          </div>
+          <div>
+            <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Order Option (Frontend Arrangement)</label>
+            <input type="number" className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200" value={f.sort_order || 0} onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, sort_order: Number(e.target.value || 0) } }))} placeholder="0" />
           </div>
           <div className="md:col-span-2">
             <ImageUploader label="Image" value={f.image_url} onChange={(url) => setState((s) => ({ ...s, form: { ...s.form, image_url: url } }))} altText={f.image_alt} onAltChange={(alt) => setState((s) => ({ ...s, form: { ...s.form, image_alt: alt } }))} folder="attractions" requiredPerm="uploads:write" />

@@ -11,10 +11,14 @@ export default function CombosCarousel({ items = [] }) {
     // Sort items to ensure a consistent experience
     const sortedItems = React.useMemo(() => {
         return [...items].sort((a, b) => {
+            const orderA = a?.sort_order ?? 0;
+            const orderB = b?.sort_order ?? 0;
+            if (orderA !== orderB) return orderA - orderB;
+
             const idA = String(a?.combo_id ?? a?.id ?? '');
             const idB = String(b?.combo_id ?? b?.id ?? '');
             
-            // Priority: 25 (All-Access) > 21 (Snowcity+Madlabs+Eyelusion) > Others > 26 (Thursday)
+            // Priority fallbacks if sort_orders are equal
             if (idA === '25') return -1;
             if (idB === '25') return 1;
             if (idA === '21') return -1;

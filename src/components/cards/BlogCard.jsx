@@ -36,7 +36,7 @@ const BlogCardInner = function BlogCard({ item }) {
 
   const cover = imgSrc(item);
   const readTime = getReadTime(item.content);
-  const formattedDate = formatDate(item.created_at || item.published_at || item.date);
+  const formattedDate = formatDate(item.published_at || item.created_at || item.date);
   const title = item.title || 'Blog article';
   const url = toBlogUrl(item);
 

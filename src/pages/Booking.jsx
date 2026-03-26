@@ -602,28 +602,32 @@ export default function Booking() {
   const combos = useMemo(() => {
     const items = combosState.items || [];
     return [...items].sort((a, b) => {
+      const orderA = a?.sort_order ?? 0;
+      const orderB = b?.sort_order ?? 0;
+      if (orderA !== orderB) return orderA - orderB;
+
       const idA = String(a.combo_id || a.id || '');
       const idB = String(b.combo_id || b.id || '');
-
-      // User specific order requirements:
-      // 1. All-Access Pass (ID 25) first
-      // 2. Snowcity + Madlabs + Eyelusion (ID 21) second
-      // 3. Buy Snow park Ticket Get Eyelusion Free only on Thursday (ID 26) last
-
+      
+      // Fallback ID priority
       if (idA === '25') return -1;
       if (idB === '25') return 1;
-
       if (idA === '21') return -1;
       if (idB === '21') return 1;
-
       if (idA === '26') return 1;
       if (idB === '26') return -1;
 
-      const numA = Number(idA);
-      const numB = Number(idB);
-      return numB - numA;
+      return Number(idB) - Number(idA);
     });
   }, [combosState.items]);
+
+  const sortedOffers = useMemo(() => {
+    return [...offersFromRedux].sort((a, b) => {
+      const orderA = a?.sort_order ?? 0;
+      const orderB = b?.sort_order ?? 0;
+      return orderA - orderB;
+    });
+  }, [offersFromRedux]);
 
   const handlePhoneChange = (e) => {
     const val = e.target.value.replace(/\D/g, '');
@@ -867,10 +871,15 @@ export default function Booking() {
             : Array.isArray(res)
               ? res
               : [];
+        const sortedList = [...list].sort((a, b) => {
+          const orderA = a?.sort_order ?? 0;
+          const orderB = b?.sort_order ?? 0;
+          return orderA - orderB;
+        });
         setState((s) => ({
           ...s,
           status: 'succeeded',
-          offers: list,
+          offers: sortedList,
           loadingOffers: false,
         }));
       } catch {
@@ -1972,7 +1981,7 @@ export default function Booking() {
                         {getOfferTitle(offer)}
                       </p>
                       {getOfferSummary(offer) ? (
-                        <p className="text-[11px] text-gray-500 mt-1 line-clamp-2 leading-relaxed">
+                        <p className="text-[11px] text-gray-500 mt-1 leading-relaxed">
                           {getOfferSummary(offer)}
                         </p>
                       ) : null}
@@ -2248,7 +2257,7 @@ export default function Booking() {
                     paymentLoading={paymentLoading}
                     cartAddons={cartAddons}
                     setEditingKey={setEditingKey}
-                    offers={state.offers.length ? state.offers : offersFromRedux}
+                    offers={state.offers.length ? state.offers : sortedOffers}
                     activeTab={activeTab}
                     setActiveTab={(t) => {
                       setActiveTab(t);

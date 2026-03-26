@@ -95,14 +95,25 @@ export default function Home() {
   // item resolvers (Redux slices now handle hydration from localStorage)
   const bannerItems = banners.items || [];
   const attractionItems = React.useMemo(() => {
-    return attractions.items || [];
+    const items = attractions.items || [];
+    return [...items].sort((a, b) => {
+      const orderA = a.sort_order ?? 0;
+      const orderB = b.sort_order ?? 0;
+      if (orderA !== orderB) return orderA - orderB;
+      return 0; // maintain backend order (CASE/created_at)
+    });
   }, [attractions.items]);
   const comboItems = React.useMemo(() => {
     const items = combos.items || [];
     return [...items].sort((a, b) => {
+      const orderA = a.sort_order ?? 0;
+      const orderB = b.sort_order ?? 0;
+      if (orderA !== orderB) return orderA - orderB;
+
       const idA = String(a.combo_id || a.id || '');
       const idB = String(b.combo_id || b.id || '');
       
+      // Keep legacy fallback priority if sort_orders are equal
       if (idA === '25') return -1;
       if (idB === '25') return 1;
       
@@ -121,7 +132,7 @@ export default function Home() {
   const blogTopUpdated = React.useMemo(() => {
     if (!blogItems.length) return [];
     const toTime = (blog) => {
-      const raw = blog?.updated_at || blog?.published_at || blog?.created_at || blog?.date;
+      const raw = blog?.published_at || blog?.created_at || blog?.date;
       const time = raw ? new Date(raw).getTime() : 0;
       return Number.isFinite(time) ? time : 0;
     };
@@ -129,6 +140,19 @@ export default function Home() {
       .sort((a, b) => toTime(b) - toTime(a))
       .slice(0, 3);
   }, [blogItems]);
+
+  const latestBlogDate = React.useMemo(() => {
+    if (!blogTopUpdated.length) return null;
+    const first = blogTopUpdated[0];
+    const raw = first?.published_at || first?.created_at || first?.date;
+    if (!raw) return null;
+    const date = new Date(raw);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  }, [blogTopUpdated]);
 
   const marqueeItems = React.useMemo(() => {
     const entries = [];
@@ -217,7 +241,9 @@ export default function Home() {
           <section id="blogs" className="bg-white py-20 px-4 md:px-4">
             <div className="w-full mx-auto">
               <div className="text-center mb-16">
-                <p className="text-sm font-bold tracking-[0.3em] text-sky-500/70 uppercase">LATEST FROM OUR BLOG</p>
+                <p className="text-sm font-bold tracking-[0.3em] text-sky-500/70 uppercase">
+                  LATEST FROM OUR BLOG {latestBlogDate && `• ${latestBlogDate}`}
+                </p>
                 <h2 className="mt-4 text-4xl md:text-5xl font-extrabold text-slate-900">Tips, guides & stories</h2>
                 <p className="mt-4 text-lg text-gray-600 w-full mx-auto">
                   Make the most of your SnowCity visit with insider recommendations, planning guides, and event highlights.

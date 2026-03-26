@@ -60,6 +60,10 @@ const getTieBreaker = (item) => String(item?.name ?? item?.title ?? '').toLowerC
 export const prioritizeSnowcityFirst = (items) => {
   if (!Array.isArray(items)) return [];
   return [...items].sort((a, b) => {
+    const orderA = a?.sort_order ?? 0;
+    const orderB = b?.sort_order ?? 0;
+    if (orderA !== orderB) return orderA - orderB;
+
     const aName = String(a?.name ?? a?.title ?? '').toLowerCase();
     const bName = String(b?.name ?? b?.title ?? '').toLowerCase();
 

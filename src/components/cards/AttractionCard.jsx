@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import parse from 'html-react-parser';
 import { getAttrId } from '../../utils/ids';
 import { imgSrc } from '../../utils/media';
 import ImageWithPlaceholder from '../common/ImageWithPlaceholder';
@@ -129,7 +130,7 @@ const AttractionCardInner = function AttractionCard({ item, featured = false }) 
 
           <div>
             <h2 className="exp-feat-title">{title}</h2>
-            <p className="exp-feat-desc">{desc}</p>
+            <p className="exp-feat-desc">{parse(desc)}</p>
             {renderHighlights(true)}
           </div>
 
@@ -319,7 +320,7 @@ const AttractionCardInner = function AttractionCard({ item, featured = false }) 
 
       <div className="exp-card-body">
         <h3 className="exp-card-title">{title}</h3>
-        <p className="exp-card-desc line-clamp-2">{desc}</p>
+        <p className="exp-card-desc">{parse(desc)}</p>
         {renderHighlights(false)}
 
         <div className="exp-card-footer mt-auto">

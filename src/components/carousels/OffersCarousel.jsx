@@ -24,10 +24,16 @@ export default function OffersCarousel({ offers = [], combos = [] }) {
     ];
 
     const seen = new Set();
-    return mixed.map((it, i) => {
+    const sorted = mixed.map((it, i) => {
       const key = makeStableKey(it.type, it.data, i);
       if (!seen.has(key)) seen.add(key);
       return { ...it, __key: key };
+    });
+
+    return sorted.sort((a, b) => {
+      const orderA = a.data?.sort_order ?? 0;
+      const orderB = b.data?.sort_order ?? 0;
+      return orderA - orderB;
     });
   }, [offers, combos]);
 

@@ -179,6 +179,7 @@ export default function OfferForm() {
       max_discount: '',
       valid_from: '',
       valid_to: '',
+      sort_order: 0,
       active: true,
       rules: [],
     }
@@ -206,6 +207,7 @@ export default function OfferForm() {
             max_discount: o.max_discount ?? '',
             valid_from: o.valid_from ? new Date(o.valid_from).toISOString().split('T')[0] : '',
             valid_to: o.valid_to ? new Date(o.valid_to).toISOString().split('T')[0] : '',
+            sort_order: o.sort_order || 0,
             active: !!o.active,
             rules: Array.isArray(o.rules)
               ? o.rules.map((r) =>
@@ -475,6 +477,10 @@ export default function OfferForm() {
           <div className="flex items-center gap-2 md:col-span-2">
             <input id="active" type="checkbox" checked={!!f.active} onChange={(e) => updateForm({ active: e.target.checked })} />
             <label htmlFor="active" className="text-sm text-gray-700 dark:text-neutral-200">Active</label>
+          </div>
+          <div className="md:col-span-2">
+            <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Order Option (Frontend Arrangement)</label>
+            <input type="number" className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200" value={f.sort_order || 0} onChange={(e) => updateForm({ sort_order: Number(e.target.value || 0) })} placeholder="0" />
           </div>
         </div>
 

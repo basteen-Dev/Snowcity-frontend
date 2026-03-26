@@ -116,6 +116,7 @@ export default function AdminSidebar({ collapsed, mobileOpen, onCloseMobile, onT
         { to: '/catalog/pages', label: 'Pages', icon: FileText },
         { to: '/catalog/sections', label: 'Sections', icon: Layers },
         { to: '/catalog/blogs', label: 'Blogs', icon: Newspaper },
+        { to: '/catalog/consolidated-namings', label: 'Consolidated Namings', icon: FileText },
       );
 
       NAV_SECTIONS.push({

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import parse from 'html-react-parser';
 import dayjs from 'dayjs';
 import { formatCurrency } from '../../utils/formatters';
 import { getPrice, getBasePrice, getUnitLabel, getDiscountPercent } from '../../utils/pricing';
@@ -113,7 +114,7 @@ export default function OfferCard({ item }) {
       <div className="absolute bottom-0 z-10 w-full px-5 pb-5 text-white">
         <h3 className="text-xl font-semibold leading-tight line-clamp-2">{title}</h3>
 
-        {desc ? <p className="mt-1 text-sm text-white/80 line-clamp-2">{desc}</p> : null}
+        {desc ? <p className="mt-1 text-sm text-white/80">{parse(desc)}</p> : null}
 
         {price > 0 ? (
           <div className="mt-2 text-xs text-white/70">

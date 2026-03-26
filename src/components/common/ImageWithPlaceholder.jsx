@@ -38,7 +38,7 @@ export default function ImageWithPlaceholder({
         <img
           src={resolvedSrc}
           alt={alt}
-          className={`${className} transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'}`.trim()}
+          className={`${className} transition-opacity duration-300 ${loaded ? 'opacity-100' : 'opacity-0'}`.trim()}
           onLoad={(event) => {
             setLoaded(true);
             if (onLoad) onLoad(event);

@@ -260,7 +260,7 @@ export default function SelectTickets({
                     <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1">
                       {title}
                     </h3>
-                    <div className="text-xs text-gray-500 mt-1 break-words line-clamp-2">
+                    <div className="text-xs text-gray-500 mt-1 break-words">
                       {(item.short_description || item.subtitle || item.description || 'Instant confirmation • Best experience').replace(/<[^>]*>/g, '')}
                     </div>
                     {activeTab !== 'offer' && (

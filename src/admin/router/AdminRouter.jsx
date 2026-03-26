@@ -57,6 +57,9 @@ const BlogForm = lazy(() => import('../pages/catalog/BlogForm'));
 const CombosList = lazy(() => import('../pages/catalog/CombosList'));
 const ComboForm = lazy(() => import('../pages/catalog/ComboForm'));
 
+const ConsolidatedNamingsList = lazy(() => import('../pages/catalog/ConsolidatedNamingsList'));
+const ConsolidatedNamingForm = lazy(() => import('../pages/catalog/ConsolidatedNamingForm'));
+
 // Attraction Slots
 const AttractionSlotList = lazy(() => import('../pages/catalog/AttractionSlotList.jsx'));
 
@@ -488,6 +491,22 @@ export default function AdminRouter() {
           <Route path="catalog/blogs/:id" element={
             <RequireRole allowed={['superadmin', 'gm', 'editor']}>
               <BlogForm />
+            </RequireRole>
+          } />
+
+          <Route path="catalog/consolidated-namings" element={
+            <RequireRole allowed={['superadmin', 'gm', 'staff', 'editor']} module="catalog">
+              <ConsolidatedNamingsList />
+            </RequireRole>
+          } />
+          <Route path="catalog/consolidated-namings/new" element={
+            <RequireRole allowed={['superadmin', 'gm', 'staff', 'editor']} module="catalog">
+              <ConsolidatedNamingForm />
+            </RequireRole>
+          } />
+          <Route path="catalog/consolidated-namings/:id" element={
+            <RequireRole allowed={['superadmin', 'gm', 'staff', 'editor']} module="catalog">
+              <ConsolidatedNamingForm />
             </RequireRole>
           } />
 

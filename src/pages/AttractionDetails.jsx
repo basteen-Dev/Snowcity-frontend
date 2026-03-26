@@ -1129,7 +1129,7 @@ export default function AttractionDetails() {
                       {formatCurrency(effectiveUnitPrice || 0)}
                     </div>
                     {offerDescription ? (
-                      <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                      <p className="text-xs text-gray-500 mt-1">
                         {offerDescription}
                       </p>
                     ) : null}
@@ -1495,7 +1495,7 @@ export default function AttractionDetails() {
                           {formatCurrency(effectiveUnitPrice || 0)}
                         </div>
                         {offerDescription ? (
-                          <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                          <p className="text-xs text-gray-500 mt-1">
                             {offerDescription}
                           </p>
                         ) : null}

@@ -42,7 +42,7 @@ export default function PromoCardsContent() {
             pagination={{ clickable: true }}
             className="pb-12 pt-2"
           >
-            {[...cards].reverse().map(card => {
+            {[...cards].sort((a,b) => (a.sort_order ?? 0) - (b.sort_order ?? 0)).map(card => {
               const isExternal = card.link_url && card.link_url.startsWith('http');
               const CardContent = (
                 <div 
@@ -67,7 +67,7 @@ export default function PromoCardsContent() {
         </div>
       ) : (
         <div className="flex overflow-x-auto justify-center gap-6 pb-6 pt-2 px-2 snap-x snap-mandatory" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-          {[...cards].reverse().map(card => {
+          {[...cards].sort((a,b) => (a.sort_order ?? 0) - (b.sort_order ?? 0)).map(card => {
             const isExternal = card.link_url && card.link_url.startsWith('http');
             const CardContent = (
               <div 

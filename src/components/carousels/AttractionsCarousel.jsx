@@ -11,6 +11,10 @@ export default function AttractionsCarousel({ items = [] }) {
   // Sort items to ensure a consistent experience with priority given to Snow Park and Mad Lab
   const sortedItems = React.useMemo(() => {
     return [...items].sort((a, b) => {
+      const orderA = a?.sort_order ?? 0;
+      const orderB = b?.sort_order ?? 0;
+      if (orderA !== orderB) return orderA - orderB;
+
       const titleA = (a?.title || a?.name || '').toLowerCase();
       const titleB = (b?.title || b?.name || '').toLowerCase();
 

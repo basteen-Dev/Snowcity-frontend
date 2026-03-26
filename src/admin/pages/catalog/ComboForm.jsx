@@ -27,6 +27,7 @@ export default function ComboForm() {
       desktop_image_url: '',
       desktop_image_alt: '',
       discount_percent: 0,
+      sort_order: 0,
       active: true,
       meta_title: '',
       meta_description: '',
@@ -72,6 +73,7 @@ export default function ComboForm() {
           desktop_image_url: c.desktop_image_url || '',
           desktop_image_alt: c.desktop_image_alt || '',
           discount_percent: c.discount_percent || 0,
+          sort_order: c.sort_order || 0,
           active: !!c.active,
           meta_title: c.meta_title || '',
           meta_description: c.meta_description || '',
@@ -140,6 +142,7 @@ export default function ComboForm() {
         image_url: f.image_url?.trim() || null,
         desktop_image_url: f.desktop_image_url?.trim() || null,
         discount_percent: Number(f.discount_percent || 0),
+        sort_order: Number(f.sort_order || 0),
         active: !!f.active,
         meta_title: f.meta_title?.trim() || null,
         meta_description: f.meta_description?.trim() || null,
@@ -506,6 +509,16 @@ export default function ComboForm() {
               onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, discount_percent: Number(e.target.value || 0) } }))}
               min="0"
               max="100"
+            />
+          </div>
+          <div>
+            <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Order Option (Frontend Arrangement)</label>
+            <input
+              type="number"
+              className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200"
+              value={f.sort_order || 0}
+              onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, sort_order: Number(e.target.value || 0) } }))}
+              placeholder="0"
             />
           </div>
 

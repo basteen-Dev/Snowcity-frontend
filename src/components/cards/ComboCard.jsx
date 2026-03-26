@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import parse from 'html-react-parser';
 import { formatCurrency } from '../../utils/formatters';
 import { getPrice } from '../../utils/pricing';
 import { imgSrc } from '../../utils/media';
@@ -156,8 +157,8 @@ const ComboCardInner = function ComboCard({ item, isUltimate = false }) {
               {title}
             </h3>
 
-            <p className="mb-4 lg:mb-6 text-sm lg:text-base text-slate-300 line-clamp-2 max-w-xl">
-              {desc}
+            <p className="mb-4 lg:mb-6 text-sm lg:text-base text-slate-300 max-w-xl">
+              {parse(desc)}
             </p>
 
             <div className="mt-auto flex flex-wrap items-end justify-between gap-6 pt-8 border-t border-white/10">
@@ -224,7 +225,7 @@ const ComboCardInner = function ComboCard({ item, isUltimate = false }) {
 
 
         <div className="flex gap-3 mb-6">
-          <div className="exp-desc line-clamp-2">{desc}</div>
+          <div className="exp-desc">{parse(desc)}</div>
         </div>
 
         <div className="flex items-center justify-between mt-auto pt-4 border-t border-slate-100">

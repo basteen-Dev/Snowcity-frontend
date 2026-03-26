@@ -17,6 +17,7 @@ export default function PromoCardForm() {
     form: {
       link_url: '',
       image_url: '',
+      sort_order: 0,
       active: true
     }
   });
@@ -31,6 +32,7 @@ export default function PromoCardForm() {
           ...s, status: 'idle', form: {
             link_url: c.link_url || '',
             image_url: c.image_url || '',
+            sort_order: c.sort_order || 0,
             active: !!c.active
           }
         }));
@@ -106,6 +108,10 @@ export default function PromoCardForm() {
           <div className="flex items-center gap-2 md:col-span-2">
             <input id="active" type="checkbox" checked={!!f.active} onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, active: e.target.checked } }))} />
             <label htmlFor="active" className="text-sm text-gray-700 dark:text-neutral-200">Active</label>
+          </div>
+          <div className="md:col-span-2">
+            <label className="block text-sm text-gray-600 dark:text-neutral-300 mb-1">Order Option (Frontend Arrangement)</label>
+            <input type="number" className="w-full rounded-md border px-3 py-2 dark:bg-slate-800 dark:border-slate-600 dark:text-neutral-200" value={f.sort_order || 0} onChange={(e) => setState((s) => ({ ...s, form: { ...s.form, sort_order: Number(e.target.value || 0) } }))} placeholder="0" />
           </div>
         </div>
 
