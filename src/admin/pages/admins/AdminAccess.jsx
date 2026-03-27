@@ -67,8 +67,8 @@ function ResourceSection({ title, items, sel, setSel, disabled }) {
   );
 }
 
-const EMPTY_ACCESS = Object.freeze({ attraction: [], combo: [] });
-const EMPTY_LISTS = Object.freeze({ attractions: [], combos: [] });
+const EMPTY_ACCESS = Object.freeze({ attraction: [] });
+const EMPTY_LISTS = Object.freeze({ attractions: [] });
 
 export default function AdminAccess() {
   const params = useParams();
@@ -97,20 +97,15 @@ export default function AdminAccess() {
       try {
         setErr('');
         setLoadingBase(true);
-        const [adminList, atts, cmbs] = await Promise.all([
+        const [adminList, atts] = await Promise.all([
           adminApi.get('/api/parkpanel/admins', { limit: 200 }),
           adminApi.get('/api/parkpanel/attractions', { limit: 200 }),
-          adminApi.get('/api/parkpanel/combos', { active: true }),
         ]);
         setAdmins(Array.isArray(adminList) ? adminList : []);
         setLists({
           attractions: (atts?.data || atts || []).map((a) => ({
             id: a.attraction_id,
             label: a.title || `Attraction #${a.attraction_id}`,
-          })),
-          combos: (cmbs?.data || cmbs || []).map((c) => ({
-            id: c.combo_id,
-            label: c.title || `Combo #${c.combo_id}`,
           })),
         });
       } catch (e) {
@@ -142,8 +137,7 @@ export default function AdminAccess() {
         const acc = await adminApi.get(`/api/parkpanel/admins/${selectedAdminId}/access`);
         if (cancelled) return;
         setAccess({
-          attraction: acc?.access?.attraction || [],
-          combo: acc?.access?.combo || [],
+          attraction: (acc?.access?.attraction || []).map(String),
         });
         setModulePerms(Array.isArray(acc?.module_permissions) ? acc.module_permissions : []);
       } catch (e) {
@@ -210,7 +204,7 @@ export default function AdminAccess() {
       <div>
         <h1 className="text-xl font-bold text-gray-900 dark:text-neutral-100">Grant Access</h1>
         <p className="text-sm text-gray-600 dark:text-neutral-400 mt-1">
-          Scope staff members to specific attractions and combos. They will only see data for what you assign here.
+          Scope staff members to specific attractions. They will only see data for what you assign here.
         </p>
       </div>
 
@@ -245,7 +239,7 @@ export default function AdminAccess() {
         <>
           {/* Info banner */}
           <div className="rounded-xl border-l-4 border-blue-500 bg-blue-50 dark:bg-blue-500/10 p-4 text-sm text-gray-700 dark:text-neutral-200">
-            <strong>{selectedAdmin?.name || 'This admin'}</strong> will only see analytics, bookings, and catalog items for the attractions and combos checked below.
+            <strong>{selectedAdmin?.name || 'This admin'}</strong> will only see analytics, bookings, and catalog items for the attractions checked below.
             {!canSelectModules && (
               <span className="block mt-1 text-xs text-amber-600 dark:text-amber-400">
                 ⚠ This admin's role may not support scoping — scoping only applies to specific accounts.
@@ -261,13 +255,7 @@ export default function AdminAccess() {
             setSel={makeSectionSetter('attraction')}
             disabled={loadingAccess}
           />
-          <ResourceSection
-            title="Combos"
-            items={lists.combos}
-            sel={access.combo}
-            setSel={makeSectionSetter('combo')}
-            disabled={loadingAccess}
-          />
+
 
           {/* Module permissions (staff/gm only) */}
           {canSelectModules && (
