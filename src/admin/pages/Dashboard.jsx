@@ -2,12 +2,21 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import dayjs from 'dayjs';
 import adminApi from '../services/adminApi';
+import { useAdminRole } from '../hooks/useAdminRole';
 import './OpsDashboard.css';
 
 const numberFmt = (v = 0) => Number(v || 0).toLocaleString('en-IN');
 const moneyFmt = (v = 0) => `₹${Number(v || 0).toLocaleString('en-IN')}`;
 
 export default function Dashboard() {
+  const { isStaff, scopes } = useAdminRole();
+  const allowedAttrs = scopes?.attraction || [];
+  
+  const canSeeSnow = !isStaff || allowedAttrs.includes('*') || allowedAttrs.includes(18);
+  const canSeeMadlabs = !isStaff || allowedAttrs.includes('*') || allowedAttrs.includes(21);
+  const canSeeEye = !isStaff || allowedAttrs.includes('*') || allowedAttrs.includes(22);
+  const canSeeDevil = !isStaff || allowedAttrs.includes('*') || allowedAttrs.includes(23) || allowedAttrs.includes(24);
+
   const [filterType, setFilterType] = useState('today');
   const [customFrom, setCustomFrom] = useState(dayjs().format('YYYY-MM-DD'));
   const [customTo, setCustomTo] = useState(dayjs().format('YYYY-MM-DD'));
@@ -152,26 +161,34 @@ export default function Dashboard() {
             <div className="sc-val">{numberFmt(visitor.totalGuests)}</div>
             <div className="sc-sub">All parks & attractions</div>
           </div>
+          {canSeeSnow && (
           <div className="sc c-blue">
             <div className="sc-lbl">❄️ Snow Park</div>
             <div className="sc-val">{numberFmt(visitor.snow)}</div>
             <div className="sc-sub">{visitor.snow > 0 ? 'Visitors' : 'No visitors'} today</div>
           </div>
+          )}
+          {canSeeMadlabs && (
           <div className="sc c-purple">
             <div className="sc-lbl">🧪 Madlabs</div>
             <div className="sc-val">{numberFmt(visitor.madlabs)}</div>
             <div className="sc-sub">{visitor.madlabs > 0 ? 'Visitors' : 'No visitors'} today</div>
           </div>
+          )}
+          {canSeeEye && (
           <div className="sc c-pink">
             <div className="sc-lbl">👁 Eyelusion</div>
             <div className="sc-val">{numberFmt(visitor.eyelusion)}</div>
             <div className="sc-sub">{visitor.eyelusion > 0 ? 'Visitors' : 'No visitors'} today</div>
           </div>
+          )}
+          {canSeeDevil && (
           <div className="sc c-slate">
             <div className="sc-lbl">👹 Devil's Darkhouse</div>
             <div className="sc-val">{numberFmt(visitor.devil)}</div>
             <div className="sc-sub">{visitor.devil > 0 ? 'Visitors' : 'No visitors'} today</div>
           </div>
+          )}
         </div>
 
         {/* §2 REVENUE SUMMARY */}

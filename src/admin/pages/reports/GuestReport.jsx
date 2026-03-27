@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import adminApi from '../../services/adminApi';
+import { useAdminRole } from '../../hooks/useAdminRole';
 import dayjs from 'dayjs';
 import { exportToCSV, exportToExcel, exportToPDF } from '../../utils/reportExportUtils';
 import './reports.css';
@@ -18,6 +19,13 @@ export default function GuestReport() {
     const [sortCol, setSortCol] = useState('date');
     const [sortDir, setSortDir] = useState(1);
     const [shown, setShown] = useState(100);
+
+    const { isStaff, scopes } = useAdminRole();
+    const allowedAttrs = scopes?.attraction || [];
+    const canSeeSnow = !isStaff || allowedAttrs.includes('*') || allowedAttrs.includes(18);
+    const canSeeMadlabs = !isStaff || allowedAttrs.includes('*') || allowedAttrs.includes(21);
+    const canSeeEye = !isStaff || allowedAttrs.includes('*') || allowedAttrs.includes(22);
+    const canSeeDevil = !isStaff || allowedAttrs.includes('*') || allowedAttrs.includes(23) || allowedAttrs.includes(24);
 
     const getDateRange = useCallback(() => {
         const today = dayjs().format('YYYY-MM-DD');
@@ -78,17 +86,32 @@ export default function GuestReport() {
 
     const maxOf = (key) => Math.max(...rows.map(r => r[key] || 0), 1);
 
-    const COLS = ['S.No', 'Visit Date', 'Day', 'Snow Park', 'Madlabs', 'Eyelusion', "Devil's Darkhouse", 'F&B Add-ons', 'Total Guests', 'Total Amount (₹)'];
+    const COLS = ['S.No', 'Visit Date', 'Day'].concat(
+        canSeeSnow ? ['Snow Park'] : [],
+        canSeeMadlabs ? ['Madlabs'] : [],
+        canSeeEye ? ['Eyelusion'] : [],
+        canSeeDevil ? ["Devil's Darkhouse"] : [],
+        ['F&B Add-ons', 'Total Guests', 'Total Amount (₹)']
+    );
     const buildRows = (includeTotals = false) => {
         const dataRows = rows.map(r => [
             r.sno,
             dayjs(r.date).format('DD MMM YYYY'),
             DAYS[new Date(r.date).getDay()],
-            r.snow, r.mad, r.eye, r.devil, r.fb, r.total, r.amt,
+            ...(canSeeSnow ? [r.snow] : []),
+            ...(canSeeMadlabs ? [r.mad] : []),
+            ...(canSeeEye ? [r.eye] : []),
+            ...(canSeeDevil ? [r.devil] : []),
+            r.fb, r.total, r.amt,
         ]);
         if (includeTotals) {
             const t = summary;
-            dataRows.push(['TOTAL', '', '', t.snow, t.mad, t.eye, t.devil, t.fb, t.total, t.amt]);
+            dataRows.push(['TOTAL', '', '',
+                ...(canSeeSnow ? [t.snow] : []),
+                ...(canSeeMadlabs ? [t.mad] : []),
+                ...(canSeeEye ? [t.eye] : []),
+                ...(canSeeDevil ? [t.devil] : []),
+                t.fb, t.total, t.amt]);
         }
         return dataRows;
     };
@@ -101,10 +124,10 @@ export default function GuestReport() {
     const handleExportPDF = () => {
         const summaryItems = [
             { label: 'Total Guests', value: numFmt(summary.total) },
-            { label: '❄️ Snow Park', value: numFmt(summary.snow) },
-            { label: '🧪 Madlabs', value: numFmt(summary.mad) },
-            { label: '👁 Eyelusion', value: numFmt(summary.eye) },
-            { label: '👹 Devil\'s', value: numFmt(summary.devil) },
+            ...(canSeeSnow ? [{ label: '❄️ Snow Park', value: numFmt(summary.snow) }] : []),
+            ...(canSeeMadlabs ? [{ label: '🧪 Madlabs', value: numFmt(summary.mad) }] : []),
+            ...(canSeeEye ? [{ label: '👁 Eyelusion', value: numFmt(summary.eye) }] : []),
+            ...(canSeeDevil ? [{ label: '👹 Devil\'s', value: numFmt(summary.devil) }] : []),
             { label: '🍔 Add-ons', value: numFmt(summary.fb) },
             { label: '💰 Total Amount', value: moneyFmt(summary.amt) },
         ];
@@ -166,10 +189,10 @@ export default function GuestReport() {
                     </div>
                     <div className="totals-grid tg-7">
                         <div className="tot-cell"><div className="tot-lbl">Total Guests</div><div className="tot-val tv-dark">{numFmt(summary.total)}</div><div className="tot-sub">All attractions</div></div>
-                        <div className="tot-cell"><div className="tot-lbl">❄️ Snow Park</div><div className="tot-val tv-blue">{numFmt(summary.snow)}</div><div className="tot-sub">Guests</div></div>
-                        <div className="tot-cell"><div className="tot-lbl">🧪 Madlabs</div><div className="tot-val tv-purple">{numFmt(summary.mad)}</div><div className="tot-sub">Guests</div></div>
-                        <div className="tot-cell"><div className="tot-lbl">👁 Eyelusion</div><div className="tot-val tv-pink">{numFmt(summary.eye)}</div><div className="tot-sub">Guests</div></div>
-                        <div className="tot-cell"><div className="tot-lbl">👹 Devil's</div><div className="tot-val tv-devil">{numFmt(summary.devil)}</div><div className="tot-sub">Guests</div></div>
+                        {canSeeSnow && <div className="tot-cell"><div className="tot-lbl">❄️ Snow Park</div><div className="tot-val tv-blue">{numFmt(summary.snow)}</div><div className="tot-sub">Guests</div></div>}
+                        {canSeeMadlabs && <div className="tot-cell"><div className="tot-lbl">🧪 Madlabs</div><div className="tot-val tv-purple">{numFmt(summary.mad)}</div><div className="tot-sub">Guests</div></div>}
+                        {canSeeEye && <div className="tot-cell"><div className="tot-lbl">👁 Eyelusion</div><div className="tot-val tv-pink">{numFmt(summary.eye)}</div><div className="tot-sub">Guests</div></div>}
+                        {canSeeDevil && <div className="tot-cell"><div className="tot-lbl">👹 Devil's</div><div className="tot-val tv-devil">{numFmt(summary.devil)}</div><div className="tot-sub">Guests</div></div>}
                         <div className="tot-cell"><div className="tot-lbl">🍔 Add-ons</div><div className="tot-val tv-amber">{numFmt(summary.fb)}</div><div className="tot-sub">Orders</div></div>
                         <div className="tot-cell"><div className="tot-lbl">💰 Total Amt</div><div className="tot-val tv-green">{moneyFmt(summary.amt)}</div><div className="tot-sub">Collected</div></div>
                     </div>
@@ -190,10 +213,10 @@ export default function GuestReport() {
                                     <th className={sortClass('sno')} onClick={() => handleSort('sno')}>S.No</th>
                                     <th className={sortClass('date')} onClick={() => handleSort('date')}>Visit Date</th>
                                     <th>Day</th>
-                                    <th className={`num col-snow ${sortClass('snow')}`} onClick={() => handleSort('snow')}>❄️ Snow Park</th>
-                                    <th className={`num col-mad ${sortClass('mad')}`} onClick={() => handleSort('mad')}>🧪 Madlabs</th>
-                                    <th className={`num col-eye ${sortClass('eye')}`} onClick={() => handleSort('eye')}>👁 Eyelusion</th>
-                                    <th className={`num col-devil ${sortClass('devil')}`} onClick={() => handleSort('devil')}>👹 Devil's</th>
+                                    {canSeeSnow && <th className={`num col-snow ${sortClass('snow')}`} onClick={() => handleSort('snow')}>❄️ Snow Park</th>}
+                                    {canSeeMadlabs && <th className={`num col-mad ${sortClass('mad')}`} onClick={() => handleSort('mad')}>🧪 Madlabs</th>}
+                                    {canSeeEye && <th className={`num col-eye ${sortClass('eye')}`} onClick={() => handleSort('eye')}>👁 Eyelusion</th>}
+                                    {canSeeDevil && <th className={`num col-devil ${sortClass('devil')}`} onClick={() => handleSort('devil')}>👹 Devil's</th>}
                                     <th className={`num col-fb ${sortClass('fb')}`} onClick={() => handleSort('fb')}>🍔 Add-ons</th>
                                     <th className={`num ${sortClass('total')}`} onClick={() => handleSort('total')}>Total Guests</th>
                                     <th className={`num col-total ${sortClass('amt')}`} onClick={() => handleSort('amt')}>Total Amount</th>
@@ -216,7 +239,13 @@ export default function GuestReport() {
                                                     </div>
                                                 </td>
                                                 <td style={{ fontSize: 12, color: 'var(--sub)' }}>{DAYS[new Date(r.date).getDay()]}</td>
-                                                {[{ k: 'snow', c: '--blue' }, { k: 'mad', c: '--purple' }, { k: 'eye', c: '--pink' }, { k: 'devil', c: '--slate' }, { k: 'fb', c: '--amber' }].map(({ k, c }) => (
+                                                {[
+                                                    ...(canSeeSnow ? [{ k: 'snow', c: '--blue' }] : []),
+                                                    ...(canSeeMadlabs ? [{ k: 'mad', c: '--purple' }] : []),
+                                                    ...(canSeeEye ? [{ k: 'eye', c: '--pink' }] : []),
+                                                    ...(canSeeDevil ? [{ k: 'devil', c: '--slate' }] : []),
+                                                    { k: 'fb', c: '--amber' }
+                                                ].map(({ k, c }) => (
                                                     <td key={k} className="num">
                                                         <div className="gc-cell">
                                                             <span className="gc-num" style={{ color: r[k] > 0 ? `var(${c})` : 'var(--muted)' }}>{r[k] > 0 ? numFmt(r[k]) : '—'}</span>
@@ -236,10 +265,10 @@ export default function GuestReport() {
                                         <tr className="tot-row">
                                             <td colSpan={2} style={{ color: '#fff' }}>TOTAL</td>
                                             <td />
-                                            <td className="num">{numFmt(summary.snow)}</td>
-                                            <td className="num">{numFmt(summary.mad)}</td>
-                                            <td className="num">{numFmt(summary.eye)}</td>
-                                            <td className="num">{numFmt(summary.devil)}</td>
+                                            {canSeeSnow && <td className="num">{numFmt(summary.snow)}</td>}
+                                            {canSeeMadlabs && <td className="num">{numFmt(summary.mad)}</td>}
+                                            {canSeeEye && <td className="num">{numFmt(summary.eye)}</td>}
+                                            {canSeeDevil && <td className="num">{numFmt(summary.devil)}</td>}
                                             <td className="num">{numFmt(summary.fb)}</td>
                                             <td className="num">{numFmt(summary.total)}</td>
                                             <td className="num" style={{ color: '#6ee7b7' }}>{moneyFmt(summary.amt)}</td>
