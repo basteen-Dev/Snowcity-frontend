@@ -83,7 +83,7 @@ export default function PaymentStatus() {
                             price: unitPrice,
                             item_total: unitPrice * qty,
                             item_variant: item.timeSlot || item.slot_label || '',
-                            selected_date: item.date || item.booking_date || ''
+                            selected_date: (item.date || item.booking_date) ? new Date(item.date || item.booking_date).toISOString().split('T')[0] : ''
                         };
                     });
 
@@ -190,7 +190,7 @@ export default function PaymentStatus() {
                     price: unitPrice,
                     item_total: unitPrice * qty,
                     item_variant: item.timeSlot || item.slot_label || '',
-                    selected_date: item.date || item.booking_date || ''
+                    selected_date: (item.date || item.booking_date) ? new Date(item.date || item.booking_date).toISOString().split('T')[0] : ''
                 };
             });
 

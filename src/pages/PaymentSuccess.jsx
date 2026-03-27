@@ -101,7 +101,7 @@ export default function PaymentSuccess() {
                     price: unitPrice,
                     item_total: unitPrice * qty,
                     item_variant: item.slot_label || item.time_slot || '',
-                    selected_date: item.booking_date || ''
+                    selected_date: item.booking_date ? new Date(item.booking_date).toISOString().split('T')[0] : ''
                   };
                 }) : [{
                   item_id: data?.id || data?.attraction_id || data?.combo_id || '',
@@ -112,7 +112,7 @@ export default function PaymentSuccess() {
                   price: totalAmount,
                   item_total: totalAmount,
                   item_variant: data?.slot_label || '',
-                  selected_date: data?.booking_date || ''
+                  selected_date: data?.booking_date ? new Date(data.booking_date).toISOString().split('T')[0] : ''
                 }];
 
               window.dataLayer = window.dataLayer || [];
