@@ -86,13 +86,16 @@ export default function GuestReport() {
 
     const maxOf = (key) => Math.max(...rows.map(r => r[key] || 0), 1);
 
-    const COLS = ['S.No', 'Visit Date', 'Day'].concat(
-        canSeeSnow ? ['Snow Park'] : [],
-        canSeeMadlabs ? ['Madlabs'] : [],
-        canSeeEye ? ['Eyelusion'] : [],
-        canSeeDevil ? ["Devil's Darkhouse"] : [],
-        ['F&B Add-ons', 'Total Guests', 'Total Amount (₹)']
-    );
+    const COLS = [
+        'S.No', 'Visit Date', 'Day',
+        ...(canSeeSnow ? ['Snow Park'] : []),
+        ...(canSeeMadlabs ? ['Madlabs'] : []),
+        ...(canSeeEye ? ['Eyelusion'] : []),
+        ...(canSeeDevil ? ["Devil's Darkhouse"] : []),
+        ...(isStaff ? [] : ['F&B Add-ons']),
+        'Total Guests',
+        'Total Amount (₹)'
+    ];
     const buildRows = (includeTotals = false) => {
         const dataRows = rows.map(r => [
             r.sno,
@@ -102,7 +105,8 @@ export default function GuestReport() {
             ...(canSeeMadlabs ? [r.mad] : []),
             ...(canSeeEye ? [r.eye] : []),
             ...(canSeeDevil ? [r.devil] : []),
-            r.fb, r.total, r.amt,
+            ...(isStaff ? [] : [r.fb]),
+            r.total, r.amt,
         ]);
         if (includeTotals) {
             const t = summary;
@@ -111,7 +115,8 @@ export default function GuestReport() {
                 ...(canSeeMadlabs ? [t.mad] : []),
                 ...(canSeeEye ? [t.eye] : []),
                 ...(canSeeDevil ? [t.devil] : []),
-                t.fb, t.total, t.amt]);
+                ...(isStaff ? [] : [t.fb]),
+                t.total, t.amt]);
         }
         return dataRows;
     };
@@ -128,7 +133,7 @@ export default function GuestReport() {
             ...(canSeeMadlabs ? [{ label: '🧪 Madlabs', value: numFmt(summary.mad) }] : []),
             ...(canSeeEye ? [{ label: '👁 Eyelusion', value: numFmt(summary.eye) }] : []),
             ...(canSeeDevil ? [{ label: '👹 Devil\'s', value: numFmt(summary.devil) }] : []),
-            { label: '🍔 Add-ons', value: numFmt(summary.fb) },
+            ...(isStaff ? [] : [{ label: '🍔 Add-ons', value: numFmt(summary.fb) }]),
             { label: '💰 Total Amount', value: moneyFmt(summary.amt) },
         ];
         exportToPDF(COLS, buildRows(true), `guest_report_${fileLabel}`, `Guest Report — ${activeDateLabel}`, summaryItems);
@@ -193,7 +198,7 @@ export default function GuestReport() {
                         {canSeeMadlabs && <div className="tot-cell"><div className="tot-lbl">🧪 Madlabs</div><div className="tot-val tv-purple">{numFmt(summary.mad)}</div><div className="tot-sub">Guests</div></div>}
                         {canSeeEye && <div className="tot-cell"><div className="tot-lbl">👁 Eyelusion</div><div className="tot-val tv-pink">{numFmt(summary.eye)}</div><div className="tot-sub">Guests</div></div>}
                         {canSeeDevil && <div className="tot-cell"><div className="tot-lbl">👹 Devil's</div><div className="tot-val tv-devil">{numFmt(summary.devil)}</div><div className="tot-sub">Guests</div></div>}
-                        <div className="tot-cell"><div className="tot-lbl">🍔 Add-ons</div><div className="tot-val tv-amber">{numFmt(summary.fb)}</div><div className="tot-sub">Orders</div></div>
+                        {!isStaff && <div className="tot-cell"><div className="tot-lbl">🍔 Add-ons</div><div className="tot-val tv-amber">{numFmt(summary.fb)}</div><div className="tot-sub">Orders</div></div>}
                         <div className="tot-cell"><div className="tot-lbl">💰 Total Amt</div><div className="tot-val tv-green">{moneyFmt(summary.amt)}</div><div className="tot-sub">Collected</div></div>
                     </div>
                 </div>
@@ -217,7 +222,7 @@ export default function GuestReport() {
                                     {canSeeMadlabs && <th className={`num col-mad ${sortClass('mad')}`} onClick={() => handleSort('mad')}>🧪 Madlabs</th>}
                                     {canSeeEye && <th className={`num col-eye ${sortClass('eye')}`} onClick={() => handleSort('eye')}>👁 Eyelusion</th>}
                                     {canSeeDevil && <th className={`num col-devil ${sortClass('devil')}`} onClick={() => handleSort('devil')}>👹 Devil's</th>}
-                                    <th className={`num col-fb ${sortClass('fb')}`} onClick={() => handleSort('fb')}>🍔 Add-ons</th>
+                                    {!isStaff && <th className={`num col-fb ${sortClass('fb')}`} onClick={() => handleSort('fb')}>🍔 Add-ons</th>}
                                     <th className={`num ${sortClass('total')}`} onClick={() => handleSort('total')}>Total Guests</th>
                                     <th className={`num col-total ${sortClass('amt')}`} onClick={() => handleSort('amt')}>Total Amount</th>
                                 </tr>
@@ -244,7 +249,7 @@ export default function GuestReport() {
                                                     ...(canSeeMadlabs ? [{ k: 'mad', c: '--purple' }] : []),
                                                     ...(canSeeEye ? [{ k: 'eye', c: '--pink' }] : []),
                                                     ...(canSeeDevil ? [{ k: 'devil', c: '--slate' }] : []),
-                                                    { k: 'fb', c: '--amber' }
+                                                    ...(!isStaff ? [{ k: 'fb', c: '--amber' }] : [])
                                                 ].map(({ k, c }) => (
                                                     <td key={k} className="num">
                                                         <div className="gc-cell">
@@ -269,7 +274,7 @@ export default function GuestReport() {
                                             {canSeeMadlabs && <td className="num">{numFmt(summary.mad)}</td>}
                                             {canSeeEye && <td className="num">{numFmt(summary.eye)}</td>}
                                             {canSeeDevil && <td className="num">{numFmt(summary.devil)}</td>}
-                                            <td className="num">{numFmt(summary.fb)}</td>
+                                            {!isStaff && <td className="num">{numFmt(summary.fb)}</td>}
                                             <td className="num">{numFmt(summary.total)}</td>
                                             <td className="num" style={{ color: '#6ee7b7' }}>{moneyFmt(summary.amt)}</td>
                                         </tr>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import adminApi from '../../services/adminApi';
+import { useAdminRole } from '../../hooks/useAdminRole';
 import dayjs from 'dayjs';
 import { exportToCSV, exportToExcel, exportToPDF } from '../../utils/reportExportUtils';
 import './reports.css';
@@ -11,8 +12,9 @@ export default function TransactionReport() {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const { isStaff } = useAdminRole();
     const [filterType, setFilterType] = useState('today');
-    const [txnType, setTxnType] = useState('both');
+    const [txnType, setTxnType] = useState(isStaff ? 'ticketing' : 'both');
     const [customFrom, setCustomFrom] = useState(dayjs().format('YYYY-MM-DD'));
     const [customTo, setCustomTo] = useState(dayjs().format('YYYY-MM-DD'));
     const [search, setSearch] = useState('');
@@ -97,7 +99,7 @@ export default function TransactionReport() {
         r.bookingId,
         dayjs(r.bookingDate).format('DD MMM YYYY HH:mm'),
         dayjs(r.visitDate).format('DD MMM YYYY'),
-        r.description,
+        r.isComboChild ? `${r.description} (combo child)` : r.description,
         r.unitPrice,
         r.discount,
         r.quantity,
@@ -140,7 +142,7 @@ export default function TransactionReport() {
                     <div className="fs-group">
                         <span className="fs-label">Type</span>
                         <div className="tgl">
-                            {['ticketing', 'addons', 'both'].map(t => (
+                            {['ticketing', 'addons', 'both'].filter(t => !isStaff || t === 'ticketing').map(t => (
                                 <button key={t} className={`tgl-btn ${txnType === t ? 'active' : ''}`} onClick={() => setTxnType(t)}>
                                     {t === 'ticketing' ? '🎫 Ticketing' : t === 'addons' ? '🧤 Add-ons' : '⊕ Both'}
                                 </button>
@@ -227,8 +229,11 @@ export default function TransactionReport() {
                                         <td className="sno">{r.sno}</td>
                                         <td><span className="bk-id">{r.bookingId}</span></td>
                                         <td><span className="bk-date">{dayjs(r.bookingDate).format('DD MMM YYYY HH:mm')}</span></td>
-                                        <td><span className="visit-date">{dayjs(r.visitDate).format('DD MMM YYYY')}</span></td>
-                                        <td><span className={`atag ${tagClass(r.description)}`}>{r.description}</span></td>
+                                        <td><span className="bk-date">{dayjs(r.visitDate).format('DD MMM YYYY')}</span></td>
+                                        <td>
+                                            <span className={`atag ${tagClass(r.description)}`}>{r.description}</span>
+                                            {r.isComboChild && <span style={{ fontSize: '11px', color: 'var(--muted)', marginLeft: '6px', fontWeight: 500 }}>(combo child)</span>}
+                                        </td>
                                         <td className="num">{numFmt(r.unitPrice)}</td>
                                         <td className="num disc">{r.discount > 0 ? `− ${numFmt(r.discount)}` : '—'}</td>
                                         <td className="num">{r.quantity}</td>

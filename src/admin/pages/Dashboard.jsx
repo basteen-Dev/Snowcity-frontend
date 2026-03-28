@@ -16,6 +16,8 @@ export default function Dashboard() {
   const canSeeMadlabs = !isStaff || allowedAttrs.includes('*') || allowedAttrs.includes(21);
   const canSeeEye = !isStaff || allowedAttrs.includes('*') || allowedAttrs.includes(22);
   const canSeeDevil = !isStaff || allowedAttrs.includes('*') || allowedAttrs.includes(23) || allowedAttrs.includes(24);
+  
+  const isSingleScoped = isStaff && allowedAttrs.length === 1 && !allowedAttrs.includes('*');
 
   const [filterType, setFilterType] = useState('today');
   const [customFrom, setCustomFrom] = useState(dayjs().format('YYYY-MM-DD'));
@@ -75,7 +77,7 @@ export default function Dashboard() {
   const attractions = data?.attractionBreakdown || [];
   const txn = data?.transactionSummary || { bookingsPlaced: 0, revenuePlaced: 0, guestsPlaced: 0, attractions: [] };
 
-  const totalRev = revenue.ticketing + revenue.addons;
+  const totalRev = isStaff ? revenue.ticketing : (revenue.ticketing + revenue.addons);
   const maxRevStream = Math.max(revenue.ticketing, revenue.addons, 1);
   const revPct = (v) => Math.round((v / maxRevStream) * 100);
 
@@ -156,11 +158,13 @@ export default function Dashboard() {
         </div>
 
         <div className="scards sc5 a2">
-          <div className="sc c-dark">
-            <div className="sc-lbl">Total Passes</div>
-            <div className="sc-val">{numberFmt(visitor.totalGuests)}</div>
-            <div className="sc-sub">All parks & attractions</div>
-          </div>
+          {!isSingleScoped && (
+            <div className="sc c-dark">
+              <div className="sc-lbl">Total Passes</div>
+              <div className="sc-val">{numberFmt(visitor.totalGuests)}</div>
+              <div className="sc-sub">All parks & attractions</div>
+            </div>
+          )}
           {canSeeSnow && (
           <div className="sc c-blue">
             <div className="sc-lbl">❄️ Snow Park</div>
@@ -199,144 +203,153 @@ export default function Dashboard() {
         </div>
 
         <div className="scards sc3 a3">
-          <div className="sc c-green">
-            <div className="sc-lbl">Grand Total</div>
-            <div className="sc-val">{moneyFmt(totalRev)}</div>
-            <div className="sc-sub">Ticketing + Add-ons</div>
-          </div>
+          {!isSingleScoped && (
+            <div className="sc c-green">
+              <div className="sc-lbl">Grand Total</div>
+              <div className="sc-val">{moneyFmt(totalRev)}</div>
+              {!isStaff && <div className="sc-sub">Ticketing + Add-ons</div>}
+            </div>
+          )}
           <div className="sc c-blue">
             <div className="sc-lbl">Ticketing</div>
             <div className="sc-val">{moneyFmt(revenue.ticketing)}</div>
             <div className="sc-sub">Attraction & combo ticket prices</div>
           </div>
-          <div className="sc c-amber">
-            <div className="sc-lbl">Add-ons</div>
-            <div className="sc-val">{moneyFmt(revenue.addons)}</div>
-            
-          </div>
+          {!isStaff && (
+            <div className="sc c-amber">
+              <div className="sc-lbl">Add-ons</div>
+              <div className="sc-val">{moneyFmt(revenue.addons)}</div>
+            </div>
+          )}
         </div>
 
         {/* Revenue breakdown panel */}
-        <div className="panel a3" style={{ marginBottom: '32px' }}>
-          <div className="ph">
-            <div>
-              <div className="pt">Revenue Breakdown</div>
-              <div className="ps">Ticketing vs Add-ons — revenue for the selected visit date</div>
+        {!isSingleScoped && (
+          <div className="panel a3" style={{ marginBottom: '32px' }}>
+            <div className="ph">
+              <div>
+                <div className="pt">Revenue Breakdown</div>
+                <div className="ps">Ticketing vs Add-ons — revenue for the selected visit date</div>
+              </div>
+              <div className="pbadge pb-green">Visit: {activeDateLabel}</div>
             </div>
-            <div className="pbadge pb-green">Visit: {activeDateLabel}</div>
-          </div>
-          <div className="pbody" style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '32px' }}>
-            <div>
-              <div className="sec-lbl" style={{ color: 'var(--blue)' }}>Ticketing Revenue</div>
-              <div className="ri"><div className="ri-ic">🎫</div><div className="ri-lbl">Attraction & Combo Tickets</div><div className="ri-bar"><div className="ri-fil" style={{ width: `${revPct(revenue.ticketing)}%`, background: 'var(--blue)' }}></div></div><div className="ri-amt" style={{ color: 'var(--blue)' }}>{moneyFmt(revenue.ticketing)}</div></div>
-              <div className="sec-lbl" style={{ color: 'var(--muted)', marginTop: '12px' }}>Non-Ticketing Revenue</div>
-              <div className="ri"><div className="ri-ic">🧤</div><div className="ri-lbl">Add-ons </div><div className="ri-bar"><div className="ri-fil" style={{ width: `${revPct(revenue.addons)}%`, background: 'var(--amber)' }}></div></div><div className="ri-amt" style={{ color: 'var(--amber)' }}>{moneyFmt(revenue.addons)}</div></div>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-              <div className="rev-total">
-                <div>
-                  <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--green)', textTransform: 'uppercase', letterSpacing: '.5px' }}>Grand Total</div>
-                  <div style={{ fontSize: '11px', color: 'var(--sub)', marginTop: '2px' }}>Ticketing {moneyFmt(revenue.ticketing)} + Add-ons {moneyFmt(revenue.addons)}</div>
+            <div className="pbody" style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '32px' }}>
+              <div>
+                <div className="ri"><div className="ri-ic">🎟️</div><div className="ri-lbl">Ticketing </div><div className="ri-bar"><div className="ri-fil" style={{ width: `${revPct(revenue.ticketing)}%`, background: 'var(--brand)' }}></div></div><div className="ri-amt" style={{ color: 'var(--brand)' }}>{moneyFmt(revenue.ticketing)}</div></div>
+                {!isStaff && (
+                  <div className="ri"><div className="ri-ic">🧤</div><div className="ri-lbl">Add-ons </div><div className="ri-bar"><div className="ri-fil" style={{ width: `${revPct(revenue.addons)}%`, background: 'var(--amber)' }}></div></div><div className="ri-amt" style={{ color: 'var(--amber)' }}>{moneyFmt(revenue.addons)}</div></div>
+                )}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                <div className="rev-total">
+                  <div>
+                    <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--green)', textTransform: 'uppercase', letterSpacing: '.5px' }}>Grand Total</div>
+                    {!isStaff && <div style={{ fontSize: '11px', color: 'var(--sub)', marginTop: '2px' }}>Ticketing {moneyFmt(revenue.ticketing)} + Add-ons {moneyFmt(revenue.addons)}</div>}
+                  </div>
+                  <div style={{ fontSize: '26px', fontWeight: '700', color: 'var(--green)' }}>{moneyFmt(totalRev)}</div>
                 </div>
-                <div style={{ fontSize: '26px', fontWeight: '700', color: 'var(--green)' }}>{moneyFmt(totalRev)}</div>
               </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* §3 ATTRACTION-WISE BREAKDOWN */}
-        <div className="sec-hd s3 a4">
-          <div className="sec-hd-pill">📊 Attraction-wise Breakdown</div>
-          <div className="sec-hd-body"> </div>
-          <div className="sec-hd-date">{activeDateLabel}</div>
-        </div>
+        {!isSingleScoped && (
+          <>
+            <div className="sec-hd s3 a4">
+              <div className="sec-hd-pill">📊 Attraction-wise Breakdown</div>
+              <div className="sec-hd-body"> </div>
+              <div className="sec-hd-date">{activeDateLabel}</div>
+            </div>
 
-        <div className="two-col a4">
-          {/* GUEST COUNT */}
-          <div className="panel">
-            <div className="ph">
-              <div>
-                <div className="pt">Guest Count by Attraction</div>
-                <div className="ps">How many guests visited each attraction</div>
-              </div>
-              <div className="pbadge pb-blue">Visit: {activeDateLabel}</div>
-            </div>
-            <div className="pbody">
-              <table className="tbl">
-                <thead><tr><th>Attraction</th><th>Guests</th><th>Share</th><th>Tickets</th></tr></thead>
-                <tbody>
-                  {(attractions.length > 0 ? attractions : [{ title: 'No data', guests: 0, revenue: 0, tickets: 0 }]).map((attr, i) => {
-                    const totalG = visitor.totalGuests || 1;
-                    const pct = Math.round((attr.guests / totalG) * 100);
-                    const tagClass = attr.title.toLowerCase().includes('snow') ? 'at-snow' : attr.title.toLowerCase().includes('mad') ? 'at-mad' : attr.title.toLowerCase().includes('devil') ? 'at-devil' : 'at-eye';
-                    return (
-                      <tr key={i}>
-                        <td><span className={`atag ${tagClass}`}>{attr.title}</span></td>
-                        <td>{numberFmt(attr.guests || 0)}</td>
-                        <td>
-                          <div className="mpb">
-                            <div className="mpb-track"><div className="mpb-fill" style={{ width: `${pct}%`, background: 'var(--blue)' }}></div></div>
-                            <span className="mpb-pct">{pct}%</span>
-                          </div>
-                        </td>
-                        <td>{numberFmt(attr.tickets || 0)}</td>
+            <div className="two-col a4">
+              {/* GUEST COUNT */}
+              <div className="panel">
+                <div className="ph">
+                  <div>
+                    <div className="pt">Guest Count by Attraction</div>
+                    <div className="ps">How many guests visited each attraction</div>
+                  </div>
+                  <div className="pbadge pb-blue">Visit: {activeDateLabel}</div>
+                </div>
+                <div className="pbody">
+                  <table className="tbl">
+                    <thead><tr><th>Attraction</th><th>Guests</th><th>Share</th><th>Tickets</th></tr></thead>
+                    <tbody>
+                      {(attractions.length > 0 ? attractions : [{ title: 'No data', guests: 0, revenue: 0, tickets: 0 }]).map((attr, i) => {
+                        const totalG = visitor.totalGuests || 1;
+                        const pct = Math.round((attr.guests / totalG) * 100);
+                        const tagClass = attr.title.toLowerCase().includes('snow') ? 'at-snow' : attr.title.toLowerCase().includes('mad') ? 'at-mad' : attr.title.toLowerCase().includes('devil') ? 'at-devil' : 'at-eye';
+                        return (
+                          <tr key={i}>
+                            <td><span className={`atag ${tagClass}`}>{attr.title}</span></td>
+                            <td>{numberFmt(attr.guests || 0)}</td>
+                            <td>
+                              <div className="mpb">
+                                <div className="mpb-track"><div className="mpb-fill" style={{ width: `${pct}%`, background: 'var(--blue)' }}></div></div>
+                                <span className="mpb-pct">{pct}%</span>
+                              </div>
+                            </td>
+                            <td>{numberFmt(attr.tickets || 0)}</td>
+                          </tr>
+                        );
+                      })}
+                      <tr className="tot">
+                        <td>Total</td>
+                        <td>{numberFmt(visitor.totalGuests)}</td>
+                        <td></td>
+                        <td>{numberFmt(attractions.reduce((acc, curr) => acc + curr.tickets, 0))}</td>
                       </tr>
-                    );
-                  })}
-                  <tr className="tot">
-                    <td>Total</td>
-                    <td>{numberFmt(visitor.totalGuests)}</td>
-                    <td></td>
-                    <td>{numberFmt(attractions.reduce((acc, curr) => acc + curr.tickets, 0))}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
 
-          {/* ATTRACTION REVENUE */}
-          <div className="panel">
-            <div className="ph">
-              <div>
-                <div className="pt">Revenue by Attraction</div>
-                <div className="ps">Ticketed-attraction revenue breakdown</div>
-              </div>
-              <div className="pbadge pb-green">Collected: {activeDateLabel}</div>
-            </div>
-            <div className="pbody">
-              <table className="tbl">
-                <thead><tr><th>Attraction</th><th>Revenue</th><th>Share</th><th>Avg/Guest</th></tr></thead>
-                <tbody>
-                  {(attractions.length > 0 ? attractions : [{ title: 'No data', guests: 0, revenue: 0, tickets: 0 }]).map((attr, i) => {
-                    const totalR = attractions.reduce((acc, curr) => acc + curr.revenue, 0) || 1;
-                    const pct = Math.round((attr.revenue / totalR) * 100);
-                    const avg = attr.guests ? Math.round(attr.revenue / attr.guests) : 0;
-                    const tagClass = attr.title.toLowerCase().includes('snow') ? 'at-snow' : attr.title.toLowerCase().includes('mad') ? 'at-mad' : attr.title.toLowerCase().includes('devil') ? 'at-devil' : 'at-eye';
-                    return (
-                      <tr key={i}>
-                        <td><span className={`atag ${tagClass}`}>{attr.title}</span></td>
-                        <td style={{ color: 'var(--green)' }}>{moneyFmt(attr.revenue || 0)}</td>
-                        <td>
-                          <div className="mpb">
-                            <div className="mpb-track"><div className="mpb-fill" style={{ width: `${pct}%`, background: 'var(--green)' }}></div></div>
-                            <span className="mpb-pct">{pct}%</span>
-                          </div>
-                        </td>
-                        <td>{moneyFmt(avg)}</td>
+              {/* ATTRACTION REVENUE */}
+              <div className="panel">
+                <div className="ph">
+                  <div>
+                    <div className="pt">Revenue by Attraction</div>
+                    <div className="ps">Ticketed-attraction revenue breakdown</div>
+                  </div>
+                  <div className="pbadge pb-green">Collected: {activeDateLabel}</div>
+                </div>
+                <div className="pbody">
+                  <table className="tbl">
+                    <thead><tr><th>Attraction</th><th>Revenue</th><th>Share</th><th>Avg/Guest</th></tr></thead>
+                    <tbody>
+                      {(attractions.length > 0 ? attractions : [{ title: 'No data', guests: 0, revenue: 0, tickets: 0 }]).map((attr, i) => {
+                        const totalR = attractions.reduce((acc, curr) => acc + curr.revenue, 0) || 1;
+                        const pct = Math.round((attr.revenue / totalR) * 100);
+                        const avg = attr.guests ? Math.round(attr.revenue / attr.guests) : 0;
+                        const tagClass = attr.title.toLowerCase().includes('snow') ? 'at-snow' : attr.title.toLowerCase().includes('mad') ? 'at-mad' : attr.title.toLowerCase().includes('devil') ? 'at-devil' : 'at-eye';
+                        return (
+                          <tr key={i}>
+                            <td><span className={`atag ${tagClass}`}>{attr.title}</span></td>
+                            <td style={{ color: 'var(--green)' }}>{moneyFmt(attr.revenue || 0)}</td>
+                            <td>
+                              <div className="mpb">
+                                <div className="mpb-track"><div className="mpb-fill" style={{ width: `${pct}%`, background: 'var(--green)' }}></div></div>
+                                <span className="mpb-pct">{pct}%</span>
+                              </div>
+                            </td>
+                            <td>{moneyFmt(avg)}</td>
+                          </tr>
+                        );
+                      })}
+                      <tr className="tot">
+                        <td>Total</td>
+                        <td style={{ color: 'var(--green)' }}>{moneyFmt(attractions.reduce((acc, curr) => acc + curr.revenue, 0))}</td>
+                        <td></td>
+                        <td>{moneyFmt(Math.round(attractions.reduce((acc, curr) => acc + curr.revenue, 0) / (visitor.totalGuests || 1)))} avg</td>
                       </tr>
-                    );
-                  })}
-                  <tr className="tot">
-                    <td>Total</td>
-                    <td style={{ color: 'var(--green)' }}>{moneyFmt(attractions.reduce((acc, curr) => acc + curr.revenue, 0))}</td>
-                    <td></td>
-                    <td>{moneyFmt(Math.round(attractions.reduce((acc, curr) => acc + curr.revenue, 0) / (visitor.totalGuests || 1)))} avg</td>
-                  </tr>
-                </tbody>
-              </table>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
+          </>
+        )}
 
         {/* §4 TRANSACTION SUMMARY */}
         <div className="sec-hd s4 a5" style={{ marginTop: '32px' }}>
@@ -351,51 +364,57 @@ export default function Dashboard() {
             <div className="sc-val">{numberFmt(txn.bookingsPlaced)}</div>
             <div className="sc-sub">Confirmed orders for this date</div>
           </div>
-          <div className="sc c-green">
-            <div className="sc-lbl">Booking Value</div>
-            <div className="sc-val">{moneyFmt(txn.revenuePlaced)}</div>
-            <div className="sc-sub">Total paid amount</div>
-          </div>
-          <div className="sc c-blue">
-            <div className="sc-lbl">Total Guests</div>
-            <div className="sc-val">{numberFmt(txn.guestsPlaced)}</div>
-            <div className="sc-sub">People visiting on this date</div>
-          </div>
+          {!isSingleScoped && (
+            <div className="sc c-green">
+              <div className="sc-lbl">Booking Value</div>
+              <div className="sc-val">{moneyFmt(txn.revenuePlaced)}</div>
+              <div className="sc-sub">Total paid amount</div>
+            </div>
+          )}
+          {!isSingleScoped && (
+            <div className="sc c-blue">
+              <div className="sc-lbl">Total Guests</div>
+              <div className="sc-val">{numberFmt(txn.guestsPlaced)}</div>
+              <div className="sc-sub">People visiting on this date</div>
+            </div>
+          )}
         </div>
 
-        <div className="panel a6" style={{ marginBottom: '16px' }}>
-          <div className="ph">
-            <div>
-              <div className="pt">Bookings by Attraction</div>
-              <div className="ps">Attraction-wise split for the selected visit date</div>
+        {!isSingleScoped && (
+          <div className="panel a6" style={{ marginBottom: '16px' }}>
+            <div className="ph">
+              <div>
+                <div className="pt">Bookings by Attraction</div>
+                <div className="ps">Attraction-wise split for the selected visit date</div>
+              </div>
+              <div className="pbadge pb-slate">Visit: {activeDateLabel}</div>
             </div>
-            <div className="pbadge pb-slate">Visit: {activeDateLabel}</div>
+            <div className="pbody">
+              <table className="tbl">
+                <thead><tr><th>Attraction</th><th>Bookings</th><th>Guests</th><th>Value</th></tr></thead>
+                <tbody>
+                  {(txn.attractions.length > 0 ? txn.attractions : [{ title: 'No bookings', bookings: 0, guests: 0, value: 0 }]).map((attr, i) => {
+                    const tagClass = attr.title.toLowerCase().includes('snow') ? 'at-snow' : attr.title.toLowerCase().includes('mad') ? 'at-mad' : attr.title.toLowerCase().includes('devil') ? 'at-devil' : 'at-eye';
+                    return (
+                      <tr key={i}>
+                        <td><span className={`atag ${tagClass}`}>{attr.title}</span></td>
+                        <td>{numberFmt(attr.bookings)}</td>
+                        <td>{numberFmt(attr.guests)}</td>
+                        <td style={{ color: 'var(--green)' }}>{moneyFmt(attr.value)}</td>
+                      </tr>
+                    );
+                  })}
+                  <tr className="tot">
+                    <td>Total</td>
+                    <td>{numberFmt(txn.bookingsPlaced)}</td>
+                    <td>{numberFmt(txn.guestsPlaced)}</td>
+                    <td style={{ color: 'var(--green)' }}>{moneyFmt(txn.revenuePlaced)}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
-          <div className="pbody">
-            <table className="tbl">
-              <thead><tr><th>Attraction</th><th>Bookings</th><th>Guests</th><th>Value</th></tr></thead>
-              <tbody>
-                {(txn.attractions.length > 0 ? txn.attractions : [{ title: 'No bookings', bookings: 0, guests: 0, value: 0 }]).map((attr, i) => {
-                  const tagClass = attr.title.toLowerCase().includes('snow') ? 'at-snow' : attr.title.toLowerCase().includes('mad') ? 'at-mad' : attr.title.toLowerCase().includes('devil') ? 'at-devil' : 'at-eye';
-                  return (
-                    <tr key={i}>
-                      <td><span className={`atag ${tagClass}`}>{attr.title}</span></td>
-                      <td>{numberFmt(attr.bookings)}</td>
-                      <td>{numberFmt(attr.guests)}</td>
-                      <td style={{ color: 'var(--green)' }}>{moneyFmt(attr.value)}</td>
-                    </tr>
-                  );
-                })}
-                <tr className="tot">
-                  <td>Total</td>
-                  <td>{numberFmt(txn.bookingsPlaced)}</td>
-                  <td>{numberFmt(txn.guestsPlaced)}</td>
-                  <td style={{ color: 'var(--green)' }}>{moneyFmt(txn.revenuePlaced)}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
+        )}
 
         {/* FOOTER */}
       </div>
