@@ -197,7 +197,7 @@ export default function Dashboard() {
 
         {/* §2 REVENUE SUMMARY */}
         <div className="sec-hd s2 a3">
-          <div className="sec-hd-pill">💰  Revenue Summary</div>
+          <div className="sec-hd-pill">💰 Revenue Summary</div>
           <div className="sec-hd-body"></div>
           <div className="sec-hd-date">Visit Date: {activeDateLabel}</div>
         </div>
