@@ -22,6 +22,7 @@ const BASE_RULE = {
   target_type: 'attraction',
   target_id: '',
   target_ids: [],
+  get_target_ids: [],
   applies_to_all: false,
   // buy_x_get_y fields
   buy_qty: 1,
@@ -215,7 +216,7 @@ export default function OfferForm() {
                   const mapSingleRule = (r) => createRule({
                     target_type: r.target_type || 'attraction',
                     target_id: r.target_id ?? '',
-                    target_ids: r.target_ids || (r.target_id ? [String(r.target_id)] : []),
+                    target_ids: r.target_ids || (r.target_id ? [`${r.target_type || 'attraction'}_${r.target_id}`] : []),
                     applies_to_all: !!r.applies_to_all,
                     date_from: r.date_from ? new Date(r.date_from).toISOString().split('T')[0] : '',
                     date_to: r.date_to ? new Date(r.date_to).toISOString().split('T')[0] : '',
@@ -240,6 +241,7 @@ export default function OfferForm() {
                     get_qty: r.get_qty ?? 1,
                     get_target_type: r.get_target_type || 'attraction',
                     get_target_id: r.get_target_id ?? '',
+                    get_target_ids: r.get_target_ids || (r.get_target_id ? [`${r.get_target_type || 'attraction'}_${r.get_target_id}`] : []),
                     get_discount_type: r.get_discount_type || '',
                     get_discount_value: r.get_discount_value ?? '',
                     ticket_limit: r.ticket_limit ?? '',
@@ -248,10 +250,25 @@ export default function OfferForm() {
 
                   if ((o.rule_type === 'first_n_tickets' || o.rule_type === 'buy_x_get_y') && o.rules.length > 0) {
                     const combinedRule = mapSingleRule(o.rules[0]);
-                    combinedRule.target_ids = o.rules
-                      .map(r => r.target_id)
-                      .filter(id => id != null && id !== '')
-                      .map(String);
+                    
+                    // Collect unique requirement targets
+                    const uniqueTargets = new Set();
+                    o.rules.forEach(r => {
+                      if (r.target_id != null && r.target_id !== '') {
+                        uniqueTargets.add(`${r.target_type || 'attraction'}_${r.target_id}`);
+                      }
+                    });
+                    combinedRule.target_ids = Array.from(uniqueTargets);
+                    
+                    // Collect unique reward targets
+                    const uniqueGetTargets = new Set();
+                    o.rules.forEach(r => {
+                      if (r.get_target_id != null && r.get_target_id !== '') {
+                        uniqueGetTargets.add(`${r.get_target_type || 'attraction'}_${r.get_target_id}`);
+                      }
+                    });
+                    combinedRule.get_target_ids = Array.from(uniqueGetTargets);
+                    
                     return [combinedRule];
                   }
                   return o.rules.map(mapSingleRule);
@@ -356,10 +373,40 @@ export default function OfferForm() {
       };
 
       const resolvedRules = (state.form.rules || []).flatMap((rule) => {
-        if (rule.applies_to_all) return [{ ...rule, target_id: null, target_ids: [] }];
-        if ((state.form.rule_type === 'first_n_tickets' || state.form.rule_type === 'buy_x_get_y') && Array.isArray(rule.target_ids) && rule.target_ids.length > 0) {
-          return rule.target_ids.map(id => ({ ...rule, target_id: id }));
+        if (state.form.rule_type === 'first_n_tickets' || state.form.rule_type === 'buy_x_get_y') {
+          let targetCombinations = [];
+          
+          let targets = (rule.target_ids || []).map(val => {
+            const [type, id] = val.split('_');
+            return { target_type: type, target_id: id };
+          });
+          
+          if (rule.applies_to_all) {
+             targets = [{ target_type: 'attraction', target_id: null, applies_to_all: true }, { target_type: 'combo', target_id: null, applies_to_all: true }];
+          } else if (targets.length === 0) {
+             targets = [{ target_type: rule.target_type || 'attraction', target_id: null }];
+          }
+
+          let getTargets = [];
+          if (state.form.rule_type === 'buy_x_get_y') {
+             getTargets = (rule.get_target_ids || []).map(val => {
+               const [type, id] = val.split('_');
+               return { get_target_type: type, get_target_id: id };
+             });
+             if (getTargets.length === 0) getTargets.push({ get_target_type: rule.get_target_type || 'attraction', get_target_id: null });
+          } else {
+             getTargets.push({});
+          }
+
+          for (const t of targets) {
+            for (const gt of getTargets) {
+               targetCombinations.push({ ...rule, ...t, ...gt });
+            }
+          }
+          return targetCombinations;
         }
+
+        if (rule.applies_to_all) return [{ ...rule, target_id: null, target_ids: [], get_target_ids: [] }];
         return [{ ...rule }];
       });
 
@@ -396,7 +443,7 @@ export default function OfferForm() {
         valid_to: normalizeDate(state.form.valid_to),
         rules: expandedRules.map((rule) => ({
           ...rule,
-          target_id: rule.applies_to_all ? null : (rule.target_id === '' ? null : Number(rule.target_id)),
+          target_id: rule.applies_to_all ? null : (rule.target_id === '' || rule.target_id == null ? null : Number(rule.target_id)),
           slot_id: rule.slot_id === '' ? null : Number(rule.slot_id),
           rule_discount_value: rule.rule_discount_value === '' ? null : Number(rule.rule_discount_value),
           priority: 100, // Fixed default, not user-configurable
@@ -407,6 +454,7 @@ export default function OfferForm() {
           specific_date: normalizeDate(rule.specific_date),
           specific_time: normalizeTime(rule.specific_time),
           rule_discount_type: normalizeString(rule.rule_discount_type),
+          target_type: normalizeString(rule.target_type),
           slot_type: normalizeString(rule.slot_type),
           day_type: normalizeString(rule.day_type),
           combo_child_adjustments: rule.combo_child_adjustments && Object.keys(rule.combo_child_adjustments).length > 0 ? rule.combo_child_adjustments : null,
@@ -420,7 +468,7 @@ export default function OfferForm() {
           get_discount_value: rule.get_discount_value === '' || rule.get_discount_value == null ? null : Number(rule.get_discount_value),
           ticket_limit: rule.ticket_limit === '' || rule.ticket_limit == null ? null : Number(rule.ticket_limit),
           offer_price: rule.offer_price === '' || rule.offer_price == null ? null : Number(rule.offer_price),
-        })).map(({ target_ids, ...rest }) => rest), // Remove target_ids before sending to API
+        })).map(({ target_ids, get_target_ids, ...rest }) => rest), // Remove target_ids before sending to API
       };
       if (isEdit) await adminApi.put(`${A.offers()}/${id}`, payload);
       else await adminApi.post(A.offers(), payload);
@@ -521,24 +569,18 @@ export default function OfferForm() {
               {/* Target Section */}
               <div className="bg-white rounded-lg p-4 border border-amber-100 shadow-sm">
                 <h3 className="text-sm font-bold text-gray-800 mb-3 border-b pb-2">1. Target Product</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Target Type</label>
-                    <select className="w-full rounded-md border px-3 py-2 bg-gray-50 focus:bg-white" value={f.rules[0].target_type || 'attraction'} onChange={(e) => updateRule(0, { target_type: e.target.value, target_id: '' })}>
-                      {TARGET_TYPES.map((opt) => (
-                        <option key={opt.value} value={opt.value}>{opt.label}</option>
-                      ))}
-                    </select>
-                  </div>
+                <div className="flex flex-col gap-4">
                   <div>
                     <label className="block text-xs font-semibold text-gray-600 mb-1.5">
                       Target Items {f.rules[0].target_ids?.length > 0 ? `(${f.rules[0].target_ids.length} selected)` : ''}
                     </label>
-                    <div className={`w-full rounded-md border bg-gray-50 overflow-y-auto ${f.rules[0].applies_to_all ? 'opacity-60 cursor-not-allowed' : ''}`} style={{ maxHeight: '160px' }}>
-                      {(f.rules[0].target_type === 'attraction' ? attractions : combos).map((item) => {
-                        const isChecked = Array.isArray(f.rules[0].target_ids) && f.rules[0].target_ids.includes(String(item.id));
+                    <div className={`w-full rounded-md border bg-gray-50 overflow-y-auto ${f.rules[0].applies_to_all ? 'opacity-60 cursor-not-allowed' : ''}`} style={{ maxHeight: '200px' }}>
+                      <div className="px-3 py-1 bg-gray-200 text-xs font-bold text-gray-700 uppercase sticky top-0">Attractions</div>
+                      {attractions.map((item) => {
+                        const idStr = `attraction_${item.id}`;
+                        const isChecked = Array.isArray(f.rules[0].target_ids) && f.rules[0].target_ids.includes(idStr);
                         return (
-                          <label key={`fnt-${item.id}`} className="flex items-start gap-2 px-3 py-2 hover:bg-white cursor-pointer border-b last:border-0 border-gray-100">
+                          <label key={idStr} className="flex items-start gap-2 px-3 py-2 hover:bg-white cursor-pointer border-b border-gray-100">
                             <input
                               type="checkbox"
                               className="mt-0.5 w-4 h-4 text-amber-600 rounded border-gray-300 focus:ring-amber-500 disabled:opacity-50"
@@ -546,27 +588,42 @@ export default function OfferForm() {
                               checked={isChecked}
                               onChange={(e) => {
                                 const current = Array.isArray(f.rules[0].target_ids) ? f.rules[0].target_ids : [];
-                                const idStr = String(item.id);
-                                if (e.target.checked) {
-                                  updateRule(0, { target_ids: [...current, idStr] });
-                                } else {
-                                  updateRule(0, { target_ids: current.filter(cid => cid !== idStr) });
-                                }
+                                updateRule(0, { target_ids: e.target.checked ? [...current, idStr] : current.filter(cid => cid !== idStr) });
                               }}
                             />
                             <span className="text-sm font-medium text-gray-700 leading-tight">{item.title || item.name}</span>
                           </label>
                         );
                       })}
-                      {(f.rules[0].target_type === 'attraction' ? attractions : combos).length === 0 && (
-                        <div className="p-3 text-xs text-gray-500">No items available.</div>
-                      )}
+                      {attractions.length === 0 && <div className="p-3 text-xs text-gray-500">None</div>}
+
+                      <div className="px-3 py-1 bg-gray-200 text-xs font-bold text-gray-700 uppercase sticky top-0 border-t border-gray-300">Combos</div>
+                      {combos.map((item) => {
+                        const idStr = `combo_${item.id}`;
+                        const isChecked = Array.isArray(f.rules[0].target_ids) && f.rules[0].target_ids.includes(idStr);
+                        return (
+                          <label key={idStr} className="flex items-start gap-2 px-3 py-2 hover:bg-white cursor-pointer border-b border-gray-100">
+                            <input
+                              type="checkbox"
+                              className="mt-0.5 w-4 h-4 text-amber-600 rounded border-gray-300 focus:ring-amber-500 disabled:opacity-50"
+                              disabled={f.rules[0].applies_to_all || targetsStatus === 'loading'}
+                              checked={isChecked}
+                              onChange={(e) => {
+                                const current = Array.isArray(f.rules[0].target_ids) ? f.rules[0].target_ids : [];
+                                updateRule(0, { target_ids: e.target.checked ? [...current, idStr] : current.filter(cid => cid !== idStr) });
+                              }}
+                            />
+                            <span className="text-sm font-medium text-gray-700 leading-tight">{item.title || item.name}</span>
+                          </label>
+                        );
+                      })}
+                      {combos.length === 0 && <div className="p-3 text-xs text-gray-500">None</div>}
                     </div>
                   </div>
-                  <div className="flex items-end">
+                  <div>
                     <label className="flex items-center gap-2 text-sm text-gray-700 font-medium cursor-pointer bg-slate-50 border p-2 rounded-md hover:bg-slate-100 transition-colors w-max">
                       <input type="checkbox" className="w-4 h-4 text-amber-600 rounded border-gray-300 focus:ring-amber-500" checked={!!f.rules[0].applies_to_all} onChange={(e) => updateRule(0, { applies_to_all: e.target.checked })} />
-                      Any {f.rules[0].target_type === 'combo' ? 'Combo' : 'Attraction'}
+                      Valid for <span className="text-amber-700 font-bold underline decoration-amber-300">ANY</span> Attraction or Combo in catalog
                     </label>
                   </div>
                 </div>
@@ -652,60 +709,70 @@ export default function OfferForm() {
               {/* Requirement Section */}
               <div className="bg-white rounded-lg p-4 border border-blue-100 shadow-sm">
                 <h3 className="text-sm font-bold text-gray-800 mb-3 border-b pb-2">1. Buy Requirement</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Target Type</label>
-                    <select className="w-full rounded-md border px-3 py-2 bg-gray-50 focus:bg-white" value={f.rules[0].target_type || 'attraction'} onChange={(e) => updateRule(0, { target_type: e.target.value, target_id: '' })}>
-                      {TARGET_TYPES.map((opt) => (
-                        <option key={opt.value} value={opt.value}>{opt.label}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">
-                      Target Items {f.rules[0].target_ids?.length > 0 ? `(${f.rules[0].target_ids.length} selected)` : ''}
-                    </label>
-                    <div className={`w-full rounded-md border bg-gray-50 overflow-y-auto ${f.rules[0].applies_to_all ? 'opacity-60 cursor-not-allowed' : ''}`} style={{ maxHeight: '160px' }}>
-                      {(f.rules[0].target_type === 'attraction' ? attractions : combos).map((item) => {
-                        const isChecked = Array.isArray(f.rules[0].target_ids) && f.rules[0].target_ids.includes(String(item.id));
-                        return (
-                          <label key={`req-${item.id}`} className="flex items-start gap-2 px-3 py-2 hover:bg-white cursor-pointer border-b last:border-0 border-gray-100">
-                            <input
-                              type="checkbox"
-                              className="mt-0.5 w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 disabled:opacity-50"
-                              disabled={f.rules[0].applies_to_all || targetsStatus === 'loading'}
-                              checked={isChecked}
-                              onChange={(e) => {
-                                const current = Array.isArray(f.rules[0].target_ids) ? f.rules[0].target_ids : [];
-                                const idStr = String(item.id);
-                                if (e.target.checked) {
-                                  updateRule(0, { target_ids: [...current, idStr] });
-                                } else {
-                                  updateRule(0, { target_ids: current.filter(cid => cid !== idStr) });
-                                }
-                              }}
-                            />
-                            <span className="text-sm font-medium text-gray-700 leading-tight">{item.title || item.name}</span>
-                          </label>
-                        );
-                      })}
-                      {(f.rules[0].target_type === 'attraction' ? attractions : combos).length === 0 && (
-                        <div className="p-3 text-xs text-gray-500">No items available.</div>
-                      )}
+                <div className="flex flex-col gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+                        Target Items {f.rules[0].target_ids?.length > 0 ? `(${f.rules[0].target_ids.length} selected)` : ''}
+                      </label>
+                      <div className={`w-full rounded-md border bg-gray-50 overflow-y-auto ${f.rules[0].applies_to_all ? 'opacity-60 cursor-not-allowed' : ''}`} style={{ maxHeight: '200px' }}>
+                        <div className="px-3 py-1 bg-gray-200 text-xs font-bold text-gray-700 uppercase sticky top-0">Attractions</div>
+                        {attractions.map((item) => {
+                          const idStr = `attraction_${item.id}`;
+                          const isChecked = Array.isArray(f.rules[0].target_ids) && f.rules[0].target_ids.includes(idStr);
+                          return (
+                            <label key={`req-${idStr}`} className="flex items-start gap-2 px-3 py-2 hover:bg-white cursor-pointer border-b border-gray-100">
+                              <input
+                                type="checkbox"
+                                className="mt-0.5 w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 disabled:opacity-50"
+                                disabled={f.rules[0].applies_to_all || targetsStatus === 'loading'}
+                                checked={isChecked}
+                                onChange={(e) => {
+                                  const current = Array.isArray(f.rules[0].target_ids) ? f.rules[0].target_ids : [];
+                                  updateRule(0, { target_ids: e.target.checked ? [...current, idStr] : current.filter(cid => cid !== idStr) });
+                                }}
+                              />
+                              <span className="text-sm font-medium text-gray-700 leading-tight">{item.title || item.name}</span>
+                            </label>
+                          );
+                        })}
+                        {attractions.length === 0 && <div className="p-3 text-xs text-gray-500">None</div>}
+
+                        <div className="px-3 py-1 bg-gray-200 text-xs font-bold text-gray-700 uppercase sticky top-0 border-t border-gray-300">Combos</div>
+                        {combos.map((item) => {
+                          const idStr = `combo_${item.id}`;
+                          const isChecked = Array.isArray(f.rules[0].target_ids) && f.rules[0].target_ids.includes(idStr);
+                          return (
+                            <label key={`req-${idStr}`} className="flex items-start gap-2 px-3 py-2 hover:bg-white cursor-pointer border-b border-gray-100">
+                              <input
+                                type="checkbox"
+                                className="mt-0.5 w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 disabled:opacity-50"
+                                disabled={f.rules[0].applies_to_all || targetsStatus === 'loading'}
+                                checked={isChecked}
+                                onChange={(e) => {
+                                  const current = Array.isArray(f.rules[0].target_ids) ? f.rules[0].target_ids : [];
+                                  updateRule(0, { target_ids: e.target.checked ? [...current, idStr] : current.filter(cid => cid !== idStr) });
+                                }}
+                              />
+                              <span className="text-sm font-medium text-gray-700 leading-tight">{item.title || item.name}</span>
+                            </label>
+                          );
+                        })}
+                        {combos.length === 0 && <div className="p-3 text-xs text-gray-500">None</div>}
+                      </div>
+                      {(!f.rules[0].applies_to_all && (!f.rules[0].target_ids || f.rules[0].target_ids.length === 0)) ? (
+                        <div className="mt-1.5 text-[11px] font-semibold text-red-600">Please select at least one item or enable "ANY"</div>
+                      ) : null}
                     </div>
-                    {(!f.rules[0].applies_to_all && (!f.rules[0].target_ids || f.rules[0].target_ids.length === 0)) ? (
-                      <div className="mt-1.5 text-[11px] font-semibold text-red-600">Please select at least one item or enable "Any"</div>
-                    ) : null}
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Buy Quantity</label>
-                    <input type="number" min={1} className="w-full rounded-md border px-3 py-2 bg-gray-50 focus:bg-white font-mono" value={f.rules[0].buy_qty ?? 1} onChange={(e) => updateRule(0, { buy_qty: Number(e.target.value || 1) })} />
-                  </div>
-                  <div className="md:col-span-3">
-                    <label className="flex items-center gap-2 text-sm text-gray-700 font-medium cursor-pointer bg-slate-50 border p-2 rounded-md hover:bg-slate-100 transition-colors w-max">
-                      <input id="applies-to-all-main" type="checkbox" className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked={!!f.rules[0].applies_to_all} onChange={(e) => updateRule(0, { applies_to_all: e.target.checked })} />
-                      Valid for <span className="text-blue-700 font-bold underline decoration-blue-300">ANY</span> {f.rules[0].target_type === 'combo' ? 'Combo' : 'Attraction'} in our catalog
-                    </label>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-600 mb-1.5">Buy Quantity</label>
+                      <input type="number" min={1} className="w-full rounded-md border px-3 py-2 bg-gray-50 focus:bg-white font-mono" value={f.rules[0].buy_qty ?? 1} onChange={(e) => updateRule(0, { buy_qty: Number(e.target.value || 1) })} />
+                      
+                      <label className="flex items-center gap-2 mt-4 text-sm text-gray-700 font-medium cursor-pointer bg-slate-50 border p-2 rounded-md hover:bg-slate-100 transition-colors w-max">
+                        <input id="applies-to-all-main" type="checkbox" className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked={!!f.rules[0].applies_to_all} onChange={(e) => updateRule(0, { applies_to_all: e.target.checked })} />
+                        Valid for <span className="text-blue-700 font-bold underline decoration-blue-300">ANY</span> Attraction or Combo in catalog
+                      </label>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -713,42 +780,80 @@ export default function OfferForm() {
               {/* Reward Section */}
               <div className="bg-white rounded-lg p-4 border border-blue-100 shadow-sm">
                 <h3 className="text-sm font-bold text-gray-800 mb-3 border-b pb-2">2. Get Reward</h3>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Reward Type</label>
-                    <select className="w-full rounded-md border px-3 py-2 bg-gray-50 focus:bg-white" value={f.rules[0].get_target_type || 'attraction'} onChange={(e) => updateRule(0, { get_target_type: e.target.value, get_target_id: '' })}>
-                      {TARGET_TYPES.map((opt) => (
-                         <option key={opt.value} value={opt.value}>{opt.label}</option>
-                      ))}
-                    </select>
+                <div className="flex flex-col gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+                        Reward Items <span className="font-normal text-gray-400">(Leave blank for claim at counter)</span>
+                        {f.rules[0].get_target_ids?.length > 0 ? ` (${f.rules[0].get_target_ids.length} selected)` : ''}
+                      </label>
+                      <div className="w-full rounded-md border bg-gray-50 overflow-y-auto" style={{ maxHeight: '200px' }}>
+                        <div className="px-3 py-1 bg-gray-200 text-xs font-bold text-gray-700 uppercase sticky top-0">Attractions</div>
+                        {attractions.map((item) => {
+                          const idStr = `attraction_${item.id}`;
+                          const isChecked = Array.isArray(f.rules[0].get_target_ids) && f.rules[0].get_target_ids.includes(idStr);
+                          return (
+                            <label key={`rew-${idStr}`} className="flex items-start gap-2 px-3 py-2 hover:bg-white cursor-pointer border-b border-gray-100">
+                              <input
+                                type="checkbox"
+                                className="mt-0.5 w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 disabled:opacity-50"
+                                disabled={targetsStatus === 'loading'}
+                                checked={isChecked}
+                                onChange={(e) => {
+                                  const current = Array.isArray(f.rules[0].get_target_ids) ? f.rules[0].get_target_ids : [];
+                                  updateRule(0, { get_target_ids: e.target.checked ? [...current, idStr] : current.filter(cid => cid !== idStr) });
+                                }}
+                              />
+                              <span className="text-sm font-medium text-gray-700 leading-tight">{item.title || item.name}</span>
+                            </label>
+                          );
+                        })}
+                        {attractions.length === 0 && <div className="p-3 text-xs text-gray-500">None</div>}
+
+                        <div className="px-3 py-1 bg-gray-200 text-xs font-bold text-gray-700 uppercase sticky top-0 border-t border-gray-300">Combos</div>
+                        {combos.map((item) => {
+                          const idStr = `combo_${item.id}`;
+                          const isChecked = Array.isArray(f.rules[0].get_target_ids) && f.rules[0].get_target_ids.includes(idStr);
+                          return (
+                            <label key={`rew-${idStr}`} className="flex items-start gap-2 px-3 py-2 hover:bg-white cursor-pointer border-b border-gray-100">
+                              <input
+                                type="checkbox"
+                                className="mt-0.5 w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 disabled:opacity-50"
+                                disabled={targetsStatus === 'loading'}
+                                checked={isChecked}
+                                onChange={(e) => {
+                                  const current = Array.isArray(f.rules[0].get_target_ids) ? f.rules[0].get_target_ids : [];
+                                  updateRule(0, { get_target_ids: e.target.checked ? [...current, idStr] : current.filter(cid => cid !== idStr) });
+                                }}
+                              />
+                              <span className="text-sm font-medium text-gray-700 leading-tight">{item.title || item.name}</span>
+                            </label>
+                          );
+                        })}
+                        {combos.length === 0 && <div className="p-3 text-xs text-gray-500">None</div>}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="mb-4">
+                        <label className="block text-xs font-semibold text-gray-600 mb-1.5">Get Quantity</label>
+                        <input type="number" min={1} className="w-full rounded-md border px-3 py-2 bg-gray-50 focus:bg-white font-mono" value={f.rules[0].get_qty ?? 1} onChange={(e) => updateRule(0, { get_qty: Number(e.target.value || 1) })} />
+                      </div>
+                      <div className="mb-4">
+                         <label className="block text-xs font-semibold text-gray-600 mb-1.5">Discount Type</label>
+                         <select className="w-full rounded-md border px-3 py-2 bg-gray-50 focus:bg-white" value={f.rules[0].get_discount_type || 'Free'} onChange={(e) => updateRule(0, { get_discount_type: e.target.value })}>
+                           <option value="Free">100% Free</option>
+                           <option value="percent">Percentage (%)</option>
+                           <option value="amount">Flat Amount</option>
+                         </select>
+                      </div>
+                      {f.rules[0].get_discount_type && f.rules[0].get_discount_type !== 'Free' ? (
+                         <div>
+                           <label className="block text-xs font-semibold text-gray-600 mb-1.5">Discount Value</label>
+                           <input type="number" min={0} className="w-full rounded-md border px-3 py-2 bg-gray-50 focus:bg-white font-mono" value={f.rules[0].get_discount_value ?? ''} onChange={(e) => updateRule(0, { get_discount_value: e.target.value })} />
+                         </div>
+                      ) : null}
+                    </div>
                   </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Reward Item <span className="font-normal text-gray-400">(Leave blank for claim at counter)</span></label>
-                    <select className="w-full rounded-md border px-3 py-2 bg-gray-50 focus:bg-white" value={f.rules[0].get_target_id ?? ''} disabled={targetsStatus === 'loading'} onChange={(e) => updateRule(0, { get_target_id: e.target.value })}>
-                      <option value="">(Claim at counter / Equal or lesser)</option>
-                      {(f.rules[0].get_target_type === 'attraction' ? attractions : combos).map((item) => (
-                        <option key={`rew-${item.id}`} value={item.id}>{item.title || item.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Get Quantity</label>
-                    <input type="number" min={1} className="w-full rounded-md border px-3 py-2 bg-gray-50 focus:bg-white font-mono" value={f.rules[0].get_qty ?? 1} onChange={(e) => updateRule(0, { get_qty: Number(e.target.value || 1) })} />
-                  </div>
-                  <div>
-                     <label className="block text-xs font-semibold text-gray-600 mb-1.5">Discount Type</label>
-                     <select className="w-full rounded-md border px-3 py-2 bg-gray-50 focus:bg-white" value={f.rules[0].get_discount_type || 'Free'} onChange={(e) => updateRule(0, { get_discount_type: e.target.value })}>
-                       <option value="Free">100% Free</option>
-                       <option value="percent">Percentage (%)</option>
-                       <option value="amount">Flat Amount</option>
-                     </select>
-                  </div>
-                  {f.rules[0].get_discount_type && f.rules[0].get_discount_type !== 'Free' ? (
-                     <div>
-                       <label className="block text-xs font-semibold text-gray-600 mb-1.5">Discount Value</label>
-                       <input type="number" min={0} className="w-full rounded-md border px-3 py-2 bg-gray-50 focus:bg-white font-mono" value={f.rules[0].get_discount_value ?? ''} onChange={(e) => updateRule(0, { get_discount_value: e.target.value })} />
-                     </div>
-                  ) : null}
                 </div>
               </div>
 

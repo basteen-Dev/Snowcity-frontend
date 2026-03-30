@@ -80,15 +80,29 @@ export default function FirstNTicketsDrawer({
 
   const rule = useMemo(() => {
     if (!offer) return null;
-    if (Array.isArray(offer.rules) && offer.rules.length) return offer.rules[0];
-    if (Array.isArray(offer.offer_rules) && offer.offer_rules.length) return offer.offer_rules[0];
-    return null;
+    const rules = Array.isArray(offer.rules) ? offer.rules : (Array.isArray(offer.offer_rules) ? offer.offer_rules : []);
+    if (!rules.length) return null;
+
+    // Aggregate all target_id for the first_n_tickets multi-target selection
+    const allTargetIds = new Set();
+    let appliesToAll = false;
+
+    rules.forEach(r => {
+      if (r.applies_to_all) appliesToAll = true;
+      if (r.target_id) allTargetIds.add(String(r.target_id));
+    });
+
+    return {
+      ...rules[0],
+      allTargetIds: Array.from(allTargetIds),
+      appliesToAll,
+    };
   }, [offer]);
 
   const ticketLimit = rule?.ticket_limit || null;
   const offerPrice = rule?.offer_price || 0;
-  const targetId = rule?.target_id ? String(rule.target_id) : '';
-  const appliesToAll = !!rule?.applies_to_all;
+  const allTargetIds = rule?.allTargetIds || [];
+  const appliesToAll = !!rule?.appliesToAll;
 
   // Selected attraction
   const selectedAttraction = useMemo(() => {
@@ -101,9 +115,11 @@ export default function FirstNTicketsDrawer({
   // Filter attractions matching the offer target
   const eligibleAttractions = useMemo(() => {
     if (appliesToAll) return attractions;
-    if (targetId) return attractions.filter(a => String(getAttrId(a)) === targetId);
+    if (allTargetIds.length > 0) {
+      return attractions.filter(a => allTargetIds.includes(String(getAttrId(a))));
+    }
     return attractions;
-  }, [appliesToAll, targetId, attractions]);
+  }, [appliesToAll, allTargetIds, attractions]);
 
   // Reset on offer change
   useEffect(() => {
@@ -114,8 +130,8 @@ export default function FirstNTicketsDrawer({
     setSlotsStatus('idle');
 
     // Auto-select if single target
-    if (targetId && !appliesToAll) {
-      setAttractionId(targetId);
+    if (allTargetIds.length === 1 && !appliesToAll) {
+      setAttractionId(allTargetIds[0]);
     } else {
       setAttractionId('');
     }
@@ -124,7 +140,7 @@ export default function FirstNTicketsDrawer({
     const nextValid = getNextValidDate(offer, rule);
     if (nextValid) setDate(nextValid);
     else setDate('');
-  }, [offer, isOpen, rule, targetId, appliesToAll]);
+  }, [offer, isOpen, rule, allTargetIds, appliesToAll]);
 
   // Fetch availability when date changes
   useEffect(() => {

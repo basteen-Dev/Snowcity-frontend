@@ -444,6 +444,14 @@ const doesRuleMatchContext = ({ rule, selectedDate, selectedSlot, itemType, item
   if (!matchesDayType(rule, bookingDate)) return false;
   if (!ruleMatchesSlotConstraints(rule, selectedSlot)) return false;
 
+  // New: Restrict same-day booking for First N and Buy X Get Y offers
+  const todayStr = dayjs().format('YYYY-MM-DD');
+  const isSameOrPast = bookingDate <= todayStr;
+  const isHighValueOffer = ['first_n_tickets', 'buy_x_get_y'].includes(String(rule.rule_type || '').toLowerCase());
+  if (isSameOrPast && isHighValueOffer) {
+    return false;
+  }
+
   return true;
 };
 

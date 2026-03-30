@@ -76,12 +76,37 @@ export default function OfferDrawer({
 
   const rule = useMemo(() => {
     if (!offer) return null;
-    if (Array.isArray(offer.rules) && offer.rules.length) return offer.rules[0];
-    if (Array.isArray(offer.offer_rules) && offer.offer_rules.length) return offer.offer_rules[0];
-    return null;
+    const rules = Array.isArray(offer.rules) ? offer.rules : (Array.isArray(offer.offer_rules) ? offer.offer_rules : []);
+    if (!rules.length) return null;
+
+    // Aggregate all target_ids and get_target_ids for multi-target selection
+    const allTargetIds = new Set();
+    const allGetTargetIds = new Set();
+    let appliesToAll = false;
+
+    rules.forEach(r => {
+      if (r.applies_to_all) appliesToAll = true;
+      if (r.target_id) allTargetIds.add(String(r.target_id));
+      if (r.get_target_id) allGetTargetIds.add(String(r.get_target_id));
+    });
+
+    return {
+      ...rules[0],
+      allTargetIds: Array.from(allTargetIds),
+      allGetTargetIds: Array.from(allGetTargetIds),
+      appliesToAll,
+    };
   }, [offer]);
+
   const buyQty = Math.max(1, Number(rule?.buy_qty ?? offer?.buy_qty ?? 1));
   const getQty = Math.max(1, Number(rule?.get_qty ?? offer?.get_qty ?? 1));
+
+  // Filter combos based on aggregated target IDs
+  const eligibleCombos = useMemo(() => {
+    if (!rule || rule.appliesToAll) return combos;
+    if (rule.allTargetIds.length === 0) return combos;
+    return combos.filter(c => rule.allTargetIds.includes(String(getComboId(c))));
+  }, [combos, rule]);
 
   useEffect(() => {
     if (!offer) return;
@@ -97,7 +122,7 @@ export default function OfferDrawer({
       if (startDate && isDateAllowed(startDate, offer, rule)) {
         // Check DP for all combos on this date
         const dateStr = toYMD(startDate);
-        const hasDP = combos.some((c) => {
+        const hasDP = eligibleCombos.some((c) => {
           const cId = getComboId(c);
           const dpKey = `combo:${cId}:${dateStr}`;
           return !!dynamicPricingDates[dpKey];
@@ -105,11 +130,11 @@ export default function OfferDrawer({
         if (!hasDP) return startDate;
       }
       // Fall back to next valid non-DP date
-      const start = dayjs();
+      const start = dayjs().add(1, 'day'); // Start searching from tomorrow
       for (let i = 0; i <= 60; i++) {
         const candidate = start.add(i, 'day').format('YYYY-MM-DD');
         if (!isDateAllowed(candidate, offer, rule)) continue;
-        const hasDP2 = combos.some((c) => {
+        const hasDP2 = eligibleCombos.some((c) => {
           const cId = getComboId(c);
           const dpKey = `combo:${cId}:${candidate}`;
           return !!dynamicPricingDates[dpKey];
@@ -120,7 +145,7 @@ export default function OfferDrawer({
     };
     const preferred = initialDate ? findValidDate(initialDate) : findValidDate(null);
     setDate(preferred || '');
-  }, [initialDate, offer, rule, isOpen, dynamicPricingDates, combos]);
+  }, [initialDate, offer, rule, isOpen, dynamicPricingDates, eligibleCombos]);
 
   useEffect(() => {
     if (!date) {
@@ -214,7 +239,7 @@ export default function OfferDrawer({
 
   const totalPrice = useMemo(() => {
     return items.reduce((sum, item, idx) => {
-      const combo = combos.find((c) => String(getComboId(c)) === String(item.comboId));
+      const combo = eligibleCombos.find((c) => String(getComboId(c)) === String(item.comboId));
       if (!combo) return sum;
       const slotsForIndex = slotsByIndex[idx]?.items || [];
       const slot = slotsForIndex.find((s, sIdx) => getSlotKeyLocal(s, sIdx) === item.slotKey) || null;
@@ -222,7 +247,7 @@ export default function OfferDrawer({
       const unitPrice = getSlotUnitPrice(slot, basePrice) || basePrice;
       return sum + Number(unitPrice || 0);
     }, 0);
-  }, [items, combos, slotsByIndex]);
+  }, [items, eligibleCombos, slotsByIndex]);
 
   const handleCheckout = (isDirectBuy) => {
     if (!isReady || !offer) return;
@@ -232,7 +257,7 @@ export default function OfferDrawer({
     const baseKey = `offer_${offerId || 'x'}_${Date.now()}`;
 
     items.forEach((item, idx) => {
-      const combo = combos.find((c) => String(getComboId(c)) === String(item.comboId));
+      const combo = eligibleCombos.find((c) => String(getComboId(c)) === String(item.comboId));
       if (!combo) return;
       const slotsForIndex = slotsByIndex[idx]?.items || [];
       const slot = slotsForIndex.find((s, sIdx) => getSlotKeyLocal(s, sIdx) === item.slotKey) || null;
@@ -300,6 +325,7 @@ export default function OfferDrawer({
           <div className="space-y-2">
             <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Date of Visit</p>
             <div className="flex flex-wrap gap-2">
+              {/* Remove "Today" option as same-day is restricted */}
               <button
                 type="button"
                 onClick={() => {
@@ -308,7 +334,7 @@ export default function OfferDrawer({
                     toast.error('This offer is restricted to specific days.');
                     return;
                   }
-                  const hasDP = combos.some((c) => {
+                  const hasDP = eligibleCombos.some((c) => {
                     const dpKey = `combo:${getComboId(c)}:${d}`;
                     return !!(dynamicPricingDates[dpKey] || dpCache[dpKey]);
                   });
@@ -332,7 +358,7 @@ export default function OfferDrawer({
                     setDate('');
                     return;
                   }
-                  const hasDP = combos.some((c) => {
+                  const hasDP = eligibleCombos.some((c) => {
                     const dpKey = `combo:${getComboId(c)}:${d}`;
                     return !!(dynamicPricingDates[dpKey] || dpCache[dpKey]);
                   });
@@ -343,7 +369,7 @@ export default function OfferDrawer({
                   }
                   setDate(d);
                 }}
-                min={offer?.valid_from ? String(offer.valid_from).slice(0, 10) : undefined}
+                min={dayjs().add(1, 'day').format('YYYY-MM-DD')} // Restrict to tomorrow onwards
                 max={offer?.valid_to ? String(offer.valid_to).slice(0, 10) : undefined}
                 className="px-4 py-1.5 rounded-xl text-xs font-medium border border-gray-200 text-gray-800 bg-white outline-none focus:border-sky-500"
               />
@@ -372,7 +398,7 @@ export default function OfferDrawer({
                     disabled={!date}
                   >
                     <option value="">Select Combo {idx + 1}</option>
-                    {combos.map((c) => (
+                    {eligibleCombos.map((c) => (
                       <option key={getComboId(c)} value={getComboId(c)}>
                         {c.name || c.title}
                       </option>
@@ -455,6 +481,11 @@ function isDateAllowed(dateValue, offer, rule) {
   const date = dayjs(dateValue).format('YYYY-MM-DD');
   if (offer?.valid_from && date < String(offer.valid_from).slice(0, 10)) return false;
   if (offer?.valid_to && date > String(offer.valid_to).slice(0, 10)) return false;
+
+  // Prior-date booking only — block today
+  const today = dayjs().format('YYYY-MM-DD');
+  if (date <= today) return false;
+
   if (rule?.specific_date && date !== String(rule.specific_date).slice(0, 10)) return false;
   if (rule?.date_from && date < String(rule.date_from).slice(0, 10)) return false;
   if (rule?.date_to && date > String(rule.date_to).slice(0, 10)) return false;
