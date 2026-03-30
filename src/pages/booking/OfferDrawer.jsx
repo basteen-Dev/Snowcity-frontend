@@ -303,28 +303,6 @@ export default function OfferDrawer({
               <button
                 type="button"
                 onClick={() => {
-                  const d = dayjs().format('YYYY-MM-DD');
-                  if (!isDateAllowed(d, offer, rule)) {
-                    toast.error('This offer is restricted to specific days.');
-                    return;
-                  }
-                  const hasDP = combos.some((c) => {
-                    const dpKey = `combo:${getComboId(c)}:${d}`;
-                    return !!(dynamicPricingDates[dpKey] || dpCache[dpKey]);
-                  });
-                  if (hasDP) {
-                    toast.error('This date has special pricing. Offer is not applicable.');
-                    return;
-                  }
-                  setDate(d);
-                }}
-                className={`px-4 py-2 rounded-xl text-xs font-medium border transition-colors ${date === dayjs().format('YYYY-MM-DD') ? 'bg-sky-600 text-white border-sky-600' : 'bg-white text-gray-800 border-gray-200'}`}
-              >
-                Today
-              </button>
-              <button
-                type="button"
-                onClick={() => {
                   const d = dayjs().add(1, 'day').format('YYYY-MM-DD');
                   if (!isDateAllowed(d, offer, rule)) {
                     toast.error('This offer is restricted to specific days.');

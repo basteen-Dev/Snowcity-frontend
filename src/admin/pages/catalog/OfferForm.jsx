@@ -21,6 +21,7 @@ const TARGET_TYPES = [
 const BASE_RULE = {
   target_type: 'attraction',
   target_id: '',
+  target_ids: [],
   applies_to_all: false,
   // buy_x_get_y fields
   buy_qty: 1,
@@ -210,40 +211,51 @@ export default function OfferForm() {
             sort_order: o.sort_order || 0,
             active: !!o.active,
             rules: Array.isArray(o.rules)
-              ? o.rules.map((r) =>
-                createRule({
-                  target_type: r.target_type || 'attraction',
-                  target_id: r.target_id ?? '',
-                  applies_to_all: !!r.applies_to_all,
-                  date_from: r.date_from ? new Date(r.date_from).toISOString().split('T')[0] : '',
-                  date_to: r.date_to ? new Date(r.date_to).toISOString().split('T')[0] : '',
-                  time_from: r.time_from || '',
-                  time_to: r.time_to || '',
-                  slot_type: r.slot_type || '',
-                  slot_id: r.slot_id ?? '',
-                  rule_discount_type: r.rule_discount_type || '',
-                  rule_discount_value: r.rule_discount_value ?? '',
-                  priority: r.priority ?? 100,
-                  day_type: r.day_type || '',
-                  specific_days: r.specific_days || [],
-                  is_holiday: !!r.is_holiday,
-                  specific_date: r.specific_date ? new Date(r.specific_date).toISOString().split('T')[0] : '',
-                  specific_dates: r.specific_date
-                    ? [new Date(r.specific_date).toISOString().split('T')[0]]
-                    : [],
-                  specific_time: r.specific_time || '',
-                  next_specific_date: '',
-                  combo_child_adjustments: r.combo_child_adjustments || {},
-                  buy_qty: r.buy_qty ?? 1,
-                  get_qty: r.get_qty ?? 1,
-                  get_target_type: r.get_target_type || 'attraction',
-                  get_target_id: r.get_target_id ?? '',
-                  get_discount_type: r.get_discount_type || '',
-                  get_discount_value: r.get_discount_value ?? '',
-                  ticket_limit: r.ticket_limit ?? '',
-                  offer_price: r.offer_price ?? '',
-                })
-              )
+              ? (() => {
+                  const mapSingleRule = (r) => createRule({
+                    target_type: r.target_type || 'attraction',
+                    target_id: r.target_id ?? '',
+                    target_ids: r.target_ids || (r.target_id ? [String(r.target_id)] : []),
+                    applies_to_all: !!r.applies_to_all,
+                    date_from: r.date_from ? new Date(r.date_from).toISOString().split('T')[0] : '',
+                    date_to: r.date_to ? new Date(r.date_to).toISOString().split('T')[0] : '',
+                    time_from: r.time_from || '',
+                    time_to: r.time_to || '',
+                    slot_type: r.slot_type || '',
+                    slot_id: r.slot_id ?? '',
+                    rule_discount_type: r.rule_discount_type || '',
+                    rule_discount_value: r.rule_discount_value ?? '',
+                    priority: r.priority ?? 100,
+                    day_type: r.day_type || '',
+                    specific_days: r.specific_days || [],
+                    is_holiday: !!r.is_holiday,
+                    specific_date: r.specific_date ? new Date(r.specific_date).toISOString().split('T')[0] : '',
+                    specific_dates: r.specific_date
+                      ? [new Date(r.specific_date).toISOString().split('T')[0]]
+                      : [],
+                    specific_time: r.specific_time || '',
+                    next_specific_date: '',
+                    combo_child_adjustments: r.combo_child_adjustments || {},
+                    buy_qty: r.buy_qty ?? 1,
+                    get_qty: r.get_qty ?? 1,
+                    get_target_type: r.get_target_type || 'attraction',
+                    get_target_id: r.get_target_id ?? '',
+                    get_discount_type: r.get_discount_type || '',
+                    get_discount_value: r.get_discount_value ?? '',
+                    ticket_limit: r.ticket_limit ?? '',
+                    offer_price: r.offer_price ?? '',
+                  });
+
+                  if ((o.rule_type === 'first_n_tickets' || o.rule_type === 'buy_x_get_y') && o.rules.length > 0) {
+                    const combinedRule = mapSingleRule(o.rules[0]);
+                    combinedRule.target_ids = o.rules
+                      .map(r => r.target_id)
+                      .filter(id => id != null && id !== '')
+                      .map(String);
+                    return [combinedRule];
+                  }
+                  return o.rules.map(mapSingleRule);
+                })()
               : [],
           },
         }));
@@ -259,17 +271,22 @@ export default function OfferForm() {
     setState((s) => {
       const nextRules = [...(s.form.rules || [])];
       nextRules[idx] = { ...nextRules[idx], ...partial };
-      // Clear target_id when switching target_type to prevent invalid selection
-      if (partial.target_type && nextRules[idx].target_id) {
-        const isValidTarget = partial.target_type === 'attraction'
-          ? attractions.some(a => a.id === Number(nextRules[idx].target_id))
-          : combos.some(c => c.id === Number(nextRules[idx].target_id));
-        if (!isValidTarget) {
-          nextRules[idx].target_id = '';
-          nextRules[idx].combo_child_adjustments = {};
+      // Clear target_id/target_ids when switching target_type to prevent invalid selection
+      if (partial.target_type) {
+        if (nextRules[idx].target_id) {
+          const isValidTarget = partial.target_type === 'attraction'
+            ? attractions.some(a => a.id === Number(nextRules[idx].target_id))
+            : combos.some(c => c.id === Number(nextRules[idx].target_id));
+          if (!isValidTarget) {
+            nextRules[idx].target_id = '';
+            nextRules[idx].combo_child_adjustments = {};
+          }
+        }
+        if (nextRules[idx].target_ids && nextRules[idx].target_ids.length > 0) {
+          nextRules[idx].target_ids = [];
         }
       }
-      if (partial.target_id) {
+      if (partial.target_id || partial.target_ids) {
          nextRules[idx].combo_child_adjustments = {};
       }
       return { ...s, form: { ...s.form, rules: nextRules } };
@@ -338,14 +355,18 @@ export default function OfferForm() {
         return v ? v : null;
       };
 
-      const resolvedRules = (state.form.rules || []).map((rule) => (
-        rule.applies_to_all ? { ...rule, target_id: null } : { ...rule }
-      ));
+      const resolvedRules = (state.form.rules || []).flatMap((rule) => {
+        if (rule.applies_to_all) return [{ ...rule, target_id: null, target_ids: [] }];
+        if ((state.form.rule_type === 'first_n_tickets' || state.form.rule_type === 'buy_x_get_y') && Array.isArray(rule.target_ids) && rule.target_ids.length > 0) {
+          return rule.target_ids.map(id => ({ ...rule, target_id: id }));
+        }
+        return [{ ...rule }];
+      });
 
       const invalidRules = resolvedRules.filter((rule) => !rule.applies_to_all && (rule.target_id === null || rule.target_id === undefined || rule.target_id === ''));
       if (invalidRules.length > 0) {
         toast.dismiss(loadingToast);
-        setState((s) => ({ ...s, error: { message: 'Please select a target from the list or enable "Applies to all".' } }));
+        setState((s) => ({ ...s, error: { message: 'Please select at least one Target Item or enable "Valid for ANY".' } }));
         setSaving(false);
         return;
       }
@@ -399,7 +420,7 @@ export default function OfferForm() {
           get_discount_value: rule.get_discount_value === '' || rule.get_discount_value == null ? null : Number(rule.get_discount_value),
           ticket_limit: rule.ticket_limit === '' || rule.ticket_limit == null ? null : Number(rule.ticket_limit),
           offer_price: rule.offer_price === '' || rule.offer_price == null ? null : Number(rule.offer_price),
-        })),
+        })).map(({ target_ids, ...rest }) => rest), // Remove target_ids before sending to API
       };
       if (isEdit) await adminApi.put(`${A.offers()}/${id}`, payload);
       else await adminApi.post(A.offers(), payload);
@@ -510,20 +531,37 @@ export default function OfferForm() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Target Item</label>
-                    <select
-                      className="w-full rounded-md border px-3 py-2 bg-gray-50 focus:bg-white"
-                      value={f.rules[0].target_id ?? ''}
-                      disabled={f.rules[0].applies_to_all || targetsStatus === 'loading'}
-                      onChange={(e) => updateRule(0, { target_id: e.target.value })}
-                    >
-                      <option value="">Select Item</option>
-                      {(f.rules[0].target_type === 'attraction' ? attractions : combos).map((item) => (
-                        <option key={`fnt-${item.id}`} value={item.id}>
-                          {item.title || item.name}
-                        </option>
-                      ))}
-                    </select>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+                      Target Items {f.rules[0].target_ids?.length > 0 ? `(${f.rules[0].target_ids.length} selected)` : ''}
+                    </label>
+                    <div className={`w-full rounded-md border bg-gray-50 overflow-y-auto ${f.rules[0].applies_to_all ? 'opacity-60 cursor-not-allowed' : ''}`} style={{ maxHeight: '160px' }}>
+                      {(f.rules[0].target_type === 'attraction' ? attractions : combos).map((item) => {
+                        const isChecked = Array.isArray(f.rules[0].target_ids) && f.rules[0].target_ids.includes(String(item.id));
+                        return (
+                          <label key={`fnt-${item.id}`} className="flex items-start gap-2 px-3 py-2 hover:bg-white cursor-pointer border-b last:border-0 border-gray-100">
+                            <input
+                              type="checkbox"
+                              className="mt-0.5 w-4 h-4 text-amber-600 rounded border-gray-300 focus:ring-amber-500 disabled:opacity-50"
+                              disabled={f.rules[0].applies_to_all || targetsStatus === 'loading'}
+                              checked={isChecked}
+                              onChange={(e) => {
+                                const current = Array.isArray(f.rules[0].target_ids) ? f.rules[0].target_ids : [];
+                                const idStr = String(item.id);
+                                if (e.target.checked) {
+                                  updateRule(0, { target_ids: [...current, idStr] });
+                                } else {
+                                  updateRule(0, { target_ids: current.filter(cid => cid !== idStr) });
+                                }
+                              }}
+                            />
+                            <span className="text-sm font-medium text-gray-700 leading-tight">{item.title || item.name}</span>
+                          </label>
+                        );
+                      })}
+                      {(f.rules[0].target_type === 'attraction' ? attractions : combos).length === 0 && (
+                        <div className="p-3 text-xs text-gray-500">No items available.</div>
+                      )}
+                    </div>
                   </div>
                   <div className="flex items-end">
                     <label className="flex items-center gap-2 text-sm text-gray-700 font-medium cursor-pointer bg-slate-50 border p-2 rounded-md hover:bg-slate-100 transition-colors w-max">
@@ -624,22 +662,39 @@ export default function OfferForm() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Target Item</label>
-                    <select
-                      className="w-full rounded-md border px-3 py-2 bg-gray-50 focus:bg-white"
-                      value={f.rules[0].target_id ?? ''}
-                      disabled={f.rules[0].applies_to_all || targetsStatus === 'loading'}
-                      onChange={(e) => updateRule(0, { target_id: e.target.value })}
-                    >
-                      <option value="">Select Details</option>
-                      {(f.rules[0].target_type === 'attraction' ? attractions : combos).map((item) => (
-                        <option key={`req-${item.id}`} value={item.id}>
-                          {item.title || item.name}
-                        </option>
-                      ))}
-                    </select>
-                    {(!f.rules[0].applies_to_all && (!f.rules[0].target_id || f.rules[0].target_id === '')) ? (
-                      <div className="mt-1.5 text-[11px] font-semibold text-red-600">Please select an item or enable "Any"</div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+                      Target Items {f.rules[0].target_ids?.length > 0 ? `(${f.rules[0].target_ids.length} selected)` : ''}
+                    </label>
+                    <div className={`w-full rounded-md border bg-gray-50 overflow-y-auto ${f.rules[0].applies_to_all ? 'opacity-60 cursor-not-allowed' : ''}`} style={{ maxHeight: '160px' }}>
+                      {(f.rules[0].target_type === 'attraction' ? attractions : combos).map((item) => {
+                        const isChecked = Array.isArray(f.rules[0].target_ids) && f.rules[0].target_ids.includes(String(item.id));
+                        return (
+                          <label key={`req-${item.id}`} className="flex items-start gap-2 px-3 py-2 hover:bg-white cursor-pointer border-b last:border-0 border-gray-100">
+                            <input
+                              type="checkbox"
+                              className="mt-0.5 w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 disabled:opacity-50"
+                              disabled={f.rules[0].applies_to_all || targetsStatus === 'loading'}
+                              checked={isChecked}
+                              onChange={(e) => {
+                                const current = Array.isArray(f.rules[0].target_ids) ? f.rules[0].target_ids : [];
+                                const idStr = String(item.id);
+                                if (e.target.checked) {
+                                  updateRule(0, { target_ids: [...current, idStr] });
+                                } else {
+                                  updateRule(0, { target_ids: current.filter(cid => cid !== idStr) });
+                                }
+                              }}
+                            />
+                            <span className="text-sm font-medium text-gray-700 leading-tight">{item.title || item.name}</span>
+                          </label>
+                        );
+                      })}
+                      {(f.rules[0].target_type === 'attraction' ? attractions : combos).length === 0 && (
+                        <div className="p-3 text-xs text-gray-500">No items available.</div>
+                      )}
+                    </div>
+                    {(!f.rules[0].applies_to_all && (!f.rules[0].target_ids || f.rules[0].target_ids.length === 0)) ? (
+                      <div className="mt-1.5 text-[11px] font-semibold text-red-600">Please select at least one item or enable "Any"</div>
                     ) : null}
                   </div>
                   <div>
