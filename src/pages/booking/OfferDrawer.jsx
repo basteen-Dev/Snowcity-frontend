@@ -6,12 +6,13 @@ import dayjs from 'dayjs';
 import { addCartItem, setActiveCartItem, setStep } from '../../features/bookings/bookingsSlice';
 import api from '../../services/apiClient';
 import endpoints from '../../services/endpoints';
-import { getPrice, getSlotUnitPrice } from '../../utils/pricing';
+import { getPrice, getBasePrice, getSlotUnitPrice } from '../../utils/pricing';
 import { formatCurrency } from '../../utils/formatters';
 
 const toYMD = (d) => dayjs(d).format('YYYY-MM-DD');
 
 const getComboId = (combo) => combo?.combo_id ?? combo?.id ?? combo?._id ?? null;
+const getAttrId = (attr) => attr?.attraction_id ?? attr?.id ?? attr?._id ?? null;
 
 const formatTime12Hour = (time24) => {
   if (!time24) return '';
@@ -33,16 +34,10 @@ const getSlotLabel = (s) => {
 
 const isSlotEligible = (slot, date) => {
   if (!slot || !date) return true;
-  const now = dayjs();
-  const selectedDay = dayjs(date);
-  if (selectedDay.format('YYYY-MM-DD') === now.format('YYYY-MM-DD')) {
-    const slotTime = slot.start_time;
-    if (!slotTime) return true;
-    const [hours, minutes] = slotTime.split(':');
-    const slotMinutes = parseInt(hours, 10) * 60 + parseInt(minutes, 10);
-    const nowMinutes = now.hour() * 60 + now.minute();
-    return slotMinutes >= nowMinutes + 60;
-  }
+  const now = dayjs().format('YYYY-MM-DD');
+  const selectedDay = dayjs(date).format('YYYY-MM-DD');
+  // Strict block: same-day bookings are not allowed for these offers.
+  if (selectedDay === now) return false;
   return true;
 };
 
@@ -65,7 +60,8 @@ export default function OfferDrawer({
   isOpen,
   onClose,
   offer,
-  combos,
+  combos = [],
+  attractions = [],
   initialDate,
   dynamicPricingDates = {},
 }) {
@@ -86,8 +82,14 @@ export default function OfferDrawer({
 
     rules.forEach(r => {
       if (r.applies_to_all) appliesToAll = true;
-      if (r.target_id) allTargetIds.add(String(r.target_id));
-      if (r.get_target_id) allGetTargetIds.add(String(r.get_target_id));
+      if (r.target_id) {
+        const type = String(r.target_type || 'attraction').toLowerCase();
+        allTargetIds.add(`${type}_${r.target_id}`);
+      }
+      if (r.get_target_id) {
+        const type = String(r.get_target_type || 'attraction').toLowerCase();
+        allGetTargetIds.add(`${type}_${r.get_target_id}`);
+      }
     });
 
     return {
@@ -101,30 +103,40 @@ export default function OfferDrawer({
   const buyQty = Math.max(1, Number(rule?.buy_qty ?? offer?.buy_qty ?? 1));
   const getQty = Math.max(1, Number(rule?.get_qty ?? offer?.get_qty ?? 1));
 
-  // Filter combos based on aggregated target IDs
-  const eligibleCombos = useMemo(() => {
-    if (!rule || rule.appliesToAll) return combos;
-    if (rule.allTargetIds.length === 0) return combos;
-    return combos.filter(c => rule.allTargetIds.includes(String(getComboId(c))));
-  }, [combos, rule]);
+  // Unified list of eligible attractions and combos
+  const eligibleItems = useMemo(() => {
+    const allAttractions = (attractions || []).map(a => ({ ...a, item_type: 'Attraction', id: getAttrId(a) }));
+    const allCombos = (combos || []).map(c => ({ ...c, item_type: 'Combo', id: getComboId(c) }));
+    const allCatalog = [...allAttractions, ...allCombos];
+
+    if (!rule || rule.appliesToAll) return allCatalog;
+    if (rule.allTargetIds.length === 0) return allCatalog;
+    
+    return allCatalog.filter(item => {
+      const idStr = `${item.item_type.toLowerCase()}_${item.id}`;
+      return rule.allTargetIds.includes(idStr);
+    });
+  }, [attractions, combos, rule]);
 
   useEffect(() => {
     if (!offer) return;
-    const nextItems = Array.from({ length: buyQty }, () => ({ comboId: '', slotKey: '' }));
+    const nextItems = Array.from({ length: buyQty }, () => ({ itemId: '', itemType: '', slotKey: '' }));
     setItems(nextItems);
-    setSlotsByIndex(Array.from({ length: buyQty }, () => ({ status: 'idle', items: [], comboId: '', date: '' })));
+    setSlotsByIndex(Array.from({ length: buyQty }, () => ({ status: 'idle', items: [], itemId: '', itemType: '', date: '' })));
   }, [offer, buyQty]);
 
   useEffect(() => {
     if (!offer || !isOpen) return;
     // Find first valid date that also doesn't have dynamic pricing
     const findValidDate = (startDate) => {
+      const todayStr = dayjs().format('YYYY-MM-DD');
       if (startDate && isDateAllowed(startDate, offer, rule)) {
-        // Check DP for all combos on this date
         const dateStr = toYMD(startDate);
-        const hasDP = eligibleCombos.some((c) => {
-          const cId = getComboId(c);
-          const dpKey = `combo:${cId}:${dateStr}`;
+        if (dateStr <= todayStr) return ''; // Block today and past
+        
+        // Check DP for all items on this date
+        const hasDP = eligibleItems.some((item) => {
+          const dpKey = `${item.item_type.toLowerCase()}:${item.id}:${dateStr}`;
           return !!dynamicPricingDates[dpKey];
         });
         if (!hasDP) return startDate;
@@ -134,9 +146,8 @@ export default function OfferDrawer({
       for (let i = 0; i <= 60; i++) {
         const candidate = start.add(i, 'day').format('YYYY-MM-DD');
         if (!isDateAllowed(candidate, offer, rule)) continue;
-        const hasDP2 = eligibleCombos.some((c) => {
-          const cId = getComboId(c);
-          const dpKey = `combo:${cId}:${candidate}`;
+        const hasDP2 = eligibleItems.some((item) => {
+          const dpKey = `${item.item_type.toLowerCase()}:${item.id}:${candidate}`;
           return !!dynamicPricingDates[dpKey];
         });
         if (!hasDP2) return candidate;
@@ -145,7 +156,7 @@ export default function OfferDrawer({
     };
     const preferred = initialDate ? findValidDate(initialDate) : findValidDate(null);
     setDate(preferred || '');
-  }, [initialDate, offer, rule, isOpen, dynamicPricingDates, eligibleCombos]);
+  }, [initialDate, offer, rule, isOpen, dynamicPricingDates, eligibleItems]);
 
   useEffect(() => {
     if (!date) {
@@ -156,37 +167,43 @@ export default function OfferDrawer({
       return;
     }
     items.forEach((item, idx) => {
-      if (!item.comboId) {
+      const current = slotsByIndex[idx];
+      if (!item.itemId) {
+        if (current && current.status === 'idle' && current.itemId === '') return;
         setSlotsByIndex((prev) => {
           const next = [...prev];
-          next[idx] = { status: 'idle', items: [], comboId: '', date: '' };
+          next[idx] = { status: 'idle', items: [], itemId: '', itemType: '', date: '' };
           return next;
         });
         return;
       }
-      const current = slotsByIndex[idx];
-      if (current && current.comboId === item.comboId && current.date === date && current.status !== 'failed') {
+      if (current && current.itemId === item.itemId && current.date === date && current.status !== 'failed') {
         return;
       }
       setSlotsByIndex((prev) => {
         const next = [...prev];
-        next[idx] = { status: 'loading', items: [], comboId: item.comboId, date };
+        next[idx] = { status: 'loading', items: [], itemId: item.itemId, itemType: item.itemType, date };
         return next;
       });
+
+      const slotEndpoint = item.itemType === 'Attraction' 
+        ? endpoints.attractions.slotsByAttraction(item.itemId)
+        : endpoints.combos.slots(item.itemId);
+
       api
-        .get(endpoints.combos.slots(item.comboId), { params: { date: toYMD(date) } })
+        .get(slotEndpoint, { params: { date: toYMD(date) } })
         .then((res) => {
           const list = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
           setSlotsByIndex((prev) => {
             const next = [...prev];
-            next[idx] = { status: 'succeeded', items: list, comboId: item.comboId, date };
+            next[idx] = { status: 'succeeded', items: list, itemId: item.itemId, itemType: item.itemType, date };
             return next;
           });
         })
         .catch(() => {
           setSlotsByIndex((prev) => {
             const next = [...prev];
-            next[idx] = { status: 'failed', items: [], comboId: item.comboId, date };
+            next[idx] = { status: 'failed', items: [], itemId: item.itemId, itemType: item.itemType, date };
             return next;
           });
         });
@@ -201,12 +218,12 @@ export default function OfferDrawer({
     if (!date) return;
     const dateStr = toYMD(date);
     items.forEach((item) => {
-      if (!item.comboId) return;
-      const dpKey = `combo:${item.comboId}:${dateStr}`;
+      if (!item.itemId) return;
+      const dpKey = `${item.itemType.toLowerCase()}:${item.itemId}:${dateStr}`;
       // Skip if already checked in parent or local cache
       if (dynamicPricingDates[dpKey] !== undefined || dpCache[dpKey] !== undefined) return;
       api.get(endpoints.dynamicPricing.check(), {
-        params: { target_type: 'combo', target_id: item.comboId, date: dateStr },
+        params: { target_type: item.itemType.toLowerCase(), target_id: item.itemId, date: dateStr },
       })
         .then((res) => {
           const hasDp = !!(res?.hasDynamicPricing || res?.data?.hasDynamicPricing);
@@ -221,33 +238,34 @@ export default function OfferDrawer({
     if (!date) return false;
     const dateStr = toYMD(date);
     return items.some((item) => {
-      if (!item.comboId) return false;
-      const dpKey = `combo:${item.comboId}:${dateStr}`;
+      if (!item.itemId) return false;
+      const dpKey = `${item.itemType.toLowerCase()}:${item.itemId}:${dateStr}`;
       return !!(dynamicPricingDates[dpKey] || dpCache[dpKey]);
     });
   }, [date, items, dynamicPricingDates, dpCache]);
 
-  // If DP is detected on the current date, auto-clear it
+  // If current date gets blocked by DP OR is today, auto-clear it
   useEffect(() => {
-    if (hasDynamicPricing && date) {
-      toast.error('This date has special pricing. Offer is not applicable.');
+    const today = dayjs().format('YYYY-MM-DD');
+    if (date && (hasDynamicPricing || date <= today)) {
+      if (hasDynamicPricing) toast.error('This date has special pricing. Offer is not applicable.');
       setDate('');
     }
-  }, [hasDynamicPricing]);
+  }, [date, hasDynamicPricing, dynamicPricingDates]);
 
-  const isReady = date && !hasDynamicPricing && items.length === buyQty && items.every((item) => item.comboId && item.slotKey);
+  const isReady = date && !hasDynamicPricing && items.length === buyQty && items.every((item) => item.itemId && item.slotKey);
 
   const totalPrice = useMemo(() => {
     return items.reduce((sum, item, idx) => {
-      const combo = eligibleCombos.find((c) => String(getComboId(c)) === String(item.comboId));
-      if (!combo) return sum;
+      const catalogItem = eligibleItems.find((ci) => String(ci.id) === String(item.itemId) && ci.item_type === item.itemType);
+      if (!catalogItem) return sum;
       const slotsForIndex = slotsByIndex[idx]?.items || [];
       const slot = slotsForIndex.find((s, sIdx) => getSlotKeyLocal(s, sIdx) === item.slotKey) || null;
-      const basePrice = getComboDisplayPrice(combo);
+      const basePrice = getItemDisplayPrice(catalogItem);
       const unitPrice = getSlotUnitPrice(slot, basePrice) || basePrice;
       return sum + Number(unitPrice || 0);
     }, 0);
-  }, [items, eligibleCombos, slotsByIndex]);
+  }, [items, eligibleItems, slotsByIndex]);
 
   const handleCheckout = (isDirectBuy) => {
     if (!isReady || !offer) return;
@@ -257,29 +275,29 @@ export default function OfferDrawer({
     const baseKey = `offer_${offerId || 'x'}_${Date.now()}`;
 
     items.forEach((item, idx) => {
-      const combo = eligibleCombos.find((c) => String(getComboId(c)) === String(item.comboId));
-      if (!combo) return;
+      const catalogItem = eligibleItems.find((ci) => String(ci.id) === String(item.itemId) && ci.item_type === item.itemType);
+      if (!catalogItem) return;
       const slotsForIndex = slotsByIndex[idx]?.items || [];
       const slot = slotsForIndex.find((s, sIdx) => getSlotKeyLocal(s, sIdx) === item.slotKey) || null;
-      const basePrice = getComboDisplayPrice(combo);
+      const basePrice = getItemDisplayPrice(catalogItem);
       const unitPrice = getSlotUnitPrice(slot, basePrice) || basePrice;
       const payload = {
         key: `${baseKey}_${idx + 1}`,
         merge: false,
-        item_type: 'Combo',
-        title: combo?.name ?? combo?.title ?? 'Combo',
+        item_type: item.itemType,
+        title: catalogItem?.name ?? catalogItem?.title ?? item.itemType,
         slotLabel: slot ? getSlotLabel(slot) : '',
         quantity: 1,
         booking_date: toYMD(date),
         booking_time: slot?.start_time || null,
         unitPrice: unitPrice || 0,
         dateLabel: dayjs(date).format('DD-MMM-YYYY'),
-        slot_id: null,
-        combo_slot_id: slot?.combo_slot_id || slot?.id || null,
-        attraction_id: null,
-        combo_id: getComboId(combo),
+        slot_id: item.itemType === 'Attraction' ? (slot?.id || slot?.slot_id || null) : null,
+        combo_slot_id: item.itemType === 'Combo' ? (slot?.combo_slot_id || slot?.id || null) : null,
+        attraction_id: item.itemType === 'Attraction' ? item.itemId : null,
+        combo_id: item.itemType === 'Combo' ? item.itemId : null,
         slot: slot || null,
-        combo: combo || null,
+        combo: item.itemType === 'Combo' ? catalogItem : null,
         offer_id: offerId,
         offer_rule_id: offerRuleId,
         offerDescription,
@@ -317,8 +335,8 @@ export default function OfferDrawer({
               <span>How it works</span>
             </div>
             <p className="text-sm text-sky-700">
-              Buy {buyQty} combo{buyQty > 1 ? 's' : ''} online and claim {getQty} free combo{getQty > 1 ? 's' : ''} at the counter.
-              The free combo must be equal to or lower in value than the cheapest paid combo in your qualifying set.
+              Buy {buyQty} item{buyQty > 1 ? 's' : ''} online and claim {getQty} free item{getQty > 1 ? 's' : ''} at the counter.
+              The free item must be equal to or lower in value than the cheapest paid item in your qualifying set.
             </p>
           </div>
 
@@ -334,8 +352,8 @@ export default function OfferDrawer({
                     toast.error('This offer is restricted to specific days.');
                     return;
                   }
-                  const hasDP = eligibleCombos.some((c) => {
-                    const dpKey = `combo:${getComboId(c)}:${d}`;
+                  const hasDP = eligibleItems.some((item) => {
+                    const dpKey = `${item.item_type.toLowerCase()}:${item.id}:${d}`;
                     return !!(dynamicPricingDates[dpKey] || dpCache[dpKey]);
                   });
                   if (hasDP) {
@@ -358,8 +376,8 @@ export default function OfferDrawer({
                     setDate('');
                     return;
                   }
-                  const hasDP = eligibleCombos.some((c) => {
-                    const dpKey = `combo:${getComboId(c)}:${d}`;
+                  const hasDP = eligibleItems.some((item) => {
+                    const dpKey = `${item.item_type.toLowerCase()}:${item.id}:${d}`;
                     return !!(dynamicPricingDates[dpKey] || dpCache[dpKey]);
                   });
                   if (hasDP) {
@@ -381,31 +399,38 @@ export default function OfferDrawer({
           <div className="space-y-5 pt-1">
             {items.map((item, idx) => {
               const slotsForIndex = slotsByIndex[idx]?.items || [];
+              const isFree = idx >= buyQty;
+              const labelPrefix = isFree ? 'Free Item' : 'Buy Item';
+              const displayIdx = isFree ? (idx - buyQty + 1) : (idx + 1);
+
               return (
                 <div key={`offer-combo-${idx}`} className="space-y-2">
-                  <h3 className="text-sm font-bold text-gray-800 border-b pb-1">Combo {idx + 1}</h3>
+                  <h3 className="text-sm font-bold text-gray-800 border-b pb-1">
+                    {labelPrefix} {displayIdx} {item.itemType ? `(${item.itemType})` : ''}
+                  </h3>
                   <select
                     className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-sky-500 text-sm font-medium"
-                    value={item.comboId}
+                    value={item.itemId ? `${item.itemId}_${item.itemType}` : ''}
                     onChange={(e) => {
-                      const comboId = e.target.value;
+                      const val = e.target.value;
+                      const [itemId, itemType] = val.split('_');
                       setItems((prev) => {
                         const next = [...prev];
-                        next[idx] = { comboId, slotKey: '' };
+                        next[idx] = { itemId, itemType, slotKey: '' };
                         return next;
                       });
                     }}
                     disabled={!date}
                   >
-                    <option value="">Select Combo {idx + 1}</option>
-                    {eligibleCombos.map((c) => (
-                      <option key={getComboId(c)} value={getComboId(c)}>
-                        {c.name || c.title}
+                    <option value="">Select {item.itemType || 'Item'}</option>
+                    {eligibleItems.map((ci) => (
+                      <option key={`${ci.id}_${ci.item_type}`} value={`${ci.id}_${ci.item_type}`}>
+                        {ci.name || ci.title}
                       </option>
                     ))}
                   </select>
 
-                  {item.comboId ? (
+                  {item.itemId ? (
                     <select
                       className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-sky-500 text-sm font-medium"
                       value={item.slotKey}
@@ -467,11 +492,14 @@ export default function OfferDrawer({
   );
 }
 
-function getComboDisplayPrice(combo) {
-  if (!combo) return 0;
-  const raw = getPrice(combo);
+function getItemDisplayPrice(item) {
+  if (!item) return 0;
+  // Use getBasePrice to ignore dynamic/happy hour discounts when an offer is active
+  const base = getBasePrice(item);
+  if (base > 0) return base;
+  const raw = getPrice(item);
   if (raw > 0) return raw;
-  const directFallback = combo?.combo_price ?? combo?.price ?? combo?.base_price ?? 0;
+  const directFallback = item?.combo_price ?? item?.price ?? item?.base_price ?? 0;
   if (Number(directFallback) > 0) return Number(directFallback);
   return 0;
 }
@@ -479,12 +507,13 @@ function getComboDisplayPrice(combo) {
 function isDateAllowed(dateValue, offer, rule) {
   if (!dateValue) return false;
   const date = dayjs(dateValue).format('YYYY-MM-DD');
+  const today = dayjs().format('YYYY-MM-DD');
+  
+  // Prior-date booking only — block today and past
+  if (date <= today) return false;
+
   if (offer?.valid_from && date < String(offer.valid_from).slice(0, 10)) return false;
   if (offer?.valid_to && date > String(offer.valid_to).slice(0, 10)) return false;
-
-  // Prior-date booking only — block today
-  const today = dayjs().format('YYYY-MM-DD');
-  if (date <= today) return false;
 
   if (rule?.specific_date && date !== String(rule.specific_date).slice(0, 10)) return false;
   if (rule?.date_from && date < String(rule.date_from).slice(0, 10)) return false;

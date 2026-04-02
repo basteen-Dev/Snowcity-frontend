@@ -444,11 +444,13 @@ const doesRuleMatchContext = ({ rule, selectedDate, selectedSlot, itemType, item
   if (!matchesDayType(rule, bookingDate)) return false;
   if (!ruleMatchesSlotConstraints(rule, selectedSlot)) return false;
 
-  // New: Restrict same-day booking for First N and Buy X Get Y offers
+  // New: Restrict same-day booking for First N and Buy X Get Y offers, and special high-value combo 26
   const todayStr = dayjs().format('YYYY-MM-DD');
   const isSameOrPast = bookingDate <= todayStr;
   const isHighValueOffer = ['first_n_tickets', 'buy_x_get_y'].includes(String(rule.rule_type || '').toLowerCase());
-  if (isSameOrPast && isHighValueOffer) {
+  const isCombo26 = idsMatch(itemId, 26) && normalizeTargetType(itemType) === 'combo';
+
+  if (isSameOrPast && (isHighValueOffer || isCombo26)) {
     return false;
   }
 
@@ -616,7 +618,7 @@ export default function Booking() {
 
       const idA = String(a.combo_id || a.id || '');
       const idB = String(b.combo_id || b.id || '');
-      
+
       // Fallback ID priority
       if (idA === '25') return -1;
       if (idB === '25') return 1;
@@ -668,7 +670,12 @@ export default function Booking() {
     const todayStr = dayjs().format('YYYY-MM-DD');
     const isSameOrPast = selectedDate && selectedDate <= todayStr;
 
-    for (const offer of state.offers) {
+    // Filter out batch offers (First N, Buy X Get Y) from normal automatic application
+    const filteredOffers = (state.offers || []).filter(o =>
+      !['first_n_tickets', 'buy_x_get_y'].includes(String(o.rule_type || '').toLowerCase())
+    );
+
+    for (const offer of filteredOffers) {
       // Allow today bookings for non-dynamic pricing offers as well
       // if (isSameOrPast && offer.rule_type !== 'dynamic_pricing') {
       //   continue;
@@ -1327,6 +1334,15 @@ export default function Booking() {
       selectedItem = combos.find(c => String(getComboId(c)) === String(sel.comboId));
     }
     if (!selectedItem) return false;
+
+    // Hardcoded temporary fix: Disable same-day booking for combo 26
+    if (sel.itemType === 'combo' && String(sel.comboId) === '26') {
+      const today = dayjs().format('YYYY-MM-DD');
+      if (dayjs(dateStr).format('YYYY-MM-DD') === today) {
+        return true;
+      }
+    }
+
     const dayRuleType = selectedItem.day_rule_type || 'all_days';
     if (dayRuleType === 'all_days') return false;
     const customDays = selectedItem.custom_days || [];
@@ -1963,52 +1979,54 @@ export default function Booking() {
           )}
         </div>
         <div className="space-y-3">
-          {state.offers.map((offer) => {
-            const id = String(getOfferId(offer));
-            if (!id) return null;
-            const preview = previewOfferForSelection(offer, selectedMeta.price || 0, qty);
-            return (
-              <label
-                key={`offer-${id}`}
-                className={`flex items-start gap-3 rounded-2xl border px-3 py-3 cursor-pointer transition-all duration-200 ${String(selectedOfferId) === id
-                  ? 'border-sky-500 bg-sky-50 shadow-sm'
-                  : 'hover:border-gray-300'
-                  }`}
-              >
-                <input
-                  type="radio"
-                  name="selected-offer"
-                  className="mt-1"
-                  checked={String(selectedOfferId) === id}
-                  onChange={() => setSelectedOfferId(id)}
-                />
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <div className="min-w-0 pr-2">
-                      <p className="text-sm font-bold text-gray-900 leading-tight">
-                        {getOfferTitle(offer)}
-                      </p>
-                      {getOfferSummary(offer) ? (
-                        <p className="text-[11px] text-gray-500 mt-1 leading-relaxed">
-                          {getOfferSummary(offer)}
+          {state.offers
+            .filter((o) => !['first_n_tickets', 'buy_x_get_y'].includes(String(o.rule_type || '').toLowerCase()))
+            .map((offer) => {
+              const id = String(getOfferId(offer));
+              if (!id) return null;
+              const preview = previewOfferForSelection(offer, selectedMeta.price || 0, qty);
+              return (
+                <label
+                  key={`offer-${id}`}
+                  className={`flex items-start gap-3 rounded-2xl border px-3 py-3 cursor-pointer transition-all duration-200 ${String(selectedOfferId) === id
+                    ? 'border-sky-500 bg-sky-50 shadow-sm'
+                    : 'hover:border-gray-300'
+                    }`}
+                >
+                  <input
+                    type="radio"
+                    name="selected-offer"
+                    className="mt-1"
+                    checked={String(selectedOfferId) === id}
+                    onChange={() => setSelectedOfferId(id)}
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <div className="min-w-0 pr-2">
+                        <p className="text-sm font-bold text-gray-900 leading-tight">
+                          {getOfferTitle(offer)}
                         </p>
-                      ) : null}
+                        {getOfferSummary(offer) ? (
+                          <p className="text-[11px] text-gray-500 mt-1 leading-relaxed">
+                            {getOfferSummary(offer)}
+                          </p>
+                        ) : null}
+                      </div>
+                      <span className="text-xs font-semibold text-sky-700 bg-sky-50 px-2 py-1 rounded-xl">
+                        {preview && preview.totalDiscount > 0
+                          ? `Save ₹${preview.totalDiscount.toFixed(0)}`
+                          : (offer.rules?.[0]?.get_target_id == null && offer.rule_type === 'buy_x_get_y') ? 'Claim at Counter' : 'No discount'}
+                      </span>
                     </div>
-                    <span className="text-xs font-semibold text-sky-700 bg-sky-50 px-2 py-1 rounded-xl">
-                      {preview && preview.totalDiscount > 0
-                        ? `Save ₹${preview.totalDiscount.toFixed(0)}`
-                        : (offer.rules?.[0]?.get_target_id == null && offer.rule_type === 'buy_x_get_y') ? 'Claim at Counter' : 'No discount'}
-                    </span>
+                    {preview && preview.totalDiscount > 0 && (
+                      <p className="text-xs text-emerald-600 mt-1">
+                        Save up to ₹{preview.totalDiscount.toFixed(0)} with this offer
+                      </p>
+                    )}
                   </div>
-                  {preview && preview.totalDiscount > 0 && (
-                    <p className="text-xs text-emerald-600 mt-1">
-                      Save up to ₹{preview.totalDiscount.toFixed(0)} with this offer
-                    </p>
-                  )}
-                </div>
-              </label>
-            );
-          })}
+                </label>
+              );
+            })}
         </div>
       </div>
     );
@@ -2295,6 +2313,7 @@ export default function Booking() {
                           onClose={() => { setDrawerOpen(false); setSel(createDefaultSelection(activeTab)); }}
                           offer={selectedOffer}
                           attractions={prioritizedAttractions}
+                          combos={combos}
                           initialDate={sel.date}
                           dynamicPricingDates={dynamicPricingDates}
                         />
@@ -2307,6 +2326,7 @@ export default function Booking() {
                         onClose={() => { setDrawerOpen(false); setSel(createDefaultSelection(activeTab)); }}
                         offer={selectedOffer}
                         combos={combos}
+                        attractions={prioritizedAttractions}
                         initialDate={sel.date}
                         dynamicPricingDates={dynamicPricingDates}
                       />
@@ -2541,10 +2561,10 @@ export default function Booking() {
                             {(() => {
                               const itemData = sel.itemType === 'combo' ? selectedCombo : selectedAttraction;
                               if (!itemData) return null;
-                              
+
                               const shortDesc = itemData.short_description || itemData.summary || '';
                               const mainDesc = itemData.description || itemData.about || '';
-                              
+
                               return (
                                 <>
                                   {shortDesc && (

@@ -11,6 +11,7 @@ import { formatCurrency } from '../../utils/formatters';
 
 const toYMD = (d) => dayjs(d).format('YYYY-MM-DD');
 const getAttrId = (a) => a?.attraction_id ?? a?.id ?? a?._id ?? null;
+const getComboId = (c) => c?.combo_id ?? c?.id ?? c?._id ?? null;
 
 const formatTime12Hour = (time24) => {
   if (!time24) return '';
@@ -35,16 +36,10 @@ const getSlotKey = (s, idx) =>
 
 const isSlotEligible = (slot, date) => {
   if (!slot || !date) return true;
-  const now = dayjs();
-  const selectedDay = dayjs(date);
-  if (selectedDay.format('YYYY-MM-DD') === now.format('YYYY-MM-DD')) {
-    const slotTime = slot.start_time;
-    if (!slotTime) return true;
-    const [hours, minutes] = slotTime.split(':');
-    const slotMinutes = parseInt(hours, 10) * 60 + parseInt(minutes, 10);
-    const nowMinutes = now.hour() * 60 + now.minute();
-    return slotMinutes >= nowMinutes + 60;
-  }
+  const now = dayjs().format('YYYY-MM-DD');
+  const selectedDay = dayjs(date).format('YYYY-MM-DD');
+  // Use First N Tickets logic: Prior-date booking only. Block same-day regardless of time.
+  if (selectedDay === now) return false;
   return true;
 };
 
@@ -65,12 +60,14 @@ export default function FirstNTicketsDrawer({
   onClose,
   offer,
   attractions = [],
+  combos = [],
   initialDate,
   dynamicPricingDates = {},
 }) {
   const dispatch = useDispatch();
   const [date, setDate] = useState('');
-  const [attractionId, setAttractionId] = useState('');
+  const [itemId, setItemId] = useState('');
+  const [itemType, setItemType] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [slots, setSlots] = useState([]);
   const [slotsStatus, setSlotsStatus] = useState('idle');
@@ -89,7 +86,10 @@ export default function FirstNTicketsDrawer({
 
     rules.forEach(r => {
       if (r.applies_to_all) appliesToAll = true;
-      if (r.target_id) allTargetIds.add(String(r.target_id));
+      if (r.target_id) {
+        const type = String(r.target_type || 'attraction').toLowerCase();
+        allTargetIds.add(`${type}_${r.target_id}`);
+      }
     });
 
     return {
@@ -104,22 +104,32 @@ export default function FirstNTicketsDrawer({
   const allTargetIds = rule?.allTargetIds || [];
   const appliesToAll = !!rule?.appliesToAll;
 
-  // Selected attraction
-  const selectedAttraction = useMemo(() => {
-    if (!attractionId) return null;
-    return attractions.find(a => String(getAttrId(a)) === String(attractionId)) || null;
-  }, [attractionId, attractions]);
-
-  const hasTimeSlots = selectedAttraction?.time_slot_enabled;
-
-  // Filter attractions matching the offer target
-  const eligibleAttractions = useMemo(() => {
-    if (appliesToAll) return attractions;
-    if (allTargetIds.length > 0) {
-      return attractions.filter(a => allTargetIds.includes(String(getAttrId(a))));
+  // Selected item (Unified)
+  const selectedItem = useMemo(() => {
+    if (!itemId || !itemType) return null;
+    if (itemType === 'Attraction') {
+      return attractions.find(a => String(getAttrId(a)) === String(itemId)) || null;
     }
-    return attractions;
-  }, [appliesToAll, allTargetIds, attractions]);
+    return combos.find(c => String(getComboId(c)) === String(itemId)) || null;
+  }, [itemId, itemType, attractions, combos]);
+
+  const hasTimeSlots = itemType === 'Attraction' ? selectedItem?.time_slot_enabled : !!selectedItem;
+
+  // Unified list of eligible items
+  const eligibleItems = useMemo(() => {
+    const allAttractions = (attractions || []).map(a => ({ ...a, item_type: 'Attraction', id: getAttrId(a) }));
+    const allCombos = (combos || []).map(c => ({ ...c, item_type: 'Combo', id: getComboId(c) }));
+    const allCatalog = [...allAttractions, ...allCombos];
+
+    if (appliesToAll) return allCatalog;
+    if (allTargetIds.length > 0) {
+      return allCatalog.filter(item => {
+        const idStr = `${item.item_type.toLowerCase()}_${item.id}`;
+        return allTargetIds.includes(idStr);
+      });
+    }
+    return allCatalog;
+  }, [appliesToAll, allTargetIds, attractions, combos]);
 
   // Reset on offer change
   useEffect(() => {
@@ -131,9 +141,18 @@ export default function FirstNTicketsDrawer({
 
     // Auto-select if single target
     if (allTargetIds.length === 1 && !appliesToAll) {
-      setAttractionId(allTargetIds[0]);
+      const parts = allTargetIds[0].split('_');
+      if (parts.length === 2) {
+        setItemId(parts[1]);
+        setItemType(parts[0] === 'attraction' ? 'Attraction' : 'Combo');
+      } else {
+         // Legacy ID? Assume Attraction
+         setItemId(allTargetIds[0]);
+         setItemType('Attraction');
+      }
     } else {
-      setAttractionId('');
+      setItemId('');
+      setItemType('');
     }
 
     // Find first valid date (prior-date booking only, skip today)
@@ -147,7 +166,7 @@ export default function FirstNTicketsDrawer({
     if (!offer || !date) return;
     const offerId = offer.offer_id ?? offer.id;
     setAvailLoading(true);
-    api.get(`/offers/${offerId}/availability`, { params: { date } })
+    api.get(endpoints.offers.availability(offerId), { params: { date } })
       .then((res) => {
         const avail = res?.data || res || {};
         setAvailability(avail);
@@ -156,9 +175,9 @@ export default function FirstNTicketsDrawer({
       .finally(() => setAvailLoading(false));
   }, [offer, date]);
 
-  // Fetch slots when attraction or date changes
+  // Fetch slots when item or date changes
   useEffect(() => {
-    if (!attractionId || !date) {
+    if (!itemId || !date || !itemType) {
       setSlots([]);
       setSlotsStatus('idle');
       return;
@@ -170,7 +189,12 @@ export default function FirstNTicketsDrawer({
     }
     setSlotsStatus('loading');
     setSlotKey('');
-    api.get(endpoints.attractions.slotsByAttraction(attractionId), { params: { date: toYMD(date) } })
+
+    const slotEndpoint = itemType === 'Attraction' 
+      ? endpoints.attractions.slotsByAttraction(itemId)
+      : endpoints.combos.slots(itemId);
+
+    api.get(slotEndpoint, { params: { date: toYMD(date) } })
       .then((res) => {
         const list = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
         setSlots(list);
@@ -180,7 +204,7 @@ export default function FirstNTicketsDrawer({
         setSlots([]);
         setSlotsStatus('failed');
       });
-  }, [attractionId, date, hasTimeSlots]);
+  }, [itemId, itemType, date, hasTimeSlots]);
 
   // Clamp quantity to remaining tickets
   useEffect(() => {
@@ -201,9 +225,13 @@ export default function FirstNTicketsDrawer({
   // Batch-check dynamic pricing for ALL candidate dates when drawer is open
   const [dpCache, setDpCache] = useState({});
   const candidateDates = useMemo(() => {
+    const todayStr = dayjs().format('YYYY-MM-DD');
     const dates = [];
+    // Start from 1 is tomorrow.
     for (let i = 1; i <= 60 && dates.length < 8; i++) {
       const candidate = dayjs().add(i, 'day').format('YYYY-MM-DD');
+      // Extra safety: skip if candidate is today or past
+      if (candidate <= todayStr) continue;
       if (isDateAllowed(candidate, offer, rule)) dates.push(candidate);
     }
     return dates;
@@ -211,14 +239,13 @@ export default function FirstNTicketsDrawer({
 
   // Fetch DP status for each candidate date for ALL eligible attractions
   useEffect(() => {
-    if (!candidateDates.length || !eligibleAttractions.length) return;
+    if (!candidateDates.length || !eligibleItems.length) return;
     candidateDates.forEach((d) => {
-      eligibleAttractions.forEach((attr) => {
-        const aId = getAttrId(attr);
-        const dpKey = `attraction:${aId}:${d}`;
+      eligibleItems.forEach((item) => {
+        const dpKey = `${item.item_type.toLowerCase()}:${item.id}:${d}`;
         if (dynamicPricingDates[dpKey] !== undefined || dpCache[dpKey] !== undefined) return;
         api.get(endpoints.dynamicPricing.check(), {
-          params: { target_type: 'attraction', target_id: aId, date: d },
+          params: { target_type: item.item_type.toLowerCase(), target_id: item.id, date: d },
         })
           .then((res) => {
             const hasDp = !!(res?.hasDynamicPricing || res?.data?.hasDynamicPricing);
@@ -227,13 +254,12 @@ export default function FirstNTicketsDrawer({
           .catch(() => {});
       });
     });
-  }, [eligibleAttractions, candidateDates, dynamicPricingDates]);
+  }, [eligibleItems, candidateDates, dynamicPricingDates]);
 
   // Helper: is a given date blocked by dynamic pricing for ANY eligible attraction?
   const isDateDpBlocked = (d) => {
-    return eligibleAttractions.some((attr) => {
-      const aId = getAttrId(attr);
-      const dpKey = `attraction:${aId}:${d}`;
+    return eligibleItems.some((item) => {
+      const dpKey = `${item.item_type.toLowerCase()}:${item.id}:${d}`;
       return !!(dynamicPricingDates[dpKey] || dpCache[dpKey]);
     });
   };
@@ -245,7 +271,7 @@ export default function FirstNTicketsDrawer({
     const offerId = offer.offer_id ?? offer.id;
     candidateDates.forEach((d) => {
       if (availByDate[d] !== undefined) return;
-      api.get(`/api/offers/${offerId}/availability`, { params: { date: d } })
+      api.get(endpoints.offers.availability(offerId), { params: { date: d } })
         .then((res) => {
           const avail = res?.data || res || {};
           setAvailByDate((prev) => ({ ...prev, [d]: avail }));
@@ -269,9 +295,10 @@ export default function FirstNTicketsDrawer({
     return avail.tickets_remaining;
   };
 
-  // If current date gets blocked by DP or sold out, auto-clear it
+  // If current date gets blocked by DP, sold out, OR is today, auto-clear it
   useEffect(() => {
-    if (date && (isDateDpBlocked(date) || isDateSoldOut(date))) setDate('');
+    const today = dayjs().format('YYYY-MM-DD');
+    if (date && (isDateDpBlocked(date) || isDateSoldOut(date) || date <= today)) setDate('');
   }, [date, dpCache, dynamicPricingDates, availByDate]);
 
   // Auto-select initial date: skip DP-blocked and sold-out dates
@@ -281,34 +308,36 @@ export default function FirstNTicketsDrawer({
     if (firstGood) setDate(firstGood);
   }, [isOpen, offer, candidateDates, dpCache, dynamicPricingDates, availByDate]);
 
-  const isReady = date && !isDateDpBlocked(date) && !isDateSoldOut(date) && attractionId && quantity > 0 && !isSoldOut
+  const isReady = date && !isDateDpBlocked(date) && !isDateSoldOut(date) && itemId && quantity > 0 && !isSoldOut
     && (hasTimeSlots ? !!slotKey : true);
 
   const handleCheckout = (isDirectBuy) => {
-    if (!isReady || !offer || !selectedAttraction) return;
+    if (!isReady || !offer || !selectedItem) return;
     const offerId = offer.offer_id ?? offer.id ?? null;
     const offerRuleId = rule?.rule_id ?? null;
 
+    const slotsForIndex = slots || [];
     const slot = hasTimeSlots
-      ? slots.find((s, sIdx) => getSlotKey(s, sIdx) === slotKey) || null
+      ? slotsForIndex.find((s, sIdx) => getSlotKey(s, sIdx) === slotKey) || null
       : null;
 
     const payload = {
       key: `offer_fnt_${offerId}_${Date.now()}`,
       merge: false,
-      item_type: 'Attraction',
-      title: selectedAttraction?.title || selectedAttraction?.name || 'Attraction',
+      item_type: itemType,
+      title: selectedItem?.title || selectedItem?.name || itemType,
       slotLabel: slot ? getSlotLabel(slot) : '',
       quantity,
       booking_date: toYMD(date),
       booking_time: slot?.start_time || null,
       unitPrice: offerPrice,
       dateLabel: dayjs(date).format('DD-MMM-YYYY'),
-      slot_id: slot?.id || slot?.slot_id || null,
-      combo_slot_id: null,
-      attraction_id: getAttrId(selectedAttraction),
-      combo_id: null,
+      slot_id: itemType === 'Attraction' ? (slot?.id || slot?.slot_id || null) : null,
+      combo_slot_id: itemType === 'Combo' ? (slot?.combo_slot_id || slot?.id || null) : null,
+      attraction_id: itemType === 'Attraction' ? itemId : null,
+      combo_id: itemType === 'Combo' ? itemId : null,
       slot: slot || null,
+      combo: itemType === 'Combo' ? selectedItem : null,
       offer_id: offerId,
       offer_rule_id: offerRuleId,
       offerDescription: offer.description || `First ${ticketLimit} tickets at ₹${offerPrice}`,
@@ -404,28 +433,33 @@ export default function FirstNTicketsDrawer({
             </div>
           </div>
 
-          {/* Attraction Selection */}
+          {/* Item Selection */}
           <div className="space-y-2">
-            <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Select Attraction</p>
-            {eligibleAttractions.length === 1 ? (
+            <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+              Select {eligibleItems.every(i => i.item_type === 'Attraction') ? 'Attraction' : eligibleItems.every(i => i.item_type === 'Combo') ? 'Combo' : 'Item'}
+            </p>
+            {eligibleItems.length === 1 ? (
               <div className="p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-800">
-                {eligibleAttractions[0]?.title || eligibleAttractions[0]?.name}
+                {eligibleItems[0]?.title || eligibleItems[0]?.name}
               </div>
             ) : (
               <select
                 className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-sky-500 text-sm font-medium"
-                value={attractionId}
+                value={itemId ? `${itemId}_${itemType}` : ''}
                 onChange={(e) => {
-                  setAttractionId(e.target.value);
+                  const val = e.target.value;
+                  const [id, type] = val.split('_');
+                  setItemId(id);
+                  setItemType(type);
                   setSlotKey('');
                   setQuantity(1);
                 }}
                 disabled={!date || isSoldOut}
               >
-                <option value="">Select an attraction</option>
-                {eligibleAttractions.map((a) => (
-                  <option key={getAttrId(a)} value={getAttrId(a)}>
-                    {a.title || a.name}
+                <option value="">Select an {eligibleItems.every(i => i.item_type === 'Attraction') ? 'attraction' : eligibleItems.every(i => i.item_type === 'Combo') ? 'combo' : 'item'}</option>
+                {eligibleItems.map((item) => (
+                  <option key={`${item.id}_${item.item_type}`} value={`${item.id}_${item.item_type}`}>
+                    {item.title || item.name}
                   </option>
                 ))}
               </select>
@@ -433,7 +467,7 @@ export default function FirstNTicketsDrawer({
           </div>
 
           {/* Time Slot Selection */}
-          {attractionId && hasTimeSlots && (
+          {itemId && hasTimeSlots && (
             <div className="space-y-2">
               <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Time Slot</p>
               {slotsStatus === 'loading' ? (
@@ -471,7 +505,7 @@ export default function FirstNTicketsDrawer({
           )}
 
           {/* Quantity */}
-          {attractionId && !isSoldOut && (!hasTimeSlots || slotKey) && (
+          {itemId && !isSoldOut && (!hasTimeSlots || slotKey) && (
             <div className="space-y-2">
               <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Quantity</p>
               <div className="flex items-center gap-4">
@@ -541,7 +575,8 @@ function isDateAllowed(dateValue, offer, rule) {
   if (!dateValue) return false;
   const date = dayjs(dateValue).format('YYYY-MM-DD');
   const today = dayjs().format('YYYY-MM-DD');
-  // Prior-date booking only — block today
+  
+  // Prior-date booking only — block today and past
   if (date <= today) return false;
   if (offer?.valid_from && date < String(offer.valid_from).slice(0, 10)) return false;
   if (offer?.valid_to && date > String(offer.valid_to).slice(0, 10)) return false;

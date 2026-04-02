@@ -66,6 +66,14 @@ export default function SelectTickets({
         if (!rule.specific_days.map(Number).includes(dayIndex)) return false;
       }
     }
+
+    // Hardcoded temporary fix: Disable same-day booking for combo 26
+    const comboId = offer?.combo_id || rule?.target_id || null;
+    if (String(comboId) === '26') {
+      const today = dayjs().format('YYYY-MM-DD');
+      if (date === today) return false;
+    }
+
     return true;
   };
 
@@ -103,7 +111,7 @@ export default function SelectTickets({
         if (!nextDate) return;
 
         try {
-          const res = await api.get(`/offers/${offerId}/availability`, { params: { date: nextDate } });
+          const res = await api.get(endpoints.offers.availability(offerId), { params: { date: nextDate } });
           const avail = res?.data || res || {};
           setOfferAvailability(prev => ({ ...prev, [String(offerId)]: avail }));
         } catch (err) {

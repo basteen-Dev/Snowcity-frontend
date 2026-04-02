@@ -2,12 +2,13 @@ import dayjs from 'dayjs';
 
 const SORT_KEY_CANDIDATES = ['key', 'sort_key', 'order', 'order_key', 'priority', 'sequence', 'display_order'];
 
-export const getNextAvailableDate = (item) => {
+export const getNextAvailableDate = (item, fromDate = null) => {
   if (!item) return dayjs().format('YYYY-MM-DD');
   const dayRuleType = item.day_rule_type || 'all_days';
   const customDays = item.custom_days || [];
   
-  let current = dayjs();
+  let current = fromDate ? dayjs(fromDate) : dayjs();
+
   // Check up to 30 days in the future to find a valid day
   for (let i = 0; i < 30; i++) {
     const dateStr = current.format('YYYY-MM-DD');

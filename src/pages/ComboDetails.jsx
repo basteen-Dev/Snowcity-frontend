@@ -179,6 +179,13 @@ const ruleMatchesContext = (rule, { targetType, targetId, date, slot }) => {
   if (!rule || !targetType || !targetId) return false;
   const bookingDate = dayjs(date).format('YYYY-MM-DD');
 
+  // Hardcoded temporary fix: Disable same-day booking for combo 26
+  const isCombo26 = idsMatch(targetId, 26) && normalizeTargetType(targetType) === 'combo';
+  const todayStr = dayjs().format('YYYY-MM-DD');
+  if (isCombo26 && bookingDate <= todayStr) {
+    return false;
+  }
+
   const ruleType = normalizeTargetType(rule.target_type);
   const currentType = normalizeTargetType(targetType);
   if (ruleType && currentType && ruleType !== currentType) return false;
@@ -514,17 +521,99 @@ export default function ComboDetails() {
   /* ===== Availability / slots state ===== */
 
   const [date, setDate] = React.useState(searchParams.get('date') || '');
+  const [qty, setQty] = React.useState(1);
+  const [slots, setSlots] = React.useState([]);
+  const [allSlots, setAllSlots] = React.useState([]);
+  const [showCalendar, setShowCalendar] = React.useState(false);
+
+  const isDayBlockedByComboRule = React.useCallback((dateStr) => {
+    if (!state.data && !matchedCombo) return false;
+    const item = state.data || matchedCombo;
+    
+    // Hardcoded temporary fix: Disable same-day booking for combo 26
+    if (String(item?.combo_id) === '26') {
+      const today = dayjs().format('YYYY-MM-DD');
+      if (dayjs(dateStr).format('YYYY-MM-DD') === today) {
+        return true;
+      }
+    }
+
+    const dayRuleType = item?.day_rule_type || 'all_days';
+    if (dayRuleType === 'all_days') return false;
+    const customDays = item?.custom_days || [];
+    const dayOfWeek = dayjs(dateStr).day();
+    if (dayRuleType === 'weekends') return dayOfWeek !== 0 && dayOfWeek !== 6;
+    if (dayRuleType === 'weekdays') return dayOfWeek === 0 || dayOfWeek === 6;
+    if (dayRuleType === 'custom_days' && customDays.length > 0) return !customDays.includes(dayOfWeek);
+    return false;
+  }, [state.data, matchedCombo]);
+
+  const todayBlocked = React.useMemo(() => isDayBlockedByComboRule(dayjs().format('YYYY-MM-DD')), [isDayBlockedByComboRule]);
+  const tomorrowBlocked = React.useMemo(() => isDayBlockedByComboRule(dayjs().add(1, 'day').format('YYYY-MM-DD')), [isDayBlockedByComboRule]);
+
   React.useEffect(() => {
     const pDate = searchParams.get('date');
     if (pDate) {
-      setDate(pDate);
-    } else if (state.data) {
-      setDate(getNextAvailableDate(state.data));
+      if (isDayBlockedByComboRule(pDate)) {
+        // If the URL date is blocked, find the true next available date
+        (async () => {
+          try {
+            const res = await api.get(endpoints.combos.slots(state.data?.combo_id || matchedCombo?.combo_id));
+            const list = Array.isArray(res) ? res : (Array.isArray(res?.data) ? res.data : []);
+            setAllSlots(list);
+            if (list.length > 0) {
+              const todayStr = dayjs().format('YYYY-MM-DD');
+              const validSlots = list.filter(s => {
+                const sDate = s.start_date || s.date || '';
+                return !isDayBlockedByComboRule(sDate) && s.available !== false && (s.capacity > 0 || String(s.capacity) === 'unlimited');
+              });
+              if (validSlots.length > 0) {
+                setDate(validSlots[0].start_date || validSlots[0].date);
+                return;
+              }
+            }
+          } catch (e) { /* fallback */ }
+          setDate(getNextAvailableDate(state.data || matchedCombo));
+        })();
+      } else {
+        setDate(pDate);
+      }
+    } else if (state.data?.combo_id) {
+      // Find true next available date from slots
+      (async () => {
+        try {
+          const res = await api.get(endpoints.combos.slots(state.data.combo_id));
+          const list = Array.isArray(res) ? res : (Array.isArray(res?.data) ? res.data : []);
+          setAllSlots(list);
+          
+          if (list.length > 0) {
+            const todayStr = dayjs().format('YYYY-MM-DD');
+            const futureSlots = list.filter(s => {
+              const sDate = s.start_date || s.date || '';
+              return sDate >= todayStr && !isDayBlockedByComboRule(sDate) && s.available !== false && (s.capacity > 0 || String(s.capacity) === 'unlimited');
+            });
+            
+            if (futureSlots.length > 0) {
+              const firstDate = futureSlots[0].start_date || futureSlots[0].date;
+              setDate(firstDate);
+              return;
+            }
+          }
+          
+          const nextDate = getNextAvailableDate(state.data);
+          if (isDayBlockedByComboRule(nextDate)) {
+             setDate(getNextAvailableDate(state.data, dayjs(nextDate).add(1, 'day').format('YYYY-MM-DD')));
+          } else {
+             setDate(nextDate);
+          }
+        } catch (err) {
+          const nextDate = getNextAvailableDate(state.data);
+          setDate(nextDate);
+        }
+      })();
     }
-  }, [searchParams, state.data]);
-  const [qty, setQty] = React.useState(1);
-  const [slots, setSlots] = React.useState([]);
-  const [showCalendar, setShowCalendar] = React.useState(false);
+  }, [searchParams, state.data, matchedCombo, isDayBlockedByComboRule]);
+
   const [calendarAnchor, setCalendarAnchor] = React.useState(null);
   const calendarAnchorRect = React.useMemo(() => {
     // Always center the calendar
@@ -545,19 +634,7 @@ export default function ComboDetails() {
     updateDate(dayjs().add(1, 'day').format('YYYY-MM-DD'));
   }, [updateDate]);
 
-  // Day rule blocking for Today/Tomorrow buttons
-  const isDayBlockedByComboRule = (dateStr) => {
-    const dayRuleType = matchedCombo?.day_rule_type || 'all_days';
-    if (dayRuleType === 'all_days') return false;
-    const customDays = matchedCombo?.custom_days || [];
-    const dayOfWeek = dayjs(dateStr).day();
-    if (dayRuleType === 'weekends') return dayOfWeek !== 0 && dayOfWeek !== 6;
-    if (dayRuleType === 'weekdays') return dayOfWeek === 0 || dayOfWeek === 6;
-    if (dayRuleType === 'custom_days' && customDays.length > 0) return !customDays.includes(dayOfWeek);
-    return false;
-  };
-  const todayBlocked = isDayBlockedByComboRule(dayjs().format('YYYY-MM-DD'));
-  const tomorrowBlocked = isDayBlockedByComboRule(dayjs().add(1, 'day').format('YYYY-MM-DD'));
+
   const handleAllDays = React.useCallback(() => {
     updateDate('');
   }, [updateDate]);
@@ -960,6 +1037,11 @@ export default function ComboDetails() {
 
   const onBook = (slot, pricingInfo) => {
     if (isBookingStopped) return;
+    if (isDayBlockedByComboRule(date)) {
+      toast.error('Booking is not available for the selected date');
+      return;
+    }
+
     const q = Math.max(1, Number(qty) || 1);
     const pricing = pricingInfo || getSlotPricing(slot);
     const unitPrice =
@@ -1369,10 +1451,63 @@ export default function ComboDetails() {
                 <div className="flex justify-center py-12"><Loader /></div>
               ) : slotState.status === 'failed' ? (
                 <ErrorState message={slotErr || 'Failed to load slots'} />
-              ) : slots.length === 0 ? (
-                <div className="text-center py-12 text-gray-500 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
-                  No slots available for this date.
+              ) : isDayBlockedByComboRule(date) ? (
+                <div className="text-center py-12 text-gray-500 bg-gray-50 rounded-2xl border border-dashed border-gray-200 flex flex-col items-center gap-4 w-full">
+                  <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-2">
+                    <Calendar size={32} />
+                  </div>
+                  <p className="font-bold text-lg text-gray-900 text-center">Booking Unavailable for this Date</p>
+                  <p className="text-sm max-w-md text-center">
+                    {String(state.data?.combo_id) === '26' 
+                      ? "Same-day booking is not allowed for this combo. Please select a future date."
+                      : "This combo is not available on the selected day. Please choose another date."}
+                  </p>
+                  {(() => {
+                    const nextAvailableSlot = allSlots.find(s => {
+                      const sDate = s.start_date || s.date || '';
+                      return sDate > date && s.available !== false && (s.capacity > 0 || String(s.capacity) === 'unlimited') && !isDayBlockedByComboRule(sDate);
+                    });
+                    if (nextAvailableSlot) {
+                      const nextDate = nextAvailableSlot.start_date || nextAvailableSlot.date;
+                      return (
+                        <button
+                          onClick={() => setDate(nextDate)}
+                          className="mt-2 px-6 py-3 bg-[#0099FF] text-white rounded-xl font-bold hover:bg-[#007ACC] transition-all flex items-center gap-2"
+                        >
+                          <Calendar size={18} />
+                          Check Next Available: {dayjs(nextDate).format('DD MMM')}
+                        </button>
+                      );
+                    }
+                    return null;
+                  })()}
                 </div>
+              ) : slots.length === 0 ? (
+
+                <div className="text-center py-12 text-gray-500 bg-gray-50 rounded-2xl border border-dashed border-gray-200 flex flex-col items-center gap-4">
+                  <p>No slots available for this date.</p>
+                  {(() => {
+                    const nextAvailableSlot = allSlots.find(s => {
+                      const sDate = s.start_date || s.date || '';
+                      return sDate > date && s.available !== false && (s.capacity > 0 || String(s.capacity) === 'unlimited');
+                    });
+                    if (nextAvailableSlot) {
+                      const nextDate = nextAvailableSlot.start_date || nextAvailableSlot.date;
+                      return (
+                        <button
+                          onClick={() => setDate(nextDate)}
+                          className="px-6 py-2 bg-[#0099FF] text-white rounded-xl font-bold hover:bg-[#007ACC] transition-all flex items-center gap-2"
+                        >
+                          <Calendar size={18} />
+                          Check Next Available: {dayjs(nextDate).format('DD MMM')}
+                        </button>
+                      );
+                    }
+                    return null;
+                  })()}
+                </div>
+
+
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {slots
@@ -1493,10 +1628,12 @@ export default function ComboDetails() {
                         className="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-sky-500 outline-none text-base font-medium appearance-none cursor-pointer pr-12"
                         value={slotState.selectedKey}
                         onChange={(e) => setSlotState(s => ({ ...s, selectedKey: e.target.value }))}
+                        disabled={isDayBlockedByComboRule(date)}
                       >
-                        <option value="">Select the ticket</option>
-                        {slots.filter(s => isSlotBookableForDate(s, date)).map(s => <option key={buildSlotKey(s)} value={buildSlotKey(s)}>{labelTime(s)}</option>)}
+                        <option value="">{isDayBlockedByComboRule(date) ? 'Booking Unavailable' : 'Select the ticket'}</option>
+                        {!isDayBlockedByComboRule(date) && slots.filter(s => isSlotBookableForDate(s, date)).map(s => <option key={buildSlotKey(s)} value={buildSlotKey(s)}>{labelTime(s)}</option>)}
                       </select>
+
                       <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
                         <ChevronDown size={20} />
                       </div>
@@ -1619,17 +1756,7 @@ export default function ComboDetails() {
                         const isToday = current.isSame(today, 'day');
 
                         // Day rule filtering
-                        const dayOfWeek = current.day();
-                        const dayRuleType = matchedCombo?.day_rule_type || 'all_days';
-                        const customDays = matchedCombo?.custom_days || [];
-                        let isDisabledByDayRule = false;
-                        if (dayRuleType === 'weekends') {
-                          isDisabledByDayRule = dayOfWeek !== 0 && dayOfWeek !== 6;
-                        } else if (dayRuleType === 'weekdays') {
-                          isDisabledByDayRule = dayOfWeek === 0 || dayOfWeek === 6;
-                        } else if (dayRuleType === 'custom_days' && customDays.length > 0) {
-                          isDisabledByDayRule = !customDays.includes(dayOfWeek);
-                        }
+                        const isDisabledByDayRule = isDayBlockedByComboRule(dateStr);
                         const isDisabled = isPast || isDisabledByDayRule;
 
                         return (

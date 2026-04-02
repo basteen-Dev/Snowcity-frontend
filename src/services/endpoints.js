@@ -124,7 +124,8 @@ const endpoints = {
   },
   offers: {
     list: () => '/api/offers',
-    byId: (id) => `/api/offers/${encodeSeg(id)}`
+    byId: (id) => `/api/offers/${encodeSeg(id)}`,
+    availability: (id) => `/api/offers/${encodeSeg(id)}/availability`
   },
   dynamicPricing: {
     check: () => '/api/dynamic-pricing/check',
