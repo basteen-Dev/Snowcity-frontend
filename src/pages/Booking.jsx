@@ -25,6 +25,7 @@ import {
 import { fetchAttractions } from '../features/attractions/attractionsSlice';
 import { fetchCombos } from '../features/combos/combosSlice';
 import { fetchAddons } from '../features/addons/addonsSlice';
+import { fetchOffers } from '../features/offers/offersSlice';
 import { logout } from '../features/auth/authSlice';
 import Loader from '../components/common/Loader';
 import ErrorState from '../components/common/ErrorState';
@@ -494,7 +495,8 @@ export default function Booking() {
   const combosState = useSelector((s) => s.combos);
   const addonsState = useSelector((s) => s.addons);
   const { step, contact, otp, coupon, creating, cart } = useSelector((s) => s.bookings);
-  const offersFromRedux = useSelector((s) => s.offers.items) || [];
+  const offersState = useSelector((s) => s.offers);
+  const offersFromRedux = offersState?.items || [];
   const promosLoading = useSelector((s) => s.coupons.loading) || false;
   const cartItems = cart?.items || [];
   const hasCartItems = cartItems.length > 0;
@@ -975,7 +977,8 @@ export default function Booking() {
       dispatch(fetchAttractions({ active: true, limit: 100 }));
     if (combosState.status === 'idle') dispatch(fetchCombos({ active: true, limit: 100 }));
     if (addonsState.status === 'idle') dispatch(fetchAddons({ active: true, limit: 100 }));
-  }, [dispatch, attractionsState.status, combosState.status, addonsState.status]);
+    if (offersState.status === 'idle') dispatch(fetchOffers({ active: true, limit: 100 }));
+  }, [dispatch, attractionsState.status, combosState.status, addonsState.status, offersState.status]);
 
   useEffect(() => {
     if (step === 3 && hasToken) {

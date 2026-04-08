@@ -4,6 +4,7 @@ import dayjs from 'dayjs';
 import OrderDetailsBox from './OrderDetailsBox';
 import { prioritizeSnowcityFirst, getNextAvailableDate } from '../../utils/attractions';
 import api from '../../services/apiClient';
+import endpoints from '../../services/endpoints';
 
 
 /**

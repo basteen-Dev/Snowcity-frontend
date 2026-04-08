@@ -10,7 +10,17 @@ if (!API_BASE_URL && import.meta.env?.DEV) {
 
 const SESSION_STORAGE_KEY = 'snow_session_id';
 let guestSessionId = null;
-const isBrowser = typeof window !== 'undefined' && typeof window.localStorage !== 'undefined';
+const isBrowser = (() => {
+  if (typeof window === 'undefined') return false;
+  try {
+    const key = '__sc_ls_test__';
+    window.localStorage.setItem(key, '1');
+    window.localStorage.removeItem(key);
+    return true;
+  } catch {
+    return false;
+  }
+})();
 
 // 2. Session Management
 const generateSessionId = () => `snow-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
