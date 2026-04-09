@@ -1128,8 +1128,9 @@ export default function Booking() {
           params: { target_type: targetType, target_id: key, date: toYMD(date) },
         })
           .then((res) => {
-            const hasDp = !!(res?.hasDynamicPricing || res?.data?.hasDynamicPricing);
-            setDynamicPricingDates((prev) => ({ ...prev, [dpKey]: hasDp }));
+            const dpData = res?.data ?? res;
+            const hasDp = !!(dpData?.hasDynamicPricing);
+            setDynamicPricingDates((prev) => ({ ...prev, [dpKey]: hasDp ? dpData : false }));
           })
           .catch(() => {
             // Silently ignore — default to no dynamic pricing
@@ -1247,14 +1248,28 @@ export default function Booking() {
       if (!originalPrice) originalPrice = preOfferBase;
       if (!finalPrice) finalPrice = preOfferUnit;
 
+      // ── Apply dynamic pricing adjustment for non-slotted attractions ──
       const selectedDate = toYMD(sel.date);
       const itemId = getAttrId(selectedAttraction);
+      const dpKey = `attraction:${itemId}:${selectedDate}`;
+      const dpEntry = dynamicPricingDates[dpKey];
+      if (!selectedSlot && dpEntry && dpEntry.rules && Array.isArray(dpEntry.rules) && dpEntry.rules.length > 0) {
+        let adjusted = finalPrice;
+        for (const rule of dpEntry.rules) {
+          if (rule.price_adjustment_type === 'fixed') {
+            adjusted += Number(rule.price_adjustment_value) || 0;
+          } else if (rule.price_adjustment_type === 'percentage') {
+            adjusted += (finalPrice * (Number(rule.price_adjustment_value) || 0)) / 100;
+          }
+        }
+        finalPrice = Math.max(0, adjusted);
+        originalPrice = finalPrice;
+      }
 
       let appliedOffer = slotOffer || null;
       // Same-day & dynamic pricing blocking
       const todayStr = dayjs().format('YYYY-MM-DD');
       const isSameOrPast = selectedDate && selectedDate <= todayStr;
-      const dpKey = `attraction:${itemId}:${selectedDate}`;
       const hasDynamicPricing = selectedDate && dynamicPricingDates[dpKey];
       // If dynamic pricing is active, clear slot-level offers too
       if (hasDynamicPricing && appliedOffer) {

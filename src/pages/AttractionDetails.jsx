@@ -565,6 +565,9 @@ export default function AttractionDetails() {
     return () => ac.abort();
   }, [slug]);
 
+  // ─── Dynamic pricing state for non-slotted attractions ─────────
+  const [noSlotDynamicPricing, setNoSlotDynamicPricing] = React.useState(null);
+
   const fetchSlots = React.useCallback(async () => {
     if (!numericAttrId || !date) return;
 
@@ -572,8 +575,30 @@ export default function AttractionDetails() {
     if (a?.time_slot_enabled === false) {
       setSlots({ status: 'succeeded', items: [], error: null });
       setSlotKey('no-slot'); // Special key for non-slotted booking
+
+      // ── Fetch dynamic pricing for non-slotted attractions ──
+      try {
+        const dpRes = await api.get(endpoints.dynamicPricing.check(), {
+          params: {
+            target_type: 'attraction',
+            target_id: numericAttrId,
+            date: toYMD(date),
+          },
+        });
+        const dpData = dpRes?.data ?? dpRes;
+        if (dpData?.hasDynamicPricing && Array.isArray(dpData.rules) && dpData.rules.length > 0) {
+          setNoSlotDynamicPricing(dpData);
+        } else {
+          setNoSlotDynamicPricing(null);
+        }
+      } catch (_dpErr) {
+        setNoSlotDynamicPricing(null);
+      }
       return;
     }
+
+    // Reset non-slot DP when slots are enabled
+    setNoSlotDynamicPricing(null);
 
     setSlots((s) => ({ ...s, status: 'loading', error: null, items: [] }));
     const ac = new AbortController();
@@ -761,12 +786,28 @@ export default function AttractionDetails() {
   const slotPricing = selectedSlot?.pricing || {};
   const slotOffer = selectedSlot?.offer || null;
 
+  // ── Apply dynamic pricing adjustment for non-slotted attractions ──
+  const noSlotAdjustedPrice = React.useMemo(() => {
+    if (!isTimeSlotDisabled || !noSlotDynamicPricing?.rules?.length) return null;
+    const basePrice = fallbackBasePrice || fallbackUnitPrice;
+    if (!basePrice || basePrice <= 0) return null;
+    let adjusted = basePrice;
+    for (const rule of noSlotDynamicPricing.rules) {
+      if (rule.price_adjustment_type === 'fixed') {
+        adjusted += Number(rule.price_adjustment_value) || 0;
+      } else if (rule.price_adjustment_type === 'percentage') {
+        adjusted += (basePrice * (Number(rule.price_adjustment_value) || 0)) / 100;
+      }
+    }
+    return Math.max(0, adjusted);
+  }, [isTimeSlotDisabled, noSlotDynamicPricing, fallbackBasePrice, fallbackUnitPrice]);
+
   const computedBaseUnit = selectedSlot
     ? getSlotBasePrice(selectedSlot, fallbackBasePrice)
-    : fallbackBasePrice;
+    : (noSlotAdjustedPrice != null ? noSlotAdjustedPrice : fallbackBasePrice);
   const computedUnit = selectedSlot
     ? getSlotUnitPrice(selectedSlot, fallbackUnitPrice)
-    : fallbackUnitPrice;
+    : (noSlotAdjustedPrice != null ? noSlotAdjustedPrice : fallbackUnitPrice);
 
   const baseUnitPrice = Number(slotPricing.base_price ?? computedBaseUnit ?? 0);
   const unitBeforeOffer = Number(slotPricing.final_price ?? computedUnit ?? 0);
