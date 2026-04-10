@@ -86,8 +86,8 @@
       "permanent": true
     },
     {
-      "source": "/contact",
-      "destination": "/contact-us",
+      "source": "/contact-us",
+      "destination": "/contact",
       "permanent": true
     }
   ]
