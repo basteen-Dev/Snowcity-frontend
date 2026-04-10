@@ -73,5 +73,22 @@
       "source": "/(.*)",
       "destination": "/index.html"
     }
+  ],
+  "redirects": [
+    {
+      "source": "/tickets",
+      "destination": "/tickets-offers",
+      "permanent": true
+    },
+    {
+      "source": "/tickets/:path*",
+      "destination": "/tickets-offers/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/contact",
+      "destination": "/contact-us",
+      "permanent": true
+    }
   ]
 }
