@@ -6,6 +6,35 @@ import ImageUploader from '../../components/common/ImageUploader';
 import SaveOverlay from '../../components/common/SaveOverlay';
 import toast from 'react-hot-toast';
 
+function normalizeLinkUrl(value) {
+  const v = String(value || '').trim();
+  if (!v) return '';
+  if (/^https?:\/\//i.test(v) || v.startsWith('/')) return v;
+  return `/${v}`;
+}
+
+function normalizeImageValue(value) {
+  const v = String(value || '').trim();
+  if (!v) return '';
+  if (/^https?:\/\//i.test(v) || v.startsWith('/uploads/')) return v;
+  if (v.startsWith('/api/uploads/')) return v.replace('/api/uploads/', '/uploads/');
+  if (v.startsWith('/api/parkpanel/uploads/')) return v.replace('/api/parkpanel/uploads/', '/uploads/');
+  if (v.startsWith('uploads/')) return `/${v}`;
+  return v;
+}
+
+function extractValidationMessage(err) {
+  const details = err?.data?.details;
+  if (Array.isArray(details) && details.length) {
+    const text = details
+      .map((d) => d?.msg || d?.message || d?.param || d?.path)
+      .filter(Boolean)
+      .join(', ');
+    if (text) return text;
+  }
+  return err?.message || 'Save failed';
+}
+
 export default function BannerForm() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -61,18 +90,52 @@ export default function BannerForm() {
     setState((s) => ({ ...s, error: null }));
     const loadingToast = toast.loading(isEdit ? 'Updating banner...' : 'Creating banner...');
     try {
+        const normalizedLinkUrl = normalizeLinkUrl(state.form.link_url);
+        const normalizedWebImage = normalizeImageValue(state.form.web_image);
+        const normalizedMobileImage = normalizeImageValue(state.form.mobile_image);
         const payload = {
-          ...state.form,
-          linked_attraction_id: null,
-          linked_offer_id: null
+          active: !!state.form.active,
         };
+
+      const title = String(state.form.title || '').trim();
+      const description = String(state.form.description || '').trim();
+      const ctaText = String(state.form.cta_text || '').trim();
+      const webAlt = String(state.form.web_image_alt || '').trim();
+      const mobileAlt = String(state.form.mobile_image_alt || '').trim();
+
+      if (title) payload.title = title;
+      if (description) payload.description = description;
+      if (ctaText) payload.cta_text = ctaText;
+      if (normalizedLinkUrl) payload.link_url = normalizedLinkUrl;
+      if (normalizedWebImage) payload.web_image = normalizedWebImage;
+      if (normalizedMobileImage) payload.mobile_image = normalizedMobileImage;
+      if (webAlt) payload.web_image_alt = webAlt;
+      if (mobileAlt) payload.mobile_image_alt = mobileAlt;
+
+      if (
+        normalizedLinkUrl !== state.form.link_url ||
+        normalizedWebImage !== state.form.web_image ||
+        normalizedMobileImage !== state.form.mobile_image
+      ) {
+        setState((s) => ({
+          ...s,
+          form: {
+            ...s.form,
+            link_url: normalizedLinkUrl,
+            web_image: normalizedWebImage,
+            mobile_image: normalizedMobileImage,
+          },
+        }));
+      }
+
       if (isEdit) await adminApi.put(`${A.banners()}/${id}`, payload);
       else await adminApi.post(A.banners(), payload);
 
       toast.success(isEdit ? 'Banner updated successfully' : 'Banner created successfully', { id: loadingToast });
       navigate('/catalog/banners');
     } catch (err) {
-      toast.error(err.message || 'Save failed', { id: loadingToast });
+      const errorMessage = extractValidationMessage(err);
+      toast.error(errorMessage, { id: loadingToast });
       setState((s) => ({ ...s, error: err }));
     } finally {
       setSaving(false);
@@ -90,7 +153,7 @@ export default function BannerForm() {
       <form onSubmit={save} className="max-w-2xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-4">
         <h1 className="text-xl font-semibold mb-4">{isEdit ? 'Edit' : 'New'} Banner</h1>
         {state.error ? (
-          <div className="mb-3 text-sm text-red-600">{state.error?.message || 'Save failed'}</div>
+          <div className="mb-3 text-sm text-red-600">{extractValidationMessage(state.error)}</div>
         ) : null}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div className="md:col-span-2">
