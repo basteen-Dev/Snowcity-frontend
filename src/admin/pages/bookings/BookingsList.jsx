@@ -596,7 +596,7 @@ export default function BookingsList() {
               title="Download current view as Excel"
             >
               <FileSpreadsheet className="h-4 w-4 text-emerald-600" />
-              <span className="hidden sm:inline text-xs font-semibold">{exporting ? 'Exporting…' : 'Excel'}</span>
+              <span className="hidden sm:inline text-xs font-semibold">{exporting ? 'Exporting…' : 'Export'}</span>
             </button>
           )}
         </div>
