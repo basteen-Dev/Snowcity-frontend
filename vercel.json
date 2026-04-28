@@ -62,7 +62,6 @@
       "destination": "https://app.snowcityblr.com/api/:path*"
     },
     {
-      "comment": "--- Sitemap: proxy all sitemaps to backend for dynamic generation ---",
       "source": "/sitemap.xml",
       "destination": "https://app.snowcityblr.com/sitemap.xml"
     },
