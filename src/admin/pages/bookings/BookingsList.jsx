@@ -7,10 +7,11 @@ import TablePagination from '../../components/common/TablePagination';
 import { useNavigate } from 'react-router-dom';
 import adminApi from '../../services/adminApi';
 import A from '../../services/adminEndpoints';
+import { exportToExcel } from '../../utils/reportExportUtils';
 
 import {
   Search, Filter, ChevronLeft, ChevronRight, RotateCcw,
-  MoreVertical, Eye, MessageSquare, Mail, Download, ChevronDown
+  MoreVertical, Eye, MessageSquare, Mail, Download, ChevronDown, FileSpreadsheet
 } from 'lucide-react';
 
 /* ─── Shared UI ──────────────────────────────────────────── */
@@ -417,6 +418,7 @@ export default function BookingsList() {
   /* ─── Subadmin check ───────────────────────────────────── */
   const userRoles = React.useMemo(() => Array.isArray(user?.roles) ? user.roles.map(r => String(r).toLowerCase()) : [], [user]);
   const isSubadmin = userRoles.includes('subadmin') && !userRoles.includes('admin') && !userRoles.includes('root');
+  const canExportExcel = userRoles.includes('superadmin') || userRoles.includes('gm');
 
   /* ─── Auto-sync control based on filters ───────────────── */
   const isFiltering = React.useMemo(() => {
@@ -454,6 +456,80 @@ export default function BookingsList() {
     if (activeRange !== 'today') count++;
     return count;
   }, [filters, activeRange]);
+
+  /* ─── Excel Export ─────────────────────────────────────── */
+  const [exporting, setExporting] = React.useState(false);
+
+  const handleExportExcel = React.useCallback(async () => {
+    if (exporting) return;
+    setExporting(true);
+    try {
+      // Fetch ALL records matching current filters (not just current page)
+      const query = { ...buildQuery(), page: 1, limit: 10000 };
+      const res = await adminApi.get(A.bookings(), { params: query });
+      let allData = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
+
+      // Apply same client-side cancelled filter as the table view
+      const hasTimeFilter = !!(filters.date_from || filters.date_to);
+      const hasStatusFilter = !!filters.booking_status;
+      const hasSearch = !!filters.search?.trim();
+      if (hasTimeFilter && !hasStatusFilter && !hasSearch) {
+        allData = allData.filter(it => it.booking_status !== 'Cancelled');
+      }
+
+      if (!allData.length) {
+        window.alert('No data to export. Adjust your filters and try again.');
+        setExporting(false);
+        return;
+      }
+
+      const columns = [
+        'Booking ID', 'Booking Date', 'Customer Name', 'Phone', 'Email',
+        'Item(s)', 'Qty', 'Amount (₹)', 'Payment Status', 'Payment Mode',
+        'Booking Status', 'Ticket Status'
+      ];
+
+      const dataRows = allData.map((r) => {
+        const items = Array.isArray(r.items) ? r.items : [];
+        const itemTitles = items.reduce((acc, it) => {
+          const title = it.item_title || 'Ticket';
+          if (!acc[title]) acc[title] = 0;
+          acc[title] += (it.quantity || 1);
+          return acc;
+        }, {});
+        const itemStr = Object.entries(itemTitles).map(([t, q]) => q > 1 ? `${t} x${q}` : t).join(', ');
+        const totalQty = items.reduce((sum, it) => sum + (it.quantity || 1), 0);
+
+        return [
+          r.order_ref || r.booking_ref || r.booking_id || r.id || '',
+          r.booking_date ? dayjs(r.booking_date).format('DD-MM-YYYY') : '',
+          r.user_name || '',
+          r.user_phone || '',
+          r.user_email || '',
+          itemStr || '',
+          totalQty || '',
+          Number(r.final_amount ?? r.total_amount ?? 0),
+          r.payment_status || '',
+          r.payment_mode || '',
+          r.booking_status || '',
+          r.ticket_status || 'NOT_REDEEMED'
+        ];
+      });
+
+      // Build filename with date context
+      const datePart = filters.date_from
+        ? `_${dayjs(filters.date_from).format('DD-MMM-YYYY')}${filters.date_to && filters.date_to !== filters.date_from ? '_to_' + dayjs(filters.date_to).format('DD-MMM-YYYY') : ''}`
+        : '_all';
+      const filename = `Bookings_Report${datePart}`;
+
+      exportToExcel(columns, dataRows, filename, 'Bookings');
+    } catch (err) {
+      console.error('Excel export failed:', err);
+      window.alert('Failed to export. Please try again.');
+    } finally {
+      setExporting(false);
+    }
+  }, [buildQuery, filters.date_from, filters.date_to, filters.booking_status, filters.search, exporting]);
 
   /* ─── Render ───────────────────────────────────────────── */
 
@@ -512,6 +588,17 @@ export default function BookingsList() {
             <span className={`inline-block w-2 h-2 rounded-xl ${autoSync ? 'bg-emerald-500 animate-pulse' : 'bg-gray-400'}`} />
             {autoSync ? 'Live' : 'Paused'}
           </button>
+          {canExportExcel && (
+            <button
+              className={`${btnSecondary} !px-3`}
+              onClick={handleExportExcel}
+              disabled={exporting || !rows.length}
+              title="Download current view as Excel"
+            >
+              <FileSpreadsheet className="h-4 w-4 text-emerald-600" />
+              <span className="hidden sm:inline text-xs font-semibold">{exporting ? 'Exporting…' : 'Excel'}</span>
+            </button>
+          )}
         </div>
         <div className="flex gap-1.5 flex-wrap">
           {quickRanges.map((range) => (

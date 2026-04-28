@@ -1,6 +1,30 @@
-User-agent: Googlebot
-Disallow: /parkpanel
+# ─────────────────────────────────────────────────────────────────────────────
+# robots.txt — Snow City Bangalore (https://www.snowcityblr.com)
+# ─────────────────────────────────────────────────────────────────────────────
 
+# ── All crawlers ──────────────────────────────────────────────────────────────
+User-agent: *
+Allow: /
+
+# Block admin / private routes
+Disallow: /parkpanel
+Disallow: /parkpanel/
+Disallow: /my-bookings
+Disallow: /payment/
+Disallow: /payment-status
+Disallow: /404
+Disallow: /login
+
+# ── Google ────────────────────────────────────────────────────────────────────
+User-agent: Googlebot
+Allow: /
+Disallow: /parkpanel
+Disallow: /parkpanel/
+Disallow: /my-bookings
+Disallow: /payment/
+Disallow: /payment-status
+
+# ── AI / LLM crawlers ────────────────────────────────────────────────────────
 User-agent: GPTBot
 Disallow: /parkpanel
 
@@ -10,5 +34,16 @@ Disallow: /parkpanel
 User-agent: Google-Extended
 Disallow: /parkpanel
 
-User-agent: *
+User-agent: CCBot
 Disallow: /parkpanel
+
+User-agent: anthropic-ai
+Disallow: /parkpanel
+
+User-agent: Claude-Web
+Disallow: /parkpanel
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Sitemap Index (references all sub-sitemaps)
+# ─────────────────────────────────────────────────────────────────────────────
+Sitemap: https://www.snowcityblr.com/sitemap.xml

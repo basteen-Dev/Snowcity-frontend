@@ -62,6 +62,27 @@
       "destination": "https://app.snowcityblr.com/api/:path*"
     },
     {
+      "comment": "--- Sitemap: proxy all sitemaps to backend for dynamic generation ---",
+      "source": "/sitemap.xml",
+      "destination": "https://app.snowcityblr.com/sitemap.xml"
+    },
+    {
+      "source": "/sitemap-static.xml",
+      "destination": "https://app.snowcityblr.com/sitemap-static.xml"
+    },
+    {
+      "source": "/sitemap-attractions.xml",
+      "destination": "https://app.snowcityblr.com/sitemap-attractions.xml"
+    },
+    {
+      "source": "/sitemap-blogs.xml",
+      "destination": "https://app.snowcityblr.com/sitemap-blogs.xml"
+    },
+    {
+      "source": "/sitemap-pages.xml",
+      "destination": "https://app.snowcityblr.com/sitemap-pages.xml"
+    },
+    {
       "source": "/parkpanel",
       "destination": "/parkpanel/index.html"
     },
