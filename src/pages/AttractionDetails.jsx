@@ -834,6 +834,9 @@ export default function AttractionDetails() {
     // When dynamic pricing is active for this date, skip all offers
     if (selectedSlot && (selectedSlot.dynamic_pricing_active || selectedSlot.pricing?.dynamic_pricing_active))
       return null;
+    // Also skip offers for non-slotted attractions with active dynamic pricing
+    if (noSlotAdjustedPrice != null)
+      return null;
     const basePrice = unitBeforeOffer || baseUnitPrice || 0;
     if (!basePrice) return null;
     const attractionId = getAttrId(a);
@@ -853,6 +856,7 @@ export default function AttractionDetails() {
     baseUnitPrice,
     date,
     hasBackendOffer,
+    noSlotAdjustedPrice,
   ]);
 
   const effectiveUnitPrice = hasBackendOffer
