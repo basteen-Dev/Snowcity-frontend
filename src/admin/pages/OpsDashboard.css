@@ -31,6 +31,8 @@
   color: var(--text);
   font-size: 14px;
   min-height: calc(100vh - 80px);
+  width: 100%;
+  overflow-x: hidden;
   /* Fill space in admin panel */
   margin: -1.5rem;
   /* Negate the default padding of admin layout */
@@ -432,6 +434,7 @@ html.dark .ops-wrapper .panel .pbody {
 
   .ops-wrapper {
     margin: -1rem;
+    width: calc(100% + 2rem);
   }
 }
 
