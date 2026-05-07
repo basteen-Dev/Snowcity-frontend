@@ -107,9 +107,6 @@ const BlogCardInner = function BlogCard({ item }) {
           </h2>
 
           <div className="mt-auto flex items-center justify-between gap-4">
-            {item.author && (
-              <span className="text-sm text-gray-500 italic">By {item.author}</span>
-            )}
             <span className="inline-flex items-center text-sm font-medium text-[#0099ff] group-hover:text-blue-700 transition-colors shrink-0">
               Read more
               <svg className="ml-1 w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
