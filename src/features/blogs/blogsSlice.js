@@ -55,7 +55,7 @@ export const fetchBlogs = createAsyncThunk(
 
       // Cache only if it's the main list
       if (!params?.search && params?.page === 1 && !params?.append) {
-        saveSliceCache('blogs_v2', payload);
+        saveSliceCache('blogs_v3', payload);
       }
 
       return payload;
@@ -65,7 +65,7 @@ export const fetchBlogs = createAsyncThunk(
   }
 );
 
-const cached = loadSliceCache('blogs_v2');
+const cached = loadSliceCache('blogs_v3');
 const initialState = {
   items: cached?.items?.items || [],
   status: 'idle',

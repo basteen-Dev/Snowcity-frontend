@@ -832,3 +832,173 @@ html.dark .rpt-wrapper .rpt-topbar {
     background: var(--white);
     border-bottom-color: var(--border);
 }
+
+/* ═══════════════════════════════════════════════════
+   MOBILE RESPONSIVE – Reports Pages
+   ═══════════════════════════════════════════════════ */
+
+/* ─── Topbar Mobile ─── */
+@media (max-width: 768px) {
+    .rpt-topbar {
+        padding: 10px 14px;
+        height: auto;
+        min-height: 48px;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .rpt-b-name {
+        font-size: 18px;
+    }
+
+    .rpt-chip {
+        font-size: 11px;
+        padding: 3px 8px;
+    }
+}
+
+/* ─── Page Mobile ─── */
+@media (max-width: 768px) {
+    .rpt-page {
+        padding: 14px;
+    }
+}
+
+/* ─── Filter Strip Mobile ─── */
+@media (max-width: 768px) {
+    .rpt-wrapper .filter-strip {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        padding: 12px 14px;
+    }
+
+    .rpt-wrapper .fs-group {
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .rpt-wrapper .fs-sep {
+        display: none;
+    }
+
+    .rpt-wrapper .date-pills {
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+
+    .rpt-wrapper .dp {
+        padding: 4px 10px;
+        font-size: 11px;
+    }
+
+    .rpt-wrapper .dp-custom {
+        flex-wrap: wrap;
+        width: 100%;
+    }
+
+    .rpt-wrapper .dp-custom input[type="date"] {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .rpt-wrapper .export-btns {
+        margin-left: 0;
+        flex-wrap: wrap;
+    }
+
+    .rpt-wrapper .exp-btn {
+        padding: 5px 10px;
+        font-size: 11px;
+    }
+
+    .rpt-wrapper .tgl-btn {
+        padding: 5px 10px;
+        font-size: 12px;
+    }
+}
+
+/* ─── Totals Grid Mobile ─── */
+@media (max-width: 1024px) {
+    .rpt-wrapper .tg-6 {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .rpt-wrapper .tg-7 {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .rpt-wrapper .tg-6,
+    .rpt-wrapper .tg-7 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .rpt-wrapper .tot-cell {
+        padding: 10px 12px;
+    }
+
+    .rpt-wrapper .tot-val {
+        font-size: 16px;
+    }
+
+    .rpt-wrapper .tot-lbl {
+        font-size: 9px;
+    }
+
+    .rpt-wrapper .totals-hd {
+        padding: 8px 14px;
+        font-size: 10px;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+}
+
+/* ─── Table Mobile ─── */
+@media (max-width: 768px) {
+    .rpt-wrapper .tbl-scroll {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .rpt-wrapper table {
+        min-width: 700px;
+    }
+
+    .rpt-wrapper th {
+        padding: 8px 10px;
+        font-size: 9px;
+    }
+
+    .rpt-wrapper td {
+        padding: 8px 10px;
+        font-size: 12px;
+    }
+
+    .rpt-wrapper .tbl-toolbar {
+        padding: 8px 14px;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .rpt-wrapper .tbl-info {
+        font-size: 11px;
+    }
+}
+
+/* ─── Total Row Mobile ─── */
+@media (max-width: 640px) {
+    .rpt-wrapper tr.tot-row td {
+        font-size: 12px;
+        padding: 8px 10px;
+    }
+}
+
+/* ─── Load More Mobile ─── */
+@media (max-width: 640px) {
+    .rpt-wrapper .load-more-btn {
+        width: 100%;
+        padding: 10px;
+    }
+}

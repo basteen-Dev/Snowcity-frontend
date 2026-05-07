@@ -946,3 +946,146 @@ html.dark .admin-panel-theme table tbody tr:hover td {
 html.dark .admin-panel-theme .mobile-overlay {
   background: rgba(0, 0, 0, 0.6);
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   COMPREHENSIVE MOBILE RESPONSIVE – All Admin Pages
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Global Admin Layout Mobile ── */
+@media (max-width: 768px) {
+  .admin-panel-theme {
+    font-size: 13px;
+  }
+
+  .admin-panel-theme .main-scroll {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* ── Modal Mobile ── */
+@media (max-width: 640px) {
+  .admin-panel-theme .custom-modal {
+    width: 95vw;
+    max-height: 90vh;
+    overflow-y: auto;
+    border-radius: 12px;
+  }
+
+  .admin-panel-theme .custom-modal-header {
+    padding: 16px;
+  }
+
+  .admin-panel-theme .custom-modal-body {
+    padding: 16px;
+  }
+
+  .admin-panel-theme .custom-modal-footer {
+    padding: 0 16px 16px;
+    flex-direction: column;
+  }
+
+  .admin-panel-theme .btn-cancel,
+  .admin-panel-theme .btn-confirm {
+    flex: unset;
+    width: 100%;
+  }
+
+  .admin-panel-theme .ticket-card {
+    padding: 12px 14px;
+  }
+
+  .admin-panel-theme .ticket-card::before,
+  .admin-panel-theme .ticket-card::after {
+    display: none;
+  }
+
+  .admin-panel-theme .ticket-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .admin-panel-theme .ticket-field .val {
+    font-size: 14px;
+  }
+
+  .admin-panel-theme .ticket-meta {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+}
+
+/* ── Badge Mobile ── */
+@media (max-width: 640px) {
+  .admin-panel-theme .badge {
+    font-size: 11px;
+    padding: 2px 8px;
+  }
+}
+
+/* ── Form Inputs Mobile ── */
+@media (max-width: 768px) {
+  .admin-panel-theme input[type="text"],
+  .admin-panel-theme input[type="email"],
+  .admin-panel-theme input[type="password"],
+  .admin-panel-theme input[type="number"],
+  .admin-panel-theme input[type="date"],
+  .admin-panel-theme input[type="time"],
+  .admin-panel-theme input[type="search"],
+  .admin-panel-theme input[type="tel"],
+  .admin-panel-theme input[type="url"],
+  .admin-panel-theme textarea,
+  .admin-panel-theme select {
+    font-size: 16px; /* Prevents iOS zoom on focus */
+  }
+}
+
+/* ── Tables Global Mobile ── */
+@media (max-width: 768px) {
+  .admin-panel-theme table {
+    font-size: 12px;
+  }
+
+  .admin-panel-theme table thead th {
+    padding: 8px 10px;
+    font-size: 10px;
+  }
+
+  .admin-panel-theme table tbody td {
+    padding: 8px 10px;
+  }
+}
+
+/* ── Redeem Button Mobile ── */
+@media (max-width: 640px) {
+  .admin-panel-theme .redeem-btn {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+}
+
+/* ── Warning Box Mobile ── */
+@media (max-width: 640px) {
+  .admin-panel-theme .warn-box {
+    padding: 8px 12px;
+  }
+
+  .admin-panel-theme .warn-box p {
+    font-size: 12px;
+  }
+}
+
+/* ── Success Body Mobile ── */
+@media (max-width: 640px) {
+  .admin-panel-theme .success-body {
+    padding: 24px 16px;
+  }
+
+  .admin-panel-theme .check-circle {
+    width: 56px;
+    height: 56px;
+  }
+
+  .admin-panel-theme .success-title {
+    font-size: 16px;
+  }
+}

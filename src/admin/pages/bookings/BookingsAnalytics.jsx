@@ -170,9 +170,9 @@ export default function BookingsAnalytics() {
     return (
         <div className="space-y-5">
             {/* ── Header ── */}
-            <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100">Bookings Analytics</h1>
+                    <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-neutral-100">Bookings Analytics</h1>
                     <p className="text-sm text-gray-500 dark:text-neutral-400 mt-0.5">Revenue, trends & performance</p>
                 </div>
                 <div className="flex gap-1.5 flex-wrap">
@@ -180,7 +180,7 @@ export default function BookingsAnalytics() {
                         <button
                             key={range.key}
                             onClick={() => applyQuickRange(range.key)}
-                            className={`rounded-xl px-3.5 py-1.5 text-xs font-semibold border transition-all ${activeRange === range.key
+                            className={`rounded-xl px-2.5 sm:px-3.5 py-1.5 text-[11px] sm:text-xs font-semibold border transition-all ${activeRange === range.key
                                 ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-transparent shadow-sm shadow-blue-500/20'
                                 : 'border-gray-200 text-gray-600 hover:border-gray-400 hover:bg-gray-50 dark:border-slate-600 dark:text-neutral-300 dark:hover:bg-neutral-800'}`}
                         >

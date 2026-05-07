@@ -176,22 +176,22 @@ export default function SiteSettings() {
     return (
         <div className="relative">
             <SaveOverlay visible={saving} label="Saving settings…" />
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Site Settings (SEO)</h1>
+                    <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Site Settings (SEO)</h1>
                     <p className="mt-1 text-sm text-gray-500 dark:text-neutral-400">Global scripts, schemas, and per-page meta title & description management.</p>
                 </div>
                 <button
                     type="button"
                     onClick={preview}
-                    className="px-4 py-2 bg-gray-100 dark:bg-neutral-700 text-gray-700 dark:text-neutral-300 rounded-lg hover:bg-gray-200 dark:hover:bg-neutral-600 transition-colors text-sm font-medium"
+                    className="px-4 py-2 bg-gray-100 dark:bg-neutral-700 text-gray-700 dark:text-neutral-300 rounded-lg hover:bg-gray-200 dark:hover:bg-neutral-600 transition-colors text-sm font-medium self-start sm:self-auto"
                 >
                     Preview
                 </button>
             </div>
 
             {/* ===== Page SEO Management Section ===== */}
-            <div className="max-w-4xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-6 shadow-sm mb-8">
+            <div className="max-w-4xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-4 sm:p-6 shadow-sm mb-8">
                 <div className="flex items-center justify-between mb-4">
                     <div>
                         <h2 className="text-lg font-semibold text-gray-900 dark:text-neutral-100">Page Meta Titles & Descriptions</h2>
@@ -321,7 +321,7 @@ export default function SiteSettings() {
             </div>
 
             {/* ===== Global Scripts / Schema Section ===== */}
-            <form onSubmit={save} className="max-w-4xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-6 shadow-sm">
+            <form onSubmit={save} className="max-w-4xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-4 sm:p-6 shadow-sm">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-neutral-100 mb-4">Global Scripts & Schemas</h2>
                 {state.error ? <div className="mb-4 text-sm text-red-600 bg-red-50 p-3 rounded-md border border-red-200">{state.error?.message || 'Save failed'}</div> : null}
 

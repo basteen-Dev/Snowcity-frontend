@@ -83,7 +83,7 @@ export default function AdminTopbar({ onToggleSidebar, onToggleMobile }) {
         <div className="flex-1" />
         {/* Right: Actions */}
         <div className="flex items-center gap-2">
-          <div className="hidden md:block">
+          <div>
             <ThemeToggle compact />
           </div>
           {/* Profile */}

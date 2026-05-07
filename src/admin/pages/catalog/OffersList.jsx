@@ -208,9 +208,9 @@ export default function OffersList() {
 
       {/* Slot Inspector Modal */}
       {slotInspector.open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-auto border border-gray-200 dark:border-slate-700">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-neutral-800/50 rounded-t-2xl">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm p-0 sm:p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-5xl max-h-[85vh] sm:max-h-[90vh] overflow-auto border border-gray-200 dark:border-slate-700">
+            <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-neutral-800/50 rounded-t-2xl sticky top-0 z-10">
               <div>
                 <h2 className="text-lg font-bold text-gray-900 dark:text-neutral-100">Offer Slots – {slotInspector.offer?.title}</h2>
                 <p className="text-xs text-gray-500 dark:text-neutral-400">Showing slots matched by current rules</p>

@@ -317,13 +317,13 @@ export default function AttractionForm() {
           </div>
         </div>
 
-        <div className="mt-4 flex items-center justify-between border-t border-gray-200 dark:border-slate-700 pt-5">
+        <div className="mt-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 border-t border-gray-200 dark:border-slate-700 pt-5">
           <div className="flex gap-2">
-            <button type="submit" disabled={saving} className="rounded-md bg-gray-900 dark:bg-blue-600 text-white px-4 py-2 text-sm disabled:opacity-60 disabled:cursor-not-allowed">{saving ? 'Saving…' : 'Save'}</button>
-            <button type="button" className="rounded-md border border-gray-300 dark:border-slate-600 px-4 py-2 text-sm text-gray-700 dark:text-neutral-300" onClick={() => navigate(-1)}>Cancel</button>
+            <button type="submit" disabled={saving} className="rounded-md bg-gray-900 dark:bg-blue-600 text-white px-4 py-2 text-sm disabled:opacity-60 disabled:cursor-not-allowed flex-1 sm:flex-none">{saving ? 'Saving…' : 'Save'}</button>
+            <button type="button" className="rounded-md border border-gray-300 dark:border-slate-600 px-4 py-2 text-sm text-gray-700 dark:text-neutral-300 flex-1 sm:flex-none" onClick={() => navigate(-1)}>Cancel</button>
           </div>
           {isEdit && (
-            <button type="button" onClick={handleDelete} disabled={saving} className="rounded-md border border-red-200 bg-red-50 text-red-600 px-4 py-2 text-sm hover:bg-red-100 transition-colors disabled:opacity-50">
+            <button type="button" onClick={handleDelete} disabled={saving} className="rounded-md border border-red-200 bg-red-50 text-red-600 px-4 py-2 text-sm hover:bg-red-100 transition-colors disabled:opacity-50 w-full sm:w-auto">
               Delete Attraction
             </button>
           )}

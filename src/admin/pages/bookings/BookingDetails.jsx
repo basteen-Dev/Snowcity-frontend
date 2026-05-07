@@ -315,7 +315,7 @@ export default function BookingDetails() {
         {/* Customer Details */}
         <Card>
           <CardHeader icon={User} title="Customer Details" />
-          <div className="px-5 pb-5 grid grid-cols-2 gap-x-4 gap-y-1">
+          <div className="px-4 sm:px-5 pb-5 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1">
             <InfoRow icon={User} label="Name" value={user.name || '—'} />
             <InfoRow icon={Phone} label="Phone" value={user.phone || '—'} />
             <InfoRow icon={Mail} label="Email" value={user.email || '—'} />
@@ -330,7 +330,7 @@ export default function BookingDetails() {
             title="Payment Details"
             action={statusBadge(payment.status)}
           />
-          <div className="px-5 pb-5 grid grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-3">
+          <div className="px-4 sm:px-5 pb-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-3">
             <InfoRow icon={IndianRupee} label="Total" value={money(payment.total)} />
             <InfoRow icon={IndianRupee} label="Transaction Amount" value={money(payment.paid)} />
             <InfoRow icon={Clock} label="Transaction Date & Time" value={fmtPayTime(payment.datetime)} />

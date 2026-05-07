@@ -9,12 +9,14 @@ import HtmlContent from '../components/cms/HtmlContent';
 import RawFrame from '../components/cms/RawFrame';
 import usePageSeo from '../hooks/usePageSeo';
 
-// Helper function to estimate read time
-const getReadTime = (content) => {
+// Helper function to estimate read time from blog content
+const getReadTime = (item) => {
+  if (item?.reading_time) return `${item.reading_time} min read`;
+  const content = item?.content || '';
   if (!content) return '1 min read';
   const wordsPerMinute = 200;
-  const words = content.replace(/<[^>]*>/g, '').split(/\s+/).length;
-  const minutes = Math.ceil(words / wordsPerMinute);
+  const words = content.replace(/<[^>]*>/g, '').split(/\s+/).filter(Boolean).length;
+  const minutes = Math.max(1, Math.ceil(words / wordsPerMinute));
   return `${minutes} min read`;
 };
 
@@ -54,7 +56,7 @@ export default function Blog() {
   const authorImage = imgSrc(b.author_image_url);
   const mode = (b.editor_mode || '').toLowerCase();
   const isRaw = mode === 'raw';
-  const readTime = getReadTime(b.content);
+  const readTime = getReadTime(b);
   const formattedDate = formatDate(b.created_at);
   const faqItems = Array.isArray(b.faq_items) ? b.faq_items.filter(f => f && f.question && f.answer) : [];
 

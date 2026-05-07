@@ -430,32 +430,34 @@ const DynamicPricing = () => {
   }
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Dynamic Pricing</h1>
-        {activeTab === 'rules' && (
-          <button onClick={() => setShowForm(true)} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-            Add New Rule
-          </button>
-        )}
-        {activeTab === 'date-specific' && selectedItemId && (
-          <button onClick={() => setShowDateForm(true)} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-            Add Date Price
-          </button>
-        )}
+    <div className="p-3 sm:p-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
+        <h1 className="text-xl sm:text-2xl font-bold">Dynamic Pricing</h1>
+        <div className="flex gap-2">
+          {activeTab === 'rules' && (
+            <button onClick={() => setShowForm(true)} className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm sm:text-base">
+              Add New Rule
+            </button>
+          )}
+          {activeTab === 'date-specific' && selectedItemId && (
+            <button onClick={() => setShowDateForm(true)} className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm sm:text-base">
+              Add Date Price
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex mb-6">
+      <div className="flex flex-wrap mb-6 gap-0">
         <button
           onClick={() => setActiveTab('rules')}
-          className={`px-4 py-2 ${activeTab === 'rules' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'} rounded-l`}
+          className={`px-3 sm:px-4 py-2 text-sm sm:text-base ${activeTab === 'rules' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 dark:bg-slate-700 dark:text-neutral-200'} rounded-l-lg`}
         >
           Dynamic Rules
         </button>
         <button
           onClick={() => setActiveTab('date-specific')}
-          className={`px-4 py-2 ${activeTab === 'date-specific' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'} rounded-r`}
+          className={`px-3 sm:px-4 py-2 text-sm sm:text-base ${activeTab === 'date-specific' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 dark:bg-slate-700 dark:text-neutral-200'} rounded-r-lg`}
         >
           Date-Specific Pricing
         </button>
@@ -463,7 +465,7 @@ const DynamicPricing = () => {
 
       {/* ============ RULES TAB - FORM ============ */}
       {activeTab === 'rules' && showForm && (
-        <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+        <div className="bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-xl shadow-md mb-6">
           <h2 className="text-xl font-semibold mb-4">
             {editingRule ? 'Edit Rule' : 'Add New Rule'}
           </h2>
@@ -657,8 +659,9 @@ const DynamicPricing = () => {
 
       {/* ============ RULES TAB - TABLE ============ */}
       {activeTab === 'rules' && (
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          <table className="w-full">
+        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-md overflow-hidden">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[700px]">
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-4 py-3 text-left">Name</th>
@@ -724,13 +727,14 @@ const DynamicPricing = () => {
               )}
             </tbody>
           </table>
+          </div>
         </div>
       )}
 
       {/* ============ DATE-SPECIFIC PRICING TAB ============ */}
       {activeTab === 'date-specific' && (
         <>
-          <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+          <div className="bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-xl shadow-md mb-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-1">Item Type</label>

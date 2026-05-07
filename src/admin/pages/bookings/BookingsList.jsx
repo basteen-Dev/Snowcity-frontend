@@ -571,10 +571,10 @@ export default function BookingsList() {
   return (
     <div className="space-y-5">
       {/* ── Header ── */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div className="flex items-center gap-3 flex-wrap">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100">Bookings</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-neutral-100">Bookings</h1>
             <p className="text-sm text-gray-500 dark:text-neutral-400 mt-0.5">Manage all bookings</p>
           </div>
           <button
@@ -605,7 +605,7 @@ export default function BookingsList() {
             <button
               key={range.key}
               onClick={() => applyQuickRange(range.key)}
-              className={`rounded-xl px-3.5 py-1.5 text-xs font-semibold border transition-all ${activeRange === range.key
+              className={`rounded-xl px-2.5 sm:px-3.5 py-1.5 text-[11px] sm:text-xs font-semibold border transition-all ${activeRange === range.key
                 ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-transparent shadow-sm shadow-blue-500/20'
                 : 'border-gray-200 text-gray-600 hover:border-gray-400 hover:bg-gray-50 dark:border-slate-600 dark:text-neutral-300 dark:hover:bg-neutral-800'}`}
             >
@@ -618,8 +618,8 @@ export default function BookingsList() {
       {/* ── Filter Bar ── */}
       <div className="rounded-2xl border border-gray-200/80 bg-white shadow-sm dark:bg-slate-800 dark:border-slate-700">
         {/* Always-visible: search bar + filter toggle */}
-        <div className="flex items-center gap-3 px-4 py-3">
-          <div className="relative flex-1 max-w-md">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 px-3 sm:px-4 py-3">
+          <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
             <input
               className={`${inputClasses} pl-9`}

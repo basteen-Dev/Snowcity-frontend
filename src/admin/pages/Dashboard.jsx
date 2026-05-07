@@ -169,28 +169,28 @@ export default function Dashboard() {
           <div className="sc c-blue">
             <div className="sc-lbl">❄️ Snow Park</div>
             <div className="sc-val">{numberFmt(visitor.snow)}</div>
-            <div className="sc-sub">{visitor.snow > 0 ? 'Visitors' : 'No visitors'} today</div>
+            <div className="sc-sub">{visitor.snow > 0 ? 'Visitors' : 'No visitors'}</div>
           </div>
           )}
           {canSeeMadlabs && (
           <div className="sc c-purple">
             <div className="sc-lbl">🧪 Madlabs</div>
             <div className="sc-val">{numberFmt(visitor.madlabs)}</div>
-            <div className="sc-sub">{visitor.madlabs > 0 ? 'Visitors' : 'No visitors'} today</div>
+            <div className="sc-sub">{visitor.madlabs > 0 ? 'Visitors' : 'No visitors'} </div>
           </div>
           )}
           {canSeeEye && (
           <div className="sc c-pink">
             <div className="sc-lbl">👁 Eyelusion</div>
             <div className="sc-val">{numberFmt(visitor.eyelusion)}</div>
-            <div className="sc-sub">{visitor.eyelusion > 0 ? 'Visitors' : 'No visitors'} today</div>
+            <div className="sc-sub">{visitor.eyelusion > 0 ? 'Visitors' : 'No visitors'}</div>
           </div>
           )}
           {canSeeDevil && (
           <div className="sc c-slate">
             <div className="sc-lbl">👹 Devil's Darkhouse</div>
             <div className="sc-val">{numberFmt(visitor.devil)}</div>
-            <div className="sc-sub">{visitor.devil > 0 ? 'Visitors' : 'No visitors'} today</div>
+            <div className="sc-sub">{visitor.devil > 0 ? 'Visitors' : 'No visitors'}</div>
           </div>
           )}
         </div>
@@ -233,7 +233,7 @@ export default function Dashboard() {
               </div>
               <div className="pbadge pb-green">Visit: {activeDateLabel}</div>
             </div>
-            <div className="pbody" style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '32px' }}>
+            <div className="pbody rev-grid">
               <div>
                 <div className="ri"><div className="ri-ic">🎟️</div><div className="ri-lbl">Ticketing </div><div className="ri-bar"><div className="ri-fil" style={{ width: `${revPct(revenue.ticketing)}%`, background: 'var(--brand)' }}></div></div><div className="ri-amt" style={{ color: 'var(--brand)' }}>{moneyFmt(revenue.ticketing)}</div></div>
                 {!isStaff && (
