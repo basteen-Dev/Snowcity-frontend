@@ -535,6 +535,15 @@ const bookingsSlice = createSlice({
     },
     removeCartItem(state, action) {
       const key = action.payload;
+      if (key && typeof key === 'string') {
+        const match = key.match(/^(offer_(?!fnt_).*)_\d{1,2}$/);
+        if (match) {
+          const basePrefix = match[1] + '_';
+          state.cart.items = state.cart.items.filter((it) => !it.key.startsWith(basePrefix));
+          recomputeCartMeta(state.cart);
+          return;
+        }
+      }
       state.cart.items = state.cart.items.filter((it) => it.key !== key);
       recomputeCartMeta(state.cart);
     },

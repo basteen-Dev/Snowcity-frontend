@@ -1760,6 +1760,25 @@ export default function Booking() {
 
   const confirmRemoveItem = () => {
     if (itemToRemove) {
+      const match = itemToRemove.match(/^(offer_(?!fnt_).*)_\d{1,2}$/);
+      if (match) {
+        const basePrefix = match[1] + '_';
+        setCartAddons((prev) => {
+          const next = new Map(prev);
+          for (const key of next.keys()) {
+            if (key.startsWith(basePrefix)) {
+              next.delete(key);
+            }
+          }
+          return next;
+        });
+      } else {
+        setCartAddons((prev) => {
+          const next = new Map(prev);
+          next.delete(itemToRemove);
+          return next;
+        });
+      }
       dispatch(removeCartItem(itemToRemove));
       setItemToRemove(null);
     }

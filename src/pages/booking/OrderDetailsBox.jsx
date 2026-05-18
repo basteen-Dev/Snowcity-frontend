@@ -87,13 +87,15 @@ export default function OrderDetailsBox({
                                         )}
 
                                         <div className="flex gap-3 mt-1">
-                                            <button
-                                                type="button"
-                                                onClick={() => onEditCartItem(item)}
-                                                className="text-[11px] text-sky-700 hover:underline"
-                                            >
-                                                Edit
-                                            </button>
+                                            {!(item.key && typeof item.key === 'string' && /^(offer_(?!fnt_).*)_\d{1,2}$/.test(item.key)) && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => onEditCartItem(item)}
+                                                    className="text-[11px] text-sky-700 hover:underline"
+                                                >
+                                                    Edit
+                                                </button>
+                                            )}
                                             <button
                                                 type="button"
                                                 onClick={() => onRemoveCartItem(item.key)}
